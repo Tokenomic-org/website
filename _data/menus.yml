@@ -1,0 +1,24 @@
+header:
+  - name: 'home'
+    title: 'Home'
+    link: '/'  
+  - name: 'Features'
+    title: 'Features'
+    link: '/features/'
+
+  - name: 'about'
+    title: 'about'
+    link: '/about/'
+
+  - name: 'pricing'
+    title: 'pricing'
+    link: '/pricing/'
+
+  - name: 'blog'
+    title: 'blog'
+    link: '/blog/'
+
+  - name: 'contact'
+    title: 'contact'
+    link: '/contact/'
+

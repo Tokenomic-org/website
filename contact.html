@@ -1,0 +1,80 @@
+---
+layout: page
+name: contact
+permalink: /contact/
+title: Contact Us
+---
+
+
+    <!-- Start map-section -->
+    <section class="map-section relative">
+        <div class="container-fluid relative">
+            <div class="row">
+                <div class="map-wrap2" id="map"></div>
+            </div>
+        </div>
+        <div class="container info-wrap">
+            <div class="row align-items-center justify-content-end section-gap">
+                <div class="contact-info">
+                    <div class="single-line d-flex flex-row">
+                        <div class="icon">
+                            <span class="lnr lnr-home"></span>
+                        </div>
+                        <div class="desc">
+                            <h4>{{ site.contact_address }}</h4>
+                            <p>Santa monica bullevard</p>
+                        </div>
+                    </div>
+                    <div class="single-line d-flex flex-row">
+                        <div class="icon">
+                            <span class="lnr lnr-phone-handset"></span>
+                        </div>
+                        <div class="desc">
+                            <a href="tel:{{ site.contact_phone }}"></a>
+                            <h4>{{ site.contact_phone }}</h4>
+                            <p>Mon to Fri 9am to 6 pm</p>
+                        </div>
+                    </div>
+                    <div class="single-line d-flex flex-row">
+                        <div class="icon">
+                            <span class="lnr lnr-envelope"></span>
+                        </div>
+                        <div class="desc">
+                            <h4>{{ site.contact_email }}</h4>
+                            <p>Send us your query anytime!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End map-section -->
+
+
+    <!-- Start contact-form-section -->
+    <section class="contact-form-section section-gap">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <form class="form-area contact-form text-right" id="myForm" action="https://formspree.io/{{ site.email }}" method="post">
+                        <input name="name" autocomplete="name" placeholder="Enter your name" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter your name'"
+                            class="common-input mb-20 form-control" required="" type="text">
+                        <input name="email" autocomplete="email" placeholder="Enter email address" pattern="[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{1,63}$"
+                            onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter email address'" class="common-input mb-20 form-control"
+                            required="" type="email">
+                        <input name="subject" autocomplete="subject" placeholder="Enter subject" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter subject'"
+                            class="common-input mb-20 form-control" required="" type="text">
+                        <textarea class="common-textarea form-control" cols="30" rows="7" name="message" autocomplete="message" placeholder="Enter Messege"
+                            onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter Messege'" required=""></textarea>
+                        <div class="d-flex flex-column">
+                            <button class="genric-btn2 d-block mt-30 mr-0 ml-auto">Send Message</button>
+                            <div class="alert-msg"></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End contact-form-section -->
+
+

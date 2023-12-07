@@ -1,0 +1,132 @@
+---
+layout: default
+hero: product
+permalink: /faqs/
+title: Faqs
+---
+
+    <!-- Start page-top section -->
+    <section class="page-top-section">
+        <div class="container">
+            <div class="row justify-content-between align-items-center">
+                <div class="col-lg-6 col-md-6">
+                    <h1 class="text-white">Frequently Asked Questions</h1>
+                </div>
+                <div class="col-lg-6  col-md-6 page-top-nav">
+                    <div>
+                        <a href="{{ '/' | relative_url }}">Home</a>
+                        <span class="lnr lnr-arrow-right"></span>
+                        <a href="faqs.html">FAQS</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End page-top section -->
+
+    <!-- Start main body content -->
+    <section class="faq-section section-gap">
+        <div class="container">
+            <div class="text-center content-wrap">
+                <h2 class="mb-20">Get to Know Simple Answers</h2>
+                <p class="details">The first is a non technical method which requires the use of adware removal software. Download free adware
+                    and spyware removal software and use advanced tools getting infected.</p>
+            </div>
+
+            <div class="faq-tabs mt-80">
+                <!-- Nav pills -->
+                <ul class="nav nav-pills justify-content-center" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="pill" href="#general-issue">general issue</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link genric-btn" data-toggle="pill" href="#support-issue">support issue</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link genric-btn" data-toggle="pill" href="#refund-issue">refund issue</a>
+                    </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <!-- Start General Issue -->
+                    <div id="general-issue" class="tab-pane active">
+                        <br>
+                        <div id="accordion1">
+                            {%- assign generalFaq = site.data.faq.issues | where:"category_name","general" -%}
+                            {%- for faq in generalFaq -%}
+                            <div class="card">
+                                <div class="card-header" id="generalHeadingOne">
+                                    <button class="btn btn-link" data-toggle="collapse" data-target="#generalCollapse{{ faq.id }}" aria-expanded="true" aria-controls="generalCollapse{{ faq.id }}">
+                                        <i class="fa" aria-hidden="true"></i>
+                                        {{ faq.title }}
+                                    </button>
+                                </div>
+
+                                <div id="generalCollapse{{ faq.id }}" class="collapse {% if forloop.index0 %}show{% endif %}" aria-labelledby="generalHeading{{ faq.id }}" data-parent="#accordion1">
+                                    <div class="card-body">
+                                        {{ faq.description }}
+                                    </div>
+                                </div>
+                            </div>
+                            {%- endfor -%}
+                         
+                        </div>
+                    </div>
+                    <!-- End General Issue -->
+
+                    <!-- Start Support Issue -->
+                    <div id="support-issue" class="tab-pane fade">
+                        <br>
+                        <div id="accordion2">
+                            
+                            {%- assign generalFaq = site.data.faq.issues | where:"category_name","support" -%}
+                            {%- for faq in generalFaq -%}
+                            <div class="card">
+                                <div class="card-header" id="generalHeading{{ faq.id }}">
+                                    <button class="btn btn-link" data-toggle="collapse" data-target="#generalCollapse{{ faq.id }}" aria-expanded="true" aria-controls="generalCollapse{{ faq.id }}">
+                                        <i class="fa" aria-hidden="true"></i>
+                                        {{ faq.title }}
+                                    </button>
+                                </div>
+
+                                <div id="generalCollapse{{ faq.id }}" class="collapse {% if forloop.index0 %}show{% endif %}" aria-labelledby="generalHeading{{ faq.id }}" data-parent="#accordion1">
+                                    <div class="card-body">
+                                        {{ faq.description }}
+                                    </div>
+                                </div>
+                            </div>
+                            {%- endfor -%}
+                        </div>
+                    </div>
+                    <!-- End Support Issue -->
+
+                    <!-- Start Refund Issue -->
+                    <div id="refund-issue" class="tab-pane fade">
+                        <br>
+                        <div id="accordion3">
+                            {%- assign generalFaq = site.data.faq.issues | where:"category_name","refund" -%}
+                            {%- for faq in generalFaq -%}
+                            <div class="card">
+                                <div class="card-header" id="generalHeading{{ faq.id }}">
+                                    <button class="btn btn-link" data-toggle="collapse" data-target="#generalCollapse{{ faq.id }}" aria-expanded="true" aria-controls="generalCollapse{{ faq.id }}">
+                                        <i class="fa" aria-hidden="true"></i>
+                                        {{ faq.title }}
+                                    </button>
+                                </div>
+
+                                <div id="generalCollapse{{ faq.id }}" class="collapse {% if forloop.index0 %}show{% endif %}" aria-labelledby="generalHeading{{ faq.id }}" data-parent="#accordion1">
+                                    <div class="card-body">
+                                        {{ faq.description }}
+                                    </div>
+                                </div>
+                            </div>
+                            {%- endfor -%}
+                        </div>
+                    </div>
+                    <!-- End Refund Issue -->
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End main body content -->
