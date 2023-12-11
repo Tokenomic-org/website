@@ -273,7 +273,7 @@ figure{
 .btn-style-one:hover .btn-title{
 	background: #ee2e24;
 	border-color: #ee2e24;
-	color: #ffffff;
+	color: #000000;
 }
 
 /*Btn Style Two*/
@@ -297,7 +297,7 @@ figure{
 	display:block;
 	font-size: 14px;
 	line-height: 30px;
-	color: #ffffff;
+	color: #ee2e24;
 	font-weight: 700;
 	padding: 13px 40px;
 	background: #ee2e24;
@@ -320,7 +320,7 @@ figure{
 .btn-style-two:hover .btn-title{
 	background: #001f29;
 	border-color: #001f29;
-	color: #ffffff;
+	color: #000000;
 }
 
 /*Btn Style Three*/
@@ -344,7 +344,7 @@ figure{
 	display:block;
 	font-size: 14px;
 	line-height: 30px;
-	color: #ffffff;
+	color: #000000;
 	font-weight: 700;
 	padding: 13px 40px;
 	background: none;
@@ -368,7 +368,7 @@ figure{
 .btn-style-three:hover .btn-title{
 	background: #ff5489;
 	border-color: #ff5489;
-	color: #ffffff;
+	color: #000000;
 }
 
 /*Btn Style Four*/
@@ -392,7 +392,7 @@ figure{
 	display:block;
 	font-size: 14px;
 	line-height: 30px;
-	color: #ffffff;
+	color: #000000;
 	font-weight: 700;
 	padding: 15px 40px;
 	border:none;
@@ -419,7 +419,7 @@ figure{
 .btn-style-four:hover .btn-title{
 	background: #000e8f;
 	border-color: #000e8f;
-	color: #ffffff;
+	color: #000000;
 }
 
 /*Btn Style Five*/
@@ -443,7 +443,7 @@ figure{
 	display:block;
 	font-size: 14px;
 	line-height: 30px;
-	color: #ffffff;
+	color: #000000;
 	font-weight: 700;
 	padding: 15px 40px;
 	border:none;
@@ -467,7 +467,7 @@ figure{
 .btn-style-five:hover .btn-title{
 	background: #ff5488;
 	border-color: #ff5488;
-	color: #ffffff;
+	color: #000000;
 }
 
 /*Btn Style Six*/
@@ -491,7 +491,7 @@ figure{
 	display:block;
 	font-size: 14px;
 	line-height: 30px;
-	color: #ffffff;
+	color: #000000;
 	font-weight: 600;
 	padding: 15px 40px;
 	border:none;
@@ -515,7 +515,7 @@ figure{
 .btn-style-six:hover .btn-title{
 	background: #ee2e24;
 	border-color: #ee2e24;
-	color: #ffffff;
+	color: #000000;
 }
 
 /*Btn Style Seven*/
@@ -563,7 +563,7 @@ figure{
 .btn-style-seven:hover .btn-title{
 	background: #3300c6;
 	border-color: #3300c6;
-	color: #ffffff;
+	color: #000000;
 }
 
 /*Btn Style Eight*/
@@ -587,7 +587,7 @@ figure{
 	display:block;
 	font-size: 14px;
 	line-height: 30px;
-	color: #ffffff;
+	color: #000000;
 	font-weight: 700;
 	padding: 15px 40px;
 	border:none;
@@ -611,7 +611,7 @@ figure{
 .btn-style-eight:hover .btn-title{
 	background: #000261;
 	border-color: #000261;
-	color: #ffffff;
+	color: #000000;
 }
 
 /*Btn Style Nine*/
@@ -635,7 +635,7 @@ figure{
 	display:block;
 	font-size: 14px;
 	line-height: 30px;
-	color: #ffffff;
+	color: #000000;
 	font-weight: 700;
 	padding: 15px 40px;
 	border:none;
@@ -659,7 +659,7 @@ figure{
 .btn-style-nine:hover .btn-title{
 	background: #cc500b;
 	border-color: #cc500b;
-	color: #ffffff;
+	color: #000000;
 }
 
 /*Btn Style Ten*/
@@ -684,7 +684,7 @@ figure{
 	display:block;
 	font-size: 14px;
 	line-height: 30px;
-	color: #ffffff;
+	color: #000000;
 	font-weight: 700;
 	padding: 15px 40px;
 	border:none;
@@ -708,7 +708,7 @@ figure{
 .btn-style-ten:hover .btn-title{
 	background: #000261;
 	border-color: #000261;
-	color: #ffffff;
+	color: #000000;
 }
 
 /*Btn Style Eleven*/
@@ -756,7 +756,7 @@ figure{
 .btn-style-eleven:hover .btn-title{
 	background: #ee2e24;
 	border-color: #ee2e24;
-	color: #ffffff;
+	color: #000000;
 }
 
 .pull-right{
