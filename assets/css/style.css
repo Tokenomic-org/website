@@ -4834,10 +4834,10 @@ img.lazy-image.loaded{
 
 .testimonial-section.light-style{
 	padding: 120px 0px 110px;
-	background: #30b960;
-	background: -webkit-linear-gradient(left,#30b960,#95d156);
-	background: -ms-linear-gradient(left,#30b960,#95d156);
-	background: -moz-linear-gradient(left,#30b960,#95d156);
+	background: #ee2e24;
+	background: -webkit-linear-gradient(left,#ee2e24,#95d156);
+	background: -ms-linear-gradient(left,#ee2e24,#95d156);
+	background: -moz-linear-gradient(left,#ee2e24,#95d156);
 }
 
 .testimonial-section:before{
@@ -6796,10 +6796,10 @@ img.lazy-image.loaded{
 .sponsors-section{
 	position:relative;
 	padding: 90px 0px;
-	background: #30b960;
-	background: -webkit-linear-gradient(left,#30b960,#95d156);
-	background: -ms-linear-gradient(left,#30b960,#95d156);
-	background: -moz-linear-gradient(left,#30b960,#95d156);
+	background: #ee2e24;
+	background: -webkit-linear-gradient(left,#ee2e24,#95d156);
+	background: -ms-linear-gradient(left,#ee2e24,#95d156);
+	background: -moz-linear-gradient(left,#ee2e24,#95d156);
 }
 
 .sponsors-section:before{
