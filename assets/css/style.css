@@ -3000,7 +3000,7 @@ img.lazy-image.loaded{
 	left: 0;
 	top: 15px;
 	width: 70px;
-	border-bottom: 3px solid #ffffff;
+	border-bottom: 3px solid #000000;
 }
 
 .banner-three .content-box h1{
@@ -3801,7 +3801,7 @@ img.lazy-image.loaded{
 }
 
 .sec-title-three.light .sub-title{
-	color: #ffffff;
+	color: #000000;
 }
 
 .sec-title-three .lower-text{
@@ -3856,7 +3856,7 @@ img.lazy-image.loaded{
 }
 
 .sec-title-four.light h2{
-	color: #ffffff;
+	color: #000000;
 }
 
 .sec-title-four .sub-title{
@@ -3873,7 +3873,7 @@ img.lazy-image.loaded{
 }
 
 .sec-title-four.light .sub-title{
-	color: #ffffff;
+	color: #000000;
 }
 
 .sec-title-four .lower-text{
@@ -5366,7 +5366,7 @@ img.lazy-image.loaded{
 	line-height: 1.5em;
 	font-weight: 700;
 	text-transform: uppercase;
-	color: #ffffff;
+	color: #000000;
 	letter-spacing: 3px;
 	margin-bottom: 10px;
 }
@@ -5378,7 +5378,7 @@ img.lazy-image.loaded{
 	right: 100%;
 	margin-right: 15px;
 	width: 70px;
-	border-bottom: 2px solid #ffffff;
+	border-bottom: 2px solid #000000;
 }
 
 .call-to-section .content .sub-title:after{
@@ -5388,7 +5388,7 @@ img.lazy-image.loaded{
 	left: 100%;
 	margin-left: 15px;
 	width: 70px;
-	border-bottom: 2px solid #ffffff;
+	border-bottom: 2px solid #000000;
 }
 
 .call-to-section .content .lower-text{
