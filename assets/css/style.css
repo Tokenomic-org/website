@@ -4562,7 +4562,7 @@ img.lazy-image.loaded{
 
 .gallery-item .overlay-box .overlay-inner .content h4{
 	position:relative;
-	color:#ffffff;
+	color:#222222;
 	font-size:20px;
 	font-weight:400;
 	margin-bottom:24px;
@@ -4573,7 +4573,7 @@ img.lazy-image.loaded{
 
 .gallery-item .overlay-box .overlay-inner .content h4 a{
 	position:relative;
-	color:#ffffff;
+	color:#222222;
 }
 
 .gallery-item .overlay-box .overlay-inner .content h4 a:hover{
@@ -4969,7 +4969,7 @@ img.lazy-image.loaded{
 .light-style .testimonial-block .content .info h4,
 .light-style .testimonial-block .content .info .designation,
 .light-style .testimonial-block .content .text{
-	color: #ffffff;
+	color: #222222;
 }
 
 .light-style .testimonial-block .content .text{
@@ -5984,7 +5984,7 @@ img.lazy-image.loaded{
 .feature-block .inner-box:hover .more-link a,
 .feature-block .inner-box:hover h4,
 .feature-block .inner-box:hover .text{
-	color: #ffffff;
+	color: #222222;
 }
 
 .feature-block .inner-box:hover .icon-box{
@@ -7226,7 +7226,7 @@ img.lazy-image.loaded{
 
 .about-section-three .text-block .title h4{
 	line-height: 30px;
-	color: #ffffff;
+	color: #222222;
 	text-transform: uppercase;
 	font-weight: 600;
 	font-family: 'Poppins', sans-serif;
@@ -7884,7 +7884,7 @@ img.lazy-image.loaded{
 .info-section .info-box h4{
 	font-weight: 600;
 	text-transform: uppercase;
-	color: #ffffff;
+	color: #222222;
 	font-size: 22px;
 	font-family: 'Poppins', sans-serif;
 	margin-bottom: 15px;
@@ -8757,14 +8757,14 @@ img.lazy-image.loaded{
 }
 
 .gallery-item-two .hover-box h4{
-	color: #ffffff;
+	color: #222222;
 	font-size: 22px;
 	text-transform: capitalize;
 	margin: 0;
 }
 
 .gallery-item-two .hover-box h4 a{
-	color: #ffffff;
+	color: #222222;
 }
 
 .gallery-item-two .hover-box .separator{
