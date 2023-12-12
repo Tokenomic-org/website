@@ -3621,7 +3621,7 @@ img.lazy-image.loaded{
 }
 
 .sec-title.light h2{
-	color: #ffffff;
+	color: #000000;
 }
 
 .sec-title .sub-title{
@@ -3729,7 +3729,7 @@ img.lazy-image.loaded{
 }
 
 .sec-title-two.light h2{
-	color: #ffffff;
+	color: #000000;
 }
 
 .sec-title-two .sub-title{
@@ -5352,7 +5352,7 @@ img.lazy-image.loaded{
 	font-size:78px;
 	line-height: 1.2em;
 	letter-spacing: -1px;
-	color: #ffffff;
+	color: #000000;
 	font-weight: 400;
 	text-transform: uppercase;
 	margin-bottom: 0px;
