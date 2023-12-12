@@ -5679,7 +5679,7 @@ img.lazy-image.loaded{
 
 .main-footer.style-two{
 	background: #00012c;
-	color: #abadeb;
+	color: #ffffff;
 	border-bottom: 6px solid #ff4646;
 }
 
@@ -5706,11 +5706,11 @@ img.lazy-image.loaded{
 }
 
 .main-footer.style-two .links-widget ul li a{
-	color: #abacea;
+	color: #ffffff;
 }
 
 .main-footer.style-two .news-widget .news-post .date{
-	color: #abadeb;
+	color: #ffffff;
 }
 
 .main-footer.style-two .news-widget .news-post h5{
