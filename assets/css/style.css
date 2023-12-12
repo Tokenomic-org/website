@@ -7257,10 +7257,10 @@ img.lazy-image.loaded{
 
 .skills-section{
 	position:relative;
-	background: #f9f9ff;
-    background: -webkit-linear-gradient(top,#f9f9ff,#ffffff);
-    background: -ms-linear-gradient(top,#f9f9ff,#ffffff);
-    background: -moz-linear-gradient(top,#f9f9ff,#ffffff);
+	background: #222222;
+    background: -webkit-linear-gradient(top,#f9f9ff,#222222);
+    background: -ms-linear-gradient(top,#f9f9ff,#222222);
+    background: -moz-linear-gradient(top,#f9f9ff,#222222);
 	padding: 120px 0px 80px;
 }
 
@@ -7884,7 +7884,7 @@ img.lazy-image.loaded{
 .info-section .info-box h4{
 	font-weight: 600;
 	text-transform: uppercase;
-	color: #222222;
+	color: #ffffff;
 	font-size: 22px;
 	font-family: 'Poppins', sans-serif;
 	margin-bottom: 15px;
