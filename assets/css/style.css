@@ -4182,7 +4182,7 @@ img.lazy-image.loaded{
 	width: 100%;
 	height: 100%;
 	text-align: center;
-	color: #ffffff;
+	color: #222222;
 	background: rgba(0,0,0,0.0);
 	transition: all 300ms ease;
 	-webkit-transition: all 300ms ease;
@@ -7212,7 +7212,7 @@ img.lazy-image.loaded{
 	height: 50px;
 	line-height: 50px;
 	background: #28b270;
-	color: #ffffff;
+	color: #222222;
 	font-weight: 700;
 	text-align: center;
 	border-radius: 50%;
@@ -7988,7 +7988,7 @@ img.lazy-image.loaded{
 	margin: -155px 0px 0px -130px;
 	width: 260px;
 	height: 310px;
-	background: #ffffff;
+	background: #222222;
 	border-radius: 50%;
 	z-index: 1;
 }
@@ -8002,7 +8002,7 @@ img.lazy-image.loaded{
 	width: 60px;
 	height: 60px;
 	border: 26px solid #ee2e24;
-	background: #ffffff;
+	background: #222222;
 	border-radius: 50%;
 	z-index: 2;
 }
@@ -8021,7 +8021,7 @@ img.lazy-image.loaded{
 	margin-top: -75px;
 	height: 150px;
 	width: 160px;
-	background: #ffffff;
+	background: #222222;
 	text-align: center;
 	padding: 30px 0px 10px;
 	font-size: 16px;
