@@ -20,18 +20,15 @@ logo_url: "/assets/images/logo.png"
 logo_url_2: "/assets/images/logo-two.png"
 twitter_url: "https://twitter.com/generatedart"
 facebook_url: "https://facebook.com/generatedart"
-pinterest_url: "https://pinterest.com/rubel8525"
+pinterest_url: "https://www.pinterest.ch/generatedart"
 instagram_url: "https://instagram.com/generatedart"
-youtube_url: "https://youtube.com/rubel2585"
-dribbble_url: "https://dribble.com/rubel8525"
-behance_url: "https://behance.com/rubel8525"
+youtube_url: "https://www.youtube.com/@generatedart"
 github_url: "https://github.com/rubel_hossain"
 
 copyright_text: "Copyright © 2023 GeneratedArt. All rights reserved."
 
-phone_number: "98787676564"
-email: "rubel2585@gmail.com"
-office_address: "12/A, NYC, UK"
+email: "info@generatedart.com"
+office_address: "Rue Gourgas 3, 1205 Geneva, Switzerland"
 
 plugins:
   - jekyll-feed
