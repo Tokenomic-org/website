@@ -1,20 +1,15 @@
  - text: Artists
    url: "/artists.html"
 
- - text: Collection
+ - text: Collections
    url: "#"
-   dropdown:
-    - text: "AI Art"
-      url: "#"
-    - text: "Our Team"
-      url: "/team.html"
 
  - text: About
    url: "#"
    dropdown:
     - text: "About us"
       url: "/about.html"
-    - text: "Our Team"
+    - text: "The Team"
       url: "/team.html"
     - text: "News"
       url: "#"
