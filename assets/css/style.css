@@ -7374,8 +7374,8 @@ img.lazy-image.loaded{
 .services-section-two{
 	position:relative;
 	padding: 120px 0px;
-	background: #07095b;
-	color: #b1b3f6;
+	background: #ffffff;
+	color: #222222;
 	overflow: hidden;
 }
 
@@ -7390,7 +7390,7 @@ img.lazy-image.loaded{
 .services-section-two .faded-text.style-two .f-text span{
 	text-transform: uppercase;
 	font-size: 150px;
-	color: #07095b;
+	color: #222222;
 	text-shadow: -1px -1px 0 rgba(255,255,255,0.07), 1px -1px 0 rgba(255,255,255,0.07), -1px 1px 0 rgba(255,255,255,0.07), 1px 1px 0 rgba(255,255,255,0.07);
 }
 
