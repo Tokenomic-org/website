@@ -39,12 +39,12 @@ body.home-light-style{
 }
 
 .home-light-style .services-section-two{
-	background: #ffffff;
+	background: #222222;
 }
 
 .home-light-style .services-section-two .faded-text.style-two .f-text span,
 .home-light-style .service-block-two .count span{
-	color: #ffffff;
+	color: #222222;
 }
 
 .home-light-style .team-section-two{
@@ -66,7 +66,7 @@ body.home-light-style{
 }
 
 .home-light-style .news-section-two{
-	background: #000428;
+	background: #ffffff;
 }
 
 .home-light-style .news-section-two .owl-theme .owl-nav .owl-next,
@@ -79,7 +79,7 @@ body.home-light-style{
 .home-light-style .news-section-two .owl-theme .owl-nav .owl-prev:hover{
 	background: #ff4646;
     border-color: #ff4646;
-    color: #ffffff;
+    color: #222222;
     box-shadow: 0px 5px 15px 0px rgba(255,70,70,0.30);
 }
 
