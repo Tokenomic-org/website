@@ -1,5 +1,5 @@
 <!-- Main Footer -->
-<footer class="main-footer alternate-two">
+<footer class="main-footer style-two">
     <div class="auto-container">
         <!--Widgets Section-->
         <div class="widgets-section">
@@ -19,17 +19,6 @@
                 </div>
                 <!--Column-->
                 <div class="column col-lg-4 col-md-6 col-sm-12">
-                    <div class="footer-widget about-widget">
-                        <div class="widget-content">
-                            <div class="footer-logo">
-                                <a href="{{site.url}}"><img src="{{site.logo_url}}" alt="{{site.title}}"/></a>
-                            </div>
-                            <div class="text">At GeneratedArt, we are a creative coding agency specializing in generative projects. We focus on creating art pieces using autonomous agents and other generative methods, which allows us to produce unique and dynamic artworks. Our agency is active across various platforms, showcasing the works of latest generative art projects and connecting with a community of followers and clients who share an interest in this niche field of digital art.</div>
-                        </div>
-                    </div>
-                </div>
-                <!--Column-->
-                <div class="column col-lg-4 col-md-6 col-sm-12">
                     <div class="footer-widget links-widget">
                         <h3>Company<span>.</span></h3>
                         <div class="widget-content">
@@ -44,14 +33,18 @@
                                 </div>
                             </div>
                         </div>
-                        <br/>
+                    </div>
+                </div>
+                <!--Column-->
+                <div class="column col-lg-4 col-md-6 col-sm-12">
+                    <div class="footer-widget news-widget">
                         <h3>Art<span>.</span></h3>
                         <div class="widget-content">
                             <div class="row clearfix">
                                 <div class="col-lg-5 col-md-6 col-sm-12">
                                     <ul>
                                         <li><a href="/artists">Artists</a></li>
-                                        <li><a href="#">Collections</a></li>
+                                        <li><a href="@">Collections</a></li>
                                         <li><a href="#">Apply</a></li>
                                     </ul>
                                 </div>
@@ -61,21 +54,19 @@
                 </div>
                 <!--Column-->
                 <div class="column col-lg-4 col-md-6 col-sm-12">
-                    <div class="footer-widget news-widget">
-                        <h3>News feeds<span>.</span></h3>
+                    <div class="footer-widget newsletter-widget">
+                        <h3>Newsletter<span>.</span></h3>
                         <div class="widget-content">
-                            {% for post in site.posts limit: 3 %}
-                            <div class="news-post">
-                                {% if post.post_image %}
-                                <div class="post-thumb">
-                                    <a href="{{post.url}}">
-                                        <img src="{{post.post_image}}" alt="{{post.title}}"/>
-                                    </a>
-                                </div>
-                                {% endif %}
-                                <h5><a href="{{post.url}}">{{post.title | truncatewords: 5}}</a></h5>
+                            <div class="newsletter-form">
+                                <form action="http://formsubmit.io/send/{{site.email}}">
+                                    <div class="form-group clearfix">
+                                        <span class="input-icon fa flaticon-envelope"></span>
+                                        <input type="email" name="user_email" placeholder="Enter email address" required>
+                                        <button type="submit" class="theme-btn newsletter-btn">Subscribe Now</button>
+                                    </div>
+                                </form>
                             </div>
-                            {% endfor %}
+                            <div class="get-link"><a href="#">Get every single offers</a></div>
                         </div>
                     </div>
                 </div>
