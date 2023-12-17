@@ -11,8 +11,6 @@
       url: "/about.html"
     - text: "The Team"
       url: "/team.html"
-    - text: "News"
-      url: "#"
     - text: "Contact"
       url: "contact.html"
 
