@@ -56,50 +56,47 @@
     </div>
 </div>
 <!--End Header Upper-->
-<!-- Mobile Menu  -->
-<div class="mobile-menu">
-    <div class="menu-backdrop"></div>
-    <div class="close-btn"><span class="icon flaticon-targeting-cross"></span></div>
-    <nav class="menu-box">
-        <div class="nav-logo">
-            <a href="{{site.url}}">
-                <img src="{{site.logo_url}}" alt="{{site.title}}" title="{{site.title}}">
-            </a>
-        </div>
-        <div class="menu-outer">
-            <!--Here Menu Will Come Automatically Via Javascript / Same Menu as in Header-->
-        </div>
-        <!--Social Links-->
-            <div class="social-links">
-                <ul class="clearfix">
-                    {% if site.twitter_url %}
-                    <li>
-                        <a href="{{site.twitter_url}}"><span class="fab fa-twitter"></span></a>
-                    </li>
-                    {% endif %}
-                    {% if site.facebook_url %}
-                    <li>
-                        <a href="{{site.facebook_url}}"><span class="fab fa-facebook-square"></span></a>
-                    </li>
-                    {% endif %}
-                    {% if site.pinterest_url %}
-                    <li>
-                        <a href="{{site.pinterest_url}}"><span class="fab fa-pinterest-p"></span></a>
-                    </li>
-                    {% endif %}
-                    {% if site.instagram_url %}
-                    <li>
-                        <a href="{{site.instagram_url}}"><span class="fab fa-instagram"></span></a>
-                    </li>
-                    {% endif %}
-                    {% if site.youtube_url %}
-                    <li>
-                        <a href="{{site.youtube_url}}"><span class="fab fa-youtube"></span></a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-    </nav>
+<!--Social Links-->
+<div class="social-links">
+    <ul class="clearfix">
+        {% if site.twitter_url %}
+        <li>
+            <a href="{{site.twitter_url}}"><span class="fab fa-twitter"></span></a>
+        </li>
+        {% endif %}
+        {% if site.facebook_url %}
+        <li>
+            <a href="{{site.facebook_url}}"><span class="fab fa-facebook-square"></span></a>
+        </li>
+        {% endif %}
+        {% if site.pinterest_url %}
+        <li>
+            <a href="{{site.pinterest_url}}"><span class="fab fa-pinterest-p"></span></a>
+        </li>
+        {% endif %}
+        {% if site.instagram_url %}
+        <li>
+            <a href="{{site.instagram_url}}"><span class="fab fa-instagram"></span></a>
+        </li>
+        {% endif %}
+        {% if site.youtube_url %}
+        <li>
+            <a href="{{site.youtube_url}}"><span class="fab fa-youtube"></span></a>
+        </li>
+        {% endif %}
+        {% if site.linkedin_url %}
+        <li>
+            <a href="{{site.linkedin_url}}"><span class="fab fa-linkedin-in"></span></a>
+        </li>
+        {% endif %}
+        {% if site.tiktok_url %}
+        <li>
+            <a href="{{site.tiktok_url}}"><span class="fab fa-tiktok"></span></a>
+        </li>
+        {% endif %}
+    </ul>
+</div>
+</nav>
 </div><!-- End Mobile Menu -->
 </header>
 <!-- End Main Header -->
