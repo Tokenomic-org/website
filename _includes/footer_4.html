@@ -1,4 +1,5 @@
-<footer class="main-footer alternate">
+<!-- Main Footer -->
+<footer class="main-footer alternate-two">
     <div class="auto-container">
         <!--Widgets Section-->
         <div class="widgets-section">
@@ -10,38 +11,27 @@
                             <div class="footer-logo">
                                 <a href="{{site.url}}"><img src="{{site.logo_url}}" alt="{{site.title}}"/></a>
                             </div>
-                            <div class="text">
-                                
-We are a creative coding agency specializing in generative art, using autonomous agents and other methods to create dynamic artworks. Active on various platforms, we showcase our projects and connect with a community interested in this niche of digital art.
-                            </div>
+                            <div class="text">The top four outsourcers on Everest Group’s annual ranking of the
+                                top IT service providers has remained unchanged this year, with Accenture taking
+                                the top stop for the third year in a row. However, the real headliner may be the
+                                outsourcing market itself, which grew nearly 9 percent over the previous.</div>
                         </div>
                     </div>
                 </div>
                 <!--Column-->
                 <div class="column col-lg-4 col-md-6 col-sm-12">
                     <div class="footer-widget links-widget">
-                        <h3>Company<span>.</span></h3>
+                        <h3>Pages<span>.</span></h3>
                         <div class="widget-content">
                             <div class="row clearfix">
                                 <div class="col-lg-5 col-md-6 col-sm-12">
                                     <ul>
+                                        <li><a href="{{site.url}}">Home</a></li>
                                         <li><a href="/about">About</a></li>
-                                        <li><a href="https://expo.generatedart.com/">Exhibitions</a></li>
-                                        <li><a href="https://deco.generatedart.com/">Decoration</a></li>
+                                        <li><a href="/training">Training</a></li>
+                                        <li><a href="/services">Services</a></li>
+                                        <li><a href="/blog">Blog</a></li>
                                         <li><a href="/contact">Contact</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <br/>
-                        <h3>Art<span>.</span></h3>
-                        <div class="widget-content">
-                            <div class="row clearfix">
-                                <div class="col-lg-5 col-md-6 col-sm-12">
-                                    <ul>
-                                        <li><a href="/artists">Artists</a></li>
-                                        <li><a href="#">Collections</a></li>
-                                        <li><a href="#">Apply</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -50,19 +40,21 @@ We are a creative coding agency specializing in generative art, using autonomous
                 </div>
                 <!--Column-->
                 <div class="column col-lg-4 col-md-6 col-sm-12">
-                    <div class="footer-widget newsletter-widget">
-                        <h3>Newsletter<span>.</span></h3>
+                    <div class="footer-widget news-widget">
+                        <h3>News feeds<span>.</span></h3>
                         <div class="widget-content">
-                            <div class="newsletter-form">
-                                <form action="http://eepurl.com/inde32">
-                                    <div class="form-group clearfix">
-                                        <span class="input-icon fa flaticon-envelope"></span>
-                                        <input type="email" name="user_email" placeholder="Enter email address" required>
-                                        <button type="submit" class="theme-btn newsletter-btn">Subscribe Now</button>
-                                    </div>
-                                </form>
+                            {% for post in site.posts limit: 3 %}
+                            <div class="news-post">
+                                {% if post.post_image %}
+                                <div class="post-thumb">
+                                    <a href="{{post.url}}">
+                                        <img src="{{post.post_image}}" alt="{{post.title}}"/>
+                                    </a>
+                                </div>
+                                {% endif %}
+                                <h5><a href="{{post.url}}">{{post.title | truncatewords: 5}}</a></h5>
                             </div>
-                            <div class="get-link"><a href="#">Get every single offers</a></div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -105,32 +97,14 @@ We are a creative coding agency specializing in generative art, using autonomous
                         <div class="icon"><span class="flaticon-share"></span></div>
                         <span class="info-title">social connect</span>
                         <div class="social-links">
-                        	{% if site.facebook_url %}
+                            {% if site.facebook_url %}
                              <a href="{{site.facebook_url}}">fb</a>, 
                             {% endif %}
                             {% if site.twitter_url %}
                             <a href="{{site.twitter_url}}">tw</a>, 
                             {% endif %}
-                            {% if site.behance_url %}
-                            <a href="{{site.behance_url}}">be</a>, 
-                            {% endif %}
-                            {% if site.dribbble_url %}
-                            <a href="{{site.dribble_url}}">dr</a>,
-                            {% endif %}
                             {% if site.youtube_url %}
-                            <a href="{{site.youtube_url}}">yu</a>,
-                            {% endif %}
-                            {% if site.instagram_url %}
-                            <a href="{{site.instagram_url}}">ig</a>,
-                            {% endif %}
-                            {% if site.instagram_url %}
-                            <a href="{{site.linkedin_url}}">in</a>,
-                            {% endif %}
-                            {% if site.instagram_url %}
-                            <a href="{{site.tiktok_url}}">tk</a>,
-                            {% endif %}
-                            {% if site.instagram_url %}
-                            <a href="{{site.tumblr_url}}">tb</a>
+                            <a href="{{site.youtube_url}}">yu</a>
                             {% endif %}
                         </div>
                     </div>
