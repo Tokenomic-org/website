@@ -1,24 +1,17 @@
- - text: Artists
-   url: "/artists.html"
-
- - text: Collections
-   url: "#"
+ - text: Home
+   url: "/"
 
  - text: About
-   url: "#"
-   dropdown:
-    - text: "About us"
-      url: "/about.html"
-    - text: "The Team"
-      url: "/team.html"
-    - text: "Contact"
-      url: "contact.html"
+   url: "/about"
 
+ - text: Training
+   url: "/training"
 
  - text: Services
-   url: "#"
-   dropdown:
-    - text: "Exhibitions"
-      url: "https://expo.generatedart.com/"
-    - text: "Decoration"
-      url: "https://deco.generatedart.com/"
+   url: "/services"
+
+ - text: "News"
+   url: "/blog.html"
+
+ - text: "Contact"
+   url: "contact"
