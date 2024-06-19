@@ -3,15 +3,23 @@
 
  - text: About
    url: "/about"
-
- - text: Training
-   url: "/training"
+   dropdown:
+    - text: "Contact"
+      url: "contact"
 
  - text: Services
    url: "/services"
 
+ - text: Training
+   url: "/training"
+
+ - text: Learn
+   url: "#"
+   dropdown:
  - text: "News"
    url: "/blog.html"
+ - text: "Research"
+   url: "/research.html"
+ - text: "Glossary"
+   url: "/glossary.html"
 
- - text: "Contact"
-   url: "contact"
