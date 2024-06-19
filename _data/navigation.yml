@@ -17,7 +17,7 @@
    url: "#"
    dropdown:
     - text: "News"
-   url: "/blog.html"
+      url: "/blog.html"
     - text: "Research"
       url: "/research.html"
     - text: "Glossary"
