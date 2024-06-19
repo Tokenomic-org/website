@@ -16,10 +16,10 @@
  - text: Learn
    url: "#"
    dropdown:
- - text: "News"
+    - text: "News"
    url: "/blog.html"
- - text: "Research"
-   url: "/research.html"
- - text: "Glossary"
-   url: "/glossary.html"
+    - text: "Research"
+      url: "/research.html"
+    - text: "Glossary"
+      url: "/glossary.html"
 
