@@ -18,8 +18,10 @@
    dropdown:
     - text: "News"
       url: "/blog.html"
+    - text: "Authors"
+      url: "https://learn.tokenomic.org/authors"
     - text: "Research"
-      url: "https://learn.tokenomic.org/research.html"
+      url: "https://learn.tokenomic.org/tags/?tag=research"
     - text: "Glossary"
-      url: "https://learn.tokenomic.org/glossary.html"
+      url: "https://learn.tokenomic.org/glossary"
 
