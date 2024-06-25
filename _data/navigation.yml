@@ -14,12 +14,12 @@
    url: "/training"
 
  - text: Learn
-   url: "#"
+   url: "https://learn.tokenomic.org"
    dropdown:
     - text: "News"
       url: "/blog.html"
     - text: "Research"
-      url: "/research.html"
+      url: "https://learn.tokenomic.org/research.html"
     - text: "Glossary"
-      url: "/glossary.html"
+      url: "https://learn.tokenomic.org/glossary.html"
 
