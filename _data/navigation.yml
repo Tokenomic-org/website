@@ -20,8 +20,8 @@
       url: "/blog.html"
     - text: "Authors"
       url: "https://learn.tokenomic.org/authors"
-    - text: "Research"
-      url: "https://learn.tokenomic.org/tags/?tag=research"
+    - text: "Latest"
+      url: "https://learn.tokenomic.org/latest"
     - text: "Glossary"
       url: "https://learn.tokenomic.org/glossary"
 
