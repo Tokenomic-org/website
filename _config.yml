@@ -14,8 +14,8 @@ permalink: /:title
 
 # General Settings
 perloader: true
-logo_url: "/assets/images/logo.png"
-logo_url_2: "/assets/images/logo-two.png"
+logo_url: "/assets/images/logo.svg"
+logo_url_2: "/assets/images/logo-two.svg"
 twitter_url: "https://twitter.com/defitokenomic"
 facebook_url: "https://facebook.com/defitokenomic"
 instagram_url: "https://instagram.com/defitokenomic"
