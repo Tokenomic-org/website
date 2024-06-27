@@ -96,14 +96,23 @@
                         <div class="icon"><span class="flaticon-share"></span></div>
                         <span class="info-title">social connect</span>
                         <div class="social-links">
-                        	{% if site.facebook_url %}
-                             <a href="{{site.facebook_url}}">fb</a>, 
+                            {% if site.facebook_url %}
+                            <a href="{{site.facebook_url}}">fb</a>, 
                             {% endif %}
                             {% if site.twitter_url %}
                             <a href="{{site.twitter_url}}">tw</a>, 
                             {% endif %}
                             {% if site.youtube_url %}
+                            <a href="{{site.instagram_url}}">ig</a>
+                            {% endif %}
+                            {% if site.youtube_url %}
                             <a href="{{site.youtube_url}}">yu</a>
+                            {% endif %}
+                            {% if site.youtube_url %}
+                            <a href="{{site.reddit_url}}">re</a>
+                            {% endif %}
+                            {% if site.youtube_url %}
+                            <a href="{{site.linkedin_url}}">in</a>
                             {% endif %}
                         </div>
                     </div>
