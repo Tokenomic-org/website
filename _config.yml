@@ -18,19 +18,14 @@ permalink: /:title
 perloader: true
 logo_url: "/assets/images/logo.png"
 logo_url_2: "/assets/images/logo-two.png"
-twitter_url: "https://twitter.com/generatedart"
-facebook_url: "https://facebook.com/generatedart"
-pinterest_url: "https://www.pinterest.ch/generatedart"
-instagram_url: "https://instagram.com/generatedart"
-youtube_url: "https://www.youtube.com/@generatedart"
-github_url: "https://github.com/rubel_hossain"
-linkedin_url: "https://www.linkedin.com/company/generatedart"
-tiktok_url: "http://tiktok.com/@generatedart"
-tumblr_url: "https://www.tumblr.com/generatedart"
+twitter_url: "https://twitter.com/defitokenomic"
+facebook_url: "https://facebook.com/defitokenomic"
+instagram_url: "https://instagram.com/defitokenomic"
+linkedin_url: "https://www.linkedin.com/company/defitokenomic"
 
-copyright_text: "Copyright © 2024 GeneratedArt. All rights reserved."
+copyright_text: "Copyright © 2024 Tokenomic.org. All rights reserved."
 
-email: "info@generatedart.com"
+email: "info@tokenomic.org"
 office_address: "Rue Gourgas 3, 1205 Geneva, Switzerland"
 
 plugins:
