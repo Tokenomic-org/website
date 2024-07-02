@@ -2571,7 +2571,7 @@ img.lazy-image.loaded{
 
 .hidden-bar .logo img{
 	display:inline-block;
-	max-width:100%;	
+	max-width:200px;	
 }
 
 .hidden-bar .content-box{
