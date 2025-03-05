@@ -24,7 +24,7 @@ linkedin_url: "https://www.linkedin.com/company/defitokenomic"
 copyright_text: "Copyright © 2024 Tokenomic.org. All rights reserved."
 
 email: "info@tokenomic.org"
-office_address: "Rue Gourgas 3, 1205 Geneva, Switzerland"
+office_address: "Rue Robert-Céard 6, 1204 Geneva, Switzerland"
 
 plugins:
   - jekyll-feed
