@@ -17,7 +17,7 @@
    url: "https://learn.tokenomic.org"
    dropdown:
     - text: "News"
-      url: "/blog.html"
+      url: "/news.html"
     - text: "Authors"
       url: "https://learn.tokenomic.org/authors"
     - text: "Latest"
