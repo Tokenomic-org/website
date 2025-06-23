@@ -7,6 +7,9 @@
     - text: "Contact"
       url: "contact"
 
+ - text: Events
+   url: "https://lu.ma/tokenomic"
+
  - text: Services
    url: "/services"
 
