@@ -1,0 +1,64 @@
+
+title: "Tokenomic"
+description: >-
+  Institutional DeFi education and intelligence platform. Structured courses,
+  on-chain analytics, and verifiable credentials for funds, banks, DAOs, and
+  corporate teams entering decentralized finance.
+baseurl: ""
+url: "https://tokenomic.org"
+
+
+# Build settings
+theme: minima
+
+permalink: /:title
+
+
+# General Settings
+perloader: true
+logo_url: "/assets/images/logo.png"
+logo_url_2: "/assets/images/logo-two.png"
+twitter_url: "https://twitter.com/tknmic"
+facebook_url: "https://facebook.com/tknmic"
+pinterest_url: ""
+instagram_url: "https://instagram.com/tknmic"
+youtube_url: "https://www.youtube.com/@tknmic"
+linkedin_url: ""
+tiktok_url: ""
+tumblr_url: ""
+telegram_url: ""
+
+copyright_text: "Copyright &copy; 2024 Tokenomic.org. All rights reserved."
+
+email: "info@tokenomic.org"
+office_address: "Rue Robert-Céard 6, 1204 Geneva, Switzerland"
+
+plugins:
+  - jekyll-feed
+  - jekyll-paginate
+  - jekyll-seo-tag
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/
+  - website/
+  - attached_assets/
+  - .local/
+  - replit.md
+  - "*.md"
+  - "!README.md"
+
+
+collections:
+  home_one_services:
+    output: true
+
+paginate: 6
+paginate_path: "/page:num/"
+
+feed:
+  collections:
+    posts:
+      path: "/index.xml"

@@ -1,0 +1,30 @@
+ - text: Home
+   url: "/"
+
+ - text: About
+   url: "/about/"
+   dropdown:
+    - text: "Contact"
+      url: "/contact/"
+
+ - text: Events
+   url: "https://lu.ma/tokenomic"
+
+ - text: Services
+   url: "/services/"
+
+ - text: Training
+   url: "/training/"
+
+ - text: Learn
+   url: "/learn/"
+   dropdown:
+    - text: "Articles"
+      url: "/learn/"
+    - text: "Authors"
+      url: "/learn-authors/"
+    - text: "Glossary"
+      url: "/learn-glossary/"
+
+ - text: Pricing
+   url: "/pricing/"

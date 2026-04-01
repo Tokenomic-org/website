@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Pricing - Tokenomic</title>
+        <link href="/assets/css/bootstrap.css" rel="stylesheet" />
+        <link href="/assets/css/style.css" rel="stylesheet" />
+        <link href="/assets/css/responsive.css" rel="stylesheet" />
+        <link rel="shortcut icon" href="/assets/images/favicon.png" type="image/x-icon" />
+        <link rel="icon" href="/assets/images/favicon.png" type="image/x-icon" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=2.0,minimum-scale=1.0" />
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-JXP3M58ZJZ');
+        </script>
+        <style>
+            .pricing-card {
+                background: #fff;
+                border-radius: 16px;
+                padding: 40px 32px;
+                box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+                text-align: center;
+                position: relative;
+                transition: transform 0.3s, box-shadow 0.3s;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            .pricing-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            }
+            .pricing-card.featured {
+                border: 2px solid #ff6000;
+                transform: scale(1.02);
+            }
+            .pricing-card.featured:hover {
+                transform: scale(1.02) translateY(-4px);
+            }
+            .pricing-badge {
+                position: absolute;
+                top: -12px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #ff6000;
+                color: #fff;
+                padding: 4px 20px;
+                border-radius: 20px;
+                font-size: 0.75rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .pricing-name {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #001f29;
+                margin-bottom: 8px;
+            }
+            .pricing-desc {
+                color: #5a8299;
+                font-size: 0.9rem;
+                margin-bottom: 24px;
+                min-height: 44px;
+            }
+            .pricing-amount {
+                font-size: 3rem;
+                font-weight: 800;
+                color: #001f29;
+                line-height: 1;
+                margin-bottom: 4px;
+            }
+            .pricing-amount .currency {
+                font-size: 1.25rem;
+                vertical-align: super;
+                color: #ff6000;
+            }
+            .pricing-period {
+                color: #5a8299;
+                font-size: 0.85rem;
+                margin-bottom: 24px;
+            }
+            .pricing-features {
+                list-style: none;
+                padding: 0;
+                margin: 0 0 32px 0;
+                text-align: left;
+                flex: 1;
+            }
+            .pricing-features li {
+                padding: 8px 0;
+                color: #001f29;
+                font-size: 0.9rem;
+                border-bottom: 1px solid #f0f2f5;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .pricing-features li:last-child { border-bottom: none; }
+            .pricing-features .check {
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.7rem;
+                flex-shrink: 0;
+            }
+            .pricing-features .check.yes { background: #e8f5e9; color: #2e7d32; }
+            .pricing-features .check.no { background: #f5f5f5; color: #bbb; }
+            .pricing-cta {
+                display: block;
+                width: 100%;
+                padding: 14px 24px;
+                border-radius: 8px;
+                font-size: 1rem;
+                font-weight: 600;
+                text-decoration: none;
+                text-align: center;
+                transition: all 0.2s;
+                cursor: pointer;
+                border: none;
+            }
+            .pricing-cta-primary {
+                background: #ff6000;
+                color: #fff;
+            }
+            .pricing-cta-primary:hover {
+                background: #e55500;
+                color: #fff;
+                text-decoration: none;
+            }
+            .pricing-cta-outline {
+                background: transparent;
+                border: 2px solid #001f29;
+                color: #001f29;
+            }
+            .pricing-cta-outline:hover {
+                border-color: #ff6000;
+                color: #ff6000;
+                text-decoration: none;
+            }
+            .pay-note {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                margin-top: 12px;
+                font-size: 0.8rem;
+                color: #5a8299;
+            }
+            .faq-item {
+                border: 1px solid #e8ecef;
+                border-radius: 12px;
+                padding: 20px 24px;
+                margin-bottom: 12px;
+                cursor: pointer;
+                transition: border-color 0.2s;
+            }
+            .faq-item:hover { border-color: #ff6000; }
+            .faq-q {
+                font-weight: 600;
+                color: #001f29;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .faq-a {
+                color: #5a8299;
+                font-size: 0.9rem;
+                margin-top: 12px;
+                display: none;
+            }
+            .faq-item.open .faq-a { display: block; }
+            .faq-item.open .faq-toggle { transform: rotate(45deg); }
+            .faq-toggle {
+                font-size: 1.25rem;
+                color: #ff6000;
+                transition: transform 0.2s;
+                font-weight: 300;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="page-wrapper">
+
+            <header class="main-header header-style-two">
+    <div class="header-upper">
+        <div class="auto-container clearfix">
+            <div class="inner clearfix tkn-header-flex">
+                <div class="logo-box">
+                    <div class="logo">
+                        <a href="https://tokenomic.org" title="Tokenomic">
+                            <img src="/assets/images/logo.png" alt="Tokenomic" title="Tokenomic" />
+                        </a>
+                    </div>
+                </div>
+                <div class="nav-content clearfix">
+                    <div class="nav-outer clearfix">
+                        <div class="mobile-nav-toggler"><span class="icon flaticon-menu"></span></div>
+                        <nav class="main-menu navbar-expand-md navbar-light">
+                            <div class="collapse navbar-collapse show clearfix">
+                                <ul class="navigation clearfix">
+                                    <li><a href="/">Home</a></li>
+                                    <li class="dropdown">
+                                        <a href="/about/">About</a>
+                                        <ul>
+                                             <li><a href="/contact/">Contact</a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a href="https://lu.ma/tokenomic">Events</a></li>
+                                    <li><a href="/services/">Services</a></li>
+                                    <li><a href="/training/">Training</a></li>
+                                    <li class="dropdown">
+                                        <a href="/learn/">Learn</a>
+                                        <ul>
+                                             <li><a href="/learn/">Articles</a></li>
+                                             <li><a href="/learn-authors/">Authors</a></li>
+                                             <li><a href="/learn-glossary/">Glossary</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="current"><a href="/pricing/">Pricing</a></li>
+                                </ul>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+                <div class="tkn-login-box">
+                    <a href="#" class="theme-btn btn-style-three wallet-login-btn" onclick="TokenomicWallet.connect(); return false;">
+                        <span class="btn-title" style="padding:8px 25px;font-size:12px;letter-spacing:3px;">Login</span>
+                    </a>
+                    <a href="/dashboard/" class="theme-btn btn-style-three wallet-logged-in-btn" style="display:none;">
+                        <span class="btn-title wallet-addr-text" style="padding:8px 25px;font-size:12px;letter-spacing:3px;">Dashboard</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mobile-menu">
+        <div class="menu-backdrop"></div>
+        <div class="close-btn"><span class="icon flaticon-targeting-cross"></span></div>
+        <nav class="menu-box">
+            <div class="nav-logo">
+                <a href="https://tokenomic.org">
+                    <img src="/assets/images/logo.png" alt="Tokenomic" title="Tokenomic" width="200px" />
+                </a>
+            </div>
+            <div class="menu-outer"></div>
+            <div class="mobile-login-box" style="padding:20px 30px;">
+                <a href="#" class="theme-btn btn-style-one wallet-login-btn" onclick="TokenomicWallet.connect(); return false;" style="display:block;text-align:center;padding:12px 20px;">
+                    <span class="btn-title">Login with Wallet</span>
+                </a>
+                <a href="/dashboard/" class="theme-btn btn-style-one wallet-logged-in-btn" style="display:none;text-align:center;padding:12px 20px;">
+                    <span class="btn-title wallet-addr-text">Dashboard</span>
+                </a>
+            </div>
+            <div class="social-links">
+                <ul class="clearfix">
+                    <li><a href="https://twitter.com/tknmic"><span class="fab fa-twitter"></span></a></li>
+                    <li><a href="https://facebook.com/tknmic"><span class="fab fa-facebook-square"></span></a></li>
+                    <li><a href="https://instagram.com/tknmic"><span class="fab fa-instagram"></span></a></li>
+                    <li><a href="https://www.youtube.com/@tknmic"><span class="fab fa-youtube"></span></a></li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<section class="hidden-bar right-align">
+    <div class="hidden-bar-closer">
+        <button><span class="flaticon-letter-x"></span></button>
+    </div>
+    <div class="hidden-bar-wrapper">
+        <div class="logo">
+            <a href="/"><img src="/assets/images/logo.png" alt="" /></a>
+        </div>
+        <div class="content-box">
+            <h3>Get In Touch</h3>
+            <div class="text">Tokenomic provides concise, tailored courses, consultations, and market analysis for DeFi integration.</div>
+            <a href="/contact/" class="theme-btn btn-style-two"><div class="btn-title">Consultation</div></a>
+        </div>
+        <div class="contact-info">
+            <h2>Contact Info</h2>
+            <ul class="list-style-two">
+                <li><span class="icon fa fa-map-marker-alt"></span>Rue Robert-Céard 6, 1204 Geneva, Switzerland</li>
+                <li><span class="icon fa fa-envelope-open"></span> <a href="mailto:info@tokenomic.org">info@tokenomic.org</a></li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="page-banner">
+<div class="image-layer" style="background-image:url(/assets/images/background/banner-image-1.jpg);"></div>
+    <div class="banner-inner">
+        <div class="auto-container">
+            <div class="inner-container clearfix">
+                <h1>Pricing</h1>
+                <div class="page-nav">
+                    <ul class="bread-crumb clearfix">
+                        <li><a href="https://tokenomic.org">Home</a></li>
+                        <li class="active">Pricing</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section style="padding:80px 0;background:#f5f7fa;">
+    <div class="auto-container">
+        <div style="text-align:center;margin-bottom:60px;">
+            <p style="color:#ff6000;font-weight:600;text-transform:uppercase;letter-spacing:2px;font-size:0.85rem;margin-bottom:8px;">Transparent Pricing</p>
+            <h2 style="color:#001f29;font-size:2.5rem;margin-bottom:16px;">Choose Your Learning Path</h2>
+            <p style="color:#5a8299;max-width:600px;margin:0 auto;font-size:1.05rem;">All payments in USDC on Base L2. Low gas fees, instant settlement, full transparency. No hidden charges.</p>
+        </div>
+
+        <div class="row clearfix" style="display:flex;flex-wrap:wrap;justify-content:center;">
+            <div class="col-lg-4 col-md-6 col-sm-12" style="margin-bottom:30px;display:flex;">
+                <div class="pricing-card">
+                    <div class="pricing-name">Explorer</div>
+                    <div class="pricing-desc">Get started with DeFi fundamentals at no cost.</div>
+                    <div class="pricing-amount"><span class="currency">$</span>0</div>
+                    <div class="pricing-period">Free forever</div>
+                    <ul class="pricing-features">
+                        <li><span class="check yes">&#10003;</span> Introduction to DeFi course</li>
+                        <li><span class="check yes">&#10003;</span> Community chat access</li>
+                        <li><span class="check yes">&#10003;</span> Learning articles &amp; glossary</li>
+                        <li><span class="check yes">&#10003;</span> Leaderboard &amp; XP tracking</li>
+                        <li><span class="check no">&mdash;</span> <span style="color:#aaa;">Advanced courses</span></li>
+                        <li><span class="check no">&mdash;</span> <span style="color:#aaa;">1-on-1 consultations</span></li>
+                        <li><span class="check no">&mdash;</span> <span style="color:#aaa;">Certification NFTs</span></li>
+                        <li><span class="check no">&mdash;</span> <span style="color:#aaa;">Revenue analytics</span></li>
+                    </ul>
+                    <a href="/dashboard/" class="pricing-cta pricing-cta-outline">Get Started Free</a>
+                    <div class="pay-note">
+                        <span>Connect wallet to begin</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-12" style="margin-bottom:30px;display:flex;">
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">Most Popular</div>
+                    <div class="pricing-name">Professional</div>
+                    <div class="pricing-desc">Full access to all courses and certifications.</div>
+                    <div class="pricing-amount"><span class="currency">$</span>299</div>
+                    <div class="pricing-period">USDC / year</div>
+                    <ul class="pricing-features">
+                        <li><span class="check yes">&#10003;</span> All Explorer features</li>
+                        <li><span class="check yes">&#10003;</span> All published courses</li>
+                        <li><span class="check yes">&#10003;</span> On-chain certification NFTs</li>
+                        <li><span class="check yes">&#10003;</span> Private study groups</li>
+                        <li><span class="check yes">&#10003;</span> Course progression tracking</li>
+                        <li><span class="check yes">&#10003;</span> Event ticket discounts (20%)</li>
+                        <li><span class="check no">&mdash;</span> <span style="color:#aaa;">1-on-1 consultations</span></li>
+                        <li><span class="check no">&mdash;</span> <span style="color:#aaa;">Revenue dashboard</span></li>
+                    </ul>
+                    <a href="/dashboard/" class="pricing-cta pricing-cta-primary">Subscribe with USDC</a>
+                    <div class="pay-note">
+                        <span>Pay via Helio on Base L2</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-12" style="margin-bottom:30px;display:flex;">
+                <div class="pricing-card">
+                    <div class="pricing-name">Institution</div>
+                    <div class="pricing-desc">For teams, universities, and enterprise onboarding.</div>
+                    <div class="pricing-amount" style="font-size:2rem;">Custom</div>
+                    <div class="pricing-period">Tailored to your organization</div>
+                    <ul class="pricing-features">
+                        <li><span class="check yes">&#10003;</span> All Professional features</li>
+                        <li><span class="check yes">&#10003;</span> Unlimited team seats</li>
+                        <li><span class="check yes">&#10003;</span> 1-on-1 expert consultations</li>
+                        <li><span class="check yes">&#10003;</span> Custom course creation</li>
+                        <li><span class="check yes">&#10003;</span> Revenue dashboard &amp; 0xSplits</li>
+                        <li><span class="check yes">&#10003;</span> White-label training portal</li>
+                        <li><span class="check yes">&#10003;</span> Dedicated account manager</li>
+                        <li><span class="check yes">&#10003;</span> Priority support</li>
+                    </ul>
+                    <a href="/contact/" class="pricing-cta pricing-cta-outline">Contact Sales</a>
+                    <div class="pay-note">
+                        <span>Invoice or USDC payment</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section style="padding:60px 0;background:#001f29;">
+    <div class="auto-container">
+        <div style="text-align:center;margin-bottom:40px;">
+            <h3 style="color:#fff;font-size:1.75rem;margin-bottom:8px;">Individual Course Pricing</h3>
+            <p style="color:#5a8299;">Prefer to purchase courses individually? No subscription required.</p>
+        </div>
+        <div class="row clearfix" style="display:flex;flex-wrap:wrap;justify-content:center;">
+            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:20px;">
+                <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:24px;text-align:center;border:1px solid rgba(255,255,255,0.08);">
+                    <span class="flaticon-notebook" style="font-size:2rem;color:#ff6000;display:block;margin-bottom:12px;"></span>
+                    <h5 style="color:#fff;margin-bottom:4px;">Beginner</h5>
+                    <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;">Foundational DeFi &amp; blockchain courses</p>
+                    <p style="font-size:1.5rem;font-weight:800;color:#00a651;">Free &ndash; $50</p>
+                    <small style="color:#5a8299;">USDC per course</small>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:20px;">
+                <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:24px;text-align:center;border:1px solid rgba(255,255,255,0.08);">
+                    <span class="flaticon-notebook" style="font-size:2rem;color:#ff8f00;display:block;margin-bottom:12px;"></span>
+                    <h5 style="color:#fff;margin-bottom:4px;">Intermediate</h5>
+                    <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;">Security, governance &amp; protocol design</p>
+                    <p style="font-size:1.5rem;font-weight:800;color:#00a651;">$75 &ndash; $100</p>
+                    <small style="color:#5a8299;">USDC per course</small>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:20px;">
+                <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:24px;text-align:center;border:1px solid rgba(255,255,255,0.08);">
+                    <span class="flaticon-notebook" style="font-size:2rem;color:#d32f2f;display:block;margin-bottom:12px;"></span>
+                    <h5 style="color:#fff;margin-bottom:4px;">Advanced</h5>
+                    <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;">Yield strategies &amp; tokenomics mastery</p>
+                    <p style="font-size:1.5rem;font-weight:800;color:#00a651;">$150 &ndash; $200</p>
+                    <small style="color:#5a8299;">USDC per course</small>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:20px;">
+                <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:24px;text-align:center;border:1px solid rgba(255,255,255,0.08);">
+                    <span class="flaticon-calendar" style="font-size:2rem;color:#1976d2;display:block;margin-bottom:12px;"></span>
+                    <h5 style="color:#fff;margin-bottom:4px;">Consultations</h5>
+                    <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;">1-on-1 expert sessions</p>
+                    <p style="font-size:1.5rem;font-weight:800;color:#00a651;">$75 &ndash; $250</p>
+                    <small style="color:#5a8299;">USDC / 30 min</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section style="padding:80px 0;background:#fff;">
+    <div class="auto-container">
+        <div class="row clearfix">
+            <div class="col-lg-5 col-md-12">
+                <p style="color:#ff6000;font-weight:600;text-transform:uppercase;letter-spacing:2px;font-size:0.85rem;margin-bottom:8px;">FAQ</p>
+                <h3 style="color:#001f29;font-size:2rem;margin-bottom:16px;">Frequently Asked Questions</h3>
+                <p style="color:#5a8299;margin-bottom:24px;">Everything you need to know about our pricing, payments, and plans.</p>
+                <div style="padding:24px;background:#f5f7fa;border-radius:12px;">
+                    <h5 style="color:#001f29;margin-bottom:8px;">Revenue Split</h5>
+                    <p style="color:#5a8299;font-size:0.9rem;margin-bottom:0;">All course payments are transparently split via 0xSplits on Base chain:</p>
+                    <div style="display:flex;gap:16px;margin-top:12px;">
+                        <div style="text-align:center;"><strong style="font-size:1.25rem;color:#00a651;">90%</strong><br><small style="color:#5a8299;">Educator</small></div>
+                        <div style="text-align:center;"><strong style="font-size:1.25rem;color:#ff6000;">5%</strong><br><small style="color:#5a8299;">Treasury</small></div>
+                        <div style="text-align:center;"><strong style="font-size:1.25rem;color:#1976d2;">5%</strong><br><small style="color:#5a8299;">Rewards</small></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7 col-md-12">
+                <div class="faq-item" onclick="this.classList.toggle('open')">
+                    <div class="faq-q"><span>How do I pay with USDC?</span><span class="faq-toggle">+</span></div>
+                    <div class="faq-a">Connect your Web3 wallet (MetaMask or Rabby) and ensure you have USDC on the Base L2 network. Payments are processed through Helio with near-zero gas fees. You can also bridge USDC from Ethereum mainnet to Base using the official Base Bridge.</div>
+                </div>
+                <div class="faq-item" onclick="this.classList.toggle('open')">
+                    <div class="faq-q"><span>Can I get a refund?</span><span class="faq-toggle">+</span></div>
+                    <div class="faq-a">Since payments are processed on-chain, refunds are handled case-by-case. If you're unsatisfied within the first 7 days and have completed less than 20% of the course, contact us at info@tokenomic.org for a full refund.</div>
+                </div>
+                <div class="faq-item" onclick="this.classList.toggle('open')">
+                    <div class="faq-q"><span>What are certification NFTs?</span><span class="faq-toggle">+</span></div>
+                    <div class="faq-a">Upon completing a course, Professional and Institution members receive a non-transferable (soulbound) NFT on Base chain that verifies your completion. This certificate is permanently linked to your wallet and can be verified by employers or institutions.</div>
+                </div>
+                <div class="faq-item" onclick="this.classList.toggle('open')">
+                    <div class="faq-q"><span>Do you offer team discounts?</span><span class="faq-toggle">+</span></div>
+                    <div class="faq-a">Yes. The Institution plan includes volume pricing for teams of 10+. Contact our sales team for a custom quote tailored to your organization's needs, including white-label options.</div>
+                </div>
+                <div class="faq-item" onclick="this.classList.toggle('open')">
+                    <div class="faq-q"><span>Why USDC on Base instead of traditional payment?</span><span class="faq-toggle">+</span></div>
+                    <div class="faq-a">Base L2 offers transaction fees under $0.01, instant settlement, and full on-chain transparency. Using USDC means stable pricing without crypto volatility. All revenue splits are automated via 0xSplits smart contracts, ensuring fair and transparent distribution.</div>
+                </div>
+                <div class="faq-item" onclick="this.classList.toggle('open')">
+                    <div class="faq-q"><span>Can I switch plans later?</span><span class="faq-toggle">+</span></div>
+                    <div class="faq-a">Absolutely. You can upgrade from Explorer to Professional at any time. Your progress, XP, and community memberships carry over. When upgrading mid-year, you only pay the prorated difference.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section style="padding:60px 0;background:#ff6000;text-align:center;">
+    <div class="auto-container">
+        <h3 style="color:#fff;font-size:2rem;margin-bottom:12px;">Ready to Start Your DeFi Education?</h3>
+        <p style="color:rgba(255,255,255,0.85);margin-bottom:24px;max-width:500px;margin-left:auto;margin-right:auto;">Connect your wallet and begin learning today. No credit card required.</p>
+        <a href="/dashboard/" class="theme-btn btn-style-one" style="background:#001f29;border-color:#001f29;padding:14px 40px;font-size:1rem;border-radius:8px;">Launch Dashboard</a>
+    </div>
+</section>
+
+<footer class="main-footer">
+    <div class="auto-container">
+        <div class="widgets-section">
+            <div class="row clearfix">
+                <div class="column col-lg-4 col-md-6 col-sm-12">
+                    <div class="footer-widget about-widget">
+                        <div class="widget-content">
+                            <div class="footer-logo">
+                                <a href="https://tokenomic.org"><img src="/assets/images/logo.png" alt="Tokenomic"/></a>
+                            </div>
+                            <div class="text">
+                                We are a leading provider of DeFi education and consulting services, dedicated to empowering institutions with the knowledge and tools needed to navigate and succeed in the decentralized finance landscape.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column col-lg-4 col-md-6 col-sm-12">
+                    <div class="footer-widget links-widget">
+                        <h3>Pages<span>.</span></h3>
+                        <div class="widget-content">
+                            <div class="row clearfix">
+                                <div class="col-lg-5 col-md-6 col-sm-12">
+                                    <ul>
+                                        <li><a href="https://tokenomic.org">Home</a></li>
+                                        <li><a href="/about">About</a></li>
+                                        <li><a href="/services">Services</a></li>
+                                        <li><a href="/training">Training</a></li>
+                                        <li><a href="/learn/">Learn</a></li>
+                                        <li><a href="/pricing/">Pricing</a></li>
+                                        <li><a href="/contact">Contact</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column col-lg-4 col-md-6 col-sm-12">
+                    <div class="footer-widget news-widget">
+                        <h3>Legal<span>.</span></h3>
+                        <div class="widget-content">
+                            <ul>
+                                <li><a href="/privacy/">Privacy Policy</a></li>
+                                <li><a href="/terms/">Terms of Service</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <div class="auto-container">
+            <div class="outer-table clearfix">
+                <div class="info-block">
+                    <div class="inner">
+                        <div class="icon"><span class="flaticon-envelope"></span></div>
+                        <span class="info-title">email address</span>
+                        <div class="email"><a href="mailto:info@tokenomic.org">info@tokenomic.org</a></div>
+                    </div>
+                </div>
+                <div class="info-block">
+                    <div class="inner">
+                        <div class="icon"><span class="flaticon-placeholder"></span></div>
+                        <span class="info-title">office address</span>
+                        <div class="address"><a href="#">Rue Robert-Céard 6, 1204 Geneva, Switzerland</a></div>
+                    </div>
+                </div>
+                <div class="info-block">
+                    <div class="inner">
+                        <div class="icon"><span class="flaticon-share"></span></div>
+                        <span class="info-title">social connect</span>
+                        <div class="social-links">
+                            <a href="https://facebook.com/tknmic">fb</a>,
+                            <a href="https://twitter.com/tknmic">tw</a>,
+                            <a href="https://instagram.com/tknmic">ig</a>,
+                            <a href="https://www.youtube.com/@tknmic">yu</a>,
+                            <a href="https://www.linkedin.com/in/tknmic/">in</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<div class="footer-bottom-two">
+    <div class="auto-container">
+        <div class="copyright">Copyright &copy; 2024 Tokenomic.org. All rights reserved.</div>
+    </div>
+</div>
+</footer>
+
+        </div>
+        <div class="scroll-to-top scroll-to-target" data-target="html"><span class="flaticon-up-arrow"></span></div>
+        <script src="/assets/js/jquery.js"></script>
+        <script src="/assets/js/popper.min.js"></script>
+        <script src="/assets/js/bootstrap.min.js"></script>
+        <script src="/assets/js/jquery-ui.js"></script>
+        <script src="/assets/js/jquery.fancybox.js"></script>
+        <script src="/assets/js/owl.js"></script>
+        <script src="/assets/js/scrollbar.js"></script>
+        <script src="/assets/js/knob.js"></script>
+        <script src="/assets/js/paroller.js"></script>
+        <script src="/assets/js/tilt.js"></script>
+        <script src="/assets/js/isotope.js"></script>
+        <script src="/assets/js/appear.js"></script>
+        <script src="/assets/js/wow.js"></script>
+        <script src="/assets/js/simple-jekyll-search.min.js"></script>
+        <script src="/assets/js/jquery.fancybox.js"></script>
+        <script src="/assets/js/element-in-view.js"></script>
+        <script src="/assets/js/custom-script.js"></script>
+        <script src="/shared/assets/js/web3-wallet.js"></script>
+        <div id="wallet-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
+            <div style="max-width:420px;margin:auto;margin-top:20vh;background:#fff;border-radius:12px;padding:40px;text-align:center;">
+                <h3 style="color:#001f29;margin-bottom:16px;">Connect a Wallet</h3>
+                <p style="color:#5a8299;margin-bottom:24px;">Install a Web3 wallet to log in to Tokenomic</p>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <a href="https://metamask.io/download/" target="_blank" class="theme-btn btn-style-one" style="text-align:center;">Install MetaMask</a>
+                    <a href="https://rabby.io/" target="_blank" class="theme-btn btn-style-three" style="text-align:center;">Install Rabby</a>
+                </div>
+                <button style="margin-top:16px;background:none;border:none;color:#5a8299;cursor:pointer;font-size:0.9rem;" onclick="TokenomicWallet.hideModal()">Close</button>
+            </div>
+        </div>
+    </body>
+</html>

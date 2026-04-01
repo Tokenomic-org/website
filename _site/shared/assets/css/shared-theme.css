@@ -1,0 +1,303 @@
+:root {
+  --primary-dark: #0a0e27;
+  --primary-blue: #1a3a8f;
+  --accent-blue: #4a90d9;
+  --accent-cyan: #00d4ff;
+  --accent-green: #00c9a7;
+  --accent-gradient: linear-gradient(135deg, #1a3a8f 0%, #00d4ff 100%);
+  --hero-gradient: linear-gradient(135deg, #1a1a4e 0%, #0a2463 50%, #00c9a7 100%);
+  --text-primary: #ffffff;
+  --text-secondary: #b0bec5;
+  --text-muted: #78909c;
+  --surface-dark: #111236;
+  --surface-card: #161845;
+  --surface-hover: #1e2057;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --success: #00c9a7;
+  --warning: #ffc107;
+  --danger: #ff4757;
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
+.tkn-dark-theme {
+  background-color: var(--primary-dark);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+}
+
+.tkn-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.tkn-card:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+}
+
+.tkn-btn-primary {
+  background: var(--accent-gradient);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.tkn-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+  color: white;
+  text-decoration: none;
+}
+
+.tkn-btn-outline {
+  background: transparent;
+  color: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan);
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.tkn-btn-outline:hover {
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--accent-cyan);
+  text-decoration: none;
+}
+
+.tkn-btn-wallet {
+  background: linear-gradient(135deg, #f7931a 0%, #ff6b35 100%);
+  color: white;
+  border: none;
+  padding: 14px 36px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tkn-btn-wallet:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(247, 147, 26, 0.3);
+}
+
+.tkn-section-title {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.tkn-section-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.tkn-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tkn-badge-success {
+  background: rgba(0, 201, 167, 0.15);
+  color: var(--success);
+}
+
+.tkn-badge-warning {
+  background: rgba(255, 193, 7, 0.15);
+  color: var(--warning);
+}
+
+.tkn-badge-danger {
+  background: rgba(255, 71, 87, 0.15);
+  color: var(--danger);
+}
+
+.tkn-badge-info {
+  background: rgba(0, 212, 255, 0.15);
+  color: var(--accent-cyan);
+}
+
+.tkn-stat-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+}
+
+.tkn-stat-card .stat-value {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--accent-cyan);
+}
+
+.tkn-stat-card .stat-label {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.tkn-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tkn-table th {
+  text-align: left;
+  padding: 12px 16px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tkn-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.tkn-table tr:hover td {
+  background: var(--surface-hover);
+}
+
+.tkn-input {
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  width: 100%;
+  transition: border-color 0.3s ease;
+}
+
+.tkn-input:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
+.tkn-sidebar {
+  background: var(--surface-dark);
+  border-right: 1px solid var(--border-color);
+  width: 260px;
+  min-height: 100vh;
+  padding: 24px 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+}
+
+.tkn-sidebar .sidebar-logo {
+  padding: 0 24px 24px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 16px;
+}
+
+.tkn-sidebar .sidebar-logo img {
+  max-width: 160px;
+}
+
+.tkn-sidebar .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.tkn-sidebar .nav-item:hover,
+.tkn-sidebar .nav-item.active {
+  color: var(--accent-cyan);
+  background: rgba(0, 212, 255, 0.05);
+  border-right: 3px solid var(--accent-cyan);
+}
+
+.tkn-sidebar .nav-item svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.tkn-main-content {
+  margin-left: 260px;
+  padding: 32px;
+  min-height: 100vh;
+}
+
+.tkn-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 32px;
+}
+
+.tkn-wallet-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+.tkn-wallet-status .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.tkn-wallet-status.disconnected .dot {
+  background: var(--danger);
+}
+
+@media (max-width: 768px) {
+  .tkn-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  .tkn-sidebar.open {
+    transform: translateX(0);
+  }
+  .tkn-main-content {
+    margin-left: 0;
+    padding: 16px;
+  }
+}

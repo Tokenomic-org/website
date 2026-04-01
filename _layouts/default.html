@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Tokenomic - Advance Your Decentralized Finance Expertise</title>
+        <link href="/assets/css/bootstrap.css" rel="stylesheet" />
+        <link href="/assets/css/style.css" rel="stylesheet" />
+        <link href="/assets/css/responsive.css" rel="stylesheet" />
+        <link rel="shortcut icon" href="/assets/images/favicon.png" type="image/x-icon" />
+        <link rel="icon" href="/assets/images/favicon.png" type="image/x-icon" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=2.0,minimum-scale=1.0" />
+        <!--[if lt IE 9]><script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script><![endif]-->
+        <!--[if lt IE 9]><script src="/assets/js/respond.js"></script><![endif]-->
+        {% include google_analytics.html %}
+    </head>
+    <body>
+        <div class="page-wrapper">
+            {% if site.preloader %}
+            <div class="preloader">
+                <div class="spinner">
+                    <div class="inner">
+                        <div class="disc"></div>
+                        <div class="disc"></div>
+                        <div class="disc"></div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {{ content }}
+        </div>
+        <div class="scroll-to-top scroll-to-target" data-target="html"><span class="flaticon-up-arrow"></span></div>
+        <script src="/assets/js/jquery.js"></script>
+        <script src="/assets/js/popper.min.js"></script>
+        <script src="/assets/js/bootstrap.min.js"></script>
+        <script src="/assets/js/jquery-ui.js"></script>
+        <script src="/assets/js/jquery.fancybox.js"></script>
+        <script src="/assets/js/owl.js"></script>
+        <script src="/assets/js/scrollbar.js"></script>
+        <script src="/assets/js/knob.js"></script>
+        <script src="/assets/js/paroller.js"></script>
+        <script src="/assets/js/tilt.js"></script>
+        <script src="/assets/js/isotope.js"></script>
+        <script src="/assets/js/appear.js"></script>
+        <script src="/assets/js/wow.js"></script>
+        <script src="/assets/js/simple-jekyll-search.min.js"></script>
+        <script src="/assets/js/jquery.fancybox.js"></script>
+        <script src="/assets/js/element-in-view.js"></script>
+        <script src="/assets/js/custom-script.js"></script>
+        <script src="/shared/assets/js/web3-wallet.js"></script>
+        <div id="wallet-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
+            <div style="max-width:420px;margin:auto;margin-top:20vh;background:#fff;border-radius:12px;padding:40px;text-align:center;">
+                <h3 style="color:#001f29;margin-bottom:16px;">Connect a Wallet</h3>
+                <p style="color:#5a8299;margin-bottom:24px;">Install a Web3 wallet to log in to Tokenomic</p>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <a href="https://metamask.io/download/" target="_blank" class="theme-btn btn-style-one" style="text-align:center;">Install MetaMask</a>
+                    <a href="https://rabby.io/" target="_blank" class="theme-btn btn-style-three" style="text-align:center;">Install Rabby</a>
+                </div>
+                <button style="margin-top:16px;background:none;border:none;color:#5a8299;cursor:pointer;font-size:0.9rem;" onclick="TokenomicWallet.hideModal()">Close</button>
+            </div>
+        </div>
+    </body>
+</html>
