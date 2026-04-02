@@ -189,7 +189,15 @@
     <div class="row clearfix">
         <div class="col-lg-4 col-md-5 col-sm-12" style="margin-bottom:20px;">
             <div class="dash-card" style="text-align:center;">
-                <div style="width:80px;height:80px;border-radius:50%;background:#ff6000;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:#fff;font-size:2rem;font-weight:800;" x-text="profile.name.charAt(0)"></div>
+                <div style="position:relative;width:100px;height:100px;margin:0 auto 12px;">
+                    <div id="profile-avatar-display" style="width:100px;height:100px;border-radius:50%;background:#ff6000;display:flex;align-items:center;justify-content:center;color:#fff;font-size:2.5rem;font-weight:800;overflow:hidden;cursor:pointer;" @click="$refs.photoInput.click()" x-text="!profilePhoto ? profile.name.charAt(0) : ''">
+                    </div>
+                    <div style="position:absolute;bottom:0;right:0;width:30px;height:30px;border-radius:50%;background:#0A0F1A;border:2px solid #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;" @click="$refs.photoInput.click()" title="Upload photo">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    </div>
+                    <input type="file" accept="image/*" x-ref="photoInput" style="display:none;" @change="handlePhotoUpload($event)" />
+                </div>
+                <p x-show="uploadMsg" x-text="uploadMsg" :style="uploadErr ? 'color:#e53e3e;font-size:0.8rem;' : 'color:#38a169;font-size:0.8rem;'"></p>
                 <h4 x-text="profile.name"></h4>
                 <p style="color:#ff6000;font-size:0.85rem;margin-bottom:4px;" x-text="profile.role"></p>
                 <p style="font-family:monospace;font-size:0.8rem;color:#5a8299;" x-text="profile.wallet||'No wallet connected'"></p>
@@ -250,8 +258,12 @@
 
 <script>
 function profilePage() {
+    var storedPhoto = TokenomicProfile.getStoredPhoto();
     return {
         profile:{name:'Tokenomic User',email:'user@tokenomic.org',role:'Educator',bio:'DeFi educator and researcher.',wallet:'',xp:2340,courses:4,badges:6},
+        profilePhoto: storedPhoto,
+        uploadMsg: '',
+        uploadErr: false,
         badgeList:['DeFi Explorer','Yield Farmer','Smart Contract Dev','Community Builder','Top 10%','Early Adopter'],
         notifications:[
             {label:'Course Updates',description:'New module releases and course changes.',enabled:true},
@@ -261,6 +273,42 @@ function profilePage() {
             {label:'Leaderboard Changes',description:'Rank changes and achievements.',enabled:false}
         ],
         consultantForm:{specialty:'',rate:'',experience:'3-5'},
+        init() {
+            var self = this;
+            if (self.profilePhoto) {
+                self.applyPhoto(self.profilePhoto);
+            }
+        },
+        applyPhoto(url) {
+            var el = document.getElementById('profile-avatar-display');
+            if (el && url) {
+                el.style.background = 'none';
+                el.innerHTML = '<img src="' + url + '" alt="Profile" style="width:100%;height:100%;object-fit:cover;" />';
+            }
+        },
+        handlePhotoUpload(event) {
+            var self = this;
+            var file = event.target.files[0];
+            if (!file) return;
+
+            self.uploadMsg = 'Uploading...';
+            self.uploadErr = false;
+
+            var wallet = self.profile.wallet || 'demo-user';
+            TokenomicProfile.uploadPhoto(file, wallet, function(result) {
+                if (result.success) {
+                    self.profilePhoto = result.url;
+                    self.uploadMsg = 'Photo updated!';
+                    self.uploadErr = false;
+                    self.applyPhoto(result.url);
+                    TokenomicProfile.applyUserPhotoToPage();
+                    setTimeout(function() { self.uploadMsg = ''; }, 3000);
+                } else {
+                    self.uploadMsg = result.error;
+                    self.uploadErr = true;
+                }
+            });
+        },
         saveProfile(){ alert('Profile saved! (Connect wallet for on-chain persistence via Supabase)'); }
     };
 }
@@ -360,6 +408,7 @@ function profilePage() {
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/shared/assets/js/supabase-client.js"></script>
+<script src="/shared/assets/js/profile-photo.js"></script>
 
 
 

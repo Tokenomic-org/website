@@ -11,7 +11,9 @@ var ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 
 var pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-app.use(express.json());
+var fs = require('fs');
+
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 function generateToken() {
@@ -269,6 +271,46 @@ app.get('/api/admin/stats', requireAdmin, function(req, res) {
         console.error('Stats error:', err.message);
         res.status(500).json({ error: 'Failed to fetch stats' });
     });
+});
+
+app.post('/api/profile/upload-photo', function(req, res) {
+    var photoData = req.body.photo;
+    var walletAddress = req.body.wallet;
+
+    if (!photoData || !walletAddress) {
+        return res.status(400).json({ error: 'Photo data and wallet address required' });
+    }
+
+    var match = photoData.match(/^data:image\/(png|jpeg|jpg|webp|gif);base64,(.+)$/);
+    if (!match) {
+        return res.status(400).json({ error: 'Invalid image data' });
+    }
+
+    var ext = match[1] === 'jpeg' ? 'jpg' : match[1];
+    var buffer = Buffer.from(match[2], 'base64');
+
+    if (buffer.length > 5 * 1024 * 1024) {
+        return res.status(400).json({ error: 'Image too large. Maximum 5MB.' });
+    }
+
+    var safeWallet = walletAddress.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    var filename = safeWallet + '.' + ext;
+    var uploadsDir = path.join(__dirname, '_site', 'uploads', 'profiles');
+
+    if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    var existingFiles = fs.readdirSync(uploadsDir);
+    existingFiles.forEach(function(f) {
+        if (f.startsWith(safeWallet + '.')) {
+            fs.unlinkSync(path.join(uploadsDir, f));
+        }
+    });
+
+    fs.writeFileSync(path.join(uploadsDir, filename), buffer);
+    var photoUrl = '/uploads/profiles/' + filename + '?t=' + Date.now();
+    res.json({ success: true, url: photoUrl });
 });
 
 app.use(express.static(path.join(__dirname, '_site'), {

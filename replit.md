@@ -23,7 +23,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - `_includes/`, `_data/` — Jekyll source templates and data
 - `_site/dashboard*/` — Dashboard pages (11 pages)
 - `_site/learn/*/` — Article detail pages (13 articles, statically generated + 3 slug aliases)
-- `shared/assets/js/` — Shared JS (wallet, Supabase client, site-search)
+- `shared/assets/js/` — Shared JS (wallet, Supabase client, site-search, profile-photo)
 - `assets/` — CSS, images, fonts, JS libraries
 - `assets/images/learn/` — Article images pulled from learn.tokenomic.org (cover images + inline content images)
 - `scripts/` — Build scripts (scrape-articles.js, generate-article-pages.js)
@@ -51,7 +51,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - **Leaderboard** (`/dashboard-leaderboard/`) — XP rankings, progress tracking, module tracker
 - **Articles** (`/dashboard-articles/`) — Content management
 - **Social** (`/dashboard-social/`) — Social feed
-- **Profile** (`/dashboard-profile/`) — User profile management
+- **Profile** (`/dashboard-profile/`) — User profile management with photo upload (camera icon overlay on avatar, uploads to server, persists URL in localStorage)
 - **Pricing** (`/pricing/`) — Three tiers (Explorer/Professional/Institution), individual course pricing, FAQ
 - **Privacy** (`/privacy/`) — Privacy policy
 - **Terms** (`/terms/`) — Terms of service

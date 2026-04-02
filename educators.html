@@ -102,12 +102,21 @@ permalink: /educators/
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/shared/assets/js/supabase-client.js"></script>
+<script src="/shared/assets/js/profile-photo.js"></script>
 <script>
 function switchTab(tab, btnEl) {
     document.querySelectorAll('.expert-section').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.expert-tabs .tab-btn').forEach(el => el.classList.remove('active'));
     document.getElementById(tab).classList.add('active');
     btnEl.classList.add('active');
+}
+
+function renderAvatar(name, avatarUrl, gradient) {
+    var initials = name ? name.split(' ').map(function(n){return n[0]}).join('') : '?';
+    if (avatarUrl) {
+        return '<div style="width:60px;height:60px;border-radius:50%;overflow:hidden;flex-shrink:0;"><img src="' + avatarUrl + '" alt="' + name + '" style="width:100%;height:100%;object-fit:cover;" /></div>';
+    }
+    return '<div style="width:60px;height:60px;border-radius:50%;background:' + gradient + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.3rem;font-weight:700;flex-shrink:0;">' + initials + '</div>';
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -122,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         educatorsGrid.innerHTML = '<div class="col-12 text-center"><p style="color:#5a8299;padding:40px 0;">No approved educators yet. Check back soon.</p></div>';
     } else {
         educators.forEach(function(edu) {
-            const initials = edu.display_name ? edu.display_name.split(' ').map(function(n){return n[0]}).join('') : '?';
+            const avatarHtml = renderAvatar(edu.display_name, edu.avatar_url, 'linear-gradient(135deg,#ff6000,#ff8f00)');
             const communityBadges = edu.communities && edu.communities.length > 0
                 ? edu.communities.map(function(c){return '<span style="display:inline-block;background:#e8f4f8;color:#001f29;font-size:0.75rem;padding:3px 10px;border-radius:12px;margin:2px;">' + c.name + ' (' + c.members_count + ' members)</span>'}).join(' ')
                 : '<span style="color:#5a8299;font-size:0.8rem;">No active communities</span>';
@@ -132,7 +141,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             card.style.marginBottom = '30px';
             card.innerHTML = '<div style="background:#fff;border-radius:12px;padding:30px;box-shadow:0 4px 20px rgba(0,31,41,0.08);height:100%;display:flex;flex-direction:column;">' +
                 '<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">' +
-                    '<div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#ff6000,#ff8f00);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.3rem;font-weight:700;flex-shrink:0;">' + initials + '</div>' +
+                    avatarHtml +
                     '<div>' +
                         '<h4 style="margin:0 0 4px;font-size:1.1rem;color:#001f29;">' + edu.display_name + '</h4>' +
                         '<span style="color:#fff;font-size:0.85rem;font-weight:600;">' + (edu.specialty || 'DeFi Education') + '</span>' +
@@ -158,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         consultantsGrid.innerHTML = '<div class="col-12 text-center"><p style="color:#5a8299;padding:40px 0;">No approved consultants yet. Check back soon.</p></div>';
     } else {
         consultants.forEach(function(con) {
-            const initials = con.display_name ? con.display_name.split(' ').map(function(n){return n[0]}).join('') : '?';
+            const avatarHtml = renderAvatar(con.display_name, con.avatar_url, 'linear-gradient(135deg,#3301c6,#01ccdd)');
             const stars = '★'.repeat(Math.floor(con.rating || 0)) + (con.rating % 1 >= 0.5 ? '½' : '');
 
             const card = document.createElement('div');
@@ -166,7 +175,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             card.style.marginBottom = '30px';
             card.innerHTML = '<div style="background:#fff;border-radius:12px;padding:30px;box-shadow:0 4px 20px rgba(0,31,41,0.08);height:100%;display:flex;flex-direction:column;">' +
                 '<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">' +
-                    '<div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#3301c6,#01ccdd);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.3rem;font-weight:700;flex-shrink:0;">' + initials + '</div>' +
+                    avatarHtml +
                     '<div>' +
                         '<h4 style="margin:0 0 4px;font-size:1.1rem;color:#001f29;">' + con.display_name + '</h4>' +
                         '<span style="color:#fff;font-size:0.85rem;font-weight:600;">' + (con.specialty || 'DeFi Consulting') + '</span>' +
@@ -185,6 +194,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             '</div>';
             consultantsGrid.appendChild(card);
         });
+    }
+
+    if (typeof TokenomicProfile !== 'undefined') {
+        TokenomicProfile.applyUserPhotoToPage();
     }
 });
 </script>
