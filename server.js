@@ -497,17 +497,40 @@ app.use(express.static(path.join(__dirname, '_site'), {
     extensions: ['html']
 }));
 
+var SITE_ROOT = path.resolve(path.join(__dirname, '_site'));
+
 app.use(function(req, res) {
     var reqPath = req.path;
     if (reqPath.endsWith('/')) {
         reqPath += 'index.html';
     }
-    var filePath = path.join(__dirname, '_site', reqPath);
+    var filePath = path.resolve(path.join(__dirname, '_site', reqPath));
+
+    if (filePath.indexOf(SITE_ROOT + path.sep) !== 0 && filePath !== SITE_ROOT) {
+        return res.status(400).send('Bad Request');
+    }
+
+    var send404 = function() {
+        res.status(404).sendFile(path.join(SITE_ROOT, '404.html'), function(err2) {
+            if (err2) res.status(404).send('Not Found');
+        });
+    };
+
     res.sendFile(filePath, function(err) {
         if (err) {
-            res.status(404).sendFile(path.join(__dirname, '_site', '404.html'), function(err2) {
-                if (err2) res.status(404).send('Not Found');
-            });
+            if (!reqPath.endsWith('.html') && !reqPath.endsWith('/index.html')) {
+                var indexPath = path.resolve(path.join(__dirname, '_site', reqPath, 'index.html'));
+                if (indexPath.indexOf(SITE_ROOT + path.sep) !== 0) {
+                    return send404();
+                }
+                res.sendFile(indexPath, function(err2) {
+                    if (err2) {
+                        send404();
+                    }
+                });
+            } else {
+                send404();
+            }
         }
     });
 });
