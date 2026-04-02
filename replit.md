@@ -80,7 +80,7 @@ Defined in `_data/navigation.yml`: Home, About, Educators, Consultants, Learn
 - Static pages generated at `_site/learn/[slug]/index.html` via `scripts/generate-article-pages.js`
 - To regenerate: run `node scripts/scrape-articles.js` then `node scripts/generate-article-pages.js`
 - Demo data in supabase-client.js uses local image paths (`/assets/images/learn/`)
-- Site search (site-search.js) links to local `/learn/[slug]` paths
+- Site search (site-search.js) searches across articles, educators, and consultants — matches on names, descriptions/bios, specialties, categories, and keywords; results shown with color-coded type badges (orange=Article, green=Educator, blue=Consultant); popup HTML is dynamically injected if missing from the page
 - 13 articles across Strategy, Technical, and Market categories
 - Slug aliases (symlinks) for alternate URL patterns: `arbitrage-practical-guide`, `advanced-options-defi`, `smart-contract-security-basics`
 
