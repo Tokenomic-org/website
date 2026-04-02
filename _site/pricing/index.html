@@ -241,13 +241,14 @@
                         </nav>
                     </div>
                 </div>
-                <div class="tkn-login-box">
-                    <a href="#" class="theme-btn btn-style-three wallet-login-btn" onclick="TokenomicWallet.connect(); return false;">
-                        <span class="btn-title" style="padding:8px 25px;font-size:12px;letter-spacing:3px;">Login</span>
-                    </a>
-                    <a href="/dashboard/" class="theme-btn btn-style-three wallet-logged-in-btn" style="display:none;">
-                        <span class="btn-title wallet-addr-text" style="padding:8px 25px;font-size:12px;letter-spacing:3px;">Dashboard</span>
-                    </a>
+                <div class="other-links clearfix">
+                    <div class="search-btn">
+                        <button type="button" class="theme-btn search-toggler"><span class="icon flaticon-loupe-2"></span></button>
+                    </div>
+                    <div class="wallet-btn-header">
+                        <a href="#" class="wallet-login-btn" onclick="TokenomicWallet.connect(); return false;"><span class="btn-title">Connect Wallet</span></a>
+                        <a href="/dashboard/" class="wallet-logged-in-btn" style="display:none;"><span class="btn-title wallet-addr-text">Dashboard</span></a>
+                    </div>
                 </div>
             </div>
         </div>
