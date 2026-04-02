@@ -20,7 +20,26 @@
     top:auto !important;
     flex-shrink:0;
 }
-.header-upper .search-btn { float:none !important; }
+.header-upper .search-btn {
+    float:none !important;
+    display:flex !important;
+    align-items:center;
+}
+.header-upper .search-btn .search-toggler {
+    display:flex !important;
+    align-items:center;
+    justify-content:center;
+    background:none !important;
+    border:none !important;
+    padding:0 !important;
+    margin:0 !important;
+    cursor:pointer;
+    color:#ffffff;
+    font-size:18px;
+    line-height:1;
+    width:32px;
+    height:32px;
+}
 .wallet-btn-header { display:inline-flex; align-items:center; }
 .wallet-btn-header a.wallet-login-btn,
 .wallet-btn-header a.wallet-logged-in-btn {
