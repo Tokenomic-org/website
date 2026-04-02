@@ -1143,7 +1143,7 @@ img{
 
 .header-style-one.fixed-header{
         top: 0;
-        background: #001f29 !important;
+        background: none;
 }
 
 .header-style-one .header-upper{
@@ -2734,6 +2734,7 @@ img.lazy-image.loaded{
 }
 
 .banner-one .content-box .services-title{
+
         position: relative;
         display: block;
         font-size: 18px;
