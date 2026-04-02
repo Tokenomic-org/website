@@ -3,9 +3,6 @@
 
  - text: About
    url: "/about/"
-   dropdown:
-    - text: "Contact"
-      url: "/contact/"
 
  - text: Educators
    url: "/educators/"
