@@ -189,7 +189,22 @@
     <body>
         <div class="page-wrapper">
 
-            <header class="main-header header-style-two">
+            <style>
+.header-upper .other-links { display:flex !important;align-items:center;gap:12px;float:right !important; }
+.header-upper .search-btn { float:none !important; }
+.wallet-btn-header { display:inline-block; }
+.wallet-btn-header a:hover { background:#e55500 !important; }
+@media (max-width: 991px) {
+    .wallet-btn-header { display:none !important; }
+}
+.mobile-menu .wallet-mobile-btn a {
+    display:block;text-align:center;padding:14px 20px;border-radius:30px;
+    background:#ff6000;color:#fff;font-size:14px;font-weight:600;
+    text-decoration:none;letter-spacing:0.5px;transition:background 0.2s;
+}
+.mobile-menu .wallet-mobile-btn a:hover { background:#e55500; }
+</style>
+<header class="main-header header-style-two">
     <div class="header-upper">
         <div class="auto-container clearfix">
             <div class="inner clearfix tkn-header-flex">
