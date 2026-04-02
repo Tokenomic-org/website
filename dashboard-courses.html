@@ -1,0 +1,278 @@
+---
+layout: dashboard
+title: "Courses"
+permalink: /dashboard-courses/
+---
+<section class="dashboard-section" style="padding:60px 0;background:#f5f7fa;min-height:80vh;">
+    <div class="auto-container">
+        <div class="row">
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <div class="dashboard-sidebar" style="background:#001f29;border-radius:12px;padding:20px;margin-bottom:30px;">
+                    <nav class="dashboard-nav">
+                        <a href="/dashboard/" class="dash-nav-item ">
+                            <span class="flaticon-home-1" style="margin-right:8px;"></span> Dashboard
+                        </a>
+                        <a href="/dashboard-communities/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Communities
+                        </a>
+                        <a href="/dashboard-courses/" class="dash-nav-item active">
+                            <span class="flaticon-notebook" style="margin-right:8px;"></span> Courses
+                        </a>
+                        <a href="/dashboard-events/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Events
+                        </a>
+                        <a href="/dashboard-revenue/" class="dash-nav-item ">
+                            <span class="flaticon-money" style="margin-right:8px;"></span> Revenue
+                        </a>
+                        <a href="/dashboard-bookings/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Bookings
+                        </a>
+                        <a href="/dashboard-chat/" class="dash-nav-item ">
+                            <span class="flaticon-speech-bubble" style="margin-right:8px;"></span> Chat
+                        </a>
+                        <a href="/dashboard-articles/" class="dash-nav-item ">
+                            <span class="flaticon-edit" style="margin-right:8px;"></span> Articles
+                        </a>
+                        <a href="/dashboard-leaderboard/" class="dash-nav-item ">
+                            <span class="flaticon-trophy" style="margin-right:8px;"></span> Leaderboard
+                        </a>
+                        <a href="/dashboard-social/" class="dash-nav-item ">
+                            <span class="flaticon-share" style="margin-right:8px;"></span> Social
+                        </a>
+                        <a href="/dashboard-profile/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Profile
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-lg-9 col-md-8 col-sm-12">
+                <div class="dashboard-topbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;background:#fff;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <h3 style="margin:0;color:#001f29;">Course Manager</h3>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span class="wallet-status-text" style="font-size:0.85rem;color:#5a8299;">Not Connected</span>
+                        <button class="theme-btn btn-style-one wallet-connect-btn" style="padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.connect()">Connect Wallet</button>
+                        <button class="theme-btn btn-style-three wallet-disconnect-btn" style="display:none;padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.disconnect()">Disconnect</button>
+                    </div>
+                </div>
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#001f29;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                        <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
+                    </div>
+                    <h3 style="color:#001f29;margin-bottom:8px;">Connect Your Wallet</h3>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
+                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+                </div>
+                <div class="dashboard-content" style="display:none;">
+                    <div x-data="coursesPage()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <div style="display:flex;gap:8px;">
+            <button class="dash-btn" :class="viewMode==='manage'?'dash-btn-primary':'dash-btn-outline'" @click="viewMode='manage'">Manage Courses</button>
+            <button class="dash-btn" :class="viewMode==='learn'?'dash-btn-primary':'dash-btn-outline'" @click="viewMode='learn'">My Learning</button>
+            <button class="dash-btn" :class="viewMode==='certs'?'dash-btn-primary':'dash-btn-outline'" @click="viewMode='certs'">Certifications</button>
+        </div>
+        <button class="dash-btn dash-btn-primary" x-show="viewMode==='manage'" @click="showCreate=!showCreate">+ New Course</button>
+    </div>
+
+    <!-- MANAGE VIEW -->
+    <div x-show="viewMode==='manage'" x-transition>
+    <div class="row clearfix" style="margin-bottom:20px;">
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="courses.length"></div><div class="stat-lbl">Total Courses</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="courses.filter(c=>c.status==='published').length"></div><div class="stat-lbl">Published</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="courses.reduce((s,c)=>s+c.enrolled,0)"></div><div class="stat-lbl">Enrolled Students</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="'$'+courses.reduce((s,c)=>s+c.price*c.enrolled,0)"></div><div class="stat-lbl">Gross Revenue</div></div></div>
+    </div>
+
+    <div x-show="showCreate" x-transition class="dash-card" style="margin-bottom:20px;">
+        <h4>Create Course</h4>
+        <div class="row clearfix" style="margin-bottom:14px;">
+            <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Title</label><input x-model="nc.title" class="dash-input" placeholder="Course title" /></div>
+            <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Level</label><select x-model="nc.level" class="dash-input"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></div>
+            <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Price (USDC)</label><input x-model="nc.price" type="number" class="dash-input" placeholder="0" /></div>
+        </div>
+        <div style="margin-bottom:14px;"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Description</label><textarea x-model="nc.description" class="dash-input" rows="2" placeholder="Course description"></textarea></div>
+        <div style="display:flex;gap:8px;">
+            <button class="dash-btn dash-btn-primary" @click="create()">Create Course</button>
+            <button class="dash-btn dash-btn-outline" @click="showCreate=false">Cancel</button>
+        </div>
+    </div>
+
+    <div class="row clearfix">
+        <template x-for="course in courses" :key="course.id">
+            <div class="col-lg-4 col-md-6 col-sm-12" style="margin-bottom:16px;">
+                <div class="dash-card">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                        <span class="dash-badge" :class="course.level==='advanced'?'dash-badge-danger':course.level==='intermediate'?'dash-badge-warning':'dash-badge-success'" x-text="course.level"></span>
+                        <span class="dash-badge" :class="course.status==='published'?'dash-badge-success':'dash-badge-warning'" x-text="course.status"></span>
+                    </div>
+                    <h5 style="margin-bottom:6px;" x-text="course.title"></h5>
+                    <p style="color:#5a8299;font-size:0.85rem;margin-bottom:10px;" x-text="course.description"></p>
+                    <div style="padding:8px;background:#f5f7fa;border-radius:6px;margin-bottom:10px;">
+                        <div style="display:flex;justify-content:space-between;"><span style="color:#5a8299;font-size:0.8rem;">Modules</span><strong x-text="course.modules"></strong></div>
+                        <div style="display:flex;justify-content:space-between;"><span style="color:#5a8299;font-size:0.8rem;">Enrolled</span><strong x-text="course.enrolled"></strong></div>
+                        <div style="display:flex;justify-content:space-between;"><span style="color:#5a8299;font-size:0.8rem;">Completion</span><strong x-text="course.completion+'%'"></strong></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <strong style="color:#00a651;" x-text="course.price>0?'$'+course.price+' USDC':'Free'"></strong>
+                        <button class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.8rem;">Edit</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+    </div>
+
+    <!-- LEARNER PROGRESSION VIEW -->
+    <div x-show="viewMode==='learn'" x-transition>
+        <template x-if="enrolled.length>0">
+        <div class="dash-card" style="margin-bottom:20px;border-left:4px solid #ff6000;">
+            <h4 style="margin-bottom:4px;">Continue Where You Left Off</h4>
+            <p style="color:#5a8299;font-size:0.85rem;margin-bottom:16px;">Pick up your most recent course right where you stopped.</p>
+            <div style="display:flex;align-items:center;gap:20px;padding:16px;background:#f5f7fa;border-radius:8px;flex-wrap:wrap;">
+                <div style="width:60px;height:60px;border-radius:12px;background:#001f29;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <span class="flaticon-notebook" style="color:#ff6000;font-size:1.5rem;"></span>
+                </div>
+                <div style="flex:1;min-width:200px;">
+                    <h5 style="margin:0 0 4px 0;" x-text="enrolled[0].title"></h5>
+                    <p style="color:#5a8299;font-size:0.8rem;margin:0;">Module <span x-text="enrolled[0].currentModule"></span> of <span x-text="enrolled[0].totalModules"></span> &mdash; <span x-text="enrolled[0].currentLesson"></span></p>
+                </div>
+                <div style="text-align:center;min-width:80px;">
+                    <div style="position:relative;width:56px;height:56px;margin:0 auto 4px;">
+                        <svg viewBox="0 0 36 36" style="width:56px;height:56px;transform:rotate(-90deg);">
+                            <circle cx="18" cy="18" r="15.915" fill="none" stroke="#e0e0e0" stroke-width="3"></circle>
+                            <circle cx="18" cy="18" r="15.915" fill="none" stroke="#ff6000" stroke-width="3" :stroke-dasharray="enrolled[0].progress+' '+(100-enrolled[0].progress)" stroke-linecap="round"></circle>
+                        </svg>
+                        <span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:0.75rem;font-weight:700;color:#001f29;" x-text="enrolled[0].progress+'%'"></span>
+                    </div>
+                </div>
+                <button class="dash-btn dash-btn-primary" style="padding:10px 24px;white-space:nowrap;">Resume</button>
+            </div>
+        </div>
+        </template>
+
+        <h4 style="margin-bottom:16px;color:#001f29;">My Enrolled Courses</h4>
+        <div class="row clearfix">
+            <template x-for="course in enrolled" :key="course.id">
+                <div class="col-lg-6 col-sm-12" style="margin-bottom:16px;">
+                    <div class="dash-card" style="display:flex;gap:16px;align-items:flex-start;">
+                        <div style="width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"
+                            :style="'background:'+(course.progress===100?'#e8f5e9':'#001f29')">
+                            <span :class="course.progress===100?'flaticon-correct':'flaticon-notebook'" :style="'font-size:1.2rem;color:'+(course.progress===100?'#2e7d32':'#ff6000')"></span>
+                        </div>
+                        <div style="flex:1;">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+                                <h5 style="margin:0;" x-text="course.title"></h5>
+                                <span class="dash-badge" :class="course.level==='advanced'?'dash-badge-danger':course.level==='intermediate'?'dash-badge-warning':'dash-badge-success'" x-text="course.level" style="flex-shrink:0;"></span>
+                            </div>
+                            <p style="color:#5a8299;font-size:0.8rem;margin:0 0 8px 0;">
+                                Module <span x-text="course.currentModule"></span>/<span x-text="course.totalModules"></span>
+                                <span x-show="course.progress<100"> &mdash; <span x-text="course.currentLesson"></span></span>
+                                <span x-show="course.progress===100"> &mdash; Completed</span>
+                            </p>
+                            <div style="background:#e0e0e0;border-radius:6px;height:8px;overflow:hidden;">
+                                <div style="height:100%;border-radius:6px;transition:width 0.5s;"
+                                    :style="'width:'+course.progress+'%;background:'+(course.progress===100?'#2e7d32':'#ff6000')"></div>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;margin-top:6px;">
+                                <span style="color:#5a8299;font-size:0.75rem;" x-text="course.progress+'% complete'"></span>
+                                <span style="color:#5a8299;font-size:0.75rem;" x-text="'Last activity: '+course.lastActivity"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <div class="dash-card" style="text-align:center;padding:40px;margin-top:8px;">
+            <div style="width:60px;height:60px;border-radius:50%;background:#f5f7fa;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                <span class="flaticon-notebook" style="font-size:1.5rem;color:#5a8299;"></span>
+            </div>
+            <h5 style="color:#001f29;margin-bottom:4px;">Explore More Courses</h5>
+            <p style="color:#5a8299;font-size:0.85rem;margin-bottom:16px;">Browse our full catalog of DeFi and tokenomics training.</p>
+            <a href="/learn/" class="dash-btn dash-btn-primary" style="padding:10px 28px;">Browse Catalog</a>
+        </div>
+    </div>
+
+    <!-- CERTIFICATIONS VIEW -->
+    <div x-show="viewMode==='certs'" x-transition>
+        <div class="row clearfix" style="margin-bottom:20px;">
+            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="certs.length"></div><div class="stat-lbl">Certifications Earned</div></div></div>
+            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="enrolled.filter(c=>c.progress===100).length"></div><div class="stat-lbl">Courses Completed</div></div></div>
+            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="enrolled.length"></div><div class="stat-lbl">Total Enrolled</div></div></div>
+        </div>
+
+        <template x-for="cert in certs" :key="cert.id">
+            <div class="dash-card" style="margin-bottom:16px;border:2px solid #e0e0e0;position:relative;overflow:hidden;">
+                <div style="position:absolute;top:0;right:0;width:80px;height:80px;">
+                    <div style="position:absolute;top:12px;right:-22px;background:#ff6000;color:#fff;font-size:0.65rem;font-weight:700;padding:4px 28px;transform:rotate(45deg);text-transform:uppercase;">Verified</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:20px;">
+                    <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#001f29,#003040);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:3px solid #ff6000;">
+                        <span class="flaticon-trophy" style="color:#ff6000;font-size:1.8rem;"></span>
+                    </div>
+                    <div style="flex:1;">
+                        <p style="color:#5a8299;font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;margin:0 0 2px 0;">Tokenomic Certificate of Completion</p>
+                        <h4 style="margin:0 0 4px 0;color:#001f29;" x-text="cert.course"></h4>
+                        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                            <span style="color:#5a8299;font-size:0.8rem;">Issued: <strong x-text="cert.date"></strong></span>
+                            <span style="color:#5a8299;font-size:0.8rem;">Wallet: <code style="background:#f5f7fa;padding:2px 6px;border-radius:4px;font-size:0.75rem;" x-text="cert.wallet"></code></span>
+                            <span style="color:#5a8299;font-size:0.8rem;">Level: <strong x-text="cert.level"></strong></span>
+                        </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+                        <a class="dash-btn dash-btn-outline" style="padding:6px 14px;font-size:0.75rem;text-decoration:none;text-align:center;" :href="'https://basescan.org/address/'+cert.contractAddr+'#readContract'" target="_blank">Verify</a>
+                        <button class="dash-btn dash-btn-outline" style="padding:6px 14px;font-size:0.75rem;">Share</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template x-if="certs.length===0">
+            <div class="dash-card" style="text-align:center;padding:60px 40px;">
+                <div style="width:80px;height:80px;border-radius:50%;background:#f5f7fa;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+                    <span class="flaticon-trophy" style="font-size:2rem;color:#ccc;"></span>
+                </div>
+                <h4 style="color:#001f29;margin-bottom:8px;">No Certifications Yet</h4>
+                <p style="color:#5a8299;max-width:360px;margin:0 auto 20px;">Complete a course to earn your on-chain Tokenomic certification. Certificates are linked to your wallet address and verifiable on Base.</p>
+                <button class="dash-btn dash-btn-primary" @click="viewMode='learn'">View My Courses</button>
+            </div>
+        </template>
+    </div>
+</div>
+
+<script>
+function coursesPage() {
+    return {
+        viewMode:'learn',
+        courses:[
+            {id:1,title:'Introduction to DeFi',level:'beginner',description:'Core DeFi concepts, protocols, and how to interact safely.',modules:12,enrolled:87,completion:78,price:0,status:'published'},
+            {id:2,title:'Tokenomics Design Masterclass',level:'advanced',description:'Design sustainable token economies from first principles.',modules:8,enrolled:42,completion:65,price:150,status:'published'},
+            {id:3,title:'Smart Contract Security',level:'intermediate',description:'Learn to audit Solidity and detect common vulnerabilities.',modules:10,enrolled:56,completion:52,price:100,status:'published'},
+            {id:4,title:'DeFi Governance & DAOs',level:'intermediate',description:'On-chain governance, vote delegation, and DAO tooling.',modules:6,enrolled:31,completion:40,price:75,status:'published'},
+            {id:5,title:'Advanced Yield Strategies',level:'advanced',description:'Multi-protocol yield optimization and risk management.',modules:8,enrolled:24,completion:0,price:200,status:'draft'},
+            {id:6,title:'Blockchain Compliance',level:'beginner',description:'Regulatory landscape for digital assets and DeFi.',modules:5,enrolled:7,completion:0,price:50,status:'draft'}
+        ],
+        enrolled:[
+            {id:1,title:'Smart Contract Security',level:'intermediate',progress:68,currentModule:7,totalModules:10,currentLesson:'Reentrancy Attack Patterns',lastActivity:'2 hours ago'},
+            {id:2,title:'Introduction to DeFi',level:'beginner',progress:100,currentModule:12,totalModules:12,currentLesson:'Final Assessment',lastActivity:'3 days ago'},
+            {id:3,title:'DeFi Governance & DAOs',level:'intermediate',progress:33,currentModule:2,totalModules:6,currentLesson:'Vote Delegation Mechanics',lastActivity:'1 day ago'},
+            {id:4,title:'Tokenomics Design Masterclass',level:'advanced',progress:12,currentModule:1,totalModules:8,currentLesson:'Token Supply Models',lastActivity:'5 days ago'}
+        ],
+        certs:[
+            {id:1,course:'Introduction to DeFi',level:'Beginner',date:'Mar 28, 2026',wallet:'0x7a3B...f4E2',certId:'TKN-CERT-2026-0412',contractAddr:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'}
+        ],
+        showCreate:false,
+        nc:{title:'',level:'beginner',price:'',description:''},
+        create(){
+            if(!this.nc.title)return;
+            this.courses.unshift({id:Date.now(),title:this.nc.title,level:this.nc.level,price:parseFloat(this.nc.price)||0,description:this.nc.description,modules:0,enrolled:0,completion:0,status:'draft'});
+            this.nc={title:'',level:'beginner',price:'',description:''};this.showCreate=false;
+        }
+    };
+}
+</script>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

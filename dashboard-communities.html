@@ -1,0 +1,134 @@
+---
+layout: dashboard
+title: "Communities"
+permalink: /dashboard-communities/
+---
+<section class="dashboard-section" style="padding:60px 0;background:#f5f7fa;min-height:80vh;">
+    <div class="auto-container">
+        <div class="row">
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <div class="dashboard-sidebar" style="background:#001f29;border-radius:12px;padding:20px;margin-bottom:30px;">
+                    <nav class="dashboard-nav">
+                        <a href="/dashboard/" class="dash-nav-item ">
+                            <span class="flaticon-home-1" style="margin-right:8px;"></span> Dashboard
+                        </a>
+                        <a href="/dashboard-communities/" class="dash-nav-item active">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Communities
+                        </a>
+                        <a href="/dashboard-courses/" class="dash-nav-item ">
+                            <span class="flaticon-notebook" style="margin-right:8px;"></span> Courses
+                        </a>
+                        <a href="/dashboard-events/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Events
+                        </a>
+                        <a href="/dashboard-revenue/" class="dash-nav-item ">
+                            <span class="flaticon-money" style="margin-right:8px;"></span> Revenue
+                        </a>
+                        <a href="/dashboard-bookings/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Bookings
+                        </a>
+                        <a href="/dashboard-chat/" class="dash-nav-item ">
+                            <span class="flaticon-speech-bubble" style="margin-right:8px;"></span> Chat
+                        </a>
+                        <a href="/dashboard-articles/" class="dash-nav-item ">
+                            <span class="flaticon-edit" style="margin-right:8px;"></span> Articles
+                        </a>
+                        <a href="/dashboard-leaderboard/" class="dash-nav-item ">
+                            <span class="flaticon-trophy" style="margin-right:8px;"></span> Leaderboard
+                        </a>
+                        <a href="/dashboard-social/" class="dash-nav-item ">
+                            <span class="flaticon-share" style="margin-right:8px;"></span> Social
+                        </a>
+                        <a href="/dashboard-profile/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Profile
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-lg-9 col-md-8 col-sm-12">
+                <div class="dashboard-topbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;background:#fff;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <h3 style="margin:0;color:#001f29;">Communities</h3>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span class="wallet-status-text" style="font-size:0.85rem;color:#5a8299;">Not Connected</span>
+                        <button class="theme-btn btn-style-one wallet-connect-btn" style="padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.connect()">Connect Wallet</button>
+                        <button class="theme-btn btn-style-three wallet-disconnect-btn" style="display:none;padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.disconnect()">Disconnect</button>
+                    </div>
+                </div>
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#001f29;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                        <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
+                    </div>
+                    <h3 style="color:#001f29;margin-bottom:8px;">Connect Your Wallet</h3>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
+                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+                </div>
+                <div class="dashboard-content" style="display:none;">
+                    <div x-data="communitiesPage()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <p style="color:#5a8299;">Manage your learning communities and student groups.</p>
+        <button class="dash-btn dash-btn-primary" @click="showCreate=!showCreate">+ Create Community</button>
+    </div>
+
+    <div x-show="showCreate" x-transition class="dash-card" style="margin-bottom:20px;">
+        <h4>New Community</h4>
+        <div class="row clearfix" style="margin-bottom:14px;">
+            <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Name</label><input x-model="nc.name" class="dash-input" placeholder="Community name" /></div>
+            <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Type</label><select x-model="nc.type" class="dash-input"><option value="institution">Institution</option><option value="study-group">Study Group</option><option value="project">Project Team</option></select></div>
+            <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Access</label><select x-model="nc.access" class="dash-input"><option value="open">Open</option><option value="invite">Invite Only</option><option value="token-gated">Token Gated</option></select></div>
+        </div>
+        <div style="margin-bottom:14px;"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Description</label><textarea x-model="nc.description" class="dash-input" rows="2" placeholder="What is this community about?"></textarea></div>
+        <div style="display:flex;gap:8px;">
+            <button class="dash-btn dash-btn-primary" @click="create()">Create</button>
+            <button class="dash-btn dash-btn-outline" @click="showCreate=false">Cancel</button>
+        </div>
+    </div>
+
+    <div class="row clearfix">
+        <template x-for="c in communities" :key="c.id">
+            <div class="col-lg-4 col-md-6 col-sm-12" style="margin-bottom:16px;">
+                <div class="dash-card" style="border-top:3px solid;" :style="'border-color:'+(c.type==='institution'?'#ff6000':c.type==='study-group'?'#00a651':'#1976d2')">
+                    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+                        <h5 style="margin:0;" x-text="c.name"></h5>
+                        <span class="dash-badge" :class="c.access==='open'?'dash-badge-success':c.access==='token-gated'?'dash-badge-warning':'dash-badge-info'" x-text="c.access"></span>
+                    </div>
+                    <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;" x-text="c.description"></p>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #f0f2f5;">
+                        <span><strong style="color:#ff6000;" x-text="c.members"></strong> <small style="color:#5a8299;">members</small></span>
+                        <span class="dash-badge" :class="c.type==='institution'?'dash-badge-danger':c.type==='study-group'?'dash-badge-success':'dash-badge-info'" x-text="c.type"></span>
+                    </div>
+                    <div style="display:flex;gap:6px;margin-top:10px;">
+                        <button class="dash-btn dash-btn-primary" style="padding:4px 12px;font-size:0.8rem;flex:1;">Enter</button>
+                        <a href="/dashboard-chat/" class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.8rem;text-align:center;flex:1;">Chat</a>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+
+<script>
+function communitiesPage() {
+    return {
+        communities:[
+            {id:1,name:'University of Geneva Blockchain',type:'institution',access:'invite',description:'Blockchain curriculum cohort.',members:84},
+            {id:2,name:'DeFi Research Circle',type:'study-group',access:'open',description:'Peer-driven research on emerging protocols.',members:156},
+            {id:3,name:'Token Design Lab',type:'project',access:'token-gated',description:'Hands-on tokenomics design projects.',members:32},
+            {id:4,name:'Smart Contract Security Guild',type:'study-group',access:'open',description:'Weekly security review and audit practice.',members:67},
+            {id:5,name:'Institutional DeFi Cohort',type:'institution',access:'invite',description:'Enterprise teams onboarding to DeFi.',members:24}
+        ],
+        showCreate:false,
+        nc:{name:'',type:'institution',access:'open',description:''},
+        create(){
+            if(!this.nc.name)return;
+            this.communities.unshift({id:Date.now(),...this.nc,members:1});
+            this.nc={name:'',type:'institution',access:'open',description:''};this.showCreate=false;
+        }
+    };
+}
+</script>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

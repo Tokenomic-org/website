@@ -50,8 +50,15 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 ## Navigation
 Defined in `_data/navigation.yml`: Home, About (Contact), Events, Services, Training, Learn (Articles/Authors/Glossary), Pricing
 
+## Dashboard Source Files
+- 11 Jekyll source files at project root: `dashboard.html`, `dashboard-courses.html`, etc.
+- Each uses `layout: dashboard` with `permalink` front matter
+- Dashboard layout (`_layouts/dashboard.html`) uses `header_5.html` (includes wallet Login/Dashboard buttons)
+- Content extracted from pre-built `_site/` pages for GitHub Pages compatibility
+
 ## Important Notes
 - Ruby/Jekyll is NOT installed locally — cannot run `jekyll build`
 - All visible changes in Replit must be made in `_site/` files directly
 - Source files (`_includes/`, `_layouts/`, etc.) are for Jekyll builds (GitHub Pages)
 - Dashboard layout exists at `_layouts/dashboard.html` for dashboard source pages
+- When editing dashboard pages, update BOTH the `_site/` version (for Replit) and the source `.html` file (for GitHub Pages)

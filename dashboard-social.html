@@ -1,0 +1,162 @@
+---
+layout: dashboard
+title: "Social"
+permalink: /dashboard-social/
+---
+<section class="dashboard-section" style="padding:60px 0;background:#f5f7fa;min-height:80vh;">
+    <div class="auto-container">
+        <div class="row">
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <div class="dashboard-sidebar" style="background:#001f29;border-radius:12px;padding:20px;margin-bottom:30px;">
+                    <nav class="dashboard-nav">
+                        <a href="/dashboard/" class="dash-nav-item ">
+                            <span class="flaticon-home-1" style="margin-right:8px;"></span> Dashboard
+                        </a>
+                        <a href="/dashboard-communities/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Communities
+                        </a>
+                        <a href="/dashboard-courses/" class="dash-nav-item ">
+                            <span class="flaticon-notebook" style="margin-right:8px;"></span> Courses
+                        </a>
+                        <a href="/dashboard-events/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Events
+                        </a>
+                        <a href="/dashboard-revenue/" class="dash-nav-item ">
+                            <span class="flaticon-money" style="margin-right:8px;"></span> Revenue
+                        </a>
+                        <a href="/dashboard-bookings/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Bookings
+                        </a>
+                        <a href="/dashboard-chat/" class="dash-nav-item ">
+                            <span class="flaticon-speech-bubble" style="margin-right:8px;"></span> Chat
+                        </a>
+                        <a href="/dashboard-articles/" class="dash-nav-item ">
+                            <span class="flaticon-edit" style="margin-right:8px;"></span> Articles
+                        </a>
+                        <a href="/dashboard-leaderboard/" class="dash-nav-item ">
+                            <span class="flaticon-trophy" style="margin-right:8px;"></span> Leaderboard
+                        </a>
+                        <a href="/dashboard-social/" class="dash-nav-item active">
+                            <span class="flaticon-share" style="margin-right:8px;"></span> Social
+                        </a>
+                        <a href="/dashboard-profile/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Profile
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-lg-9 col-md-8 col-sm-12">
+                <div class="dashboard-topbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;background:#fff;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <h3 style="margin:0;color:#001f29;">Social Auto-Poster</h3>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span class="wallet-status-text" style="font-size:0.85rem;color:#5a8299;">Not Connected</span>
+                        <button class="theme-btn btn-style-one wallet-connect-btn" style="padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.connect()">Connect Wallet</button>
+                        <button class="theme-btn btn-style-three wallet-disconnect-btn" style="display:none;padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.disconnect()">Disconnect</button>
+                    </div>
+                </div>
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#001f29;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                        <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
+                    </div>
+                    <h3 style="color:#001f29;margin-bottom:8px;">Connect Your Wallet</h3>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
+                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+                </div>
+                <div class="dashboard-content" style="display:none;">
+                    <div x-data="socialPage()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <p style="color:#5a8299;">Manage and schedule social media content across platforms</p>
+        <button class="dash-btn dash-btn-primary" @click="showComposer=!showComposer">+ New Post</button>
+    </div>
+
+    <div class="row clearfix" style="margin-bottom:20px;">
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1DA1F2;">2.4K</div><div class="stat-lbl">Twitter Followers</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#FF0000;">890</div><div class="stat-lbl">YouTube Subscribers</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#E1306C;">1.2K</div><div class="stat-lbl">Instagram Followers</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#0077B5;">3.1K</div><div class="stat-lbl">LinkedIn Connections</div></div></div>
+    </div>
+
+    <div x-show="showComposer" x-transition class="dash-card">
+        <h4>Compose Post</h4>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+            <div><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Content</label><textarea x-model="newPost.content" class="dash-input" rows="3" placeholder="Write your post..."></textarea></div>
+            <div class="row clearfix">
+                <div class="col-md-6">
+                    <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Platforms</label>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="twitter" style="accent-color:#1DA1F2;" /> <span style="color:#1DA1F2;font-weight:600;font-size:0.85rem;">Twitter</span></label>
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="youtube" style="accent-color:#FF0000;" /> <span style="color:#FF0000;font-weight:600;font-size:0.85rem;">YouTube</span></label>
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="instagram" style="accent-color:#E1306C;" /> <span style="color:#E1306C;font-weight:600;font-size:0.85rem;">Instagram</span></label>
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="linkedin" style="accent-color:#0077B5;" /> <span style="color:#0077B5;font-weight:600;font-size:0.85rem;">LinkedIn</span></label>
+                    </div>
+                </div>
+                <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Date</label><input x-model="newPost.date" type="date" class="dash-input" /></div>
+                <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Time</label><input x-model="newPost.time" type="time" class="dash-input" /></div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button class="dash-btn dash-btn-primary" @click="schedulePost()">Schedule</button>
+                <button class="dash-btn dash-btn-outline" @click="postNow()">Post Now</button>
+                <button class="dash-btn dash-btn-outline" @click="showComposer=false" style="margin-left:auto;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-card">
+        <h4>Scheduled & Recent Posts</h4>
+        <table class="dash-table">
+            <thead><tr><th>Content</th><th>Platforms</th><th>Scheduled</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+                <template x-for="post in posts" :key="post.id">
+                    <tr>
+                        <td style="max-width:300px;" x-text="post.content.substring(0,80)+(post.content.length>80?'...':'')"></td>
+                        <td><template x-for="p in post.platforms" :key="p"><span class="dash-badge dash-badge-info" style="margin-right:4px;" x-text="p"></span></template></td>
+                        <td style="font-size:0.85rem;" x-text="post.scheduled_at||'Immediate'"></td>
+                        <td><span class="dash-badge" :class="post.status==='published'?'dash-badge-success':post.status==='scheduled'?'dash-badge-info':'dash-badge-warning'" x-text="post.status"></span></td>
+                        <td><button class="dash-btn dash-btn-outline" style="padding:3px 10px;font-size:0.75rem;" x-show="post.status!=='published'">Edit</button></td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="dash-card" style="margin-top:20px;">
+        <h4>API Connections</h4>
+        <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;">Connect accounts to enable auto-posting.</p>
+        <div class="row clearfix">
+            <div class="col-md-3 col-sm-6" style="margin-bottom:10px;"><div style="padding:12px;border:1px solid #e8ecef;border-radius:8px;display:flex;justify-content:space-between;align-items:center;"><strong style="color:#1DA1F2;">Twitter</strong><span class="dash-badge dash-badge-warning">Not Connected</span></div></div>
+            <div class="col-md-3 col-sm-6" style="margin-bottom:10px;"><div style="padding:12px;border:1px solid #e8ecef;border-radius:8px;display:flex;justify-content:space-between;align-items:center;"><strong style="color:#FF0000;">YouTube</strong><span class="dash-badge dash-badge-warning">Not Connected</span></div></div>
+            <div class="col-md-3 col-sm-6" style="margin-bottom:10px;"><div style="padding:12px;border:1px solid #e8ecef;border-radius:8px;display:flex;justify-content:space-between;align-items:center;"><strong style="color:#E1306C;">Instagram</strong><span class="dash-badge dash-badge-warning">Not Connected</span></div></div>
+            <div class="col-md-3 col-sm-6" style="margin-bottom:10px;"><div style="padding:12px;border:1px solid #e8ecef;border-radius:8px;display:flex;justify-content:space-between;align-items:center;"><strong style="color:#0077B5;">LinkedIn</strong><span class="dash-badge dash-badge-warning">Not Connected</span></div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+function socialPage() {
+    return {
+        posts:[
+            {id:1,content:'Just launched our new DeFi Tokenomics course! Learn the fundamentals of token design and economic modeling.',platforms:['twitter','linkedin'],scheduled_at:null,status:'published'},
+            {id:2,content:'Live workshop this Friday: Smart Contract Security Best Practices.',platforms:['twitter','instagram'],scheduled_at:'2026-04-18 10:00',status:'scheduled'},
+            {id:3,content:'New research article: Yield Farming Strategies for 2026.',platforms:['twitter','linkedin','youtube'],scheduled_at:'2026-04-20 14:00',status:'scheduled'},
+        ],
+        showComposer:false,
+        newPost:{content:'',platforms:[],date:'',time:''},
+        schedulePost(){
+            if(!this.newPost.content||this.newPost.platforms.length===0){alert('Add content and select platforms.');return;}
+            this.posts.unshift({id:Date.now(),content:this.newPost.content,platforms:[...this.newPost.platforms],scheduled_at:this.newPost.date+' '+this.newPost.time,status:'scheduled'});
+            this.newPost={content:'',platforms:[],date:'',time:''};this.showComposer=false;
+        },
+        postNow(){
+            if(!this.newPost.content||this.newPost.platforms.length===0){alert('Add content and select platforms.');return;}
+            this.posts.unshift({id:Date.now(),content:this.newPost.content,platforms:[...this.newPost.platforms],scheduled_at:null,status:'published'});
+            this.newPost={content:'',platforms:[],date:'',time:''};this.showComposer=false;
+        }
+    };
+}
+</script>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

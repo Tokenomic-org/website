@@ -1,0 +1,151 @@
+---
+layout: dashboard
+title: "Profile"
+permalink: /dashboard-profile/
+---
+<section class="dashboard-section" style="padding:60px 0;background:#f5f7fa;min-height:80vh;">
+    <div class="auto-container">
+        <div class="row">
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <div class="dashboard-sidebar" style="background:#001f29;border-radius:12px;padding:20px;margin-bottom:30px;">
+                    <nav class="dashboard-nav">
+                        <a href="/dashboard/" class="dash-nav-item ">
+                            <span class="flaticon-home-1" style="margin-right:8px;"></span> Dashboard
+                        </a>
+                        <a href="/dashboard-communities/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Communities
+                        </a>
+                        <a href="/dashboard-courses/" class="dash-nav-item ">
+                            <span class="flaticon-notebook" style="margin-right:8px;"></span> Courses
+                        </a>
+                        <a href="/dashboard-events/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Events
+                        </a>
+                        <a href="/dashboard-revenue/" class="dash-nav-item ">
+                            <span class="flaticon-money" style="margin-right:8px;"></span> Revenue
+                        </a>
+                        <a href="/dashboard-bookings/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Bookings
+                        </a>
+                        <a href="/dashboard-chat/" class="dash-nav-item ">
+                            <span class="flaticon-speech-bubble" style="margin-right:8px;"></span> Chat
+                        </a>
+                        <a href="/dashboard-articles/" class="dash-nav-item ">
+                            <span class="flaticon-edit" style="margin-right:8px;"></span> Articles
+                        </a>
+                        <a href="/dashboard-leaderboard/" class="dash-nav-item ">
+                            <span class="flaticon-trophy" style="margin-right:8px;"></span> Leaderboard
+                        </a>
+                        <a href="/dashboard-social/" class="dash-nav-item ">
+                            <span class="flaticon-share" style="margin-right:8px;"></span> Social
+                        </a>
+                        <a href="/dashboard-profile/" class="dash-nav-item active">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Profile
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-lg-9 col-md-8 col-sm-12">
+                <div class="dashboard-topbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;background:#fff;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <h3 style="margin:0;color:#001f29;">Your Profile</h3>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span class="wallet-status-text" style="font-size:0.85rem;color:#5a8299;">Not Connected</span>
+                        <button class="theme-btn btn-style-one wallet-connect-btn" style="padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.connect()">Connect Wallet</button>
+                        <button class="theme-btn btn-style-three wallet-disconnect-btn" style="display:none;padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.disconnect()">Disconnect</button>
+                    </div>
+                </div>
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#001f29;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                        <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
+                    </div>
+                    <h3 style="color:#001f29;margin-bottom:8px;">Connect Your Wallet</h3>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
+                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+                </div>
+                <div class="dashboard-content" style="display:none;">
+                    <div x-data="profilePage()">
+    <div class="row clearfix">
+        <div class="col-lg-4 col-md-5 col-sm-12" style="margin-bottom:20px;">
+            <div class="dash-card" style="text-align:center;">
+                <div style="width:80px;height:80px;border-radius:50%;background:#ff6000;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:#fff;font-size:2rem;font-weight:800;" x-text="profile.name.charAt(0)"></div>
+                <h4 x-text="profile.name"></h4>
+                <p style="color:#ff6000;font-size:0.85rem;margin-bottom:4px;" x-text="profile.role"></p>
+                <p style="font-family:monospace;font-size:0.8rem;color:#5a8299;" x-text="profile.wallet||'No wallet connected'"></p>
+                <hr style="margin:16px 0;">
+                <div style="display:flex;justify-content:center;gap:20px;">
+                    <div><strong x-text="profile.xp"></strong><br><small style="color:#5a8299;">XP</small></div>
+                    <div><strong x-text="profile.courses"></strong><br><small style="color:#5a8299;">Courses</small></div>
+                    <div><strong x-text="profile.badges"></strong><br><small style="color:#5a8299;">Badges</small></div>
+                </div>
+            </div>
+            <div class="dash-card" style="margin-top:16px;">
+                <h5>Badges</h5>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    <template x-for="b in badgeList" :key="b"><span class="dash-badge dash-badge-info" style="padding:6px 12px;" x-text="b"></span></template>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8 col-md-7 col-sm-12">
+            <div class="dash-card">
+                <h4>Profile Settings</h4>
+                <div style="display:flex;flex-direction:column;gap:14px;">
+                    <div class="row clearfix">
+                        <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Display Name</label><input x-model="profile.name" class="dash-input" /></div>
+                        <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Email</label><input x-model="profile.email" class="dash-input" type="email" /></div>
+                    </div>
+                    <div class="row clearfix">
+                        <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Role</label><select x-model="profile.role" class="dash-input"><option value="Educator">Educator</option><option value="Consultant">Consultant</option><option value="Institution Admin">Institution Admin</option><option value="Student">Student</option></select></div>
+                        <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Bio</label><input x-model="profile.bio" class="dash-input" placeholder="Short bio" /></div>
+                    </div>
+                    <div><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Wallet Address</label><input :value="profile.wallet" class="dash-input" disabled style="background:#f5f7fa;" /></div>
+                    <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 24px;width:fit-content;" @click="saveProfile()">Save Changes</button>
+                </div>
+            </div>
+            <div class="dash-card" style="margin-top:16px;">
+                <h4>Notification Preferences</h4>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <template x-for="n in notifications" :key="n.label">
+                        <label style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f2f5;cursor:pointer;">
+                            <div><strong x-text="n.label" style="font-size:0.9rem;"></strong><br><small style="color:#5a8299;" x-text="n.description"></small></div>
+                            <input type="checkbox" x-model="n.enabled" style="accent-color:#ff6000;width:18px;height:18px;" />
+                        </label>
+                    </template>
+                </div>
+            </div>
+            <div class="dash-card" style="margin-top:16px;">
+                <h4>Consultant Registration</h4>
+                <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;">Register as a consultant. 50 USDC one-time fee via PaymentSplitter contract.</p>
+                <div class="row clearfix" style="margin-bottom:14px;">
+                    <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Specialty</label><input x-model="consultantForm.specialty" class="dash-input" placeholder="e.g. Tokenomics" /></div>
+                    <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Rate (30 min)</label><input x-model="consultantForm.rate" type="number" class="dash-input" placeholder="75" /></div>
+                    <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Experience</label><select x-model="consultantForm.experience" class="dash-input"><option value="1-3">1-3 years</option><option value="3-5">3-5 years</option><option value="5+">5+ years</option></select></div>
+                </div>
+                <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 24px;" @click="alert('Pay 50 USDC to register. Deploy PaymentSplitter for live registration.')">Register & Pay 50 USDC</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function profilePage() {
+    return {
+        profile:{name:'Tokenomic User',email:'user@tokenomic.org',role:'Educator',bio:'DeFi educator and researcher.',wallet:'',xp:2340,courses:4,badges:6},
+        badgeList:['DeFi Explorer','Yield Farmer','Smart Contract Dev','Community Builder','Top 10%','Early Adopter'],
+        notifications:[
+            {label:'Course Updates',description:'New module releases and course changes.',enabled:true},
+            {label:'Community Messages',description:'New messages in your channels.',enabled:true},
+            {label:'Revenue Alerts',description:'Payment received and split distributions.',enabled:true},
+            {label:'Event Reminders',description:'Upcoming event notifications.',enabled:false},
+            {label:'Leaderboard Changes',description:'Rank changes and achievements.',enabled:false}
+        ],
+        consultantForm:{specialty:'',rate:'',experience:'3-5'},
+        saveProfile(){ alert('Profile saved! (Connect wallet for on-chain persistence via Supabase)'); }
+    };
+}
+</script>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

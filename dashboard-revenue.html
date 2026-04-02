@@ -1,0 +1,223 @@
+---
+layout: dashboard
+title: "Revenue"
+permalink: /dashboard-revenue/
+---
+<section class="dashboard-section" style="padding:60px 0;background:#f5f7fa;min-height:80vh;">
+    <div class="auto-container">
+        <div class="row">
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <div class="dashboard-sidebar" style="background:#001f29;border-radius:12px;padding:20px;margin-bottom:30px;">
+                    <nav class="dashboard-nav">
+                        <a href="/dashboard/" class="dash-nav-item ">
+                            <span class="flaticon-home-1" style="margin-right:8px;"></span> Dashboard
+                        </a>
+                        <a href="/dashboard-communities/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Communities
+                        </a>
+                        <a href="/dashboard-courses/" class="dash-nav-item ">
+                            <span class="flaticon-notebook" style="margin-right:8px;"></span> Courses
+                        </a>
+                        <a href="/dashboard-events/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Events
+                        </a>
+                        <a href="/dashboard-revenue/" class="dash-nav-item active">
+                            <span class="flaticon-money" style="margin-right:8px;"></span> Revenue
+                        </a>
+                        <a href="/dashboard-bookings/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Bookings
+                        </a>
+                        <a href="/dashboard-chat/" class="dash-nav-item ">
+                            <span class="flaticon-speech-bubble" style="margin-right:8px;"></span> Chat
+                        </a>
+                        <a href="/dashboard-articles/" class="dash-nav-item ">
+                            <span class="flaticon-edit" style="margin-right:8px;"></span> Articles
+                        </a>
+                        <a href="/dashboard-leaderboard/" class="dash-nav-item ">
+                            <span class="flaticon-trophy" style="margin-right:8px;"></span> Leaderboard
+                        </a>
+                        <a href="/dashboard-social/" class="dash-nav-item ">
+                            <span class="flaticon-share" style="margin-right:8px;"></span> Social
+                        </a>
+                        <a href="/dashboard-profile/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Profile
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-lg-9 col-md-8 col-sm-12">
+                <div class="dashboard-topbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;background:#fff;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <h3 style="margin:0;color:#001f29;">Crypto Revenue Hub</h3>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span class="wallet-status-text" style="font-size:0.85rem;color:#5a8299;">Not Connected</span>
+                        <button class="theme-btn btn-style-one wallet-connect-btn" style="padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.connect()">Connect Wallet</button>
+                        <button class="theme-btn btn-style-three wallet-disconnect-btn" style="display:none;padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.disconnect()">Disconnect</button>
+                    </div>
+                </div>
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#001f29;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                        <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
+                    </div>
+                    <h3 style="color:#001f29;margin-bottom:8px;">Connect Your Wallet</h3>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
+                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+                </div>
+                <div class="dashboard-content" style="display:none;">
+                    <div x-data="revenuePage()" x-init="init()">
+    <div class="row clearfix" style="margin-bottom:20px;">
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="'$'+totalRevenue"></div><div class="stat-lbl">Total Revenue (USDC)</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="'$'+monthlyRevenue"></div><div class="stat-lbl">This Month</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="'$'+balance"></div><div class="stat-lbl">Wallet Balance</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="txCount"></div><div class="stat-lbl">Transactions</div></div></div>
+    </div>
+
+    <div class="dash-card" style="border-left:4px solid #ff6000;">
+        <h4>Revenue Split (0xSplits)</h4>
+        <p style="color:#5a8299;font-size:0.85rem;margin-bottom:14px;">All revenue automatically split via 0xSplits on Base chain.</p>
+        <div class="row clearfix">
+            <div class="col-md-4 col-sm-12" style="margin-bottom:12px;"><div style="text-align:center;padding:16px;background:#f5f7fa;border-radius:8px;"><p style="font-size:2rem;font-weight:800;color:#00a651;">90%</p><p style="color:#5a8299;font-size:0.85rem;">Educator / Consultant</p></div></div>
+            <div class="col-md-4 col-sm-12" style="margin-bottom:12px;"><div style="text-align:center;padding:16px;background:#f5f7fa;border-radius:8px;"><p style="font-size:2rem;font-weight:800;color:#ff6000;">5%</p><p style="color:#5a8299;font-size:0.85rem;">Tokenomic Treasury</p></div></div>
+            <div class="col-md-4 col-sm-12" style="margin-bottom:12px;"><div style="text-align:center;padding:16px;background:#f5f7fa;border-radius:8px;"><p style="font-size:2rem;font-weight:800;color:#1976d2;">5%</p><p style="color:#5a8299;font-size:0.85rem;">Community Rewards</p></div></div>
+        </div>
+    </div>
+
+    <div class="row clearfix" style="margin-top:20px;">
+        <div class="col-lg-8 col-md-7 col-sm-12" style="margin-bottom:20px;">
+            <div class="dash-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                    <h4 style="margin:0;">Revenue Trend</h4>
+                    <div style="display:flex;gap:4px;">
+                        <button class="dash-btn" :class="chartRange==='1W'?'dash-btn-primary':'dash-btn-outline'" style="padding:4px 10px;font-size:0.75rem;" @click="chartRange='1W';updateChart()">1W</button>
+                        <button class="dash-btn" :class="chartRange==='1M'?'dash-btn-primary':'dash-btn-outline'" style="padding:4px 10px;font-size:0.75rem;" @click="chartRange='1M';updateChart()">1M</button>
+                        <button class="dash-btn" :class="chartRange==='3M'?'dash-btn-primary':'dash-btn-outline'" style="padding:4px 10px;font-size:0.75rem;" @click="chartRange='3M';updateChart()">3M</button>
+                        <button class="dash-btn" :class="chartRange==='YTD'?'dash-btn-primary':'dash-btn-outline'" style="padding:4px 10px;font-size:0.75rem;" @click="chartRange='YTD';updateChart()">YTD</button>
+                        <button class="dash-btn" :class="chartRange==='ALL'?'dash-btn-primary':'dash-btn-outline'" style="padding:4px 10px;font-size:0.75rem;" @click="chartRange='ALL';updateChart()">ALL</button>
+                    </div>
+                </div>
+                <canvas id="revenueTrendChart" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-5 col-sm-12" style="margin-bottom:20px;">
+            <div class="dash-card"><h4>Revenue Sources</h4><canvas id="revenueSourceChart" height="200"></canvas></div>
+        </div>
+    </div>
+
+    <div class="row clearfix">
+        <div class="col-lg-6 col-sm-12" style="margin-bottom:20px;">
+            <div class="dash-card">
+                <h4>Helio Payments</h4>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <div style="padding:10px 14px;background:#f5f7fa;border-radius:6px;display:flex;justify-content:space-between;"><span>Course Sales</span><strong style="color:#00a651;">$1,450 USDC</strong></div>
+                    <div style="padding:10px 14px;background:#f5f7fa;border-radius:6px;display:flex;justify-content:space-between;"><span>Consultations</span><strong style="color:#00a651;">$875 USDC</strong></div>
+                    <div style="padding:10px 14px;background:#f5f7fa;border-radius:6px;display:flex;justify-content:space-between;"><span>Event Tickets</span><strong style="color:#00a651;">$350 USDC</strong></div>
+                    <div style="padding:10px 14px;background:#f5f7fa;border-radius:6px;display:flex;justify-content:space-between;"><span>Sponsorships</span><strong style="color:#00a651;">$1,750 USDC</strong></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-sm-12" style="margin-bottom:20px;">
+            <div class="dash-card">
+                <h4>Withdraw Funds</h4>
+                <div style="padding:14px;background:#f5f7fa;border-radius:8px;margin-bottom:14px;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#5a8299;">Claimable from 0xSplits</span><strong style="color:#00a651;">$245.00 USDC</strong></div>
+                    <div style="display:flex;justify-content:space-between;"><span style="color:#5a8299;">Wallet Balance</span><strong x-text="'$'+balance+' USDC'"></strong></div>
+                </div>
+                <button class="theme-btn btn-style-one" style="width:100%;border-radius:8px;padding:10px;font-size:0.85rem;" @click="alert('Deploy PaymentSplitter contract to enable claims.')">Claim from 0xSplits</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h4 style="margin:0;">Transaction History</h4>
+            <button class="dash-btn dash-btn-outline" style="padding:6px 14px;font-size:0.8rem;" @click="exportCSV()">
+                <span style="margin-right:4px;">&#8681;</span> Export CSV
+            </button>
+        </div>
+        <div style="overflow-x:auto;">
+        <table class="dash-table">
+            <thead><tr><th>TX Hash</th><th>Description</th><th>Gross</th><th>Your Share</th><th>Treasury</th><th>Rewards</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody>
+                <template x-for="tx in transactions" :key="tx.id">
+                    <tr style="transition:background 0.2s;" onmouseover="this.style.background='#f0f4f8'" onmouseout="this.style.background=''">
+                        <td><a :href="'https://basescan.org/tx/'+tx.tx_hash" target="_blank" style="font-family:monospace;font-size:0.75rem;color:#ff6000;text-decoration:none;" x-text="tx.tx_hash.substring(0,10)+'...'"></a></td>
+                        <td x-text="tx.description"></td>
+                        <td><strong x-text="'$'+tx.amount_usdc"></strong></td>
+                        <td style="color:#00a651;" x-text="'$'+(parseFloat(tx.amount_usdc)*0.9).toFixed(2)"></td>
+                        <td style="color:#ff6000;font-size:0.85rem;" x-text="'$'+(parseFloat(tx.amount_usdc)*0.05).toFixed(2)"></td>
+                        <td style="color:#1976d2;font-size:0.85rem;" x-text="'$'+(parseFloat(tx.amount_usdc)*0.05).toFixed(2)"></td>
+                        <td>
+                            <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;"
+                                :style="tx.status==='confirmed'?'background:#e8f5e9;color:#2e7d32':tx.status==='pending'?'background:#fff3e0;color:#ef6c00':'background:#fce4ec;color:#c62828'"
+                                x-text="tx.status"></span>
+                        </td>
+                        <td style="font-size:0.85rem;" x-text="new Date(tx.created_at).toLocaleDateString()"></td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function revenuePage() {
+    return {
+        transactions:[],totalRevenue:'0.00',monthlyRevenue:'0.00',balance:'0.00',txCount:0,
+        chartRange:'ALL',trendChart:null,sourceChart:null,
+        chartData:{
+            '1W':{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],gross:[180,210,95,320,150,0,285],share:[162,189,86,288,135,0,257]},
+            '1M':{labels:['Week 1','Week 2','Week 3','Week 4'],gross:[680,920,1050,1240],share:[612,828,945,1116]},
+            '3M':{labels:['Apr','May','Jun'],gross:[720,890,1240],share:[648,801,1116]},
+            'YTD':{labels:['Jan','Feb','Mar','Apr','May','Jun'],gross:[320,480,560,720,890,1240],share:[288,432,504,648,801,1116]},
+            'ALL':{labels:['Q3 2025','Q4 2025','Jan','Feb','Mar','Apr','May','Jun'],gross:[120,240,320,480,560,720,890,1240],share:[108,216,288,432,504,648,801,1116]}
+        },
+        async init() {
+            this.transactions=await TokenomicSupabase.getRevenue();
+            const arr=Array.isArray(this.transactions)?this.transactions:[];
+            this.totalRevenue=arr.reduce((s,t)=>s+parseFloat(t.amount_usdc||0),0).toFixed(2);
+            this.txCount=arr.length;
+            if(TokenomicWallet.account) this.balance=await TokenomicWallet.getUSDCBalance();
+            this.renderCharts();
+        },
+        updateChart() {
+            if(this.trendChart) this.trendChart.destroy();
+            const d=this.chartData[this.chartRange];
+            const t=document.getElementById('revenueTrendChart');
+            if(!t) return;
+            const ctx=t.getContext('2d');
+            const gradient=ctx.createLinearGradient(0,0,0,300);
+            gradient.addColorStop(0,'rgba(255,96,0,0.25)');
+            gradient.addColorStop(1,'rgba(255,96,0,0.02)');
+            this.trendChart=new Chart(t,{type:'line',data:{labels:d.labels,datasets:[
+                {label:'Gross Revenue',data:d.gross,borderColor:'#ff6000',backgroundColor:gradient,fill:true,tension:0.4,borderWidth:2,pointBackgroundColor:'#ff6000',pointRadius:4,pointHoverRadius:6},
+                {label:'Your Share (90%)',data:d.share,borderColor:'#00a651',borderDash:[5,5],tension:0.4,borderWidth:2,pointRadius:0}
+            ]},options:{responsive:true,interaction:{intersect:false,mode:'index'},plugins:{legend:{labels:{color:'#5a8299',usePointStyle:true}},tooltip:{backgroundColor:'#001f29',titleColor:'#fff',bodyColor:'#fff',padding:12,cornerRadius:8,displayColors:true}},scales:{y:{ticks:{color:'#5a8299',callback:function(v){return '$'+v}},grid:{color:'rgba(0,0,0,0.05)'}},x:{ticks:{color:'#5a8299'},grid:{display:false}}}}});
+        },
+        renderCharts() {
+            this.updateChart();
+            if(this.sourceChart) this.sourceChart.destroy();
+            const s=document.getElementById('revenueSourceChart');
+            if(s) this.sourceChart=new Chart(s,{type:'doughnut',data:{labels:['Courses','Consultations','Events','Sponsorships'],datasets:[{data:[1450,875,350,1750],backgroundColor:['#ff6000','#00a651','#1976d2','#ff8f00'],borderWidth:0,hoverOffset:8}]},options:{responsive:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#5a8299',padding:12,usePointStyle:true}}}}});
+        },
+        exportCSV() {
+            const arr=Array.isArray(this.transactions)?this.transactions:[];
+            if(!arr.length){alert('No transactions to export.');return;}
+            let csv='TX Hash,Description,Gross (USDC),Your Share,Treasury,Rewards,Status,Date\n';
+            arr.forEach(tx=>{
+                const gross=parseFloat(tx.amount_usdc||0);
+                csv+=`${tx.tx_hash},${tx.description},${gross},${(gross*0.9).toFixed(2)},${(gross*0.05).toFixed(2)},${(gross*0.05).toFixed(2)},${tx.status},${new Date(tx.created_at).toLocaleDateString()}\n`;
+            });
+            const blob=new Blob([csv],{type:'text/csv'});
+            const url=URL.createObjectURL(blob);
+            const a=document.createElement('a');a.href=url;a.download='tokenomic-revenue-'+new Date().toISOString().split('T')[0]+'.csv';
+            document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+        }
+    };
+}
+</script>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

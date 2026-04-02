@@ -1,0 +1,152 @@
+---
+layout: dashboard
+title: "Events"
+permalink: /dashboard-events/
+---
+<section class="dashboard-section" style="padding:60px 0;background:#f5f7fa;min-height:80vh;">
+    <div class="auto-container">
+        <div class="row">
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <div class="dashboard-sidebar" style="background:#001f29;border-radius:12px;padding:20px;margin-bottom:30px;">
+                    <nav class="dashboard-nav">
+                        <a href="/dashboard/" class="dash-nav-item ">
+                            <span class="flaticon-home-1" style="margin-right:8px;"></span> Dashboard
+                        </a>
+                        <a href="/dashboard-communities/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Communities
+                        </a>
+                        <a href="/dashboard-courses/" class="dash-nav-item ">
+                            <span class="flaticon-notebook" style="margin-right:8px;"></span> Courses
+                        </a>
+                        <a href="/dashboard-events/" class="dash-nav-item active">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Events
+                        </a>
+                        <a href="/dashboard-revenue/" class="dash-nav-item ">
+                            <span class="flaticon-money" style="margin-right:8px;"></span> Revenue
+                        </a>
+                        <a href="/dashboard-bookings/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Bookings
+                        </a>
+                        <a href="/dashboard-chat/" class="dash-nav-item ">
+                            <span class="flaticon-speech-bubble" style="margin-right:8px;"></span> Chat
+                        </a>
+                        <a href="/dashboard-articles/" class="dash-nav-item ">
+                            <span class="flaticon-edit" style="margin-right:8px;"></span> Articles
+                        </a>
+                        <a href="/dashboard-leaderboard/" class="dash-nav-item ">
+                            <span class="flaticon-trophy" style="margin-right:8px;"></span> Leaderboard
+                        </a>
+                        <a href="/dashboard-social/" class="dash-nav-item ">
+                            <span class="flaticon-share" style="margin-right:8px;"></span> Social
+                        </a>
+                        <a href="/dashboard-profile/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Profile
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-lg-9 col-md-8 col-sm-12">
+                <div class="dashboard-topbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;background:#fff;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <h3 style="margin:0;color:#001f29;">Events & Luma Integration</h3>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span class="wallet-status-text" style="font-size:0.85rem;color:#5a8299;">Not Connected</span>
+                        <button class="theme-btn btn-style-one wallet-connect-btn" style="padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.connect()">Connect Wallet</button>
+                        <button class="theme-btn btn-style-three wallet-disconnect-btn" style="display:none;padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.disconnect()">Disconnect</button>
+                    </div>
+                </div>
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#001f29;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                        <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
+                    </div>
+                    <h3 style="color:#001f29;margin-bottom:8px;">Connect Your Wallet</h3>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
+                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+                </div>
+                <div class="dashboard-content" style="display:none;">
+                    <div x-data="eventsPage()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
+        <p style="color:#5a8299;">Create and manage events. Syncs with Luma for registration.</p>
+        <div style="display:flex;gap:8px;">
+            <button class="dash-btn dash-btn-outline" @click="fetchLuma()">Sync Luma</button>
+            <button class="dash-btn dash-btn-primary" @click="showCreate=!showCreate">+ New Event</button>
+        </div>
+    </div>
+
+    <div class="row clearfix" style="margin-bottom:20px;">
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="events.length"></div><div class="stat-lbl">Total Events</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="events.filter(e=>new Date(e.date)>=new Date()).length"></div><div class="stat-lbl">Upcoming</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="events.reduce((s,e)=>s+e.attendees,0)"></div><div class="stat-lbl">Registrations</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="'$'+events.reduce((s,e)=>s+(e.price*e.attendees),0)"></div><div class="stat-lbl">Event Revenue</div></div></div>
+    </div>
+
+    <div x-show="lumaStatus" x-transition class="dash-card" style="border-left:4px solid #1976d2;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:8px;"><strong style="color:#1976d2;" x-text="lumaStatus"></strong><button style="margin-left:auto;background:none;border:none;cursor:pointer;color:#5a8299;" @click="lumaStatus=''">Dismiss</button></div>
+    </div>
+
+    <div x-show="showCreate" x-transition class="dash-card" style="margin-bottom:20px;">
+        <h4>Create Event</h4>
+        <div class="row clearfix" style="margin-bottom:14px;">
+            <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Title</label><input x-model="ne.title" class="dash-input" placeholder="Event title" /></div>
+            <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Type</label><select x-model="ne.type" class="dash-input"><option value="workshop">Workshop</option><option value="webinar">Webinar</option><option value="conference">Conference</option><option value="meetup">Meetup</option></select></div>
+            <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Price (USDC)</label><input x-model="ne.price" type="number" class="dash-input" placeholder="0" /></div>
+        </div>
+        <div class="row clearfix" style="margin-bottom:14px;">
+            <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Date & Time</label><input x-model="ne.date" type="datetime-local" class="dash-input" /></div>
+            <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Description</label><input x-model="ne.description" class="dash-input" placeholder="Event description" /></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <button class="dash-btn dash-btn-primary" @click="createEvent()">Create Event</button>
+            <button class="dash-btn dash-btn-outline" @click="showCreate=false">Cancel</button>
+        </div>
+    </div>
+
+    <div class="row clearfix">
+        <template x-for="event in events" :key="event.id">
+            <div class="col-lg-6 col-md-6 col-sm-12" style="margin-bottom:16px;">
+                <div class="dash-card" style="border-top:3px solid;" :style="'border-color:'+(event.type==='workshop'?'#ff6000':event.type==='webinar'?'#00a651':'#1976d2')">
+                    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px;">
+                        <span class="dash-badge dash-badge-info" x-text="event.type"></span>
+                        <small style="color:#5a8299;" x-text="new Date(event.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})"></small>
+                    </div>
+                    <h5 style="margin-bottom:6px;" x-text="event.title"></h5>
+                    <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;" x-text="event.description"></p>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span><strong style="color:#ff6000;" x-text="event.attendees"></strong> <small style="color:#5a8299;">registered</small></span>
+                        <strong style="color:#00a651;" x-text="event.price>0?'$'+event.price+' USDC':'Free'"></strong>
+                    </div>
+                    <div style="display:flex;gap:6px;margin-top:10px;">
+                        <a :href="event.luma_url||'#'" target="_blank" class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.8rem;" x-show="event.luma_url">Luma</a>
+                        <button class="dash-btn dash-btn-primary" style="padding:4px 12px;font-size:0.8rem;" x-show="event.price>0" @click="alert('Connect wallet to pay $'+event.price+' USDC')">Pay USDC</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+
+<script>
+function eventsPage() {
+    return {
+        events:[
+            {id:1,title:'DeFi Tokenomics Workshop',type:'workshop',date:'2026-04-20T14:00',description:'Hands-on token design principles and economic modeling.',attendees:45,price:50,luma_url:'https://lu.ma/tokenomic-workshop'},
+            {id:2,title:'Yield Farming Strategies Webinar',type:'webinar',date:'2026-04-25T16:00',description:'Advanced yield farming techniques and risk management.',attendees:120,price:0,luma_url:'https://lu.ma/tokenomic-yield'},
+            {id:3,title:'Web3 Security Conference',type:'conference',date:'2026-05-10T09:00',description:'Smart contract security and audit practices.',attendees:200,price:100,luma_url:'https://lu.ma/tokenomic-security'},
+            {id:4,title:'Geneva DeFi Meetup',type:'meetup',date:'2026-05-15T18:00',description:'Monthly community meetup for DeFi enthusiasts.',attendees:35,price:0,luma_url:'https://lu.ma/tokenomic-geneva'}
+        ],
+        showCreate:false, lumaStatus:'',
+        ne:{title:'',type:'workshop',date:'',price:'',description:''},
+        createEvent(){
+            if(!this.ne.title)return;
+            this.events.unshift({id:Date.now(),title:this.ne.title,type:this.ne.type,date:this.ne.date,description:this.ne.description,price:parseFloat(this.ne.price)||0,attendees:0,luma_url:''});
+            this.ne={title:'',type:'workshop',date:'',price:'',description:''};this.showCreate=false;
+        },
+        fetchLuma(){ this.lumaStatus='Luma sync ready (demo). Set LUMA_API_KEY to auto-fetch events.'; }
+    };
+}
+</script>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,199 @@
+---
+layout: dashboard
+title: "Articles"
+permalink: /dashboard-articles/
+---
+<section class="dashboard-section" style="padding:60px 0;background:#f5f7fa;min-height:80vh;">
+    <div class="auto-container">
+        <div class="row">
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <div class="dashboard-sidebar" style="background:#001f29;border-radius:12px;padding:20px;margin-bottom:30px;">
+                    <nav class="dashboard-nav">
+                        <a href="/dashboard/" class="dash-nav-item ">
+                            <span class="flaticon-home-1" style="margin-right:8px;"></span> Dashboard
+                        </a>
+                        <a href="/dashboard-communities/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Communities
+                        </a>
+                        <a href="/dashboard-courses/" class="dash-nav-item ">
+                            <span class="flaticon-notebook" style="margin-right:8px;"></span> Courses
+                        </a>
+                        <a href="/dashboard-events/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Events
+                        </a>
+                        <a href="/dashboard-revenue/" class="dash-nav-item ">
+                            <span class="flaticon-money" style="margin-right:8px;"></span> Revenue
+                        </a>
+                        <a href="/dashboard-bookings/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Bookings
+                        </a>
+                        <a href="/dashboard-chat/" class="dash-nav-item ">
+                            <span class="flaticon-speech-bubble" style="margin-right:8px;"></span> Chat
+                        </a>
+                        <a href="/dashboard-articles/" class="dash-nav-item active">
+                            <span class="flaticon-edit" style="margin-right:8px;"></span> Articles
+                        </a>
+                        <a href="/dashboard-leaderboard/" class="dash-nav-item ">
+                            <span class="flaticon-trophy" style="margin-right:8px;"></span> Leaderboard
+                        </a>
+                        <a href="/dashboard-social/" class="dash-nav-item ">
+                            <span class="flaticon-share" style="margin-right:8px;"></span> Social
+                        </a>
+                        <a href="/dashboard-profile/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Profile
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-lg-9 col-md-8 col-sm-12">
+                <div class="dashboard-topbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;background:#fff;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <h3 style="margin:0;color:#001f29;">Educator Studio</h3>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span class="wallet-status-text" style="font-size:0.85rem;color:#5a8299;">Not Connected</span>
+                        <button class="theme-btn btn-style-one wallet-connect-btn" style="padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.connect()">Connect Wallet</button>
+                        <button class="theme-btn btn-style-three wallet-disconnect-btn" style="display:none;padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.disconnect()">Disconnect</button>
+                    </div>
+                </div>
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#001f29;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                        <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
+                    </div>
+                    <h3 style="color:#001f29;margin-bottom:8px;">Connect Your Wallet</h3>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
+                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+                </div>
+                <div class="dashboard-content" style="display:none;">
+                    <div x-data="articlesPage()" x-init="init()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <p style="color:#5a8299;">Write and publish articles to learn.tokenomic.org via GitHub API</p>
+        <div style="display:flex;gap:8px;">
+            <button class="dash-btn dash-btn-primary" @click="showEditor = !showEditor">+ New Article</button>
+        </div>
+    </div>
+
+    <div class="row clearfix" style="margin-bottom:20px;">
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="articles.filter(a=>a.status==='published').length"></div><div class="stat-lbl">Published</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff8f00;" x-text="articles.filter(a=>a.status==='draft').length"></div><div class="stat-lbl">Drafts</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="articles.filter(a=>a.sponsorship).length"></div><div class="stat-lbl">Sponsored</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val">$1,750</div><div class="stat-lbl">Sponsor Revenue</div></div></div>
+    </div>
+
+    <div x-show="showEditor" x-transition class="dash-card">
+        <h4>Article Editor</h4>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+            <div><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Title</label><input x-model="draft.title" class="dash-input" placeholder="Article title" /></div>
+            <div class="row clearfix">
+                <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Category</label><select x-model="draft.category" class="dash-input"><option value="defi">DeFi</option><option value="tokenomics">Tokenomics</option><option value="security">Security</option><option value="research">Research</option><option value="tutorial">Tutorial</option></select></div>
+                <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Sponsorship</label><select x-model="draft.sponsorship" class="dash-input"><option value="">None</option><option value="bronze">Bronze ($250)</option><option value="silver">Silver ($500)</option><option value="gold">Gold ($1,000)</option></select></div>
+                <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Revenue Share</label><input x-model="draft.revenue_share" type="number" class="dash-input" placeholder="10" /></div>
+                <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Target Repo</label><select x-model="draft.target_repo" class="dash-input"><option value="Tokenomic-org/learn">learn.tokenomic.org</option><option value="Tokenomic-org/website">tokenomic.org</option></select></div>
+            </div>
+            <div><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Content (Markdown)</label><textarea x-model="draft.content" class="dash-input" rows="12" placeholder="Write your article in Markdown..." style="font-family:monospace;"></textarea></div>
+            <div style="display:flex;gap:10px;">
+                <button class="dash-btn dash-btn-primary" @click="saveDraft()">Save Draft</button>
+                <button class="dash-btn dash-btn-outline" style="border-color:#00a651;color:#00a651;" @click="publishToGitHub()">Publish to GitHub</button>
+                <button class="dash-btn dash-btn-outline" @click="showEditor = false" style="margin-left:auto;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="publishStatus" x-transition class="dash-card" style="border-left:4px solid #00a651;">
+        <div style="display:flex;align-items:center;gap:10px;">
+            <strong style="color:#00a651;" x-text="publishStatus"></strong>
+            <span style="color:#5a8299;font-size:0.85rem;" x-text="publishDetails"></span>
+            <button style="margin-left:auto;background:none;border:none;cursor:pointer;color:#5a8299;" @click="publishStatus=''">Dismiss</button>
+        </div>
+    </div>
+
+    <div class="dash-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h4 style="margin:0;">Your Articles</h4>
+            <div style="display:flex;gap:6px;">
+                <button class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.8rem;" @click="filter='all'" :style="filter==='all'?'border-color:#ff6000;color:#ff6000':''">All</button>
+                <button class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.8rem;" @click="filter='published'" :style="filter==='published'?'border-color:#00a651;color:#00a651':''">Published</button>
+                <button class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.8rem;" @click="filter='draft'" :style="filter==='draft'?'border-color:#ff8f00;color:#ff8f00':''">Drafts</button>
+            </div>
+        </div>
+        <table class="dash-table">
+            <thead><tr><th>Title</th><th>Category</th><th>Sponsorship</th><th>Revenue</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody>
+                <template x-for="article in filteredArticles" :key="article.id">
+                    <tr>
+                        <td><strong x-text="article.title"></strong></td>
+                        <td><span class="dash-badge dash-badge-info" x-text="article.category"></span></td>
+                        <td><span class="dash-badge" :class="article.sponsorship==='gold'?'dash-badge-warning':article.sponsorship==='silver'?'dash-badge-info':'dash-badge-success'" x-text="article.sponsorship||'None'" x-show="article.sponsorship"></span></td>
+                        <td style="font-size:0.85rem;" x-text="article.revenue_share ? article.revenue_share+'% share' : '-'"></td>
+                        <td><span class="dash-badge" :class="article.status==='published'?'dash-badge-success':'dash-badge-warning'" x-text="article.status"></span></td>
+                        <td x-text="article.date"></td>
+                        <td><button class="dash-btn dash-btn-outline" style="padding:3px 10px;font-size:0.75rem;" @click="editArticle(article)">Edit</button></td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="dash-card" style="margin-top:20px;">
+        <h4>Sponsorship Tiers</h4>
+        <div class="row clearfix">
+            <div class="col-lg-4 col-md-4 col-sm-12" style="margin-bottom:16px;">
+                <div style="border:2px solid #cd7f32;border-radius:12px;padding:20px;">
+                    <h5 style="color:#cd7f32;">Bronze</h5>
+                    <p style="font-size:1.5rem;font-weight:800;margin-bottom:8px;">250 USDC</p>
+                    <ul style="color:#5a8299;font-size:0.85rem;padding-left:16px;"><li>Logo in article sidebar</li><li>Sponsor mention in newsletter</li><li>30-day placement</li></ul>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-12" style="margin-bottom:16px;">
+                <div style="border:2px solid #90a4ae;border-radius:12px;padding:20px;">
+                    <h5 style="color:#90a4ae;">Silver</h5>
+                    <p style="font-size:1.5rem;font-weight:800;margin-bottom:8px;">500 USDC</p>
+                    <ul style="color:#5a8299;font-size:0.85rem;padding-left:16px;"><li>All Bronze features</li><li>Featured banner placement</li><li>Social media cross-post</li><li>60-day placement</li></ul>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-12" style="margin-bottom:16px;">
+                <div style="border:2px solid #ffc107;border-radius:12px;padding:20px;">
+                    <h5 style="color:#ff8f00;">Gold</h5>
+                    <p style="font-size:1.5rem;font-weight:800;margin-bottom:8px;">1,000 USDC</p>
+                    <ul style="color:#5a8299;font-size:0.85rem;padding-left:16px;"><li>All Silver features</li><li>Dedicated sponsor article</li><li>Community AMA slot</li><li>Permanent placement</li></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function articlesPage() {
+    return {
+        articles: [
+            { id:1, title:'Understanding DeFi Tokenomics', category:'tokenomics', sponsorship:'gold', revenue_share:10, status:'published', date:'2026-03-15', content:'' },
+            { id:2, title:'Smart Contract Security Best Practices', category:'security', sponsorship:'silver', revenue_share:10, status:'published', date:'2026-03-10', content:'' },
+            { id:3, title:'Yield Farming Strategies for 2026', category:'defi', sponsorship:'', revenue_share:'', status:'draft', date:'2026-03-20', content:'' },
+            { id:4, title:'Introduction to Liquidity Pools', category:'tutorial', sponsorship:'bronze', revenue_share:10, status:'published', date:'2026-02-28', content:'' }
+        ],
+        showEditor:false, filter:'all', publishStatus:'', publishDetails:'',
+        draft:{ title:'', category:'defi', content:'', sponsorship:'', revenue_share:10, target_repo:'Tokenomic-org/learn' },
+        init() {},
+        get filteredArticles() { return this.filter==='all' ? this.articles : this.articles.filter(a=>a.status===this.filter); },
+        editArticle(a) { this.draft={...a,target_repo:'Tokenomic-org/learn'}; this.showEditor=true; },
+        saveDraft() {
+            if (!this.draft.title) return;
+            this.articles.unshift({ id:Date.now(), title:this.draft.title, category:this.draft.category, sponsorship:this.draft.sponsorship, revenue_share:this.draft.revenue_share, status:'draft', date:new Date().toISOString().split('T')[0], content:this.draft.content });
+            this.draft={ title:'', category:'defi', content:'', sponsorship:'', revenue_share:10, target_repo:'Tokenomic-org/learn' };
+            this.showEditor=false;
+        },
+        async publishToGitHub() {
+            if (!this.draft.title||!this.draft.content) { alert('Add title and content.'); return; }
+            this.publishStatus='Published successfully! (demo mode)';
+            this.publishDetails='Set GITHUB_PERSONAL_ACCESS_TOKEN secret for live publishing.';
+            this.articles.unshift({ id:Date.now(), title:this.draft.title, category:this.draft.category, sponsorship:this.draft.sponsorship, revenue_share:this.draft.revenue_share, status:'published', date:new Date().toISOString().split('T')[0], content:this.draft.content });
+            this.draft={ title:'', category:'defi', content:'', sponsorship:'', revenue_share:10, target_repo:'Tokenomic-org/learn' };
+            this.showEditor=false;
+        }
+    };
+}
+</script>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

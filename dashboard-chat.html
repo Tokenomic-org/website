@@ -1,0 +1,144 @@
+---
+layout: dashboard
+title: "Chat"
+permalink: /dashboard-chat/
+---
+<section class="dashboard-section" style="padding:60px 0;background:#f5f7fa;min-height:80vh;">
+    <div class="auto-container">
+        <div class="row">
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <div class="dashboard-sidebar" style="background:#001f29;border-radius:12px;padding:20px;margin-bottom:30px;">
+                    <nav class="dashboard-nav">
+                        <a href="/dashboard/" class="dash-nav-item ">
+                            <span class="flaticon-home-1" style="margin-right:8px;"></span> Dashboard
+                        </a>
+                        <a href="/dashboard-communities/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Communities
+                        </a>
+                        <a href="/dashboard-courses/" class="dash-nav-item ">
+                            <span class="flaticon-notebook" style="margin-right:8px;"></span> Courses
+                        </a>
+                        <a href="/dashboard-events/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Events
+                        </a>
+                        <a href="/dashboard-revenue/" class="dash-nav-item ">
+                            <span class="flaticon-money" style="margin-right:8px;"></span> Revenue
+                        </a>
+                        <a href="/dashboard-bookings/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Bookings
+                        </a>
+                        <a href="/dashboard-chat/" class="dash-nav-item active">
+                            <span class="flaticon-speech-bubble" style="margin-right:8px;"></span> Chat
+                        </a>
+                        <a href="/dashboard-articles/" class="dash-nav-item ">
+                            <span class="flaticon-edit" style="margin-right:8px;"></span> Articles
+                        </a>
+                        <a href="/dashboard-leaderboard/" class="dash-nav-item ">
+                            <span class="flaticon-trophy" style="margin-right:8px;"></span> Leaderboard
+                        </a>
+                        <a href="/dashboard-social/" class="dash-nav-item ">
+                            <span class="flaticon-share" style="margin-right:8px;"></span> Social
+                        </a>
+                        <a href="/dashboard-profile/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Profile
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-lg-9 col-md-8 col-sm-12">
+                <div class="dashboard-topbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;background:#fff;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <h3 style="margin:0;color:#001f29;">Community Chat</h3>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span class="wallet-status-text" style="font-size:0.85rem;color:#5a8299;">Not Connected</span>
+                        <button class="theme-btn btn-style-one wallet-connect-btn" style="padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.connect()">Connect Wallet</button>
+                        <button class="theme-btn btn-style-three wallet-disconnect-btn" style="display:none;padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.disconnect()">Disconnect</button>
+                    </div>
+                </div>
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#001f29;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                        <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
+                    </div>
+                    <h3 style="color:#001f29;margin-bottom:8px;">Connect Your Wallet</h3>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
+                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+                </div>
+                <div class="dashboard-content" style="display:none;">
+                    <div x-data="chatPage()">
+    <div class="row clearfix">
+        <div class="col-lg-4 col-md-4 col-sm-12">
+            <div class="dash-card" style="height:calc(100vh - 340px);display:flex;flex-direction:column;">
+                <h4>Channels</h4>
+                <div style="margin-bottom:12px;"><input x-model="search" class="dash-input" placeholder="Search channels..." /></div>
+                <div style="overflow-y:auto;flex:1;">
+                    <template x-for="ch in filteredChannels" :key="ch.id">
+                        <div @click="activeChannel=ch" style="padding:10px 14px;border-radius:8px;cursor:pointer;margin-bottom:4px;" :style="activeChannel.id===ch.id?'background:rgba(255,96,0,0.06);border-left:3px solid #ff6000':'border-left:3px solid transparent'">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <strong style="font-size:0.9rem;" x-text="ch.name"></strong>
+                                <span x-show="ch.unread>0" class="dash-badge dash-badge-danger" x-text="ch.unread" style="font-size:0.7rem;"></span>
+                            </div>
+                            <small style="color:#5a8299;" x-text="ch.last_message"></small>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8 col-md-8 col-sm-12">
+            <div class="dash-card" style="height:calc(100vh - 340px);display:flex;flex-direction:column;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #f0f2f5;">
+                    <div><h5 style="margin:0;" x-text="'#'+activeChannel.name"></h5><small style="color:#5a8299;" x-text="activeChannel.members+' members'"></small></div>
+                    <span class="dash-badge dash-badge-info" x-text="activeChannel.type"></span>
+                </div>
+                <div style="flex:1;overflow-y:auto;padding:8px 0;" id="chatMessages">
+                    <template x-for="msg in activeChannel.messages" :key="msg.id">
+                        <div style="margin-bottom:14px;">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+                                <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:#fff;" :style="'background:'+msg.avatar_color" x-text="msg.user.charAt(0)"></div>
+                                <strong style="font-size:0.85rem;" x-text="msg.user"></strong>
+                                <small style="color:#5a8299;" x-text="msg.time"></small>
+                            </div>
+                            <p style="margin:0 0 0 36px;color:#001f29;font-size:0.9rem;" x-text="msg.text"></p>
+                        </div>
+                    </template>
+                </div>
+                <div style="padding-top:10px;border-top:1px solid #f0f2f5;display:flex;gap:8px;">
+                    <input x-model="message" class="dash-input" placeholder="Type a message..." @keyup.enter="sendMessage()" />
+                    <button class="dash-btn dash-btn-primary" @click="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function chatPage() {
+    const msgs = [
+        {id:1,user:'CryptoScholar',text:'Has anyone tried the new Aave v4 pools?',time:'10:32 AM',avatar_color:'#ff6000'},
+        {id:2,user:'TokenExplorer',text:'Yes! The interest rates are very competitive.',time:'10:35 AM',avatar_color:'#00a651'},
+        {id:3,user:'Dr. Sarah Chen',text:'Be careful with leverage positions. Risk management first.',time:'10:42 AM',avatar_color:'#1976d2'},
+        {id:4,user:'DeFiNinja',text:'Good point Sarah. I wrote a risk assessment framework.',time:'10:50 AM',avatar_color:'#ff8f00'},
+    ];
+    return {
+        channels:[
+            {id:1,name:'general',type:'community',members:156,unread:3,last_message:'DeFiNinja: Good point Sarah...',messages:[...msgs]},
+            {id:2,name:'tokenomics',type:'study',members:42,unread:0,last_message:'Latest token model shared',messages:[{id:1,user:'Marcus Webb',text:'Check out this new bonding curve design.',time:'9:15 AM',avatar_color:'#ff6000'},{id:2,user:'Aisha Patel',text:'Interesting. How does it handle low liquidity?',time:'9:20 AM',avatar_color:'#00a651'}]},
+            {id:3,name:'security-guild',type:'study',members:67,unread:1,last_message:'New audit report posted',messages:[{id:1,user:'BlockBuilder',text:'Found a reentrancy pattern in the latest audit.',time:'Yesterday',avatar_color:'#1976d2'}]},
+            {id:4,name:'announcements',type:'official',members:247,unread:0,last_message:'New course launching Monday!',messages:[{id:1,user:'Tokenomic Team',text:'Excited to announce our Governance & DAOs course!',time:'Yesterday',avatar_color:'#ff6000'}]},
+        ],
+        activeChannel:{id:1,name:'general',type:'community',members:156,unread:3,last_message:'',messages:[...msgs]},
+        search:'', message:'',
+        get filteredChannels(){ return this.search ? this.channels.filter(c=>c.name.includes(this.search.toLowerCase())) : this.channels; },
+        sendMessage(){
+            if(!this.message.trim())return;
+            this.activeChannel.messages.push({id:Date.now(),user:'You',text:this.message,time:'Just now',avatar_color:'#ff6000'});
+            this.message='';
+            this.$nextTick(()=>{const el=document.getElementById('chatMessages');if(el)el.scrollTop=el.scrollHeight;});
+        }
+    };
+}
+</script>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

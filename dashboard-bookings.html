@@ -1,0 +1,184 @@
+---
+layout: dashboard
+title: "Bookings"
+permalink: /dashboard-bookings/
+---
+<section class="dashboard-section" style="padding:60px 0;background:#f5f7fa;min-height:80vh;">
+    <div class="auto-container">
+        <div class="row">
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <div class="dashboard-sidebar" style="background:#001f29;border-radius:12px;padding:20px;margin-bottom:30px;">
+                    <nav class="dashboard-nav">
+                        <a href="/dashboard/" class="dash-nav-item ">
+                            <span class="flaticon-home-1" style="margin-right:8px;"></span> Dashboard
+                        </a>
+                        <a href="/dashboard-communities/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Communities
+                        </a>
+                        <a href="/dashboard-courses/" class="dash-nav-item ">
+                            <span class="flaticon-notebook" style="margin-right:8px;"></span> Courses
+                        </a>
+                        <a href="/dashboard-events/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Events
+                        </a>
+                        <a href="/dashboard-revenue/" class="dash-nav-item ">
+                            <span class="flaticon-money" style="margin-right:8px;"></span> Revenue
+                        </a>
+                        <a href="/dashboard-bookings/" class="dash-nav-item active">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Bookings
+                        </a>
+                        <a href="/dashboard-chat/" class="dash-nav-item ">
+                            <span class="flaticon-speech-bubble" style="margin-right:8px;"></span> Chat
+                        </a>
+                        <a href="/dashboard-articles/" class="dash-nav-item ">
+                            <span class="flaticon-edit" style="margin-right:8px;"></span> Articles
+                        </a>
+                        <a href="/dashboard-leaderboard/" class="dash-nav-item ">
+                            <span class="flaticon-trophy" style="margin-right:8px;"></span> Leaderboard
+                        </a>
+                        <a href="/dashboard-social/" class="dash-nav-item ">
+                            <span class="flaticon-share" style="margin-right:8px;"></span> Social
+                        </a>
+                        <a href="/dashboard-profile/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Profile
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-lg-9 col-md-8 col-sm-12">
+                <div class="dashboard-topbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;background:#fff;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <h3 style="margin:0;color:#001f29;">Consultation Suite</h3>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span class="wallet-status-text" style="font-size:0.85rem;color:#5a8299;">Not Connected</span>
+                        <button class="theme-btn btn-style-one wallet-connect-btn" style="padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.connect()">Connect Wallet</button>
+                        <button class="theme-btn btn-style-three wallet-disconnect-btn" style="display:none;padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.disconnect()">Disconnect</button>
+                    </div>
+                </div>
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#001f29;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                        <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
+                    </div>
+                    <h3 style="color:#001f29;margin-bottom:8px;">Connect Your Wallet</h3>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
+                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+                </div>
+                <div class="dashboard-content" style="display:none;">
+                    <div x-data="bookingsPage()" x-init="init()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
+        <p style="color:#5a8299;">Book consultants. Pay with USDC on Base.</p>
+        <div style="display:flex;gap:8px;">
+            <button class="dash-btn dash-btn-outline" @click="view='consultants'" :style="view==='consultants'?'border-color:#ff6000;color:#ff6000':''">Find Consultants</button>
+            <button class="dash-btn dash-btn-outline" @click="view='list'" :style="view==='list'?'border-color:#ff6000;color:#ff6000':''">Bookings</button>
+            <button class="dash-btn dash-btn-primary" @click="showForm=!showForm">+ Book Session</button>
+        </div>
+    </div>
+
+    <div x-show="showForm" x-transition class="dash-card">
+        <h4>Book a Consultation</h4>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="row clearfix">
+                <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Consultant</label><select x-model="nb.consultant" class="dash-input" @change="updatePrice()"><option value="">Select...</option><template x-for="c in consultants" :key="c.id"><option :value="c.id" x-text="c.name+' - '+c.specialty"></option></template></select></div>
+                <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Topic</label><input x-model="nb.topic" class="dash-input" placeholder="Discussion topic" /></div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Date</label><input x-model="nb.date" type="date" class="dash-input" /></div>
+                <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Time</label><select x-model="nb.time" class="dash-input"><option value="09:00">9 AM</option><option value="10:00">10 AM</option><option value="11:00">11 AM</option><option value="13:00">1 PM</option><option value="14:00">2 PM</option><option value="15:00">3 PM</option></select></div>
+                <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Duration</label><select x-model="nb.duration" class="dash-input" @change="updatePrice()"><option value="30">30 min</option><option value="60">60 min</option><option value="90">90 min</option></select></div>
+            </div>
+            <div style="padding:16px;background:#f5f7fa;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
+                <div><strong>Session Fee</strong><br><small style="color:#5a8299;">90% to consultant, 5% Treasury, 5% Rewards (0xSplits)</small></div>
+                <div style="text-align:right;"><span style="font-size:1.5rem;font-weight:800;color:#00a651;" x-text="'$'+nb.price+' USDC'"></span></div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button class="dash-btn dash-btn-primary" @click="payAndBook()">Pay with Wallet</button>
+                <button class="dash-btn dash-btn-outline" @click="payHelio()">Pay via Helio</button>
+                <button class="dash-btn dash-btn-outline" @click="showForm=false" style="margin-left:auto;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="view==='consultants'">
+        <div class="row clearfix">
+            <template x-for="c in consultants" :key="c.id">
+                <div class="col-lg-6 col-md-6 col-sm-12" style="margin-bottom:16px;">
+                    <div class="dash-card">
+                        <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+                            <div style="width:50px;height:50px;border-radius:50%;background:#ff6000;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.25rem;font-weight:800;" x-text="c.name.charAt(0)"></div>
+                            <div><h5 style="margin:0;" x-text="c.name"></h5><small style="color:#ff6000;" x-text="c.specialty"></small></div>
+                        </div>
+                        <p style="color:#5a8299;font-size:0.85rem;margin-bottom:10px;" x-text="c.bio"></p>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span><strong style="color:#ff8f00;" x-text="c.rating+'/5'"></strong> <small style="color:#5a8299;" x-text="'('+c.sessions+' sessions)'"></small></span>
+                            <strong style="color:#00a651;" x-text="'$'+c.rate_30+'/30min'"></strong>
+                        </div>
+                        <button class="theme-btn btn-style-one" style="width:100%;margin-top:12px;padding:10px;font-size:0.85rem;border-radius:8px;" @click="nb.consultant=c.id;showForm=true;updatePrice();">Book Now</button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <div x-show="view==='list'" class="dash-card">
+        <h4>Your Bookings</h4>
+        <table class="dash-table">
+            <thead><tr><th>Consultant</th><th>Topic</th><th>Date</th><th>Duration</th><th>Price</th><th>Status</th></tr></thead>
+            <tbody>
+                <template x-for="b in bookings" :key="b.id">
+                    <tr>
+                        <td><strong x-text="b.consultant_name"></strong></td>
+                        <td x-text="b.topic"></td>
+                        <td x-text="b.booking_date"></td>
+                        <td x-text="b.duration+' min'"></td>
+                        <td><strong style="color:#00a651;" x-text="'$'+b.price_usdc+' USDC'"></strong></td>
+                        <td><span class="dash-badge" :class="b.status==='confirmed'?'dash-badge-success':'dash-badge-warning'" x-text="b.status"></span></td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function bookingsPage() {
+    return {
+        bookings:[], view:'consultants', showForm:false,
+        consultants:[
+            {id:1,name:'Dr. Sarah Chen',specialty:'Tokenomics & Economic Design',bio:'PhD in Economics. Advised 20+ DeFi protocols.',rating:4.9,sessions:142,rate_30:75,rate_60:150,rate_90:200,wallet:'0x742d35Cc6634C0532925a3b844Bc9e7595f2bD1e'},
+            {id:2,name:'Marcus Webb',specialty:'Smart Contract Security',bio:'Former Trail of Bits auditor. Solidity security specialist.',rating:4.8,sessions:98,rate_30:100,rate_60:180,rate_90:250,wallet:'0x8Ba1f109551bD432803012645Ac136ddd64DBA72'},
+            {id:3,name:'Aisha Patel',specialty:'DeFi Protocol Strategy',bio:'Ex-Aave contributor. Liquidity and governance expert.',rating:4.7,sessions:76,rate_30:60,rate_60:110,rate_90:150,wallet:'0x2546BcD3c84621e976D8185a91A922aE77ECEc30'},
+            {id:4,name:'James Liu',specialty:'Regulatory & Compliance',bio:'Blockchain attorney. US, EU, APAC jurisdictions.',rating:4.9,sessions:53,rate_30:125,rate_60:225,rate_90:300,wallet:'0xbDA5747bFD65F08deb54cb465eB87D40e51B197E'}
+        ],
+        nb:{consultant:'',topic:'',date:'',time:'10:00',duration:'30',price:0},
+        async init() {
+            this.bookings = await TokenomicSupabase.getBookings();
+            this.bookings = this.bookings.map(b=>({...b,consultant_name:b.consultant_name||'Dr. Sarah Chen'}));
+        },
+        updatePrice(){
+            const c=this.consultants.find(x=>x.id==this.nb.consultant);
+            if(!c){this.nb.price=0;return;}
+            this.nb.price=parseInt(this.nb.duration)===30?c.rate_30:parseInt(this.nb.duration)===60?c.rate_60:c.rate_90;
+        },
+        async payAndBook(){
+            if(!this.nb.consultant||!this.nb.topic||!this.nb.date){alert('Fill in all details.');return;}
+            const c=this.consultants.find(x=>x.id==this.nb.consultant);
+            const receipt=await TokenomicWallet.payWithUSDC(c.wallet,this.nb.price,'Consultation: '+this.nb.topic);
+            this.bookings.unshift({id:Date.now(),consultant_name:c.name,topic:this.nb.topic,booking_date:this.nb.date,duration:parseInt(this.nb.duration),price_usdc:this.nb.price,status:'confirmed'});
+            this.nb={consultant:'',topic:'',date:'',time:'10:00',duration:'30',price:0};this.showForm=false;
+            alert(receipt?'Payment confirmed!':'Booking confirmed (demo mode)');
+        },
+        payHelio(){
+            if(!this.nb.consultant||!this.nb.topic||!this.nb.date){alert('Fill in all details.');return;}
+            alert('Helio checkout ready (demo). Set HELIO_API_KEY for live payments.');
+            const c=this.consultants.find(x=>x.id==this.nb.consultant);
+            this.bookings.unshift({id:Date.now(),consultant_name:c?c.name:'',topic:this.nb.topic,booking_date:this.nb.date,duration:parseInt(this.nb.duration),price_usdc:this.nb.price,status:'pending'});
+            this.nb={consultant:'',topic:'',date:'',time:'10:00',duration:'30',price:0};this.showForm=false;
+        }
+    };
+}
+</script>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

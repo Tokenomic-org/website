@@ -1,0 +1,208 @@
+---
+layout: dashboard
+title: "Dashboard"
+permalink: /dashboard/
+---
+<section class="dashboard-section" style="padding:60px 0;background:#f5f7fa;min-height:80vh;">
+    <div class="auto-container">
+        <div class="row">
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <div class="dashboard-sidebar" style="background:#001f29;border-radius:12px;padding:20px;margin-bottom:30px;">
+                    <nav class="dashboard-nav">
+                        <a href="/dashboard/" class="dash-nav-item active">
+                            <span class="flaticon-home-1" style="margin-right:8px;"></span> Dashboard
+                        </a>
+                        <a href="/dashboard-communities/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Communities
+                        </a>
+                        <a href="/dashboard-courses/" class="dash-nav-item ">
+                            <span class="flaticon-notebook" style="margin-right:8px;"></span> Courses
+                        </a>
+                        <a href="/dashboard-events/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Events
+                        </a>
+                        <a href="/dashboard-revenue/" class="dash-nav-item ">
+                            <span class="flaticon-money" style="margin-right:8px;"></span> Revenue
+                        </a>
+                        <a href="/dashboard-bookings/" class="dash-nav-item ">
+                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Bookings
+                        </a>
+                        <a href="/dashboard-chat/" class="dash-nav-item ">
+                            <span class="flaticon-speech-bubble" style="margin-right:8px;"></span> Chat
+                        </a>
+                        <a href="/dashboard-articles/" class="dash-nav-item ">
+                            <span class="flaticon-edit" style="margin-right:8px;"></span> Articles
+                        </a>
+                        <a href="/dashboard-leaderboard/" class="dash-nav-item ">
+                            <span class="flaticon-trophy" style="margin-right:8px;"></span> Leaderboard
+                        </a>
+                        <a href="/dashboard-social/" class="dash-nav-item ">
+                            <span class="flaticon-share" style="margin-right:8px;"></span> Social
+                        </a>
+                        <a href="/dashboard-profile/" class="dash-nav-item ">
+                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Profile
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-lg-9 col-md-8 col-sm-12">
+                <div class="dashboard-topbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;background:#fff;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <h3 style="margin:0;color:#001f29;">Welcome to Tokenomic Dashboard</h3>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span class="wallet-status-text" style="font-size:0.85rem;color:#5a8299;">Not Connected</span>
+                        <button class="theme-btn btn-style-one wallet-connect-btn" style="padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.connect()">Connect Wallet</button>
+                        <button class="theme-btn btn-style-three wallet-disconnect-btn" style="display:none;padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.disconnect()">Disconnect</button>
+                    </div>
+                </div>
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#001f29;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                        <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
+                    </div>
+                    <h3 style="color:#001f29;margin-bottom:8px;">Connect Your Wallet</h3>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
+                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+                </div>
+                <div class="dashboard-content" style="display:none;">
+                    <div x-data="dashboardHome()" x-init="init()">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <span style="color:#5a8299;font-size:0.9rem;">View as:</span>
+        <button class="dash-btn dash-btn-outline" @click="setRole('institution')" :style="role === 'institution' ? 'border-color:#ff6000;color:#ff6000;background:rgba(255,96,0,0.05)' : ''">Institution</button>
+        <button class="dash-btn dash-btn-outline" @click="setRole('educator')" :style="role === 'educator' ? 'border-color:#00a651;color:#00a651;background:rgba(0,166,81,0.05)' : ''">Educator</button>
+        <button class="dash-btn dash-btn-outline" @click="setRole('consultant')" :style="role === 'consultant' ? 'border-color:#1976d2;color:#1976d2;background:rgba(25,118,210,0.05)' : ''">Consultant</button>
+    </div>
+
+    <div class="row clearfix" style="margin-bottom:24px;">
+        <template x-for="stat in roleStats" :key="stat.label">
+            <div class="col-lg-3 col-md-6 col-sm-12" style="margin-bottom:16px;">
+                <div class="dash-stat">
+                    <div class="stat-val" :style="'color:' + stat.color" x-text="stat.value"></div>
+                    <div class="stat-lbl" x-text="stat.label"></div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <div class="row clearfix">
+        <div class="col-lg-8 col-md-7 col-sm-12">
+            <div class="dash-card">
+                <h4 x-text="role === 'institution' ? 'Student Enrollment Trend' : role === 'educator' ? 'Revenue Overview' : 'Booking Revenue'"></h4>
+                <canvas id="mainChart" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-5 col-sm-12">
+            <div class="dash-card">
+                <h4>Quick Actions</h4>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <template x-for="action in quickActions" :key="action.label">
+                        <a :href="action.url" class="theme-btn btn-style-one" style="text-align:center;padding:10px 16px;font-size:0.85rem;border-radius:8px;" x-text="action.label"></a>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-card" style="margin-top:20px;">
+        <h4>Recent Transactions</h4>
+        <table class="dash-table">
+            <thead><tr><th>Description</th><th>Amount</th><th>From</th><th>Split</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody>
+                <template x-for="tx in recentTx" :key="tx.id">
+                    <tr>
+                        <td x-text="tx.description"></td>
+                        <td><strong style="color:#00a651;" x-text="'$' + tx.amount_usdc + ' USDC'"></strong></td>
+                        <td style="font-family:monospace;font-size:0.8rem;" x-text="tx.sender_wallet"></td>
+                        <td style="font-size:0.8rem;color:#5a8299;" x-text="tx.split || '90/5/5'"></td>
+                        <td><span class="dash-badge dash-badge-success" x-text="tx.status"></span></td>
+                        <td x-text="new Date(tx.created_at).toLocaleDateString()"></td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function dashboardHome() {
+    return {
+        role: 'educator',
+        roleStats: [],
+        recentTx: [],
+        quickActions: [],
+        setRole(r) {
+            this.role = r;
+            this.updateRoleStats();
+            this.$nextTick(() => this.renderChart());
+        },
+        updateRoleStats() {
+            if (this.role === 'institution') {
+                this.roleStats = [
+                    { label: 'Active Students', value: '247', color: '#ff6000' },
+                    { label: 'Courses Live', value: '12', color: '#00a651' },
+                    { label: 'Completion Rate', value: '78%', color: '#1976d2' },
+                    { label: 'Communities', value: '5', color: '#001f29' }
+                ];
+                this.quickActions = [
+                    { label: 'Manage Courses', url: '/dashboard-courses/' },
+                    { label: 'View Leaderboard', url: '/dashboard-leaderboard/' },
+                    { label: 'Communities', url: '/dashboard-communities/' }
+                ];
+            } else if (this.role === 'educator') {
+                this.roleStats = [
+                    { label: 'Communities', value: '5', color: '#001f29' },
+                    { label: 'Total Students', value: '247', color: '#ff6000' },
+                    { label: 'Revenue (USDC)', value: '$2,450', color: '#00a651' },
+                    { label: 'Articles Published', value: '24', color: '#1976d2' }
+                ];
+                this.quickActions = [
+                    { label: 'Write Article', url: '/dashboard-articles/' },
+                    { label: 'Social Posts', url: '/dashboard-social/' },
+                    { label: 'Revenue Details', url: '/dashboard-revenue/' }
+                ];
+            } else {
+                this.roleStats = [
+                    { label: 'Upcoming Bookings', value: '3', color: '#ff6000' },
+                    { label: 'Total Earned', value: '$1,875', color: '#00a651' },
+                    { label: 'Sessions', value: '18', color: '#001f29' },
+                    { label: 'Client Rating', value: '4.9', color: '#1976d2' }
+                ];
+                this.quickActions = [
+                    { label: 'Manage Bookings', url: '/dashboard-bookings/' },
+                    { label: 'Withdraw Funds', url: '/dashboard-revenue/' },
+                    { label: 'Client Messages', url: '/dashboard-chat/' }
+                ];
+            }
+        },
+        async init() {
+            const revenue = await TokenomicSupabase.getRevenue();
+            this.recentTx = Array.isArray(revenue) ? revenue.slice(0, 5) : [];
+            this.setRole('educator');
+        },
+        renderChart() {
+            const existing = Chart.getChart('mainChart');
+            if (existing) existing.destroy();
+            const ctx = document.getElementById('mainChart');
+            if (!ctx) return;
+            const labels = ['Jan','Feb','Mar','Apr','May','Jun'];
+            let config;
+            if (this.role === 'institution') {
+                config = { type:'line', data:{ labels, datasets:[{ label:'New Students', data:[18,32,45,52,68,87], borderColor:'#ff6000', backgroundColor:'rgba(255,96,0,0.1)', fill:true, tension:0.4 }] } };
+            } else if (this.role === 'educator') {
+                config = { type:'bar', data:{ labels, datasets:[{ label:'Revenue (USDC)', data:[320,480,560,720,890,1240], backgroundColor:'rgba(255,96,0,0.2)', borderColor:'#ff6000', borderWidth:2, borderRadius:6 }] } };
+            } else {
+                config = { type:'doughnut', data:{ labels:['Token Strategy','Audit Review','Tokenomics Model','General'], datasets:[{ data:[450,300,375,225], backgroundColor:['#ff6000','#00a651','#1976d2','#ff8f00'], borderWidth:0 }] } };
+            }
+            config.options = { responsive:true, plugins:{ legend:{ labels:{ color:'#5a8299' } } } };
+            if (config.type !== 'doughnut') {
+                config.options.scales = { y:{ ticks:{color:'#5a8299'}, grid:{color:'rgba(0,0,0,0.05)'} }, x:{ ticks:{color:'#5a8299'}, grid:{display:false} } };
+            }
+            new Chart(ctx, config);
+        }
+    };
+}
+</script>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
