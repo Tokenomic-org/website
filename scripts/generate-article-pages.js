@@ -25,6 +25,8 @@ var IMAGE_MAP = {
   'decentralized-data-storage': 'decentralized-data-storage.png',
   'the-basics-of-defi': 'defi-basics.png',
   'analysis-defi-impact-traditional-financial-markets': 'Analysis-of-DeFi.png',
+  'gas-optimization-solidity': 'cyber_security_crypto.png',
+  'upgradeable-proxy-contracts': 'smart-contracts.png',
   'nestor-the-biz-star': 'Butterfly.png'
 };
 
@@ -40,6 +42,8 @@ var AUTHOR_MAP = {
   'decentralized-data-storage': 'Guillaume Lauzier',
   'the-basics-of-defi': 'Guillaume Lauzier',
   'analysis-defi-impact-traditional-financial-markets': 'Guillaume Lauzier',
+  'gas-optimization-solidity': 'Guillaume Lauzier',
+  'upgradeable-proxy-contracts': 'Guillaume Lauzier',
   'nestor-the-biz-star': 'Guillaume Lauzier'
 };
 

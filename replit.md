@@ -22,7 +22,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - `_layouts/` — `default`, `page`, `post`, `category`, `tag_page`, `dashboard`
 - `_includes/`, `_data/` — Jekyll source templates and data
 - `_site/dashboard*/` — Dashboard pages (11 pages)
-- `_site/learn/*/` — Article detail pages (11 articles, statically generated)
+- `_site/learn/*/` — Article detail pages (13 articles, statically generated + 3 slug aliases)
 - `shared/assets/js/` — Shared JS (wallet, Supabase client, site-search)
 - `assets/` — CSS, images, fonts, JS libraries
 - `assets/images/learn/` — Article images pulled from learn.tokenomic.org (cover images + inline content images)
@@ -80,7 +80,8 @@ Defined in `_data/navigation.yml`: Home, About, Educators, Consultants, Learn
 - To regenerate: run `node scripts/scrape-articles.js` then `node scripts/generate-article-pages.js`
 - Demo data in supabase-client.js uses local image paths (`/assets/images/learn/`)
 - Site search (site-search.js) links to local `/learn/[slug]` paths
-- 11 articles across Strategy, Technical, and Market categories
+- 13 articles across Strategy, Technical, and Market categories
+- Slug aliases (symlinks) for alternate URL patterns: `arbitrage-practical-guide`, `advanced-options-defi`, `smart-contract-security-basics`
 
 ## Important Notes
 - Ruby/Jekyll is NOT installed locally — cannot run `jekyll build`
