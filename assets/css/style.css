@@ -13132,3 +13132,6 @@ img.lazy-image.loaded{
 .logo-box .logo img { max-height:40px; width:auto; }
 .mobile-menu .nav-logo img { max-height:36px; width:auto; }
 .main-footer .footer-logo img { max-height:40px; width:auto; }
+
+.header-style-two .search-btn { color:#ffffff; }
+.header-style-two .search-btn .search-toggler { color:#ffffff; }
