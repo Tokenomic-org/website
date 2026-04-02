@@ -1,288 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <title>Tokenomic - Advance Your Decentralized Finance Expertise</title>
-        <link href="/assets/css/bootstrap.css" rel="stylesheet" />
-        <link href="/assets/css/style.css" rel="stylesheet" />
-        <link href="/assets/css/responsive.css" rel="stylesheet" />
-        <link rel="shortcut icon" href="/assets/images/favicon.png" type="image/x-icon" />
-        <link rel="icon" href="/assets/images/favicon.png" type="image/x-icon" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=2.0,minimum-scale=1.0" />
-        <!--[if lt IE 9]><script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script><![endif]-->
-        <!--[if lt IE 9]><script src="/assets/js/respond.js"></script><![endif]-->
-        <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', 'G-JXP3M58ZJZ');
-        </script>
-    </head>
-    <body>
-        <div class="page-wrapper">
-            
-            <style>
-.header-upper .other-links { display:flex !important;align-items:center;gap:12px;float:right !important; }
-.header-upper .search-btn { float:none !important; }
-.wallet-btn-header { display:inline-block; }
-.wallet-btn-header a:hover { background:#e55500 !important; }
-@media (max-width: 991px) {
-    .wallet-btn-header { display:none !important; }
-}
-.mobile-menu .wallet-mobile-btn a {
-    display:block;text-align:center;padding:14px 20px;border-radius:30px;
-    background:#ff6000;color:#fff;font-size:14px;font-weight:600;
-    text-decoration:none;letter-spacing:0.5px;transition:background 0.2s;
-}
-.mobile-menu .wallet-mobile-btn a:hover { background:#e55500; }
-</style>
-<header class="main-header header-style-two">
-    <!-- Header Upper -->
-    <div class="header-upper">
-        <div class="auto-container clearfix">
-            <div class="inner clearfix tkn-header-flex">
-                <!--Logo-->
-                <div class="logo-box">
-                    <div class="logo">
-                        <a href="https://tokenomic.org" title="Tokenomic">
-                            <img src="/assets/images/logo.png" alt="Tokenomic" title="Tokenomic" />
-                        </a>
-                    </div>
-                </div>
-                <div class="nav-content clearfix">
-                    <div class="nav-outer clearfix">
-                        <!--Mobile Navigation Toggler-->
-                        <div class="mobile-nav-toggler"><span class="icon flaticon-menu"></span></div>
-                        <!-- Main Menu -->
-                        <nav class="main-menu navbar-expand-md navbar-light">
-                            <div class="collapse navbar-collapse show clearfix">
-                                <ul class="navigation clearfix">
-                                    
-                                    
-                                    <li><a href="/">Home</a></li>
-                                    
-                                    
-                                    
-                                    <li class="dropdown">
-                                        <a href="/about/">About</a>
-                                        <ul>
-                                            
-                                             <li><a href="/contact/">Contact</a></li>
-                                            
-                                        </ul>
-                                    </li>
-                                    <li><a href="/educators/">Experts</a></li>
-                                    
-                                    
-                                    
-                                    <li><a href="/learn/">Learn</a></li>
-                                    
-                                    
-                                                                    </ul>
-                            </div>
-                        </nav>
-                    </div>
-                </div>
-                <!--Other Links-->
-                <div class="other-links clearfix">
-                    
-                    <div class="search-btn">
-                        <button type="button" class="theme-btn search-toggler"><span class="icon flaticon-loupe-2"></span></button>
-                    </div>
-                    <div class="wallet-btn-header">
-                        <a href="#" class="wallet-login-btn" onclick="TokenomicWallet.connect(); return false;" style="display:inline-flex;align-items:center;gap:6px;padding:8px 22px;font-size:13px;font-weight:600;border-radius:30px;background:#ff6000;color:#fff;text-decoration:none;white-space:nowrap;letter-spacing:0.5px;transition:background 0.2s;"><span class="btn-title">Connect Wallet</span></a>
-                        <a href="/dashboard/" class="wallet-logged-in-btn" style="display:none;align-items:center;gap:6px;padding:8px 22px;font-size:13px;font-weight:600;border-radius:30px;background:#ff6000;color:#fff;text-decoration:none;white-space:nowrap;letter-spacing:0.5px;transition:background 0.2s;"><span class="btn-title wallet-addr-text">Dashboard</span></a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!--End Header Upper-->
-
-    <!-- Mobile Menu  -->
-    <div class="mobile-menu">
-        <div class="menu-backdrop"></div>
-        <div class="close-btn"><span class="icon flaticon-targeting-cross"></span></div>
-        <nav class="menu-box">
-            <div class="nav-logo">
-                <a href="https://tokenomic.org">
-                    <img src="/assets/images/logo.png" alt="Tokenomic" title="Tokenomic" width="200px" />
-                </a>
-            </div>
-            <div class="menu-outer"><!--Here Menu Will Come Automatically Via Javascript / Same Menu as in Header--></div>
-            <div class="auto-container">
-            <div class="inner-container clearfix">
-                <h1>Privacy Policy</h1>
-                <div class="page-nav">
-                    <ul class="bread-crumb clearfix">
-                        <li><a href="https://tokenomic.org">Home</a></li>
-                        <li class="active">Privacy Policy</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<!--End Banner Section -->
+---
+layout: default
+title: Privacy Policy
+---
+{% include header_5.html %}
+{% include page_header.html %}
 
 <section style="padding:60px 0;">
     <div class="auto-container">
-        <div style="max-width:800px;margin:0 auto;">
-            <p style="color:#5a8299;margin-bottom:30px;"><strong>Last updated:</strong> April 1, 2026</p>
+        <div style="max-width:900px;margin:0 auto;">
+            <h1 style="font-size:2.2rem;color:#001f29;margin-bottom:8px;">Privacy Policy for Tokenomic.org</h1>
+            <p style="color:#5a8299;margin-bottom:30px;"><strong>Effective Date:</strong> April 2, 2026 | <strong>Last Updated:</strong> April 2, 2026</p>
 
-            <h3 style="color:#001f29;margin-bottom:15px;">1. Introduction</h3>
-            <p style="color:#5a8299;line-height:1.8;margin-bottom:25px;">Tokenomic ("we," "our," or "us") operates the tokenomic.org platform. This Privacy Policy explains how we collect, use, and protect information when you use our institutional DeFi education platform.</p>
+            <p style="color:#5a8299;line-height:1.8;margin-bottom:30px;">At <strong>Tokenomic.org</strong>, we are committed to protecting the privacy of our community members—including institutional learners, educators, and consultants. As a decentralized, community-led platform, we prioritize data sovereignty and transparency. This Privacy Policy explains how we collect, use, and protect information across our website, dashboard, and educational modules.</p>
 
-            <h3 style="color:#001f29;margin-bottom:15px;">2. Information We Collect</h3>
-            <p style="color:#5a8299;line-height:1.8;margin-bottom:10px;"><strong>Wallet Data:</strong> When you connect a Web3 wallet, we read your public wallet address. We do not access, store, or control your private keys or funds. All on-chain data we access is publicly available.</p>
-            <p style="color:#5a8299;line-height:1.8;margin-bottom:10px;"><strong>Usage Data:</strong> We collect anonymized analytics about how you interact with the platform, including pages visited, courses accessed, and features used.</p>
-            <p style="color:#5a8299;line-height:1.8;margin-bottom:25px;"><strong>Contact Information:</strong> If you submit a contact form or book a consultation, we collect the information you voluntarily provide (name, email, organization).</p>
-
-            <h3 style="color:#001f29;margin-bottom:15px;">3. How We Use Information</h3>
-            <ul style="color:#5a8299;line-height:2;margin-bottom:25px;padding-left:20px;">
-                <li>To personalize your learning experience based on on-chain activity</li>
-                <li>To track course progress and issue certifications</li>
-                <li>To process USDC payments on Base network</li>
-                <li>To improve platform functionality and user experience</li>
-                <li>To communicate about courses, events, and platform updates</li>
+            <h3 style="color:#001f29;margin-bottom:15px;margin-top:40px;">1. The Web3 Data Paradigm</h3>
+            <p style="color:#5a8299;line-height:1.8;margin-bottom:10px;">Unlike traditional platforms, Tokenomic.org operates on a "Privacy by Design" framework.</p>
+            <ul style="color:#5a8299;line-height:1.8;margin-bottom:25px;padding-left:20px;">
+                <li style="margin-bottom:10px;"><strong>Public Blockchain Data:</strong> Your interactions with smart contracts (e.g., course enrollments, certificate minting, or payment splits) are recorded on public ledgers (e.g., Ethereum, Solana, or Layer 2s). This data is immutable and public by nature.</li>
+                <li><strong>Self-Sovereign Identity:</strong> We encourage the use of non-custodial wallets (e.g., MetaMask, Rabby). We do not store your private keys or seed phrases.</li>
             </ul>
 
-            <h3 style="color:#001f29;margin-bottom:15px;">4. Data Security</h3>
-            <p style="color:#5a8299;line-height:1.8;margin-bottom:25px;">We implement industry-standard security measures to protect your information. Wallet connections are non-custodial — we never hold or have access to your private keys. Payment transactions are processed on-chain via auditable smart contracts on Base L2.</p>
+            <h3 style="color:#001f29;margin-bottom:15px;margin-top:40px;">2. Information We Collect</h3>
+            <p style="color:#5a8299;line-height:1.8;margin-bottom:10px;">To provide a tailored institutional experience, we collect:</p>
+            <ul style="color:#5a8299;line-height:1.8;margin-bottom:25px;padding-left:20px;">
+                <li style="margin-bottom:10px;"><strong>Wallet Addresses:</strong> Used as your primary identifier for access control and progress tracking.</li>
+                <li style="margin-bottom:10px;"><strong>Profile Data:</strong> Voluntarily provided information such as professional bio, expertise tags (e.g., DeFi Architect, Legal Counsel), and profile images.</li>
+                <li style="margin-bottom:10px;"><strong>Usage Analytics:</strong> Anonymized data regarding how you interact with our "Modeling Labs" and "Expert Marketplace" to improve UI/UX.</li>
+                <li><strong>Communication Data:</strong> If you contact us for advisory services or support, we retain record of that correspondence.</li>
+            </ul>
 
-            <h3 style="color:#001f29;margin-bottom:15px;">5. Third-Party Services</h3>
-            <p style="color:#5a8299;line-height:1.8;margin-bottom:25px;">We use Supabase for data storage, Base (Coinbase L2) for on-chain transactions, and standard analytics tools. Each third-party service has its own privacy policy governing their use of data.</p>
+            <h3 style="color:#001f29;margin-bottom:15px;margin-top:40px;">3. How We Use Your Information</h3>
+            <p style="color:#5a8299;line-height:1.8;margin-bottom:10px;">We process your data to:</p>
+            <ul style="color:#5a8299;line-height:1.8;margin-bottom:25px;padding-left:20px;">
+                <li style="margin-bottom:10px;"><strong>Facilitate Community Offerings:</strong> Connect institutional learners with relevant consultant-led workshops and research.</li>
+                <li style="margin-bottom:10px;"><strong>Manage Revenue Splits:</strong> Ensure the 90/5/5 revenue model is accurately executed via on-chain protocols.</li>
+                <li style="margin-bottom:10px;"><strong>AI Personalization:</strong> Use local or privacy-preserving AI to recommend educational modules based on your previous activity.</li>
+                <li><strong>Compliance:</strong> Meet institutional "Know Your Business" (KYB) requirements where applicable for high-level advisory.</li>
+            </ul>
 
-            <h3 style="color:#001f29;margin-bottom:15px;">6. Your Rights</h3>
-            <p style="color:#5a8299;line-height:1.8;margin-bottom:25px;">You can disconnect your wallet at any time to stop sharing your wallet address. You may request deletion of any personal data we hold by contacting us at info@tokenomic.org.</p>
+            <h3 style="color:#001f29;margin-bottom:15px;margin-top:40px;">4. Third-Party Integrations</h3>
+            <p style="color:#5a8299;line-height:1.8;margin-bottom:10px;">We use verified Web3 infrastructure providers:</p>
+            <ul style="color:#5a8299;line-height:1.8;margin-bottom:25px;padding-left:20px;">
+                <li style="margin-bottom:10px;"><strong>Payment Rails:</strong> Integration with protocols like Helio or 0xSplit for automated disbursements.</li>
+                <li style="margin-bottom:10px;"><strong>Storage:</strong> Decentralized storage (IPFS/Arweave) for course materials and research papers.</li>
+                <li><strong>Analytics:</strong> Privacy-focused tools that do not track PII (Personally Identifiable Information).</li>
+            </ul>
 
-            <h3 style="color:#001f29;margin-bottom:15px;">7. Contact</h3>
-            <p style="color:#5a8299;line-height:1.8;margin-bottom:25px;">For questions about this Privacy Policy, contact us at <a href="mailto:info@tokenomic.org" style="color:#ff6000;">info@tokenomic.org</a>.</p>
+            <h3 style="color:#001f29;margin-bottom:15px;margin-top:40px;">5. Your Rights (GDPR / CPRA / Global Standards)</h3>
+            <p style="color:#5a8299;line-height:1.8;margin-bottom:10px;">Regardless of your jurisdiction, Tokenomic.org grants you:</p>
+            <ul style="color:#5a8299;line-height:1.8;margin-bottom:25px;padding-left:20px;">
+                <li style="margin-bottom:10px;"><strong>The Right to Access:</strong> Request a copy of the off-chain data we hold about you.</li>
+                <li style="margin-bottom:10px;"><strong>The Right to Deletion:</strong> Request the removal of your off-chain profile data. <em>Note: On-chain transaction history cannot be deleted.</em></li>
+                <li><strong>The Right to Data Portability:</strong> Export your learning progress and badges to other compatible Web3 platforms.</li>
+            </ul>
+
+            <h3 style="color:#001f29;margin-bottom:15px;margin-top:40px;">6. Security Measures</h3>
+            <p style="color:#5a8299;line-height:1.8;margin-bottom:10px;">We employ institutional-grade security:</p>
+            <ul style="color:#5a8299;line-height:1.8;margin-bottom:25px;padding-left:20px;">
+                <li style="margin-bottom:10px;"><strong>Smart Contract Audits:</strong> All code managing community funds or data is regularly audited.</li>
+                <li style="margin-bottom:10px;"><strong>Encryption:</strong> All off-chain communications are encrypted at rest and in transit.</li>
+                <li><strong>No-Sell Policy:</strong> We never sell your data to third-party advertisers or data brokers.</li>
+            </ul>
+
+            <h3 style="color:#001f29;margin-bottom:15px;margin-top:40px;">7. AI Governance</h3>
+            <p style="color:#5a8299;line-height:1.8;margin-bottom:10px;">In accordance with 2026 regulations (e.g., EU AI Act), we disclose that AI may be used to:</p>
+            <ul style="color:#5a8299;line-height:1.8;margin-bottom:25px;padding-left:20px;">
+                <li style="margin-bottom:10px;">Summarize community-led research.</li>
+                <li style="margin-bottom:10px;">Moderate the "Expert Marketplace" for quality assurance.</li>
+                <li>You have the right to opt-out of automated profiling in your Dashboard Settings.</li>
+            </ul>
+
+            <h3 style="color:#001f29;margin-bottom:15px;margin-top:40px;">8. Changes to This Policy</h3>
+            <p style="color:#5a8299;line-height:1.8;margin-bottom:25px;">As a community-led project, significant changes to this policy may be subject to a governance vote by Tokenomic.org contributors. We will notify you of any updates via the site dashboard.</p>
+
+            <h3 style="color:#001f29;margin-bottom:15px;margin-top:40px;">9. Contact Us</h3>
+            <p style="color:#5a8299;line-height:1.8;margin-bottom:10px;">For privacy-related inquiries or to exercise your data rights:</p>
+            <p style="color:#5a8299;line-height:1.8;"><strong>Email:</strong> <a href="mailto:privacy@tokenomic.org" style="color:#ff6000;text-decoration:none;">privacy@tokenomic.org</a></p>
         </div>
     </div>
 </section>
 
-
-<footer class="main-footer alternate">
-    <div class="auto-container">
-        <!--Widgets Section-->
-        <div class="widgets-section">
-            <div class="row clearfix">
-                <!--Column-->
-                <div class="column col-lg-4 col-md-6 col-sm-12">
-                    <div class="footer-widget about-widget">
-                        <div class="widget-content">
-                            <div class="footer-logo">
-                                <a href="https://tokenomic.org"><img src="/assets/images/logo.png" alt="Tokenomic"/></a>
-                            </div>
-                            <div class="text">
-                                Tokenomic provides concise, tailored courses, consultations, and market analysis for DeFi integration. Our experts span technical, legal, financial, and artistic fields, delivering comprehensive support. Through workshops and insights, we enable institutions to succeed in digital finance.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!--Column-->
-                <div class="column col-lg-4 col-md-6 col-sm-12">
-                    <div class="footer-widget links-widget">
-                        <h3>Connect<span>.</span></h3>
-                        <div class="widget-content">
-                            <div class="row clearfix">
-                                <div class="col-lg-5 col-md-6 col-sm-12">
-                                    <ul>
-                                        <li><a href="/about">About</a></li>
-                                        <li><a href="/educators/">Educators</a></li>
-                                        <li><a href="/consultants/">Consultants</a></li>
-                                        <li><a href="/learn/">Learn</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!--Column-->
-                <div class="column col-lg-4 col-md-6 col-sm-12">
-                    <div class="footer-widget newsletter-widget">
-                        <h3>Newsletter<span>.</span></h3>
-                        <div class="widget-content">
-                            <div class="newsletter-form">
-                                <form action="http://eepurl.com/inde32">
-                                    <div class="form-group clearfix">
-                                        <span class="input-icon fa flaticon-envelope"></span>
-                                        <input type="email" name="user_email" placeholder="Enter email address" required>
-                                        <button type="submit" class="theme-btn newsletter-btn">Subscribe Now</button>
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="get-link"><a href="#">Get every single update</a></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Footer Bottom Two -->
-    <div class="footer-bottom-two">
-        <div class="auto-container">
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;">
-                <div class="copyright">Copyright &copy; 2024 Tokenomic.org. All rights reserved.</div>
-                <div style="display:flex;gap:30px;align-items:center;flex-wrap:wrap;">
-                    <a href="/privacy/" style="color:#5a8299;text-decoration:none;font-size:13px;">Privacy Policy</a>
-                    <a href="/terms/" style="color:#5a8299;text-decoration:none;font-size:13px;">Terms of Service</a>
-                </div>
-                <div class="social-links" style="display:flex;gap:16px;">
-                    <a href="https://www.facebook.com/tknmic" title="Facebook" style="color:#5a8299;"><i class="fab fa-facebook-square"></i></a>
-                    <a href="https://twitter.com/tknmic" title="Twitter" style="color:#5a8299;"><i class="fab fa-twitter"></i></a>
-                    <a href="https://www.linkedin.com/company/tknmic" title="LinkedIn" style="color:#5a8299;"><i class="fab fa-linkedin"></i></a>
-                    <a href="https://instagram.com/tknmic" title="Instagram" style="color:#5a8299;"><i class="fab fa-instagram"></i></a>
-                    <a href="https://www.youtube.com/@tknmic" title="YouTube" style="color:#5a8299;"><i class="fab fa-youtube"></i></a>
-                    <a href="https://www.tiktok.com/@tknmic" title="TikTok" style="color:#5a8299;"><i class="fab fa-tiktok"></i></a>
-                    <a href="https://t.me/tknmic" title="Telegram" style="color:#5a8299;"><i class="fab fa-telegram"></i></a>
-                    <a href="http://medium.com/@tokenomic" title="Medium" style="color:#5a8299;"><i class="fab fa-medium"></i></a>
-                    <a href="/feed.xml" title="RSS" style="color:#5a8299;"><i class="fas fa-rss"></i></a>
-                </div>
-            </div>
-        </div>
-    </div>
-</footer>
-        </div>
-        <!--End pagewrapper-->
-        <!--Scroll to top-->
-        <div class="scroll-to-top scroll-to-target" data-target="html"><span class="flaticon-up-arrow"></span></div>
-        <script src="/assets/js/jquery.js"></script>
-        <script src="/assets/js/popper.min.js"></script>
-        <script src="/assets/js/bootstrap.min.js"></script>
-        <script src="/assets/js/jquery-ui.js"></script>
-        <script src="/assets/js/jquery.fancybox.js"></script>
-        <script src="/assets/js/owl.js"></script>
-        <script src="/assets/js/scrollbar.js"></script>
-        <script src="/assets/js/knob.js"></script>
-        <script src="/assets/js/paroller.js"></script>
-        <script src="/assets/js/tilt.js"></script>
-        <script src="/assets/js/isotope.js"></script>
-        <script src="/assets/js/appear.js"></script>
-        <script src="/assets/js/wow.js"></script>
-        <script src="/assets/js/simple-jekyll-search.min.js"></script>
-        <script src="/assets/js/jquery.fancybox.js"></script>
-        <script src="/assets/js/element-in-view.js"></script>
-        <script src="/assets/js/custom-script.js"></script>
-        <script src="/shared/assets/js/web3-wallet.js"></script>
-        <div id="wallet-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
-            <div style="max-width:420px;margin:auto;margin-top:20vh;background:#fff;border-radius:12px;padding:40px;text-align:center;">
-                <h3 style="color:#001f29;margin-bottom:16px;">Connect a Wallet</h3>
-                <p style="color:#5a8299;margin-bottom:24px;">Install a Web3 wallet to log in to Tokenomic</p>
-                <div style="display:flex;flex-direction:column;gap:12px;">
-                    <a href="https://metamask.io/download/" target="_blank" class="theme-btn btn-style-one" style="text-align:center;">Install MetaMask</a>
-                    <a href="https://rabby.io/" target="_blank" class="theme-btn btn-style-three" style="text-align:center;">Install Rabby</a>
-                </div>
-                <button style="margin-top:16px;background:none;border:none;color:#5a8299;cursor:pointer;font-size:0.9rem;" onclick="TokenomicWallet.hideModal()">Close</button>
-            </div>
-        </div>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/shared/assets/js/supabase-client.js"></script>
-<script src="/shared/assets/js/site-search.js"></script>
-</body>
-</html>
+{% include footer_5.html %}
