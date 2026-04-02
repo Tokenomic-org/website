@@ -22,7 +22,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - `_layouts/` — `default`, `page`, `post`, `category`, `tag_page`, `dashboard`
 - `_includes/`, `_data/` — Jekyll source templates and data
 - `_site/dashboard*/` — Dashboard pages (11 pages)
-- `shared/assets/js/` — Shared JS (wallet, Supabase client)
+- `shared/assets/js/` — Shared JS (wallet, Supabase client, site-search)
 - `assets/` — CSS, images, fonts, JS libraries
 
 ## Branding
@@ -32,7 +32,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 
 ## Pages
 - **Homepage** (`/`) — Hero, platform preview, audience targeting, trust, services, training, wallet-gated community CTA
-- **Learn** (`/learn/`) — Category-based article hub (Strategy, Technical, DeFi, Governance) with "Meet our authors" section; articles from Supabase `articles` table, authors link to Educators page; CTA for educators/consultants to write from dashboard
+- **Learn** (`/learn/`) — Category-based article hub (Strategy, Technical, DeFi, Governance) with "Meet our authors" section and inline search bar; search filters articles by title, category, excerpt, slug, and author name; articles from Supabase `articles` table, authors link to Educators page; CTA for educators/consultants to write from dashboard
 - **Educators** (`/educators/`) — Auto-populated cards of community-approved educators from Supabase profiles (role=educator, approved=true)
 - **Consultants** (`/consultants/`) — Auto-populated cards of community-approved consultants with ratings, pricing, and booking links
 - **Dashboard** (`/dashboard/`) — Main analytics with stats, recent activity, progress
