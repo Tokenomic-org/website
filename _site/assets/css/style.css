@@ -13129,3 +13129,6 @@ img.lazy-image.loaded{
 #results-container li a:hover {
         text-decoration: none;
 }
+.logo-box .logo img { max-height:40px; width:auto; }
+.mobile-menu .nav-logo img { max-height:36px; width:auto; }
+.main-footer .footer-logo img { max-height:40px; width:auto; }
