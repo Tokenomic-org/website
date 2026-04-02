@@ -41,13 +41,14 @@
                 </div>
                 <!--Other Links-->
                 <div class="other-links clearfix">
-                    <!--Nav Toggler-->
-                    <div class="max-nav-toggler">
-                        <button class="theme-btn toggle-btn"><span class="flaticon-menu-2"></span></button>
-                    </div>
                     <!--Search Btn-->
                     <div class="search-btn">
                         <button type="button" class="theme-btn search-toggler"><span class="icon flaticon-loupe-2"></span></button>
+                    </div>
+                    <!--Connect Wallet Btn-->
+                    <div class="wallet-btn-header" style="display:inline-block;margin-left:10px;">
+                        <a href="#" class="theme-btn btn-style-one wallet-login-btn" onclick="TokenomicWallet.connect(); return false;" style="padding:8px 20px;font-size:13px;border-radius:30px;"><span class="btn-title">Login</span></a>
+                        <a href="/dashboard/" class="theme-btn btn-style-one wallet-logged-in-btn" style="display:none;padding:8px 20px;font-size:13px;border-radius:30px;"><span class="btn-title wallet-addr-text">Dashboard</span></a>
                     </div>
                 </div>
             </div>
@@ -64,6 +65,11 @@
                 <a href="{{site.url}}"><img src="{{site.logo_url}}" alt="{{site.title}}" title="{{site.title}}" /></a>
             </div>
             <div class="menu-outer"><!--Here Menu Will Come Automatically Via Javascript / Same Menu as in Header--></div>
+            <!--Connect Wallet in Mobile Menu-->
+            <div style="padding:20px 25px;">
+                <a href="#" class="theme-btn btn-style-one wallet-login-btn" onclick="TokenomicWallet.connect(); return false;" style="display:block;text-align:center;padding:12px 20px;border-radius:30px;"><span class="btn-title">Connect Wallet</span></a>
+                <a href="/dashboard/" class="theme-btn btn-style-one wallet-logged-in-btn" style="display:none;text-align:center;padding:12px 20px;border-radius:30px;margin-top:10px;"><span class="btn-title wallet-addr-text">Dashboard</span></a>
+            </div>
             <!--Social Links-->
             <div class="social-links">
                 <ul class="clearfix">
@@ -102,5 +108,3 @@
         </div>
     </div>
 </div>
-
-{% include sidebar_nav.html %}
