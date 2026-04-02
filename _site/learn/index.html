@@ -53,14 +53,7 @@
                                     
                                     
                                     
-                                    <li class="dropdown">
-                                        <a href="/about/">About</a>
-                                        <ul>
-                                            
-                                             <li><a href="/contact/">Contact</a></li>
-                                            
-                                        </ul>
-                                    </li>
+                                    <li><a href="/about/">About</a></li>
                                     <li><a href="/educators/">Educators</a></li>
                                     <li><a href="/consultants/">Consultants</a></li>
                                     
@@ -310,7 +303,7 @@
                 html += '<div class="category-header">';
                 html += '<h3>' + cat + '</h3>';
                 if (catArticles.length > 3) {
-                    html += '<a href="https://learn.tokenomic.org/latest/" class="view-all-btn">View all &#8250;</a>';
+                    html += '<a href="/learn/" class="view-all-btn">View all &#8250;</a>';
                 }
                 html += '</div>';
                 html += '<div class="article-grid">';
@@ -323,7 +316,7 @@
                     if (day < 10) day = '0' + day;
                     var dateStr = day + ' ' + months[date.getMonth()].toUpperCase() + ', ' + date.getFullYear();
                     var authorName = article.profiles ? article.profiles.display_name : 'Tokenomic Team';
-                    var link = 'https://learn.tokenomic.org/latest/' + article.slug;
+                    var link = '/learn/' + article.slug;
 
                     html += '<div class="article-card">';
                     html += '<div class="card-image"><a href="' + link + '"><img src="' + article.image_url + '" alt=""></a></div>';

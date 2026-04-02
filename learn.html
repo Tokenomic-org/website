@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         html += '<div class="category-header">';
         html += '<h3>' + cat + '</h3>';
         if (catArticles.length > 3) {
-            html += '<a href="https://learn.tokenomic.org/latest/" class="view-all-btn">View all &rsaquo;</a>';
+            html += '<a href="/learn/" class="view-all-btn">View all &rsaquo;</a>';
         }
         html += '</div>';
         html += '<div class="article-grid">';
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
             var dateStr = date.getDate().toString().padStart(2,'0') + ' ' + months[date.getMonth()].toUpperCase() + ', ' + date.getFullYear();
             var authorName = article.profiles ? article.profiles.display_name : 'Tokenomic Team';
-            var link = 'https://learn.tokenomic.org/latest/' + article.slug;
+            var link = '/learn/' + article.slug;
 
             html += '<div class="article-card" onclick="window.location.href=\'' + link + '\'">';
             html += '<div class="card-image"><img src="' + article.image_url + '" alt="' + article.title.replace(/'/g, '') + '"></div>';

@@ -22,8 +22,11 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - `_layouts/` — `default`, `page`, `post`, `category`, `tag_page`, `dashboard`
 - `_includes/`, `_data/` — Jekyll source templates and data
 - `_site/dashboard*/` — Dashboard pages (11 pages)
+- `_site/learn/*/` — Article detail pages (11 articles, statically generated)
 - `shared/assets/js/` — Shared JS (wallet, Supabase client, site-search)
 - `assets/` — CSS, images, fonts, JS libraries
+- `assets/images/learn/` — Article images pulled from learn.tokenomic.org (cover images + inline content images)
+- `scripts/` — Build scripts (scrape-articles.js, generate-article-pages.js)
 
 ## Branding
 - Primary: `#F7931A` (gold-orange), Dark: `#0A0F1A` (navy-black), Muted: `#8899A6`
@@ -34,7 +37,8 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 
 ## Pages
 - **Homepage** (`/`) — Hero, platform preview, audience targeting, trust, services, training, wallet-gated community CTA
-- **Learn** (`/learn/`) — Category-based article hub (Strategy, Technical, DeFi, Governance) with "Meet our authors" section and inline search bar; search filters articles by title, category, excerpt, slug, and author name; articles from Supabase `articles` table, authors link to Educators page; CTA for educators/consultants to write from dashboard
+- **Learn** (`/learn/`) — Category-based article hub (Strategy, Technical, Market) with "Meet our authors" section and inline search; articles from Supabase `articles` table with local images; links to `/learn/[slug]` article pages
+- **Article Pages** (`/learn/[slug]/`) — Full article content pages with featured image, author, date, category, share buttons, back-to-learn navigation; generated from learn.tokenomic.org content using `scripts/generate-article-pages.js`; images served from `/assets/images/learn/`
 - **Educators** (`/educators/`) — Auto-populated cards of community-approved educators from Supabase profiles (role=educator, approved=true)
 - **Consultants** (`/consultants/`) — Auto-populated cards of community-approved consultants with ratings, pricing, and booking links
 - **Dashboard** (`/dashboard/`) — Main analytics with stats, recent activity, progress
@@ -53,7 +57,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - **Terms** (`/terms/`) — Terms of service
 
 ## Navigation
-Defined in `_data/navigation.yml`: Home, About (Contact), Educators, Consultants, Services, Training, Learn, Pricing
+Defined in `_data/navigation.yml`: Home, About, Educators, Consultants, Learn
 - Learn is a direct link (no dropdown) — the page dynamically loads category-based article sections from Supabase
 
 ## Dashboard Source Files
@@ -68,9 +72,20 @@ Defined in `_data/navigation.yml`: Home, About (Contact), Educators, Consultants
 - Banner sections removed from _site/ dashboard pages for cleaner layout
 - Old inline `<style>` blocks removed from _site/ files — all dashboard styling now from dashboard.css
 
+## Learn/Articles System
+- Articles originally from learn.tokenomic.org, now pulled to main site
+- Article content scraped and stored in `scripts/articles-data.json`
+- Article images downloaded to `assets/images/learn/` (cover images + inline content images)
+- Static pages generated at `_site/learn/[slug]/index.html` via `scripts/generate-article-pages.js`
+- To regenerate: run `node scripts/scrape-articles.js` then `node scripts/generate-article-pages.js`
+- Demo data in supabase-client.js uses local image paths (`/assets/images/learn/`)
+- Site search (site-search.js) links to local `/learn/[slug]` paths
+- 11 articles across Strategy, Technical, and Market categories
+
 ## Important Notes
 - Ruby/Jekyll is NOT installed locally — cannot run `jekyll build`
 - All visible changes in Replit must be made in `_site/` files directly
 - Source files (`_includes/`, `_layouts/`, etc.) are for Jekyll builds (GitHub Pages)
 - Dashboard layout exists at `_layouts/dashboard.html` for dashboard source pages
 - When editing dashboard pages, update BOTH the `_site/` version (for Replit) and the source `.html` file (for GitHub Pages)
+- Footer is included in default layout (`_layouts/default.html`) and dashboard layout

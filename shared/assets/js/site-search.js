@@ -65,7 +65,7 @@
             var limit = results.length > 8 ? 8 : results.length;
             for (var r = 0; r < limit; r++) {
                 var art = results[r].article;
-                var link = 'https://learn.tokenomic.org/latest/' + art.slug;
+                var link = '/learn/' + art.slug;
                 var authorName = (art.profiles && art.profiles.display_name) ? art.profiles.display_name : 'Tokenomic Team';
                 html += '<li class="search-result-item">';
                 html += '<a href="' + link + '">';
