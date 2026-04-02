@@ -1143,7 +1143,7 @@ img{
 
 .header-style-one.fixed-header{
         top: 0;
-        background: #ffffff;
+        background: none;
 }
 
 .header-style-one .header-upper{
@@ -1164,7 +1164,7 @@ img{
         top: 10px;
         float: right;
         padding: 15px 35px;
-        background: #ffffff;
+        background: none;
 }
 
 .inner-page-header.header-style-one .other-links{
@@ -1179,14 +1179,14 @@ img{
         float: left;
         margin-left: 30px;
         line-height: 30px;
-        color: #56828d;
+        color: #ffffff;
 }
 
 .header-style-one .search-btn .search-toggler{
         position: relative;
         display: block;
         line-height: 30px;
-        color: #56828d;
+        color: #ffffff;
         background: none;
         padding: 0;
         font-size: 18px;
@@ -1201,7 +1201,7 @@ img{
         position: relative;
         display: block;
         line-height: 30px;
-        color: #56828d;
+        color: #ffffff;
         background: none;
         padding: 0;
         font-size: 20px;
@@ -1263,7 +1263,7 @@ img{
 
 .header-style-two.fixed-header{
         top: 0;
-        background: #ffffff;
+        background: none;
 }
 
 .header-style-two .header-upper{
@@ -1337,7 +1337,7 @@ img{
 
 .header-style-three.fixed-header{
         top: 0;
-        background: #ffffff;
+        background: none;
 }
 
 .header-style-three .header-upper{
@@ -1437,7 +1437,7 @@ img{
 
 .header-style-four.fixed-header{
         top: 0;
-        background: #ffffff;
+        background: none;
 }
 
 .header-style-four .header-upper{
@@ -1560,7 +1560,7 @@ img{
 
 .header-style-five.fixed-header{
         top: 0;
-        background: #ffffff;
+        background: none;
 }
 
 .header-style-five .header-upper{
@@ -3446,7 +3446,7 @@ img.lazy-image.loaded{
 .banner-five{
         position: relative;
         color: #ffffff;
-        background: #ffffff;
+        background: none;
 }
 
 .banner-five .auto-container{
@@ -4223,12 +4223,12 @@ img.lazy-image.loaded{
 .portfolio-section{
         position:relative;
         padding: 200px 0px 0px;
-        background: #ffffff;
+        background: none;
 }
 
 .portfolio-section.alt-padding{
         padding:120px 0px 110px;
-        background: #ffffff;
+        background: none;
 }
 
 .portfolio-section.alt-padding:before{
@@ -4311,7 +4311,7 @@ img.lazy-image.loaded{
 .project-tab .product-tab-btns .p-tab-btn:hover,
 .project-tab .product-tab-btns .p-tab-btn.active-btn{
         color:#ff6000;
-        background: #ffffff;
+        background: none;
         box-shadow: 0px 7px 20px 0px rgba(0,0,0,0.10);
 }
 
@@ -4912,7 +4912,7 @@ img.lazy-image.loaded{
 }
 
 .light-style .testimonial-block .content .icon-box{
-        background: #ffffff;
+        background: none;
         color: #000e22;
         border: none;
         line-height: 100px;
@@ -5002,7 +5002,7 @@ img.lazy-image.loaded{
         line-height: 46px;
         font-size: 20px;
         text-align: center;
-        background: #ffffff;
+        background: none;
         border:1px solid #d0d0d0;
         margin-left: 10px;
     transition:all 300ms ease;
@@ -5036,7 +5036,7 @@ img.lazy-image.loaded{
 .team-section{
         position:relative;
         padding: 120px 0px;
-        background: #ffffff;
+        background: none;
 }
 
 .team-section.alternate{
@@ -5251,7 +5251,7 @@ img.lazy-image.loaded{
 .clients-section{
         position:relative;
         padding: 120px 0px 80px;
-        background: #ffffff;
+        background: none;
 }
 
 .clients-section .image-layer{
@@ -5858,7 +5858,7 @@ img.lazy-image.loaded{
         position: relative;
         display: block;
         padding: 55px 30px 60px;
-        background: #ffffff;
+        background: none;
         text-align: center;
         min-height: 100%;
 }
@@ -6130,7 +6130,7 @@ img.lazy-image.loaded{
         position: relative;
         display: block;
         padding: 30px 40px;
-        background: #ffffff;
+        background: none;
         box-shadow: 0px 15px 30px 0px rgba(164,212,227,0.40);
 }
 
@@ -6324,7 +6324,7 @@ img.lazy-image.loaded{
 .featured-services{
         position:relative;
         padding: 110px 0px 0px;
-        background: #ffffff;
+        background: none;
 }
 
 .featured-services .carousel-box{
@@ -6345,7 +6345,7 @@ img.lazy-image.loaded{
 .featured-service-block .inner-box{
         position: relative;
         display: block;
-        background: #ffffff;
+        background: none;
         min-height: 300px;
         box-shadow: 1px 3px 10px 0px rgba(122,166,195,0.30);
 }
@@ -6424,7 +6424,7 @@ img.lazy-image.loaded{
         line-height: 50px;
         font-size: 20px;
         text-align: center;
-        background: #ffffff;
+        background: none;
         color: #000000;
         margin: 0px;
     transition:all 300ms ease;
@@ -6733,7 +6733,7 @@ img.lazy-image.loaded{
 
 .featured-section-two{
         position:relative;
-        background: #ffffff;
+        background: none;
         padding: 120px 0px 70px;
 }
 
@@ -6810,7 +6810,7 @@ img.lazy-image.loaded{
         width: 1200px;
         margin-left: -600px;
         height: 2px;
-        background: #ffffff;
+        background: none;
         background: -webkit-linear-gradient(left,rgba(255,255,255,0),rgba(255,255,255,0.9),rgba(255,255,255,0));
         background: -ms-linear-gradient(left,rgba(255,255,255,0),rgba(255,255,255,0.9),rgba(255,255,255,0));
         background: -moz-linear-gradient(left,rgba(255,255,255,0),rgba(255,255,255,0.9),rgba(255,255,255,0));
@@ -7054,7 +7054,7 @@ img.lazy-image.loaded{
 .news-block.alternate:nth-child(14) .lower-box .category a,
 .news-block.alternate:nth-child(3n+0) .lower-box .category a{
         color: #ff4646;
-        background: #ffffff;
+        background: none;
         box-shadow: 0px 5px 15px 0px rgba(0,0,0,0.10);
         letter-spacing: 2.5px;
 }
@@ -7374,7 +7374,7 @@ img.lazy-image.loaded{
 .services-section-two{
         position:relative;
         padding: 120px 0px;
-        background: #ffffff;
+        background: none;
         color: #222222;
         overflow: hidden;
 }
@@ -7518,7 +7518,7 @@ img.lazy-image.loaded{
 .portfolio-section-two{
         position:relative;
         padding: 0px 0px;
-        background: #ffffff;
+        background: none;
 }
 
 .portfolio-section-two .outer-container{
@@ -7603,7 +7603,7 @@ img.lazy-image.loaded{
         position: relative;
         display: block;
         padding: 30px 40px 32px 30px;
-        background: #ffffff;
+        background: none;
         margin-bottom: 15px;
         transition:all 0.3s ease;
         -moz-transition:all 0.3s ease;
@@ -7727,7 +7727,7 @@ img.lazy-image.loaded{
 .news-section-two{
         position:relative;
         padding: 120px 0px;
-        background: #ffffff;
+        background: none;
 }
 
 .news-section-two .owl-theme .owl-dots{
@@ -7749,7 +7749,7 @@ img.lazy-image.loaded{
         line-height: 58px;
         font-size: 20px;
         text-align: center;
-        background: #ffffff;
+        background: none;
         border:1px solid #d0d0d0;
         margin-left: 15px;
         border-radius: 50%;
@@ -7778,7 +7778,7 @@ img.lazy-image.loaded{
 .info-section{
         position:relative;
         padding: 110px 0px;
-        background: #ffffff;
+        background: none;
 }
 
 .info-section .image-layer{
@@ -8284,7 +8284,7 @@ img.lazy-image.loaded{
         min-height: 68px;
         line-height: 21px;
         color: #000e22;
-        background: #ffffff;
+        background: none;
         -ms-box-shadow: 0px 0px 30px 0px rgba(0,0,0,0.05),0px 20px 30px 0px rgba(0,0,0,0.05);
         box-shadow: 0px 0px 30px 0px rgba(0,0,0,0.05),0px 20px 30px 0px rgba(0,0,0,0.05);
         -ms-transform: translateY(10px);
@@ -8394,7 +8394,7 @@ img.lazy-image.loaded{
         position: relative;
         display: block;
         padding: 50px 40px;
-        background: #ffffff;
+        background: none;
 }
 
 .feature-block-three .count{
@@ -8601,7 +8601,7 @@ img.lazy-image.loaded{
         height: 64px;
         line-height: 64px;
         color: #ff6000;
-        background: #ffffff;
+        background: none;
         overflow: hidden;
         -webkit-transition:all 0.3s ease;
         -moz-transition:all 0.3s ease;
@@ -8656,7 +8656,7 @@ img.lazy-image.loaded{
         height: 64px;
         line-height: 64px;
         color: #ff6000;
-        background: #ffffff;
+        background: none;
         overflow: hidden;
         -webkit-transition:all 0.3s ease;
         -moz-transition:all 0.3s ease;
@@ -8780,7 +8780,7 @@ img.lazy-image.loaded{
         display: inline-block;
         width: 5px;
         height: 5px;
-        background: #ffffff;
+        background: none;
 }
 
 .gallery-item-two .hover-box .separator .dot:before{
@@ -8838,7 +8838,7 @@ img.lazy-image.loaded{
         max-width: 1290px;
         margin: 0 auto;
         height: 60px;
-        background: #ffffff;
+        background: none;
 }
 
 .skill-section-two .sec-title-four{
@@ -8933,7 +8933,7 @@ img.lazy-image.loaded{
         bottom: 0;
         width:100%;
         height:6px;
-        background: #ffffff;
+        background: none;
 }
 
 .skill-block .bar-item .skill-bar .bar-inner .bar{
@@ -8984,7 +8984,7 @@ img.lazy-image.loaded{
 
 .testimonial-section-two{
         position:relative;
-        background: #ffffff;
+        background: none;
         padding: 120px 0px 70px;
         overflow: hidden;
 }
@@ -9139,7 +9139,7 @@ img.lazy-image.loaded{
         position:relative;
         padding: 0;
         color: #222222;
-        background: #ffffff;
+        background: none;
         background-position:center top;
         background-repeat:no-repeat;
         background-size:cover;
@@ -9273,7 +9273,7 @@ img.lazy-image.loaded{
 .welcome-section{
         position:relative;
         padding: 120px 0px 100px;
-        background: #ffffff;
+        background: none;
 }
 
 .welcome-section .content{
@@ -9505,7 +9505,7 @@ img.lazy-image.loaded{
         display: block;
         padding: 40px 10px;
         text-align: center;
-        background: #ffffff;
+        background: none;
         font-size: 14px;
         letter-spacing: 1px;
         text-transform: uppercase;
@@ -9556,7 +9556,7 @@ img.lazy-image.loaded{
 .services-tabs .tab .tab-inner{
         position: relative;
         display: block;
-        background: #ffffff;
+        background: none;
         padding: 40px 40px 20px;
         box-shadow: 0px 0px 15px 0px rgba(0,0,0,0.05);
 }
@@ -9643,7 +9643,7 @@ img.lazy-image.loaded{
 .features-section-two{
         position:relative;
         padding: 120px 0px;
-        background: #ffffff;
+        background: none;
 }
 
 .features-section-two .feature-block{
@@ -9710,7 +9710,7 @@ img.lazy-image.loaded{
 
 .pricing-section{
         position:relative;
-        background: #ffffff;
+        background: none;
 }
 
 .pricing-section .upper-title{
@@ -9757,7 +9757,7 @@ img.lazy-image.loaded{
 .pricing-block .inner-box{
         position: relative;
         display: block;
-        background: #ffffff;
+        background: none;
         min-height: 100%;
         border-right: 1px solid rgba(0,0,0,0.03);
         text-align: center;
@@ -9920,7 +9920,7 @@ img.lazy-image.loaded{
 .featured-service-two .inner-box{
         position: relative;
         display: block;
-        background: #ffffff;
+        background: none;
         padding: 80px 70px;
 }
 
@@ -10239,7 +10239,7 @@ img.lazy-image.loaded{
         position: relative;
         display: block;
         padding: 60px 55px;
-        background: #ffffff;
+        background: none;
         min-height: 100%;
         box-shadow: 0px 5px 15px 0px rgba(0,0,0,0.10);
 }
@@ -10313,7 +10313,7 @@ img.lazy-image.loaded{
 
 .more-details{
         position:relative;
-        background: #ffffff;
+        background: none;
         padding: 120px 0px 90px;
 }
 
@@ -10368,7 +10368,7 @@ img.lazy-image.loaded{
         line-height: 100px;
         font-size: 36px;
         text-align: center;
-        background: #ffffff;
+        background: none;
         border-radius: 50%;
         color: #ff6000;
         box-shadow: 0px 5px 15px 0px rgba(0,0,0,0.10);
@@ -11303,7 +11303,7 @@ img.lazy-image.loaded{
         width:100%;
         height:100%;
         opacity:0.90;
-        background: #ffffff;
+        background: none;
 }
 
 .news-block-six{
@@ -11443,7 +11443,7 @@ img.lazy-image.loaded{
 
 .sidebar-page-container{
         position:relative;
-        background: #ffffff;
+        background: none;
         padding: 120px 0px 90px;
 }
 

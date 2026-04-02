@@ -11,7 +11,13 @@
         <div class="content-box">
             <h3>Tokenomic</h3>
             <div class="text">Institutional DeFi education and intelligence platform. Structured courses, on-chain analytics, and verifiable credentials for teams entering decentralized finance.</div>
-            <a href="/contact" class="theme-btn btn-style-two"><div class="btn-title">Contact Us</div></a>
+            <a href="#" class="theme-btn btn-style-two wallet-login-btn" onclick="TokenomicWallet.connect(); return false;" style="margin-bottom:15px;">
+                <div class="btn-title" style="border-radius:30px;">Connect Wallet</div>
+            </a>
+            <a href="/dashboard/" class="theme-btn btn-style-two wallet-logged-in-btn" style="display:none;margin-bottom:15px;">
+                <div class="btn-title wallet-addr-text" style="border-radius:30px;">Dashboard</div>
+            </a>
+            <a href="/contact" class="theme-btn btn-style-one"><div class="btn-title">Contact Us</div></a>
         </div>
         <div class="contact-info">
             <h2>Contact Info</h2>
