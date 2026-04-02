@@ -65,82 +65,150 @@ permalink: /dashboard-events/
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="eventsPage()">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
-        <p style="color:#5a8299;">Create and manage events. Syncs with Luma for registration.</p>
-        <div style="display:flex;gap:8px;">
-            <button class="dash-btn dash-btn-outline" @click="fetchLuma()">Sync Luma</button>
-            <button class="dash-btn dash-btn-primary" @click="showCreate=!showCreate">+ New Event</button>
+        <p style="color:#5a8299;">Events synced from <a href="https://lu.ma/tokenomic" target="_blank" style="color:#ff6000;">Luma calendar</a>.</p>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <span x-show="loading" style="color:#5a8299;font-size:0.85rem;">Syncing...</span>
+            <button class="dash-btn dash-btn-outline" @click="fetchLuma()" :disabled="loading">
+                <span x-show="!loading">Sync Luma</span>
+                <span x-show="loading">Syncing...</span>
+            </button>
         </div>
     </div>
 
     <div class="row clearfix" style="margin-bottom:20px;">
         <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="events.length"></div><div class="stat-lbl">Total Events</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="events.filter(e=>new Date(e.date)>=new Date()).length"></div><div class="stat-lbl">Upcoming</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="events.reduce((s,e)=>s+e.attendees,0)"></div><div class="stat-lbl">Registrations</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="'$'+events.reduce((s,e)=>s+(e.price*e.attendees),0)"></div><div class="stat-lbl">Event Revenue</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="upcoming"></div><div class="stat-lbl">Upcoming</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="totalGuests"></div><div class="stat-lbl">Total Guests</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="pastEvents"></div><div class="stat-lbl">Past Events</div></div></div>
     </div>
 
     <div x-show="lumaStatus" x-transition class="dash-card" style="border-left:4px solid #1976d2;margin-bottom:20px;">
         <div style="display:flex;align-items:center;gap:8px;"><strong style="color:#1976d2;" x-text="lumaStatus"></strong><button style="margin-left:auto;background:none;border:none;cursor:pointer;color:#5a8299;" @click="lumaStatus=''">Dismiss</button></div>
     </div>
 
-    <div x-show="showCreate" x-transition class="dash-card" style="margin-bottom:20px;">
-        <h4>Create Event</h4>
-        <div class="row clearfix" style="margin-bottom:14px;">
-            <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Title</label><input x-model="ne.title" class="dash-input" placeholder="Event title" /></div>
-            <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Type</label><select x-model="ne.type" class="dash-input"><option value="workshop">Workshop</option><option value="webinar">Webinar</option><option value="conference">Conference</option><option value="meetup">Meetup</option></select></div>
-            <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Price (USDC)</label><input x-model="ne.price" type="number" class="dash-input" placeholder="0" /></div>
-        </div>
-        <div class="row clearfix" style="margin-bottom:14px;">
-            <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Date & Time</label><input x-model="ne.date" type="datetime-local" class="dash-input" /></div>
-            <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Description</label><input x-model="ne.description" class="dash-input" placeholder="Event description" /></div>
-        </div>
-        <div style="display:flex;gap:8px;">
-            <button class="dash-btn dash-btn-primary" @click="createEvent()">Create Event</button>
-            <button class="dash-btn dash-btn-outline" @click="showCreate=false">Cancel</button>
-        </div>
+    <div x-show="errorMsg" x-transition class="dash-card" style="border-left:4px solid #e53935;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:8px;"><strong style="color:#e53935;" x-text="errorMsg"></strong><button style="margin-left:auto;background:none;border:none;cursor:pointer;color:#5a8299;" @click="errorMsg=''">Dismiss</button></div>
     </div>
+
+    <div x-show="loading && events.length===0" style="text-align:center;padding:60px 20px;">
+        <div style="width:40px;height:40px;border:3px solid #e0e0e0;border-top-color:#ff6000;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
+        <p style="color:#5a8299;">Loading events from Luma...</p>
+    </div>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
     <div class="row clearfix">
         <template x-for="event in events" :key="event.id">
             <div class="col-lg-6 col-md-6 col-sm-12" style="margin-bottom:16px;">
-                <div class="dash-card" style="border-top:3px solid;" :style="'border-color:'+(event.type==='workshop'?'#ff6000':event.type==='webinar'?'#00a651':'#1976d2')">
-                    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px;">
-                        <span class="dash-badge dash-badge-info" x-text="event.type"></span>
-                        <small style="color:#5a8299;" x-text="new Date(event.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})"></small>
+                <div class="dash-card" style="border-top:3px solid #ff6000;overflow:hidden;padding:0;">
+                    <div x-show="event.cover_url" style="width:100%;height:160px;overflow:hidden;">
+                        <img :src="event.cover_url" :alt="event.title" style="width:100%;height:100%;object-fit:cover;" />
                     </div>
-                    <h5 style="margin-bottom:6px;" x-text="event.title"></h5>
-                    <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;" x-text="event.description"></p>
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <span><strong style="color:#ff6000;" x-text="event.attendees"></strong> <small style="color:#5a8299;">registered</small></span>
-                        <strong style="color:#00a651;" x-text="event.price>0?'$'+event.price+' USDC':'Free'"></strong>
-                    </div>
-                    <div style="display:flex;gap:6px;margin-top:10px;">
-                        <a :href="event.luma_url||'#'" target="_blank" class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.8rem;" x-show="event.luma_url">Luma</a>
-                        <button class="dash-btn dash-btn-primary" style="padding:4px 12px;font-size:0.8rem;" x-show="event.price>0" @click="alert('Connect wallet to pay $'+event.price+' USDC')">Pay USDC</button>
+                    <div style="padding:20px;">
+                        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;flex-wrap:wrap;gap:4px;">
+                            <span class="dash-badge" :class="event.is_past?'dash-badge-muted':'dash-badge-info'" x-text="event.is_past?'Past':'Upcoming'" style="text-transform:uppercase;font-size:0.7rem;letter-spacing:1px;"></span>
+                            <small style="color:#5a8299;" x-text="event.date_display"></small>
+                        </div>
+                        <h5 style="margin-bottom:6px;color:#001f29;" x-text="event.title"></h5>
+                        <p x-show="event.location" style="color:#5a8299;font-size:0.8rem;margin-bottom:4px;">
+                            <span style="margin-right:4px;">&#128205;</span><span x-text="event.location"></span>
+                        </p>
+                        <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;" x-text="event.description"></p>
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                            <div>
+                                <span x-show="event.guest_count>0"><strong style="color:#ff6000;" x-text="event.guest_count"></strong> <small style="color:#5a8299;">guests</small></span>
+                                <span x-show="event.guest_count===0" style="color:#5a8299;font-size:0.85rem;">No guests yet</span>
+                            </div>
+                            <a :href="event.luma_url" target="_blank" class="dash-btn dash-btn-primary" style="padding:6px 16px;font-size:0.8rem;text-decoration:none;">
+                                <span x-text="event.is_past?'View on Luma':'Register on Luma'"></span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </template>
     </div>
+
+    <div x-show="!loading && events.length===0" style="text-align:center;padding:60px 20px;background:#fff;border-radius:12px;">
+        <p style="color:#5a8299;font-size:1.1rem;">No events found on the Luma calendar.</p>
+        <a href="https://lu.ma/tokenomic" target="_blank" class="dash-btn dash-btn-outline" style="margin-top:12px;">Visit Luma Calendar</a>
+    </div>
 </div>
 
 <script>
+var LUMA_CALENDAR_ID = 'cal-on7sN7ID2LgtAB9';
+var LUMA_CALENDAR_SLUG = 'tokenomic';
+
 function eventsPage() {
     return {
-        events:[
-            {id:1,title:'DeFi Tokenomics Workshop',type:'workshop',date:'2026-04-20T14:00',description:'Hands-on token design principles and economic modeling.',attendees:45,price:50,luma_url:'https://lu.ma/tokenomic-workshop'},
-            {id:2,title:'Yield Farming Strategies Webinar',type:'webinar',date:'2026-04-25T16:00',description:'Advanced yield farming techniques and risk management.',attendees:120,price:0,luma_url:'https://lu.ma/tokenomic-yield'},
-            {id:3,title:'Web3 Security Conference',type:'conference',date:'2026-05-10T09:00',description:'Smart contract security and audit practices.',attendees:200,price:100,luma_url:'https://lu.ma/tokenomic-security'},
-            {id:4,title:'Geneva DeFi Meetup',type:'meetup',date:'2026-05-15T18:00',description:'Monthly community meetup for DeFi enthusiasts.',attendees:35,price:0,luma_url:'https://lu.ma/tokenomic-geneva'}
-        ],
-        showCreate:false, lumaStatus:'',
-        ne:{title:'',type:'workshop',date:'',price:'',description:''},
-        createEvent(){
-            if(!this.ne.title)return;
-            this.events.unshift({id:Date.now(),title:this.ne.title,type:this.ne.type,date:this.ne.date,description:this.ne.description,price:parseFloat(this.ne.price)||0,attendees:0,luma_url:''});
-            this.ne={title:'',type:'workshop',date:'',price:'',description:''};this.showCreate=false;
+        events: [],
+        loading: true,
+        lumaStatus: '',
+        errorMsg: '',
+        upcoming: 0,
+        pastEvents: 0,
+        totalGuests: 0,
+        init() {
+            this.fetchLuma();
         },
-        fetchLuma(){ this.lumaStatus='Luma sync ready (demo). Set LUMA_API_KEY to auto-fetch events.'; }
+        async fetchLuma() {
+            this.loading = true;
+            this.errorMsg = '';
+            try {
+                var resp = await fetch('/api/luma-events?calendar_id=' + LUMA_CALENDAR_ID);
+                if (!resp.ok) throw new Error('Luma API returned ' + resp.status);
+                var data = await resp.json();
+                var entries = data.entries || [];
+                var now = new Date();
+                this.events = entries
+                    .filter(function(entry) { return entry.event; })
+                    .map(function(entry) {
+                        var ev = entry.event;
+                        var startAt = ev.start_at ? new Date(ev.start_at) : null;
+                        var endAt = ev.end_at ? new Date(ev.end_at) : null;
+                        var isPast = startAt ? startAt < now : false;
+                        var location = '';
+                        if (ev.geo_address_json) {
+                            try {
+                                var geo = typeof ev.geo_address_json === 'string' ? JSON.parse(ev.geo_address_json) : ev.geo_address_json;
+                                location = geo.city ? (geo.city + (geo.country ? ', ' + geo.country : '')) : (geo.address || geo.full_address || '');
+                            } catch(e) { location = ''; }
+                        }
+                        if (ev.meeting_url && !location) location = 'Online';
+                        var dateDisplay = '';
+                        if (startAt) {
+                            dateDisplay = startAt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+                            dateDisplay += ' · ' + startAt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                        }
+                        var guestCount = entry.event.guest_count || 0;
+                        return {
+                            id: ev.api_id,
+                            title: ev.name || 'Untitled Event',
+                            description: ev.description_short || ev.description || '',
+                            date: ev.start_at,
+                            date_display: dateDisplay,
+                            start_at: startAt,
+                            end_at: endAt,
+                            is_past: isPast,
+                            cover_url: ev.cover_url || '',
+                            luma_url: ev.url || ('https://lu.ma/' + (ev.slug || '')),
+                            location: location,
+                            guest_count: guestCount
+                        };
+                    })
+                    .sort(function(a, b) {
+                        if (a.is_past !== b.is_past) return a.is_past ? 1 : -1;
+                        return (a.start_at || 0) - (b.start_at || 0);
+                    });
+                this.upcoming = this.events.filter(function(e) { return !e.is_past; }).length;
+                this.pastEvents = this.events.filter(function(e) { return e.is_past; }).length;
+                this.totalGuests = this.events.reduce(function(s, e) { return s + e.guest_count; }, 0);
+                this.lumaStatus = 'Synced ' + this.events.length + ' events from Luma';
+            } catch (err) {
+                console.error('Luma sync error:', err);
+                this.errorMsg = 'Could not sync with Luma: ' + err.message;
+            }
+            this.loading = false;
+        }
     };
 }
 </script>
