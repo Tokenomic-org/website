@@ -40,14 +40,15 @@
                         <h3>Newsletter<span>.</span></h3>
                         <div class="widget-content">
                             <div class="newsletter-form">
-                                <form action="http://eepurl.com/inde32">
+                                <form id="newsletterForm" onsubmit="return submitNewsletter(event)">
                                     <div class="form-group clearfix">
                                         <span class="input-icon fa flaticon-envelope"></span>
-                                        <input type="email" name="user_email" placeholder="Enter email address" required>
+                                        <input type="email" name="email" placeholder="Enter email address" required>
                                         <button type="submit" class="theme-btn newsletter-btn">Subscribe Now</button>
                                     </div>
                                 </form>
                             </div>
+                            <div class="newsletter-msg" style="display:none;margin-top:8px;font-size:13px;"></div>
                             <div class="get-link"><a href="#">Get every single update</a></div>
                         </div>
                     </div>

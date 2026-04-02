@@ -738,14 +738,15 @@
                         <h3>Newsletter<span>.</span></h3>
                         <div class="widget-content">
                             <div class="newsletter-form">
-                                <form action="http://eepurl.com/inde32">
+                                <form id="newsletterForm" onsubmit="return submitNewsletter(event)">
                                     <div class="form-group clearfix">
                                         <span class="input-icon fa flaticon-envelope"></span>
-                                        <input type="email" name="user_email" placeholder="Enter email address" required>
+                                        <input type="email" name="email" placeholder="Enter email address" required>
                                         <button type="submit" class="theme-btn newsletter-btn">Subscribe Now</button>
                                     </div>
                                 </form>
                             </div>
+                            <div class="newsletter-msg" style="display:none;margin-top:8px;font-size:13px;"></div>
                             <div class="get-link"><a href="#">Get every single update</a></div>
                         </div>
                     </div>
@@ -777,24 +778,7 @@
         </div>
     </div>
 </footer><!-- Footer Bottom -->
-<div class="footer-bottom-two">
-    <div class="auto-container">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;">
-            <div class="copyright">Copyright © 2024 Tokenomic.org. All rights reserved.</div>
-            <div style="display:flex;gap:30px;align-items:center;flex-wrap:wrap;">
-                <a href="/privacy/" style="color:#5a8299;text-decoration:none;font-size:13px;">Privacy Policy</a>
-                <a href="/terms/" style="color:#5a8299;text-decoration:none;font-size:13px;">Terms of Service</a>
-            </div>
-            <div class="social-links" style="display:flex;gap:16px;">
-                <a href="https://facebook.com/tknmic" title="Facebook" style="color:#5a8299;"><i class="fab fa-facebook-square"></i></a>
-                <a href="https://twitter.com/tknmic" title="Twitter" style="color:#5a8299;"><i class="fab fa-twitter"></i></a>
-                <a href="https://instagram.com/tknmic" title="Instagram" style="color:#5a8299;"><i class="fab fa-instagram"></i></a>
-                <a href="https://www.youtube.com/@tknmic" title="YouTube" style="color:#5a8299;"><i class="fab fa-youtube"></i></a>
-                <a href="https://www.linkedin.com/company/tknmic" title="LinkedIn" style="color:#5a8299;"><i class="fab fa-linkedin"></i></a><a href="https://www.tiktok.com/@tknmic" title="TikTok" style="color:#5a8299;"><i class="fab fa-tiktok"></i></a><a href="https://t.me/tknmic" title="Telegram" style="color:#5a8299;"><i class="fab fa-telegram"></i></a><a href="http://medium.com/@tokenomic" title="Medium" style="color:#5a8299;"><i class="fab fa-medium"></i></a><a href="/feed.xml" title="RSS" style="color:#5a8299;"><i class="fas fa-rss"></i></a>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 
         </div>
@@ -833,5 +817,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/shared/assets/js/supabase-client.js"></script>
 <script src="/shared/assets/js/site-search.js"></script>
+<script>function submitNewsletter(e){e.preventDefault();var f=e.target;var email=f.querySelector("input[name=email]").value;var btn=f.querySelector("button");var msg=f.closest(".newsletter-widget").querySelector(".newsletter-msg")||document.createElement("div");btn.disabled=true;btn.textContent="Subscribing...";fetch("/api/newsletter/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email})}).then(function(r){return r.json()}).then(function(d){if(d.success){btn.textContent="Subscribed!";btn.style.background="#38a169";if(msg.classList){msg.textContent=d.message;msg.style.display="block";msg.style.color="#38a169";}f.querySelector("input[name=email]").value="";}else{throw new Error(d.error)}}).catch(function(err){btn.textContent="Subscribe Now";btn.disabled=false;if(msg.classList){msg.textContent=err.message||"Please try again";msg.style.display="block";msg.style.color="#e53e3e";}});return false;}</script>
 </body>
 </html>

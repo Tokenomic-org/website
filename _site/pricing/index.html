@@ -546,14 +546,15 @@
                         <h3>Newsletter<span>.</span></h3>
                         <div class="widget-content">
                             <div class="newsletter-form">
-                                <form action="http://eepurl.com/inde32">
+                                <form id="newsletterForm" onsubmit="return submitNewsletter(event)">
                                     <div class="form-group clearfix">
                                         <span class="input-icon fa flaticon-envelope"></span>
-                                        <input type="email" name="user_email" placeholder="Enter email address" required>
+                                        <input type="email" name="email" placeholder="Enter email address" required>
                                         <button type="submit" class="theme-btn newsletter-btn">Subscribe Now</button>
                                     </div>
                                 </form>
                             </div>
+                            <div class="newsletter-msg" style="display:none;margin-top:8px;font-size:13px;"></div>
                             <div class="get-link"><a href="#">Get every single update</a></div>
                         </div>
                     </div>
@@ -620,5 +621,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/shared/assets/js/supabase-client.js"></script>
 <script src="/shared/assets/js/site-search.js"></script>
+<script>function submitNewsletter(e){e.preventDefault();var f=e.target;var email=f.querySelector("input[name=email]").value;var btn=f.querySelector("button");var msg=f.closest(".newsletter-widget").querySelector(".newsletter-msg")||document.createElement("div");btn.disabled=true;btn.textContent="Subscribing...";fetch("/api/newsletter/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email})}).then(function(r){return r.json()}).then(function(d){if(d.success){btn.textContent="Subscribed!";btn.style.background="#38a169";if(msg.classList){msg.textContent=d.message;msg.style.display="block";msg.style.color="#38a169";}f.querySelector("input[name=email]").value="";}else{throw new Error(d.error)}}).catch(function(err){btn.textContent="Subscribe Now";btn.disabled=false;if(msg.classList){msg.textContent=err.message||"Please try again";msg.style.display="block";msg.style.color="#e53e3e";}});return false;}</script>
 </body>
 </html>
