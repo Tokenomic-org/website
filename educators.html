@@ -1,31 +1,79 @@
 ---
-layout: page
-title: Educators & Consultants
+layout: default
+title: Experts
 permalink: /educators/
 ---
 
+{% include header.html %}
+
 <style>
-.expert-tabs { display: flex; gap: 12px; justify-content: center; margin-bottom: 40px; }
-.expert-tabs .tab-btn { padding: 10px 28px; border-radius: 30px; border: 1.5px solid #e0e4e8; background: #fff; color: #5a8299; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-.expert-tabs .tab-btn:hover { border-color: #001f29; color: #001f29; }
-.expert-tabs .tab-btn.active { background: #001f29; color: #fff; border-color: #001f29; }
+.experts-hero {
+    background: linear-gradient(135deg, #001f29 0%, #003344 100%);
+    padding: 120px 0 48px;
+    text-align: center;
+}
+.experts-hero h1 {
+    color: #fff;
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+.experts-hero .breadcrumb-nav {
+    margin-bottom: 20px;
+}
+.experts-hero .breadcrumb-nav a {
+    color: #5a8299;
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.2s;
+}
+.experts-hero .breadcrumb-nav a:hover { color: #ff6000; }
+.experts-hero .breadcrumb-nav span {
+    color: #8bb8cc;
+    font-size: 13px;
+    margin: 0 8px;
+}
+.experts-hero .breadcrumb-nav .current {
+    color: #ff6000;
+    font-size: 13px;
+}
+.experts-hero .subtitle {
+    color: #8bb8cc;
+    font-size: 16px;
+    max-width: 540px;
+    margin: 0 auto 32px;
+    line-height: 1.6;
+}
+.expert-tabs { display: flex; gap: 12px; justify-content: center; padding-bottom: 48px; }
+.expert-tabs .tab-btn {
+    padding: 10px 28px; border-radius: 30px; border: 1.5px solid rgba(255,255,255,0.2);
+    background: transparent; color: rgba(255,255,255,0.7); font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+}
+.expert-tabs .tab-btn:hover { border-color: #ff6000; color: #fff; }
+.expert-tabs .tab-btn.active { background: #ff6000; color: #fff; border-color: #ff6000; }
 .expert-section { display: none; }
 .expert-section.active { display: block; }
 </style>
 
-<section class="services-section-four" style="padding:80px 0 60px;">
+<section class="experts-hero">
     <div class="auto-container">
-        <div class="sec-title centered">
-            <h2>Meet Our Experts</h2>
-            <div class="lower-text">Community-approved educators and consultants delivering world-class DeFi education and advisory services.</div>
+        <div class="breadcrumb-nav">
+            <a href="/">Home</a><span>/</span><span class="current">Experts</span>
         </div>
-
+        <h1>Meet Our Experts</h1>
+        <div class="subtitle">Community-approved educators and consultants delivering world-class DeFi education and advisory services.</div>
         <div class="expert-tabs">
             <button class="tab-btn active" onclick="switchTab('educators', this)">Educators</button>
             <button class="tab-btn" onclick="switchTab('consultants', this)">Consultants</button>
         </div>
+    </div>
+</section>
 
-        <!-- Educators Section -->
+<section class="services-section-four" style="padding:48px 0 60px;">
+    <div class="auto-container">
+
         <div id="educators" class="expert-section active">
             <div class="sec-title centered" style="margin-bottom:40px;">
                 <h3 style="font-size:24px;color:#001f29;margin-bottom:12px;">Our Educators</h3>
@@ -38,7 +86,6 @@ permalink: /educators/
             </div>
         </div>
 
-        <!-- Consultants Section -->
         <div id="consultants" class="expert-section">
             <div class="sec-title centered" style="margin-bottom:40px;">
                 <h3 style="font-size:24px;color:#001f29;margin-bottom:12px;">Our Consultants</h3>
@@ -66,7 +113,6 @@ function switchTab(tab, btnEl) {
 document.addEventListener('DOMContentLoaded', async function() {
     TokenomicSupabase.init();
     
-    // Load Educators
     const educators = await TokenomicSupabase.getEducators();
     const educatorsGrid = document.getElementById('educators-grid');
     const educatorsLoading = document.getElementById('educators-loading');
@@ -103,7 +149,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Load Consultants
     const consultants = await TokenomicSupabase.getConsultants();
     const consultantsGrid = document.getElementById('consultants-grid');
     const consultantsLoading = document.getElementById('consultants-loading');
