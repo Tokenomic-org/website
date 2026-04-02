@@ -187,8 +187,7 @@
         <button class="dash-btn dash-btn-outline" @click="tab='modules'" :style="tab==='modules'?'border-color:#ff6000;color:#ff6000':''">Module Tracker</button>
     </div>
 
-    <div x-show="tab==='leaderboard'">
-        <div class="row clearfix" style="margin-bottom:20px;">
+    :40px;">
             <template x-for="(s,idx) in topThree" :key="s.id">
                 <div class="col-lg-4 col-md-4 col-sm-12" style="margin-bottom:16px;">
                     <div class="dash-card" style="text-align:center;position:relative;overflow:hidden;">
@@ -235,8 +234,7 @@
         </div>
     </div>
 
-    <div x-show="tab==='progress'">
-        <div class="row clearfix" style="margin-bottom:20px;">
+    :40px;">
             <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="myProgress.totalXP"></div><div class="stat-lbl">Total XP</div></div></div>
             <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="myProgress.coursesCompleted"></div><div class="stat-lbl">Courses Completed</div></div></div>
             <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff8f00;" x-text="myProgress.streak+' days'"></div><div class="stat-lbl">Current Streak</div></div></div>
