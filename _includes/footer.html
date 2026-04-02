@@ -114,4 +114,24 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer Bottom Two -->
+    <div class="footer-bottom-two">
+        <div class="auto-container">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+                <div class="copyright">Copyright © 2024 Tokenomic.org. All rights reserved.</div>
+                <div style="display:flex;gap:30px;align-items:center;flex-wrap:wrap;">
+                    <a href="/privacy/" style="color:#5a8299;text-decoration:none;font-size:13px;">Privacy Policy</a>
+                    <a href="/terms/" style="color:#5a8299;text-decoration:none;font-size:13px;">Terms of Service</a>
+                </div>
+                <div class="social-links" style="display:flex;gap:16px;">
+                    {% if site.facebook_url %}<a href="{{site.facebook_url}}" title="Facebook" style="color:#5a8299;"><i class="fab fa-facebook-square"></i></a>{% endif %}
+                    {% if site.twitter_url %}<a href="{{site.twitter_url}}" title="Twitter" style="color:#5a8299;"><i class="fab fa-twitter"></i></a>{% endif %}
+                    {% if site.instagram_url %}<a href="{{site.instagram_url}}" title="Instagram" style="color:#5a8299;"><i class="fab fa-instagram"></i></a>{% endif %}
+                    {% if site.youtube_url %}<a href="{{site.youtube_url}}" title="YouTube" style="color:#5a8299;"><i class="fab fa-youtube"></i></a>{% endif %}
+                    {% if site.linkedin_url %}<a href="{{site.linkedin_url}}" title="LinkedIn" style="color:#5a8299;"><i class="fab fa-linkedin"></i></a>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </footer>
