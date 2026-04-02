@@ -27,6 +27,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - `assets/` — CSS, images, fonts, JS libraries
 - `assets/images/learn/` — Article images pulled from learn.tokenomic.org (cover images + inline content images)
 - `scripts/` — Build scripts (scrape-articles.js, generate-article-pages.js)
+- `global-community/` — File-based community storage (each subfolder = one community with `community.json` + `comments.json`)
 
 ## Branding
 - Primary: `#F7931A` (gold-orange), Dark: `#0A0F1A` (navy-black), Muted: `#8899A6`
@@ -44,7 +45,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - **Dashboard** (`/dashboard/`) — Main analytics with stats, recent activity, progress
 - **Courses** (`/dashboard-courses/`) — Three views: Manage (CRUD), My Learning (progression), Certifications
 - **Revenue** (`/dashboard-revenue/`) — Charts with time filters (1W/1M/3M/YTD/ALL), CSV export, 0xSplits visualization, transaction history with status pills
-- **Communities** (`/dashboard-communities/`) — Community cards, token-gated access
+- **Communities** (`/dashboard-communities/`) — Community cards loaded from `global-community/` folder via API, with comment threads; create new communities, post comments
 - **Events** (`/dashboard-events/`) — Live Luma calendar sync (Calendar ID: `cal-on7sN7ID2LgtAB9`), auto-fetches events via `/api/luma-events` proxy, shows cover images, dates, locations, guest counts, and registration links
 - **Bookings** (`/dashboard-bookings/`) — Consultant booking, wallet & Helio payments
 - **Chat** (`/dashboard-chat/`) — Channel-based messaging

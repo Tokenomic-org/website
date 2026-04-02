@@ -75,64 +75,239 @@ permalink: /dashboard-communities/
                 </div>
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="communitiesPage()">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <p style="color:#5a8299;">Manage your learning communities and student groups.</p>
-        <button class="dash-btn dash-btn-primary" @click="showCreate=!showCreate">+ Create Community</button>
-    </div>
-
-    <div x-show="showCreate" x-transition class="dash-card" style="margin-bottom:20px;">
-        <h4>New Community</h4>
-        <div class="row clearfix" style="margin-bottom:14px;">
-            <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Name</label><input x-model="nc.name" class="dash-input" placeholder="Community name" /></div>
-            <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Type</label><select x-model="nc.type" class="dash-input"><option value="institution">Institution</option><option value="study-group">Study Group</option><option value="project">Project Team</option></select></div>
-            <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Access</label><select x-model="nc.access" class="dash-input"><option value="open">Open</option><option value="invite">Invite Only</option><option value="token-gated">Token Gated</option></select></div>
+    <div x-show="!activeCommunity">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <p style="color:#5a8299;">Manage your learning communities and student groups.</p>
+            <button class="dash-btn dash-btn-primary" @click="showCreate=!showCreate">+ Create Community</button>
         </div>
-        <div style="margin-bottom:14px;"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Description</label><textarea x-model="nc.description" class="dash-input" rows="2" placeholder="What is this community about?"></textarea></div>
-        <div style="display:flex;gap:8px;">
-            <button class="dash-btn dash-btn-primary" @click="create()">Create</button>
-            <button class="dash-btn dash-btn-outline" @click="showCreate=false">Cancel</button>
-        </div>
-    </div>
 
-    <div class="row clearfix">
-        <template x-for="c in communities" :key="c.id">
-            <div class="col-lg-4 col-md-6 col-sm-12" style="margin-bottom:16px;">
-                <div class="dash-card" style="border-top:3px solid;" :style="'border-color:'+(c.type==='institution'?'#ff6000':c.type==='study-group'?'#00a651':'#1976d2')">
-                    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
-                        <h5 style="margin:0;" x-text="c.name"></h5>
-                        <span class="dash-badge" :class="c.access==='open'?'dash-badge-success':c.access==='token-gated'?'dash-badge-warning':'dash-badge-info'" x-text="c.access"></span>
-                    </div>
-                    <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;" x-text="c.description"></p>
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #f0f2f5;">
-                        <span><strong style="color:#ff6000;" x-text="c.members"></strong> <small style="color:#5a8299;">members</small></span>
-                        <span class="dash-badge" :class="c.type==='institution'?'dash-badge-danger':c.type==='study-group'?'dash-badge-success':'dash-badge-info'" x-text="c.type"></span>
-                    </div>
-                    <div style="display:flex;gap:6px;margin-top:10px;">
-                        <button class="dash-btn dash-btn-primary" style="padding:4px 12px;font-size:0.8rem;flex:1;">Enter</button>
-                        <a href="/dashboard-chat/" class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.8rem;text-align:center;flex:1;">Chat</a>
+        <div x-show="showCreate" x-transition class="dash-card" style="margin-bottom:20px;">
+            <h4>New Community</h4>
+            <div class="row clearfix" style="margin-bottom:14px;">
+                <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Name</label><input x-model="nc.name" class="dash-input" placeholder="Community name" /></div>
+                <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Type</label><select x-model="nc.type" class="dash-input"><option value="institution">Institution</option><option value="study-group">Study Group</option><option value="project">Project Team</option></select></div>
+                <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Access</label><select x-model="nc.access" class="dash-input"><option value="open">Open</option><option value="invite">Invite Only</option><option value="token-gated">Token Gated</option></select></div>
+            </div>
+            <div style="margin-bottom:14px;"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Description</label><textarea x-model="nc.description" class="dash-input" rows="2" placeholder="What is this community about?"></textarea></div>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <button class="dash-btn dash-btn-primary" @click="create()" :disabled="creating">
+                    <span x-text="creating ? 'Creating...' : 'Create'"></span>
+                </button>
+                <button class="dash-btn dash-btn-outline" @click="showCreate=false">Cancel</button>
+                <span x-show="createError" x-text="createError" style="color:#e53e3e;font-size:0.85rem;margin-left:8px;"></span>
+            </div>
+        </div>
+
+        <div x-show="loading" style="text-align:center;padding:40px;">
+            <p style="color:#5a8299;">Loading communities...</p>
+        </div>
+
+        <div class="row clearfix" x-show="!loading">
+            <template x-for="c in communities" :key="c.id">
+                <div class="col-lg-4 col-md-6 col-sm-12" style="margin-bottom:16px;">
+                    <div class="dash-card" style="border-top:3px solid;" :style="'border-color:'+(c.type==='institution'?'#ff6000':c.type==='study-group'?'#00a651':'#1976d2')">
+                        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+                            <h5 style="margin:0;" x-text="c.name"></h5>
+                            <span class="dash-badge" :class="c.access==='open'?'dash-badge-success':c.access==='token-gated'?'dash-badge-warning':'dash-badge-info'" x-text="c.access"></span>
+                        </div>
+                        <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;" x-text="c.description"></p>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #f0f2f5;">
+                            <span><strong style="color:#ff6000;" x-text="c.members_count"></strong> <small style="color:#5a8299;">members</small></span>
+                            <span class="dash-badge" :class="c.type==='institution'?'dash-badge-danger':c.type==='study-group'?'dash-badge-success':'dash-badge-info'" x-text="c.type"></span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid #f0f2f5;">
+                            <span style="color:#5a8299;font-size:0.8rem;" x-text="(c.comments_count || 0) + ' comments'"></span>
+                        </div>
+                        <div style="display:flex;gap:6px;margin-top:10px;">
+                            <button class="dash-btn dash-btn-primary" style="padding:4px 12px;font-size:0.8rem;flex:1;" @click="enterCommunity(c)">Enter</button>
+                            <a href="/dashboard-chat/" class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.8rem;text-align:center;flex:1;">Chat</a>
+                        </div>
                     </div>
                 </div>
+            </template>
+        </div>
+    </div>
+
+    <div x-show="activeCommunity">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+            <button class="dash-btn dash-btn-outline" style="padding:6px 16px;font-size:0.85rem;" @click="activeCommunity=null;activeComments=[];">&larr; Back</button>
+            <div>
+                <h4 style="margin:0;" x-text="activeCommunity ? activeCommunity.name : ''"></h4>
+                <span style="color:#5a8299;font-size:0.85rem;" x-text="activeCommunity ? activeCommunity.description : ''"></span>
             </div>
-        </template>
+        </div>
+
+        <div class="dash-card" style="margin-bottom:16px;">
+            <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                <div><strong style="color:#ff6000;" x-text="activeCommunity ? activeCommunity.members_count : 0"></strong> <small style="color:#5a8299;">members</small></div>
+                <div><span class="dash-badge" :class="activeCommunity && activeCommunity.type==='institution'?'dash-badge-danger':activeCommunity && activeCommunity.type==='study-group'?'dash-badge-success':'dash-badge-info'" x-text="activeCommunity ? activeCommunity.type : ''"></span></div>
+                <div><span class="dash-badge" :class="activeCommunity && activeCommunity.access==='open'?'dash-badge-success':activeCommunity && activeCommunity.access==='token-gated'?'dash-badge-warning':'dash-badge-info'" x-text="activeCommunity ? activeCommunity.access : ''"></span></div>
+            </div>
+        </div>
+
+        <div class="dash-card">
+            <h5 style="margin-bottom:16px;">Comments <span style="color:#5a8299;font-weight:400;font-size:0.85rem;" x-text="'(' + activeComments.length + ')'"></span></h5>
+
+            <div style="margin-bottom:20px;padding:16px;background:#f8fafb;border-radius:8px;">
+                <textarea x-model="newComment" class="dash-input" rows="2" placeholder="Write a comment..." style="margin-bottom:8px;"></textarea>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <button class="dash-btn dash-btn-primary" style="padding:6px 16px;font-size:0.85rem;" @click="postComment()" :disabled="posting">
+                        <span x-text="posting ? 'Posting...' : 'Post Comment'"></span>
+                    </button>
+                    <span x-show="commentError" x-text="commentError" style="color:#e53e3e;font-size:0.85rem;"></span>
+                </div>
+            </div>
+
+            <div x-show="loadingComments" style="text-align:center;padding:20px;">
+                <p style="color:#5a8299;">Loading comments...</p>
+            </div>
+
+            <div x-show="!loadingComments && activeComments.length === 0" style="text-align:center;padding:20px;">
+                <p style="color:#5a8299;">No comments yet. Be the first to start the conversation!</p>
+            </div>
+
+            <template x-for="comment in activeComments" :key="comment.id">
+                <div style="padding:12px 0;border-bottom:1px solid #f0f2f5;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#ff6000,#ff8f00);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.75rem;font-weight:700;" x-text="comment.author ? comment.author.split(' ').map(n=>n[0]).join('') : '?'"></div>
+                        <div>
+                            <strong style="font-size:0.9rem;color:#001f29;" x-text="comment.author"></strong>
+                            <span style="color:#5a8299;font-size:0.75rem;margin-left:6px;" x-text="comment.wallet"></span>
+                        </div>
+                        <span style="color:#5a8299;font-size:0.75rem;margin-left:auto;" x-text="new Date(comment.created_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'})"></span>
+                    </div>
+                    <p style="color:#333;font-size:0.9rem;margin:0 0 0 40px;line-height:1.5;" x-text="comment.text"></p>
+                </div>
+            </template>
+        </div>
     </div>
 </div>
 
 <script>
 function communitiesPage() {
     return {
-        communities:[
-            {id:1,name:'University of Geneva Blockchain',type:'institution',access:'invite',description:'Blockchain curriculum cohort.',members:84},
-            {id:2,name:'DeFi Research Circle',type:'study-group',access:'open',description:'Peer-driven research on emerging protocols.',members:156},
-            {id:3,name:'Token Design Lab',type:'project',access:'token-gated',description:'Hands-on tokenomics design projects.',members:32},
-            {id:4,name:'Smart Contract Security Guild',type:'study-group',access:'open',description:'Weekly security review and audit practice.',members:67},
-            {id:5,name:'Institutional DeFi Cohort',type:'institution',access:'invite',description:'Enterprise teams onboarding to DeFi.',members:24}
-        ],
-        showCreate:false,
-        nc:{name:'',type:'institution',access:'open',description:''},
-        create(){
-            if(!this.nc.name)return;
-            this.communities.unshift({id:Date.now(),...this.nc,members:1});
-            this.nc={name:'',type:'institution',access:'open',description:''};this.showCreate=false;
+        communities: [],
+        loading: true,
+        showCreate: false,
+        creating: false,
+        createError: '',
+        nc: { name: '', type: 'institution', access: 'open', description: '' },
+        activeCommunity: null,
+        activeComments: [],
+        loadingComments: false,
+        newComment: '',
+        posting: false,
+        commentError: '',
+        init() {
+            this.loadCommunities();
+        },
+        loadCommunities() {
+            var self = this;
+            self.loading = true;
+            fetch('/api/communities')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    self.communities = data.communities || [];
+                    self.loading = false;
+                })
+                .catch(function(err) {
+                    console.error('Failed to load communities:', err);
+                    self.loading = false;
+                });
+        },
+        create() {
+            if (!this.nc.name) return;
+            var self = this;
+            self.creating = true;
+            self.createError = '';
+            var walletAddr = '';
+            var walletEl = document.querySelector('.wallet-status-text');
+            if (walletEl) walletAddr = walletEl.textContent || '';
+
+            fetch('/api/communities', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: self.nc.name,
+                    type: self.nc.type,
+                    access: self.nc.access,
+                    description: self.nc.description,
+                    wallet: walletAddr
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                self.creating = false;
+                if (data.error) {
+                    self.createError = data.error;
+                    return;
+                }
+                self.communities.unshift(data.community);
+                self.nc = { name: '', type: 'institution', access: 'open', description: '' };
+                self.showCreate = false;
+            })
+            .catch(function(err) {
+                self.creating = false;
+                self.createError = 'Failed to create community';
+            });
+        },
+        enterCommunity(community) {
+            var self = this;
+            self.activeCommunity = community;
+            self.loadingComments = true;
+            self.activeComments = [];
+            self.newComment = '';
+            self.commentError = '';
+
+            fetch('/api/communities/' + community.id + '/comments')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    self.activeComments = data.comments || [];
+                    self.loadingComments = false;
+                })
+                .catch(function(err) {
+                    console.error('Failed to load comments:', err);
+                    self.loadingComments = false;
+                });
+        },
+        postComment() {
+            if (!this.newComment.trim()) return;
+            var self = this;
+            self.posting = true;
+            self.commentError = '';
+
+            var authorName = 'Tokenomic User';
+            var walletAddr = '';
+            var walletEl = document.querySelector('.wallet-status-text');
+            if (walletEl && walletEl.textContent.indexOf('0x') !== -1) {
+                walletAddr = walletEl.textContent;
+            }
+
+            fetch('/api/communities/' + self.activeCommunity.id + '/comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text: self.newComment,
+                    author: authorName,
+                    wallet: walletAddr
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                self.posting = false;
+                if (data.error) {
+                    self.commentError = data.error;
+                    return;
+                }
+                self.activeComments.push(data.comment);
+                self.newComment = '';
+                var card = self.communities.find(function(c) { return c.id === self.activeCommunity.id; });
+                if (card) card.comments_count = (card.comments_count || 0) + 1;
+            })
+            .catch(function(err) {
+                self.posting = false;
+                self.commentError = 'Failed to post comment';
+            });
         }
     };
 }

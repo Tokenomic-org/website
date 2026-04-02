@@ -273,6 +273,186 @@ app.get('/api/admin/stats', requireAdmin, function(req, res) {
     });
 });
 
+var COMMUNITIES_DIR = path.join(__dirname, 'global-community');
+
+app.get('/api/communities', function(req, res) {
+    try {
+        if (!fs.existsSync(COMMUNITIES_DIR)) {
+            return res.json({ communities: [] });
+        }
+        var dirs = fs.readdirSync(COMMUNITIES_DIR, { withFileTypes: true })
+            .filter(function(d) { return d.isDirectory(); })
+            .map(function(d) { return d.name; });
+
+        var communities = [];
+        dirs.forEach(function(dirName) {
+            var communityFile = path.join(COMMUNITIES_DIR, dirName, 'community.json');
+            if (fs.existsSync(communityFile)) {
+                try {
+                    var data = JSON.parse(fs.readFileSync(communityFile, 'utf-8'));
+                    data.id = data.id || dirName;
+                    var commentsFile = path.join(COMMUNITIES_DIR, dirName, 'comments.json');
+                    if (fs.existsSync(commentsFile)) {
+                        var comments = JSON.parse(fs.readFileSync(commentsFile, 'utf-8'));
+                        data.comments_count = comments.length;
+                    } else {
+                        data.comments_count = 0;
+                    }
+                    communities.push(data);
+                } catch(e) {
+                    console.error('Error reading community ' + dirName + ':', e.message);
+                }
+            }
+        });
+
+        communities.sort(function(a, b) {
+            return new Date(b.created_at) - new Date(a.created_at);
+        });
+
+        res.json({ communities: communities });
+    } catch(err) {
+        console.error('List communities error:', err.message);
+        res.status(500).json({ error: 'Failed to load communities' });
+    }
+});
+
+app.get('/api/communities/:id', function(req, res) {
+    var communityId = req.params.id.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!communityId) return res.status(400).json({ error: 'Invalid community ID' });
+    var communityDir = path.join(COMMUNITIES_DIR, communityId);
+
+    if (!fs.existsSync(communityDir)) {
+        return res.status(404).json({ error: 'Community not found' });
+    }
+
+    try {
+        var data = JSON.parse(fs.readFileSync(path.join(communityDir, 'community.json'), 'utf-8'));
+        data.id = data.id || communityId;
+
+        var commentsFile = path.join(communityDir, 'comments.json');
+        data.comments = fs.existsSync(commentsFile)
+            ? JSON.parse(fs.readFileSync(commentsFile, 'utf-8'))
+            : [];
+
+        res.json(data);
+    } catch(err) {
+        console.error('Get community error:', err.message);
+        res.status(500).json({ error: 'Failed to load community' });
+    }
+});
+
+app.post('/api/communities', function(req, res) {
+    var name = (req.body.name || '').trim();
+    var type = req.body.type || 'institution';
+    var access = req.body.access || 'open';
+    var description = (req.body.description || '').trim();
+    var wallet = req.body.wallet || '';
+
+    if (!name) {
+        return res.status(400).json({ error: 'Community name is required' });
+    }
+
+    var slug = name.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .substring(0, 80);
+
+    if (!slug || slug.length < 2) {
+        return res.status(400).json({ error: 'Community name must contain at least 2 alphanumeric characters' });
+    }
+
+    var communityDir = path.join(COMMUNITIES_DIR, slug);
+    if (fs.existsSync(communityDir)) {
+        return res.status(409).json({ error: 'A community with a similar name already exists' });
+    }
+
+    try {
+        fs.mkdirSync(communityDir, { recursive: true });
+
+        var communityData = {
+            id: slug,
+            name: name,
+            type: type,
+            access: access,
+            description: description,
+            members_count: 1,
+            educator_wallet: wallet,
+            created_at: new Date().toISOString()
+        };
+
+        fs.writeFileSync(path.join(communityDir, 'community.json'), JSON.stringify(communityData, null, 2));
+        fs.writeFileSync(path.join(communityDir, 'comments.json'), '[]');
+
+        communityData.comments_count = 0;
+        res.json({ success: true, community: communityData });
+    } catch(err) {
+        console.error('Create community error:', err.message);
+        res.status(500).json({ error: 'Failed to create community' });
+    }
+});
+
+app.get('/api/communities/:id/comments', function(req, res) {
+    var communityId = req.params.id.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!communityId) return res.status(400).json({ error: 'Invalid community ID' });
+    var commentsFile = path.join(COMMUNITIES_DIR, communityId, 'comments.json');
+
+    if (!fs.existsSync(commentsFile)) {
+        return res.status(404).json({ error: 'Community not found' });
+    }
+
+    try {
+        var comments = JSON.parse(fs.readFileSync(commentsFile, 'utf-8'));
+        res.json({ comments: comments });
+    } catch(err) {
+        console.error('Get comments error:', err.message);
+        res.status(500).json({ error: 'Failed to load comments' });
+    }
+});
+
+app.post('/api/communities/:id/comments', function(req, res) {
+    var communityId = req.params.id.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!communityId) return res.status(400).json({ error: 'Invalid community ID' });
+    var communityDir = path.join(COMMUNITIES_DIR, communityId);
+    var commentsFile = path.join(communityDir, 'comments.json');
+
+    if (!fs.existsSync(communityDir)) {
+        return res.status(404).json({ error: 'Community not found' });
+    }
+
+    var text = (req.body.text || '').trim();
+    var author = (req.body.author || 'Anonymous').trim();
+    var wallet = (req.body.wallet || '').trim();
+
+    if (!text) {
+        return res.status(400).json({ error: 'Comment text is required' });
+    }
+
+    try {
+        var comments = [];
+        if (fs.existsSync(commentsFile)) {
+            comments = JSON.parse(fs.readFileSync(commentsFile, 'utf-8'));
+        }
+
+        var newComment = {
+            id: 'c' + Date.now(),
+            author: author,
+            wallet: wallet,
+            text: text,
+            created_at: new Date().toISOString()
+        };
+
+        comments.push(newComment);
+        fs.writeFileSync(commentsFile, JSON.stringify(comments, null, 2));
+
+        res.json({ success: true, comment: newComment });
+    } catch(err) {
+        console.error('Add comment error:', err.message);
+        res.status(500).json({ error: 'Failed to add comment' });
+    }
+});
+
 app.post('/api/profile/upload-photo', function(req, res) {
     var photoData = req.body.photo;
     var walletAddress = req.body.wallet;

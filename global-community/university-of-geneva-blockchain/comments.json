@@ -1,0 +1,16 @@
+[
+  {
+    "id": "c1",
+    "author": "Dr. Sarah Chen",
+    "wallet": "0x7291...9aff",
+    "text": "Welcome to the University of Geneva Blockchain cohort! Please introduce yourselves.",
+    "created_at": "2024-09-15T12:00:00Z"
+  },
+  {
+    "id": "c2",
+    "author": "Marcus Webb",
+    "wallet": "0x3f21...b2cc",
+    "text": "Excited to be part of this program. Looking forward to the smart contract modules.",
+    "created_at": "2024-09-16T09:30:00Z"
+  }
+]

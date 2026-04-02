@@ -1,0 +1,10 @@
+{
+  "id": "token-design-lab",
+  "name": "Token Design Lab",
+  "type": "project",
+  "access": "token-gated",
+  "description": "Hands-on tokenomics design projects.",
+  "members_count": 32,
+  "educator_wallet": "",
+  "created_at": "2024-07-20T14:00:00Z"
+}
