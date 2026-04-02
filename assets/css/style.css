@@ -13145,6 +13145,10 @@ img.lazy-image.loaded{
 .header-style-two.fixed-header .header-upper {
   background: #0c1a3e;
 }
+.header-style-one,
+.header-style-two {
+  background: #0c1a3e;
+}
 .header-style-one.fixed-header,
 .header-style-two.fixed-header {
   background: #0c1a3e !important;
