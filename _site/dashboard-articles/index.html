@@ -186,18 +186,18 @@
                 </div>
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="articlesPage()" x-init="init()">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
         <p style="color:#5a8299;">Write and publish articles to learn.tokenomic.org via GitHub API</p>
         <div style="display:flex;gap:8px;">
             <button class="dash-btn dash-btn-primary" @click="showEditor = !showEditor">+ New Article</button>
         </div>
     </div>
 
-    <div class="row clearfix" style="margin-bottom:40px;">
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="articles.filter(a=>a.status==='published').length"></div><div class="stat-lbl">Published</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff8f00;" x-text="articles.filter(a=>a.status==='draft').length"></div><div class="stat-lbl">Drafts</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="articles.filter(a=>a.sponsorship).length"></div><div class="stat-lbl">Sponsored</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val">$1,750</div><div class="stat-lbl">Sponsor Revenue</div></div></div>
+    <div class="row clearfix" style="margin-bottom:32px;">
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="articles.filter(a=>a.status==='published').length"></div><div class="stat-lbl">Published</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#ff8f00;" x-text="articles.filter(a=>a.status==='draft').length"></div><div class="stat-lbl">Drafts</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="articles.filter(a=>a.sponsorship).length"></div><div class="stat-lbl">Sponsored</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val">$1,750</div><div class="stat-lbl">Sponsor Revenue</div></div></div>
     </div>
 
     <div x-show="showEditor" x-transition class="dash-card">

@@ -187,12 +187,12 @@
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="communitiesPage()">
     <div x-show="!activeCommunity">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
             <p style="color:#5a8299;">Manage your learning communities and student groups.</p>
             <button class="dash-btn dash-btn-primary" @click="showCreate=!showCreate">+ Create Community</button>
         </div>
 
-        <div x-show="showCreate" x-transition class="dash-card" style="margin-bottom:20px;">
+        <div x-show="showCreate" x-transition class="dash-card" style="margin-bottom:32px;">
             <h4>New Community</h4>
             <div class="row clearfix" style="margin-bottom:14px;">
                 <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Name</label><input x-model="nc.name" class="dash-input" placeholder="Community name" /></div>

@@ -34,7 +34,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - Dashboard palette: Sidebar `#0A0F1A`, accent `#F7931A`, bg `#F0F2F5`, cards `#fff`, success `#00C853`, blue `#2196F3`
 - Font: Inter (dashboard), Default Bootstrap stack (main site)
 - Logo: `/assets/images/logo.png`
-- Dashboard CSS: `assets/css/dashboard.css` (design system with Inter font, card shadows, nav items, badges, tables)
+- Dashboard CSS: `assets/css/dashboard.css` (design system with Inter font, card shadows, nav items, badges, tables, 32px container spacing)
 
 ## Pages
 - **Homepage** (`/`) — Hero, platform preview, audience targeting, trust, services, training, wallet-gated community CTA

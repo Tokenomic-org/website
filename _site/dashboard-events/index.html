@@ -186,7 +186,7 @@
                 </div>
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="eventsPage()">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:8px;">
         <p style="color:#5a8299;">Events synced from <a href="https://lu.ma/tokenomic" target="_blank" style="color:#ff6000;">Luma calendar</a>.</p>
         <div style="display:flex;gap:8px;align-items:center;">
             <span x-show="loading" style="color:#5a8299;font-size:0.85rem;">Syncing...</span>
@@ -197,11 +197,11 @@
         </div>
     </div>
 
-    <div class="row clearfix" style="margin-bottom:20px;">
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="events.length"></div><div class="stat-lbl">Total Events</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="upcoming"></div><div class="stat-lbl">Upcoming</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="totalGuests"></div><div class="stat-lbl">Total Guests</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="pastEvents"></div><div class="stat-lbl">Past Events</div></div></div>
+    <div class="row clearfix" style="margin-bottom:32px;">
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="events.length"></div><div class="stat-lbl">Total Events</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="upcoming"></div><div class="stat-lbl">Upcoming</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="totalGuests"></div><div class="stat-lbl">Total Guests</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" x-text="pastEvents"></div><div class="stat-lbl">Past Events</div></div></div>
     </div>
 
     <div x-show="lumaStatus" x-transition class="dash-card" style="border-left:4px solid #1976d2;margin-bottom:20px;">

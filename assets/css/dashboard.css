@@ -138,7 +138,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px !important;
+    margin-bottom: 32px !important;
     background: #fff !important;
     border-radius: 14px !important;
     padding: 14px 24px !important;
@@ -529,6 +529,45 @@ textarea.dash-input {
     font-weight: 600 !important;
     font-size: 0.8rem !important;
     letter-spacing: 0.2px;
+}
+
+.dashboard-content > div > .dash-card,
+.dashboard-content .dash-card {
+    margin-bottom: 32px !important;
+}
+
+.dashboard-content > div > .row.clearfix {
+    margin-bottom: 32px !important;
+}
+
+.dashboard-content .dash-stat {
+    margin-bottom: 8px;
+}
+
+.dashboard-content > div > div[style*="margin-bottom:20px"],
+.dashboard-content > div > div[style*="margin-bottom: 20px"] {
+    margin-bottom: 32px !important;
+}
+
+.dashboard-content > div > h4,
+.dashboard-content > div > div > h4 {
+    margin-top: 12px;
+    margin-bottom: 20px !important;
+}
+
+.dashboard-content > div[x-data] > .dash-card + .dash-card,
+.dashboard-content .dash-card + .dash-card,
+.dashboard-content .dash-card + .row,
+.dashboard-content .row + .dash-card {
+    margin-top: 8px;
+}
+
+.dashboard-content > div[x-data] > div[x-show] + div.dash-card {
+    margin-top: 8px;
+}
+
+#tkn-login-gate {
+    margin-bottom: 32px !important;
 }
 
 @media (max-width: 991px) {

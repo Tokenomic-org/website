@@ -186,13 +186,14 @@
                 </div>
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="leaderboardPage()" x-init="init()">
-    <div style="display:flex;gap:8px;margin-bottom:20px;">
+    <div style="display:flex;gap:8px;margin-bottom:32px;">
         <button class="dash-btn dash-btn-outline" @click="tab='leaderboard'" :style="tab==='leaderboard'?'border-color:#ff6000;color:#ff6000':''">Leaderboard</button>
         <button class="dash-btn dash-btn-outline" @click="tab='progress'" :style="tab==='progress'?'border-color:#ff6000;color:#ff6000':''">My Progress</button>
         <button class="dash-btn dash-btn-outline" @click="tab='modules'" :style="tab==='modules'?'border-color:#ff6000;color:#ff6000':''">Module Tracker</button>
     </div>
 
-    :40px;">
+    <div x-show="tab==='leaderboard'" x-transition>
+        <div class="row clearfix" style="margin-bottom:32px;">
             <template x-for="(s,idx) in topThree" :key="s.id">
                 <div class="col-lg-4 col-md-4 col-sm-12" style="margin-bottom:16px;">
                     <div class="dash-card" style="text-align:center;position:relative;overflow:hidden;">
@@ -239,11 +240,12 @@
         </div>
     </div>
 
-    :40px;">
-            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="myProgress.totalXP"></div><div class="stat-lbl">Total XP</div></div></div>
-            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="myProgress.coursesCompleted"></div><div class="stat-lbl">Courses Completed</div></div></div>
-            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff8f00;" x-text="myProgress.streak+' days'"></div><div class="stat-lbl">Current Streak</div></div></div>
-            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="'#'+myProgress.rank"></div><div class="stat-lbl">Global Rank</div></div></div>
+    <div x-show="tab==='progress'" x-transition>
+        <div class="row clearfix" style="margin-bottom:32px;">
+            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="myProgress.totalXP"></div><div class="stat-lbl">Total XP</div></div></div>
+            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="myProgress.coursesCompleted"></div><div class="stat-lbl">Courses Completed</div></div></div>
+            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#ff8f00;" x-text="myProgress.streak+' days'"></div><div class="stat-lbl">Current Streak</div></div></div>
+            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" x-text="'#'+myProgress.rank"></div><div class="stat-lbl">Global Rank</div></div></div>
         </div>
         <div class="dash-card">
             <h4>Enrolled Courses</h4>

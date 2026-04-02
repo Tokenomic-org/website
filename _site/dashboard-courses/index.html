@@ -186,7 +186,7 @@
                 </div>
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="coursesPage()">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:12px;">
         <div style="display:flex;gap:8px;">
             <button class="dash-btn" :class="viewMode==='manage'?'dash-btn-primary':'dash-btn-outline'" @click="viewMode='manage'">Manage Courses</button>
             <button class="dash-btn" :class="viewMode==='learn'?'dash-btn-primary':'dash-btn-outline'" @click="viewMode='learn'">My Learning</button>
@@ -197,14 +197,14 @@
 
     <!-- MANAGE VIEW -->
     <div x-show="viewMode==='manage'" x-transition>
-    <div class="row clearfix" style="margin-bottom:20px;">
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="courses.length"></div><div class="stat-lbl">Total Courses</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="courses.filter(c=>c.status==='published').length"></div><div class="stat-lbl">Published</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="courses.reduce((s,c)=>s+c.enrolled,0)"></div><div class="stat-lbl">Enrolled Students</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="'$'+courses.reduce((s,c)=>s+c.price*c.enrolled,0)"></div><div class="stat-lbl">Gross Revenue</div></div></div>
+    <div class="row clearfix" style="margin-bottom:32px;">
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="courses.length"></div><div class="stat-lbl">Total Courses</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="courses.filter(c=>c.status==='published').length"></div><div class="stat-lbl">Published</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="courses.reduce((s,c)=>s+c.enrolled,0)"></div><div class="stat-lbl">Enrolled Students</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" x-text="'$'+courses.reduce((s,c)=>s+c.price*c.enrolled,0)"></div><div class="stat-lbl">Gross Revenue</div></div></div>
     </div>
 
-    <div x-show="showCreate" x-transition class="dash-card" style="margin-bottom:20px;">
+    <div x-show="showCreate" x-transition class="dash-card" style="margin-bottom:32px;">
         <h4>Create Course</h4>
         <div class="row clearfix" style="margin-bottom:14px;">
             <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Title</label><input x-model="nc.title" class="dash-input" placeholder="Course title" /></div>
@@ -316,10 +316,10 @@
 
     <!-- CERTIFICATIONS VIEW -->
     <div x-show="viewMode==='certs'" x-transition>
-        <div class="row clearfix" style="margin-bottom:20px;">
-            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="certs.length"></div><div class="stat-lbl">Certifications Earned</div></div></div>
-            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="enrolled.filter(c=>c.progress===100).length"></div><div class="stat-lbl">Courses Completed</div></div></div>
-            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="enrolled.length"></div><div class="stat-lbl">Total Enrolled</div></div></div>
+        <div class="row clearfix" style="margin-bottom:32px;">
+            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="certs.length"></div><div class="stat-lbl">Certifications Earned</div></div></div>
+            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="enrolled.filter(c=>c.progress===100).length"></div><div class="stat-lbl">Courses Completed</div></div></div>
+            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="enrolled.length"></div><div class="stat-lbl">Total Enrolled</div></div></div>
         </div>
 
         <template x-for="cert in certs" :key="cert.id">
