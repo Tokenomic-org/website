@@ -1,0 +1,64 @@
+---
+layout: page
+title: Educators
+permalink: /educators/
+---
+
+<section class="services-section-four" style="padding:80px 0 60px;">
+    <div class="auto-container">
+        <div class="sec-title centered">
+            <h2>Our Educators</h2>
+            <div class="lower-text">Community-approved educators delivering world-class DeFi education. Each educator has been vetted and approved through the Tokenomic community.</div>
+        </div>
+
+        <div id="educators-grid" class="row clearfix">
+            <div class="col-12 text-center" id="educators-loading">
+                <p style="color:#5a8299;padding:40px 0;">Loading educators...</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/shared/assets/js/supabase-client.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    TokenomicSupabase.init();
+    const educators = await TokenomicSupabase.getEducators();
+    const grid = document.getElementById('educators-grid');
+    const loading = document.getElementById('educators-loading');
+    if (loading) loading.remove();
+
+    if (!educators || educators.length === 0) {
+        grid.innerHTML = '<div class="col-12 text-center"><p style="color:#5a8299;padding:40px 0;">No approved educators yet. Check back soon.</p></div>';
+        return;
+    }
+
+    educators.forEach(function(edu) {
+        const initials = edu.display_name ? edu.display_name.split(' ').map(function(n){return n[0]}).join('') : '?';
+        const communityBadges = edu.communities && edu.communities.length > 0
+            ? edu.communities.map(function(c){return '<span style="display:inline-block;background:#e8f4f8;color:#001f29;font-size:0.75rem;padding:3px 10px;border-radius:12px;margin:2px;">' + c.name + ' (' + c.members_count + ' members)</span>'}).join(' ')
+            : '<span style="color:#5a8299;font-size:0.8rem;">No active communities</span>';
+
+        const card = document.createElement('div');
+        card.className = 'col-lg-4 col-md-6 col-sm-12';
+        card.style.marginBottom = '30px';
+        card.innerHTML = '<div style="background:#fff;border-radius:12px;padding:30px;box-shadow:0 4px 20px rgba(0,31,41,0.08);height:100%;display:flex;flex-direction:column;">' +
+            '<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">' +
+                '<div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#ff6000,#ff8f00);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.3rem;font-weight:700;flex-shrink:0;">' + initials + '</div>' +
+                '<div>' +
+                    '<h4 style="margin:0 0 4px;font-size:1.1rem;color:#001f29;">' + edu.display_name + '</h4>' +
+                    '<span style="color:#ff6000;font-size:0.85rem;font-weight:600;">' + (edu.specialty || 'DeFi Education') + '</span>' +
+                '</div>' +
+            '</div>' +
+            '<p style="color:#5a8299;font-size:0.9rem;margin-bottom:16px;flex-grow:1;">' + (edu.bio || '') + '</p>' +
+            '<div style="margin-bottom:12px;">' + communityBadges + '</div>' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #eef2f5;padding-top:12px;">' +
+                '<span style="color:#001f29;font-weight:600;font-size:0.85rem;">' + (edu.xp || 0) + ' XP</span>' +
+                '<a href="/dashboard-communities/" class="theme-btn btn-style-one" style="padding:8px 20px;font-size:0.8rem;border-radius:8px;">View Community</a>' +
+            '</div>' +
+        '</div>';
+        grid.appendChild(card);
+    });
+});
+</script>

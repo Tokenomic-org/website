@@ -32,6 +32,8 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 
 ## Pages
 - **Homepage** (`/`) — Hero, platform preview, audience targeting, trust, services, training, CTA
+- **Educators** (`/educators/`) — Auto-populated cards of community-approved educators from Supabase profiles (role=educator, approved=true)
+- **Consultants** (`/consultants/`) — Auto-populated cards of community-approved consultants with ratings, pricing, and booking links
 - **Dashboard** (`/dashboard/`) — Main analytics with stats, recent activity, progress
 - **Courses** (`/dashboard-courses/`) — Three views: Manage (CRUD), My Learning (progression), Certifications
 - **Revenue** (`/dashboard-revenue/`) — Charts with time filters (1W/1M/3M/YTD/ALL), CSV export, 0xSplits visualization, transaction history with status pills
@@ -48,7 +50,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - **Terms** (`/terms/`) — Terms of service
 
 ## Navigation
-Defined in `_data/navigation.yml`: Home, About (Contact), Events, Services, Training, Learn (Articles/Authors/Glossary), Pricing, Dashboard (dropdown with all 11 sub-pages)
+Defined in `_data/navigation.yml`: Home, About (Contact), Educators, Consultants, Services, Training, Learn (Articles/Authors/Glossary), Pricing
 
 ## Dashboard Source Files
 - 11 Jekyll source files at project root: `dashboard.html`, `dashboard-courses.html`, etc.

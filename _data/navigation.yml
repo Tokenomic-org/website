@@ -7,8 +7,11 @@
     - text: "Contact"
       url: "/contact/"
 
- - text: Events
-   url: "https://lu.ma/tokenomic"
+ - text: Educators
+   url: "/educators/"
+
+ - text: Consultants
+   url: "/consultants/"
 
  - text: Services
    url: "/services/"
@@ -28,6 +31,3 @@
 
  - text: Pricing
    url: "/pricing/"
-
- - text: Dashboard
-   url: "/dashboard/"
