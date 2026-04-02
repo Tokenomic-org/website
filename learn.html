@@ -1,0 +1,153 @@
+---
+layout: default
+title: Learn
+permalink: /learn/
+---
+
+<!--Banner Section-->
+<section class="page-banner">
+<div class="image-layer" style="background-image:url(/assets/images/background/banner-image-1.jpg);"></div>
+    <div class="banner-inner">
+        <div class="faded-text light">
+            <div class="f-text"><span>Learn</span></div>
+        </div>
+        <div class="auto-container">
+            <div class="inner-container clearfix">
+                <h1>Learn</h1>
+                <div class="page-nav">
+                    <ul class="bread-crumb clearfix">
+                        <li><a href="/">Home</a></li>
+                        <li class="active">Learn</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!--End Banner Section -->
+
+<style>
+.learn-page { padding: 60px 0 40px; background: #fff; }
+.learn-page .category-section { margin-bottom: 60px; }
+.learn-page .category-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; }
+.learn-page .category-header h3 { font-size: 28px; font-weight: 700; color: #001f29; margin: 0; }
+.learn-page .view-all-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 22px; border-radius: 30px; background: #fff8e1; color: #001f29; font-size: 14px; font-weight: 600; text-decoration: none; border: 1.5px solid #ffe082; transition: all 0.2s; }
+.learn-page .view-all-btn:hover { background: #ffe082; }
+.learn-page .article-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+@media (max-width: 991px) { .learn-page .article-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 575px) { .learn-page .article-grid { grid-template-columns: 1fr; } }
+.learn-page .article-card { background: #fff; border-radius: 12px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
+.learn-page .article-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+.learn-page .article-card .card-image { position: relative; width: 100%; aspect-ratio: 16/10; overflow: hidden; border-radius: 12px; }
+.learn-page .article-card .card-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+.learn-page .article-card:hover .card-image img { transform: scale(1.05); }
+.learn-page .article-card .card-meta { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-size: 12px; color: #5a8299; text-transform: uppercase; letter-spacing: 0.5px; }
+.learn-page .article-card .card-meta .cat-tag { display: inline-block; padding: 3px 12px; background: #f5f5f5; border-radius: 20px; font-weight: 600; color: #001f29; font-size: 11px; }
+.learn-page .article-card .card-title { font-size: 17px; font-weight: 600; color: #001f29; margin-top: 10px; line-height: 1.4; }
+.learn-page .article-card .card-title a { color: inherit; text-decoration: none; }
+.learn-page .article-card .card-author { font-size: 13px; color: #5a8299; margin-top: 8px; }
+.learn-page .authors-section { padding: 40px 0; border-top: 1.5px solid #f0f0f0; border-bottom: 1.5px solid #f0f0f0; margin-bottom: 40px; }
+.learn-page .authors-inner { display: flex; align-items: center; justify-content: space-between; }
+.learn-page .authors-inner h3 { font-size: 26px; font-weight: 700; color: #001f29; margin: 0; }
+.learn-page .authors-avatars { display: flex; align-items: center; }
+.learn-page .authors-avatars .author-avatar { width: 56px; height: 56px; border-radius: 50%; background: #e8eef2; border: 3px solid #fff; margin-left: -12px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #001f29; font-size: 18px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.learn-page .authors-avatars .author-avatar:first-child { margin-left: 0; }
+.learn-page .authors-avatars .author-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.learn-page .authors-link { margin-left: 20px; }
+.learn-page .authors-link a { color: #ff6000; font-weight: 600; text-decoration: none; font-size: 14px; }
+.learn-page .authors-link a:hover { text-decoration: underline; }
+.learn-page .cta-write { text-align: center; padding: 50px 20px; background: linear-gradient(135deg, #001f29 0%, #003d52 100%); border-radius: 16px; margin-bottom: 40px; }
+.learn-page .cta-write h3 { color: #fff; font-size: 24px; margin-bottom: 10px; }
+.learn-page .cta-write p { color: #8ab4c9; font-size: 15px; margin-bottom: 24px; }
+.learn-page .cta-write .cta-btn { display: inline-block; padding: 12px 32px; background: #ff6000; color: #fff; border-radius: 30px; font-weight: 600; text-decoration: none; transition: background 0.2s; }
+.learn-page .cta-write .cta-btn:hover { background: #e55500; }
+.learn-page .loading-state { text-align: center; padding: 60px 0; color: #5a8299; font-size: 16px; }
+</style>
+
+<section class="learn-page">
+    <div class="auto-container">
+        <div class="loading-state" id="learn-loading">Loading articles...</div>
+        <div id="learn-content" style="display:none;"></div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/shared/assets/js/supabase-client.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    TokenomicSupabase.init();
+
+    const articles = await TokenomicSupabase.getArticles();
+    const authors = await TokenomicSupabase.getAuthors();
+
+    const categories = {};
+    articles.forEach(function(a) {
+        if (!categories[a.category]) categories[a.category] = [];
+        categories[a.category].push(a);
+    });
+
+    var html = '';
+
+    html += '<div class="authors-section"><div class="authors-inner">';
+    html += '<h3>Meet our authors</h3>';
+    html += '<div style="display:flex;align-items:center;">';
+    html += '<div class="authors-avatars">';
+    authors.forEach(function(author) {
+        var initials = author.display_name.split(' ').map(function(n){ return n[0]; }).join('');
+        var colors = ['#ff6000','#2196F3','#4CAF50','#9C27B0','#F44336','#00BCD4'];
+        var colorIdx = author.display_name.length % colors.length;
+        if (author.avatar_url) {
+            html += '<div class="author-avatar"><img src="' + author.avatar_url + '" alt="' + author.display_name + '"></div>';
+        } else {
+            html += '<div class="author-avatar" style="background:' + colors[colorIdx] + ';color:#fff;">' + initials + '</div>';
+        }
+    });
+    html += '</div>';
+    html += '<div class="authors-link"><a href="/educators/">View all &rsaquo;</a></div>';
+    html += '</div></div></div>';
+
+    var categoryOrder = ['Strategy', 'Technical', 'DeFi', 'Governance'];
+    categoryOrder.forEach(function(cat) {
+        var catArticles = categories[cat];
+        if (!catArticles || catArticles.length === 0) return;
+
+        var slug = cat.toLowerCase().replace(/\s+/g, '-');
+        html += '<div class="category-section">';
+        html += '<div class="category-header">';
+        html += '<h3>' + cat + '</h3>';
+        if (catArticles.length > 3) {
+            html += '<a href="/category/' + slug + '/" class="view-all-btn">View all &rsaquo;</a>';
+        }
+        html += '</div>';
+        html += '<div class="article-grid">';
+
+        catArticles.slice(0, 3).forEach(function(article) {
+            var date = new Date(article.published_at);
+            var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            var dateStr = date.getDate().toString().padStart(2,'0') + ' ' + months[date.getMonth()].toUpperCase() + ', ' + date.getFullYear();
+            var authorName = article.profiles ? article.profiles.display_name : 'Tokenomic Team';
+            var link = '/' + article.slug;
+
+            html += '<div class="article-card" onclick="window.location.href=\'' + link + '\'">';
+            html += '<div class="card-image"><img src="' + article.image_url + '" alt="' + article.title.replace(/'/g, '') + '"></div>';
+            html += '<div class="card-meta"><span class="cat-tag">' + article.category + '</span><span>' + dateStr + '</span></div>';
+            html += '<div class="card-title"><a href="' + link + '">' + article.title + '</a></div>';
+            html += '<div class="card-author">By ' + authorName + '</div>';
+            html += '</div>';
+        });
+
+        html += '</div></div>';
+    });
+
+    html += '<div class="cta-write">';
+    html += '<h3>Share Your Expertise</h3>';
+    html += '<p>Educators and consultants can publish articles directly from their dashboard.</p>';
+    html += '<a href="#" class="cta-btn wallet-login-btn" onclick="TokenomicWallet.connect(); return false;">Connect Wallet to Write</a>';
+    html += '<a href="/dashboard-articles/" class="cta-btn wallet-logged-in-btn" style="display:none;">Go to Article Studio</a>';
+    html += '</div>';
+
+    document.getElementById('learn-content').innerHTML = html;
+    document.getElementById('learn-content').style.display = 'block';
+    document.getElementById('learn-loading').style.display = 'none';
+});
+</script>

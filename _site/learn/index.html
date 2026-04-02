@@ -74,18 +74,7 @@
                                     
                                     
                                     
-                                    <li class="dropdown">
-                                        <a href="/learn/">Learn</a>
-                                        <ul>
-                                            
-                                             <li><a href="/learn/">Articles</a></li>
-                                            
-                                             <li><a href="/learn-authors/">Authors</a></li>
-                                            
-                                             <li><a href="/learn-glossary/">Glossary</a></li>
-                                            
-                                        </ul>
-                                    </li>
+                                    <li><a href="/learn/">Learn</a></li>
                                     
                                     
                                                                     <li><a href="/pricing/">Pricing</a></li>
@@ -225,111 +214,152 @@
 </section>
 <!--End Banner Section -->
 
-<section class="blog-grid" style="padding:80px 0;">
-    <div class="auto-container">
-        <div class="sec-title style-two centered">
-            <h2>Learn</h2>
-            <div class="lower-text">Research articles, guides, and deep dives on DeFi tokenomics, security, and governance.</div>
-        </div>
-        <div class="row clearfix">
-            
-            <div class="news-block col-lg-4 col-md-6 col-sm-12 wow fadeInUp" data-wow-delay="0ms">
-                <div class="inner">
-                    
-                    <figure class="image-box"><a href="/yield-farming-strategies">
-                        <img class="img-fluid" src="/assets/images/resource/blog-3.webp" alt="Advanced Yield Farming Strategies for 2026"></a>
-                    </figure>
-                    
-                    <div class="lower-box">
-                        
-                        <div class="category"><a href="#">defi</a></div>
-                        
-                        <h4><a href="/yield-farming-strategies">Advanced Yield Farming Strategies for 2026</a></h4>
-                        <div class="text">Yield farming has evolved significantly since the DeFi Summer of 2020. Here are the most effective strategies for 2026.
 
-</div>
-                        <ul class="post-meta">
-                            <li>March 05, 2026</li>
-                            <li>DeFi Research</li>
-                        </ul>
-                        
-                    </div>
-                </div>
-            </div>
-            
-            <div class="news-block col-lg-4 col-md-6 col-sm-12 wow fadeInUp" data-wow-delay="0ms">
-                <div class="inner">
-                    
-                    <figure class="image-box"><a href="/smart-contract-security-basics">
-                        <img class="img-fluid" src="/assets/images/resource/blog-2.webp" alt="Smart Contract Security: Essential Best Practices"></a>
-                    </figure>
-                    
-                    <div class="lower-box">
-                        
-                        <div class="category"><a href="#">security</a></div>
-                        
-                        <h4><a href="/smart-contract-security-basics">Smart Contract Security: Essential Best Practices</a></h4>
-                        <div class="text">Smart contract security is paramount in the DeFi ecosystem. A single vulnerability can lead to millions of dollars in losses....</div>
-                        <ul class="post-meta">
-                            <li>February 10, 2026</li>
-                            <li>Security Team</li>
-                        </ul>
-                        
-                        <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;background:#fff8e1;color:#ff8f00;margin-top:6px;">Sponsored: Silver</span>
-                        
-                    </div>
-                </div>
-            </div>
-            
-            <div class="news-block col-lg-4 col-md-6 col-sm-12 wow fadeInUp" data-wow-delay="0ms">
-                <div class="inner">
-                    
-                    <figure class="image-box"><a href="/understanding-defi-tokenomics">
-                        <img class="img-fluid" src="/assets/images/resource/blog-1.webp" alt="Understanding DeFi Tokenomics: A Comprehensive Guide"></a>
-                    </figure>
-                    
-                    <div class="lower-box">
-                        
-                        <div class="category"><a href="#">tokenomics</a></div>
-                        
-                        <h4><a href="/understanding-defi-tokenomics">Understanding DeFi Tokenomics: A Comprehensive Guide</a></h4>
-                        <div class="text">Tokenomics is the study of the economics of crypto tokens or cryptocurrencies. It involves understanding the supply and demand characteristics...</div>
-                        <ul class="post-meta">
-                            <li>January 15, 2026</li>
-                            <li>Tokenomic Team</li>
-                        </ul>
-                        
-                        <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;background:#fff8e1;color:#ff8f00;margin-top:6px;">Sponsored: Gold</span>
-                        
-                    </div>
-                </div>
-            </div>
-            
-            <div class="news-block col-lg-4 col-md-6 col-sm-12 wow fadeInUp" data-wow-delay="0ms">
-                <div class="inner">
-                    
-                    <figure class="image-box"><a href="/launching-defi-course-series">
-                        <img class="img-fluid" src="/assets/images/blog/courses-release.png" alt="Launching Comprehensive DeFi Course Series"></a>
-                    </figure>
-                    
-                    <div class="lower-box">
-                        
-                        <div class="category"><a href="#">courses</a></div>
-                        
-                        <h4><a href="/launching-defi-course-series">Launching Comprehensive DeFi Course Series</a></h4>
-                        <div class="text">In an era where decentralized finance (DeFi) is revolutionizing the financial landscape, Tokenomic has launched a groundbreaking series of courses...</div>
-                        <ul class="post-meta">
-                            <li>March 21, 2025</li>
-                            <li>Guillaume Lauzier</li>
-                        </ul>
-                        
-                    </div>
-                </div>
-            </div>
-            
-        </div>
+<style>
+.learn-page { padding: 60px 0 40px; background: #fff; }
+.learn-page .category-section { margin-bottom: 60px; }
+.learn-page .category-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; }
+.learn-page .category-header h3 { font-size: 28px; font-weight: 700; color: #001f29; margin: 0; }
+.learn-page .view-all-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 22px; border-radius: 30px; background: #fff8e1; color: #001f29; font-size: 14px; font-weight: 600; text-decoration: none; border: 1.5px solid #ffe082; transition: all 0.2s; }
+.learn-page .view-all-btn:hover { background: #ffe082; }
+.learn-page .article-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+@media (max-width: 991px) { .learn-page .article-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 575px) { .learn-page .article-grid { grid-template-columns: 1fr; } }
+.learn-page .article-card { background: #fff; border-radius: 12px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
+.learn-page .article-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+.learn-page .article-card .card-image { position: relative; width: 100%; aspect-ratio: 16/10; overflow: hidden; border-radius: 12px; }
+.learn-page .article-card .card-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+.learn-page .article-card:hover .card-image img { transform: scale(1.05); }
+.learn-page .article-card .card-meta { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-size: 12px; color: #5a8299; text-transform: uppercase; letter-spacing: 0.5px; }
+.learn-page .article-card .card-meta .cat-tag { display: inline-block; padding: 3px 12px; background: #f5f5f5; border-radius: 20px; font-weight: 600; color: #001f29; font-size: 11px; }
+.learn-page .article-card .card-title { font-size: 17px; font-weight: 600; color: #001f29; margin-top: 10px; line-height: 1.4; }
+.learn-page .article-card .card-title a { color: inherit; text-decoration: none; }
+.learn-page .article-card .card-author { font-size: 13px; color: #5a8299; margin-top: 8px; }
+.learn-page .authors-section { padding: 40px 0; border-top: 1.5px solid #f0f0f0; border-bottom: 1.5px solid #f0f0f0; margin-bottom: 40px; }
+.learn-page .authors-inner { display: flex; align-items: center; justify-content: space-between; }
+.learn-page .authors-inner h3 { font-size: 26px; font-weight: 700; color: #001f29; margin: 0; }
+.learn-page .authors-avatars { display: flex; align-items: center; }
+.learn-page .authors-avatars .author-avatar { width: 56px; height: 56px; border-radius: 50%; background: #e8eef2; border: 3px solid #fff; margin-left: -12px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #001f29; font-size: 18px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.learn-page .authors-avatars .author-avatar:first-child { margin-left: 0; }
+.learn-page .authors-avatars .author-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.learn-page .authors-link { margin-left: 20px; }
+.learn-page .authors-link a { color: #ff6000; font-weight: 600; text-decoration: none; font-size: 14px; }
+.learn-page .authors-link a:hover { text-decoration: underline; }
+.learn-page .cta-write { text-align: center; padding: 50px 20px; background: linear-gradient(135deg, #001f29 0%, #003d52 100%); border-radius: 16px; margin-bottom: 40px; }
+.learn-page .cta-write h3 { color: #fff; font-size: 24px; margin-bottom: 10px; }
+.learn-page .cta-write p { color: #8ab4c9; font-size: 15px; margin-bottom: 24px; }
+.learn-page .cta-write .cta-btn { display: inline-block; padding: 12px 32px; background: #ff6000; color: #fff; border-radius: 30px; font-weight: 600; text-decoration: none; transition: background 0.2s; }
+.learn-page .cta-write .cta-btn:hover { background: #e55500; }
+.learn-page .loading-state { text-align: center; padding: 60px 0; color: #5a8299; font-size: 16px; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/shared/assets/js/supabase-client.js"></script>
+
+<section class="learn-page">
+    <div class="auto-container">
+        <div class="loading-state" id="learn-loading">Loading articles...</div>
+        <div id="learn-content" style="display:none;"></div>
     </div>
 </section>
+
+<script>
+(function() {
+    function renderLearn() {
+        try {
+            TokenomicSupabase.init();
+            var articles = TokenomicSupabase.demoData('articles');
+            var authors = TokenomicSupabase.demoData('authors');
+
+            var categories = {};
+            for (var i = 0; i < articles.length; i++) {
+                var a = articles[i];
+                if (!categories[a.category]) categories[a.category] = [];
+                categories[a.category].push(a);
+            }
+
+            var html = '';
+
+            html += '<div class="authors-section"><div class="authors-inner">';
+            html += '<h3>Meet our authors</h3>';
+            html += '<div style="display:flex;align-items:center;">';
+            html += '<div class="authors-avatars">';
+            var colors = ['#ff6000','#2196F3','#4CAF50','#9C27B0','#F44336','#00BCD4'];
+            for (var j = 0; j < authors.length; j++) {
+                var author = authors[j];
+                var parts = author.display_name.split(' ');
+                var initials = '';
+                for (var k = 0; k < parts.length; k++) initials += parts[k][0];
+                var colorIdx = author.display_name.length % colors.length;
+                if (author.avatar_url) {
+                    html += '<div class="author-avatar"><img src="' + author.avatar_url + '" alt="' + author.display_name + '"></div>';
+                } else {
+                    html += '<div class="author-avatar" style="background:' + colors[colorIdx] + ';color:#fff;">' + initials + '</div>';
+                }
+            }
+            html += '</div>';
+            html += '<div class="authors-link"><a href="/educators/">View all &#8250;</a></div>';
+            html += '</div></div></div>';
+
+            var categoryOrder = ['Strategy', 'Technical', 'DeFi', 'Governance'];
+            var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            for (var ci = 0; ci < categoryOrder.length; ci++) {
+                var cat = categoryOrder[ci];
+                var catArticles = categories[cat];
+                if (!catArticles || catArticles.length === 0) continue;
+
+                var slug = cat.toLowerCase().replace(/ /g, '-');
+                html += '<div class="category-section">';
+                html += '<div class="category-header">';
+                html += '<h3>' + cat + '</h3>';
+                html += '</div>';
+                html += '<div class="article-grid">';
+
+                var limit = catArticles.length > 3 ? 3 : catArticles.length;
+                for (var ai = 0; ai < limit; ai++) {
+                    var article = catArticles[ai];
+                    var date = new Date(article.published_at);
+                    var day = date.getDate();
+                    if (day < 10) day = '0' + day;
+                    var dateStr = day + ' ' + months[date.getMonth()].toUpperCase() + ', ' + date.getFullYear();
+                    var authorName = article.profiles ? article.profiles.display_name : 'Tokenomic Team';
+                    var link = '/' + article.slug;
+
+                    html += '<div class="article-card">';
+                    html += '<div class="card-image"><a href="' + link + '"><img src="' + article.image_url + '" alt=""></a></div>';
+                    html += '<div class="card-meta"><span class="cat-tag">' + article.category + '</span><span>' + dateStr + '</span></div>';
+                    html += '<div class="card-title"><a href="' + link + '">' + article.title + '</a></div>';
+                    html += '<div class="card-author">By ' + authorName + '</div>';
+                    html += '</div>';
+                }
+
+                html += '</div></div>';
+            }
+
+            html += '<div class="cta-write">';
+            html += '<h3>Share Your Expertise</h3>';
+            html += '<p>Educators and consultants can publish articles directly from their dashboard.</p>';
+            html += '<a href="#" class="cta-btn wallet-login-btn" onclick="TokenomicWallet.connect(); return false;">Connect Wallet to Write</a>';
+            html += '<a href="/dashboard-articles/" class="cta-btn wallet-logged-in-btn" style="display:none;">Go to Article Studio</a>';
+            html += '</div>';
+
+            document.getElementById('learn-content').innerHTML = html;
+            document.getElementById('learn-content').style.display = 'block';
+            document.getElementById('learn-loading').style.display = 'none';
+        } catch(e) {
+            console.error('Learn page error:', e);
+            document.getElementById('learn-loading').textContent = 'Error loading articles. Please refresh.';
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderLearn);
+    } else {
+        renderLearn();
+    }
+})();
+</script>
+
 
 <footer class="main-footer">
     <div class="auto-container">

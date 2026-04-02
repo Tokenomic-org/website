@@ -21,13 +21,6 @@
 
  - text: Learn
    url: "/learn/"
-   dropdown:
-    - text: "Articles"
-      url: "/learn/"
-    - text: "Authors"
-      url: "/learn-authors/"
-    - text: "Glossary"
-      url: "/learn-glossary/"
 
  - text: Pricing
    url: "/pricing/"

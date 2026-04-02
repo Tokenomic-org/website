@@ -162,6 +162,30 @@ const TokenomicSupabase = {
     return error ? [] : data;
   },
 
+  async getArticles(category) {
+    if (!this.client) return this.demoData('articles');
+    let query = this.client
+      .from('articles')
+      .select('*, profiles(display_name, avatar_url, wallet_address)')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false });
+    if (category) query = query.eq('category', category);
+    const { data, error } = await query;
+    return error ? [] : data;
+  },
+
+  async getAuthors() {
+    if (!this.client) return this.demoData('authors');
+    const { data, error } = await this.client
+      .from('profiles')
+      .select('display_name, avatar_url, wallet_address, role, specialty, bio')
+      .in('role', ['educator', 'consultant'])
+      .eq('approved', true)
+      .order('xp', { ascending: false })
+      .limit(6);
+    return error ? [] : data;
+  },
+
   subscribeToMessages(communityId, callback) {
     if (!this.client) return null;
     return this.client
@@ -218,6 +242,28 @@ const TokenomicSupabase = {
         { id: 3, display_name: 'Aisha Patel', wallet_address: '0x2546...c30', role: 'consultant', bio: 'Ex-Aave contributor. Liquidity and governance optimization expert.', specialty: 'DeFi Protocol Strategy', rate_30: 60, rate_60: 110, sessions: 76, rating: 4.7, xp: 3100, approved: true, avatar_url: null },
         { id: 4, display_name: 'James Liu', wallet_address: '0xbDA5...97E', role: 'consultant', bio: 'Blockchain attorney. Regulatory counsel for US, EU, and APAC jurisdictions.', specialty: 'Regulatory & Compliance', rate_30: 125, rate_60: 225, sessions: 53, rating: 4.9, xp: 2900, approved: true, avatar_url: null },
         { id: 5, display_name: 'Natalie Kim', wallet_address: '0xD4f2...E19', role: 'consultant', bio: 'Risk modeling specialist. Built risk frameworks for 10+ lending protocols.', specialty: 'Risk Management', rate_30: 90, rate_60: 160, sessions: 64, rating: 4.8, xp: 2600, approved: true, avatar_url: null }
+      ],
+      articles: [
+        { id: 1, title: 'Understanding Iron Condor and Butterfly Spread', slug: 'iron-condor-butterfly-spread', category: 'Strategy', excerpt: 'A deep dive into advanced options strategies used in DeFi derivatives markets, comparing iron condors with butterfly spreads for risk management.', image_url: '/assets/images/blog/blog-img-14.jpg', published_at: '2025-01-11', profiles: { display_name: 'Dr. Sarah Chen', avatar_url: null, wallet_address: '0x742d...bD1e' } },
+        { id: 2, title: 'Advanced Options Strategies in DeFi', slug: 'advanced-options-defi', category: 'Strategy', excerpt: 'Exploring how traditional options strategies are being adapted and improved upon in decentralized finance protocols.', image_url: '/assets/images/blog/blog-img-15.jpg', published_at: '2025-01-01', profiles: { display_name: 'Guillaume Lauzier', avatar_url: null, wallet_address: '0xabc1...def2' } },
+        { id: 3, title: 'Arbitrage - A Practical Guide', slug: 'arbitrage-practical-guide', category: 'Strategy', excerpt: 'Learn how to identify and execute arbitrage opportunities across decentralized exchanges and lending protocols.', image_url: '/assets/images/blog/blog-img-16.jpg', published_at: '2024-08-12', profiles: { display_name: 'Guillaume Lauzier', avatar_url: null, wallet_address: '0xabc1...def2' } },
+        { id: 4, title: 'Smart Contract Security: Essential Best Practices', slug: 'smart-contract-security-basics', category: 'Technical', excerpt: 'A comprehensive guide to securing smart contracts against common vulnerabilities, reentrancy attacks, and logic flaws.', image_url: '/assets/images/blog/blog-img-15.jpg', published_at: '2026-02-10', profiles: { display_name: 'Marcus Webb', avatar_url: null, wallet_address: '0x8Ba1...BA72' } },
+        { id: 5, title: 'Gas Optimization Techniques for Solidity', slug: 'gas-optimization-solidity', category: 'Technical', excerpt: 'Reduce transaction costs with proven gas optimization patterns for Solidity smart contracts on EVM chains.', image_url: '/assets/images/blog/blog-img-14.jpg', published_at: '2025-11-20', profiles: { display_name: 'Marcus Webb', avatar_url: null, wallet_address: '0x8Ba1...BA72' } },
+        { id: 6, title: 'Building Upgradeable Proxy Contracts', slug: 'upgradeable-proxy-contracts', category: 'Technical', excerpt: 'Understanding the proxy pattern for deploying upgradeable smart contracts while maintaining state and security.', image_url: '/assets/images/blog/blog-img-16.jpg', published_at: '2025-09-05', profiles: { display_name: 'Aisha Patel', avatar_url: null, wallet_address: '0x2546...c30' } },
+        { id: 7, title: 'Understanding DeFi Tokenomics: A Comprehensive Guide', slug: 'understanding-defi-tokenomics', category: 'DeFi', excerpt: 'Tokenomics is the study of the economics of crypto tokens. Understand supply, demand, and incentive structures.', image_url: '/assets/images/blog/blog-img-14.jpg', published_at: '2026-01-15', profiles: { display_name: 'Dr. Sarah Chen', avatar_url: null, wallet_address: '0x742d...bD1e' } },
+        { id: 8, title: 'Advanced Yield Farming Strategies for 2026', slug: 'yield-farming-strategies', category: 'DeFi', excerpt: 'Yield farming has evolved significantly since DeFi Summer 2020. Here are the most effective strategies for 2026.', image_url: '/assets/images/blog/blog-img-16.jpg', published_at: '2026-03-05', profiles: { display_name: 'Aisha Patel', avatar_url: null, wallet_address: '0x2546...c30' } },
+        { id: 9, title: 'Liquidity Pool Mechanics Explained', slug: 'liquidity-pool-mechanics', category: 'DeFi', excerpt: 'How automated market makers work under the hood — from constant product formulas to concentrated liquidity.', image_url: '/assets/images/blog/blog-img-15.jpg', published_at: '2025-06-18', profiles: { display_name: 'Elena Rossi', avatar_url: null, wallet_address: '0xfC23...A41' } },
+        { id: 10, title: 'DAO Governance Models Compared', slug: 'dao-governance-models', category: 'Governance', excerpt: 'An analysis of token-weighted, quadratic, and conviction voting in major DAOs and their effectiveness.', image_url: '/assets/images/blog/blog-img-15.jpg', published_at: '2025-12-01', profiles: { display_name: 'David Okonkwo', avatar_url: null, wallet_address: '0x91Ae...C82' } },
+        { id: 11, title: 'Regulatory Frameworks for DeFi in 2026', slug: 'regulatory-frameworks-defi', category: 'Governance', excerpt: 'A breakdown of the evolving regulatory landscape across US, EU, and APAC jurisdictions for DeFi protocols.', image_url: '/assets/images/blog/blog-img-14.jpg', published_at: '2026-01-20', profiles: { display_name: 'James Liu', avatar_url: null, wallet_address: '0xbDA5...97E' } },
+        { id: 12, title: 'On-Chain Governance: Lessons from MakerDAO', slug: 'onchain-governance-makerdao', category: 'Governance', excerpt: 'What MakerDAO\'s governance evolution teaches us about designing resilient decentralized decision-making systems.', image_url: '/assets/images/blog/blog-img-16.jpg', published_at: '2025-10-14', profiles: { display_name: 'David Okonkwo', avatar_url: null, wallet_address: '0x91Ae...C82' } }
+      ],
+      authors: [
+        { display_name: 'Dr. Sarah Chen', avatar_url: null, wallet_address: '0x742d...bD1e', role: 'educator', specialty: 'Tokenomics & Economic Design', bio: 'PhD in Economics from MIT.' },
+        { display_name: 'Marcus Webb', avatar_url: null, wallet_address: '0x8Ba1...BA72', role: 'educator', specialty: 'Smart Contract Security', bio: 'Former Trail of Bits auditor.' },
+        { display_name: 'Aisha Patel', avatar_url: null, wallet_address: '0x2546...c30', role: 'educator', specialty: 'DeFi Protocol Strategy', bio: 'Ex-Aave contributor.' },
+        { display_name: 'Guillaume Lauzier', avatar_url: null, wallet_address: '0xabc1...def2', role: 'educator', specialty: 'DeFi Strategy', bio: 'Tokenomic founder.' },
+        { display_name: 'James Liu', avatar_url: null, wallet_address: '0xbDA5...97E', role: 'consultant', specialty: 'Regulatory & Compliance', bio: 'Blockchain attorney.' },
+        { display_name: 'David Okonkwo', avatar_url: null, wallet_address: '0x91Ae...C82', role: 'educator', specialty: 'DAO Governance', bio: 'Governance researcher.' }
       ],
       messages: [
         { id: 1, content: 'Welcome to the community!', community_id: 1, created_at: '2026-03-01T10:00:00Z', profiles: { display_name: 'Admin' } },
