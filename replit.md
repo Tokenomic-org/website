@@ -48,12 +48,14 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - **Terms** (`/terms/`) — Terms of service
 
 ## Navigation
-Defined in `_data/navigation.yml`: Home, About (Contact), Events, Services, Training, Learn (Articles/Authors/Glossary), Pricing
+Defined in `_data/navigation.yml`: Home, About (Contact), Events, Services, Training, Learn (Articles/Authors/Glossary), Pricing, Dashboard (dropdown with all 11 sub-pages)
 
 ## Dashboard Source Files
 - 11 Jekyll source files at project root: `dashboard.html`, `dashboard-courses.html`, etc.
 - Each uses `layout: dashboard` with `permalink` front matter
 - Dashboard layout (`_layouts/dashboard.html`) uses `header_5.html` (includes wallet Login/Dashboard buttons)
+- Dashboard layout has NO page banner — goes straight from header to content
+- Dashboard header has solid dark navy background (`#001f29`) with tighter nav spacing
 - Content extracted from pre-built `_site/` pages for GitHub Pages compatibility
 
 ## Important Notes

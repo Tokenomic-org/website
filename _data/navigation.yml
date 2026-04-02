@@ -28,3 +28,29 @@
 
  - text: Pricing
    url: "/pricing/"
+
+ - text: Dashboard
+   url: "/dashboard/"
+   dropdown:
+    - text: "Dashboard"
+      url: "/dashboard/"
+    - text: "Communities"
+      url: "/dashboard-communities/"
+    - text: "Courses"
+      url: "/dashboard-courses/"
+    - text: "Events"
+      url: "/dashboard-events/"
+    - text: "Revenue"
+      url: "/dashboard-revenue/"
+    - text: "Bookings"
+      url: "/dashboard-bookings/"
+    - text: "Chat"
+      url: "/dashboard-chat/"
+    - text: "Articles"
+      url: "/dashboard-articles/"
+    - text: "Leaderboard"
+      url: "/dashboard-leaderboard/"
+    - text: "Social"
+      url: "/dashboard-social/"
+    - text: "Profile"
+      url: "/dashboard-profile/"
