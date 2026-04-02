@@ -6,6 +6,7 @@
         <link href="/assets/css/bootstrap.css" rel="stylesheet" />
         <link href="/assets/css/style.css" rel="stylesheet" />
         <link href="/assets/css/responsive.css" rel="stylesheet" />
+<link href="/assets/css/dashboard.css" rel="stylesheet" />
         <link rel="shortcut icon" href="/assets/images/favicon.png" type="image/x-icon" />
         <link rel="icon" href="/assets/images/favicon.png" type="image/x-icon" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -23,12 +24,13 @@
         </script>
     
           <style>
-              .header-style-two { top: 0; background: #001f29; }
+              .header-style-two { top: 0; background: #0A0F1A; }
               .dashboard-section { padding-top: 100px !important; }
               .main-menu .navigation > li { margin-right: 20px; }
               .main-menu .navigation > li > a { font-size: 15px; }
           </style>
-    </head>
+    
+</head>
     <body>
         <div class="page-wrapper">
             
@@ -171,73 +173,62 @@
 </section>
 <!-- End / Hidden Bar -->
 
-<!--Banner Section-->
-<section class="page-banner">
-<div class="image-layer" style="background-image:url(/assets/images/background/banner-image-1.jpg);"></div>
-    <div class="banner-inner">
-        <div class="faded-text light">
-            <div class="f-text"><span>Dashboard</span></div>
-        </div>
-        <div class="auto-container">
-            <div class="inner-container clearfix">
-                <h1>Dashboard</h1>
-                <div class="page-nav">
-                    <ul class="bread-crumb clearfix">
-                        <li><a href="/">Home</a></li>
-                        <li class="active">Dashboard</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<!--End Banner Section -->
-
-<section class="dashboard-section" style="padding:60px 0;background:#f5f7fa;min-height:80vh;">
+<section class="dashboard-section" >
     <div class="auto-container">
         <div class="row">
             <div class="col-lg-3 col-md-4 col-sm-12">
-                <div class="dashboard-sidebar" style="background:#001f29;border-radius:12px;padding:20px;margin-bottom:30px;">
+                <div class="dashboard-sidebar">
+                    <div class="sidebar-brand">
+                        <div class="brand-icon">T</div>
+                        <div>
+                            <div class="brand-text">Tokenomic</div>
+                            <div class="brand-sub">Dashboard</div>
+                        </div>
+                    </div>
                     <nav class="dashboard-nav">
+                        <div class="sidebar-section-label">Main</div>
                         <a href="/dashboard/" class="dash-nav-item active">
-                            <span class="flaticon-home-1" style="margin-right:8px;"></span> Dashboard
+                            <span class="flaticon-home-1"></span> Dashboard
                         </a>
-                        <a href="/dashboard-communities/" class="dash-nav-item ">
-                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Communities
+                        <a href="/dashboard-communities/" class="dash-nav-item">
+                            <span class="flaticon-user-3"></span> Communities
                         </a>
-                        <a href="/dashboard-courses/" class="dash-nav-item ">
-                            <span class="flaticon-notebook" style="margin-right:8px;"></span> Courses
+                        <a href="/dashboard-courses/" class="dash-nav-item">
+                            <span class="flaticon-notebook"></span> Courses
                         </a>
-                        <a href="/dashboard-events/" class="dash-nav-item ">
-                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Events
+                        <a href="/dashboard-events/" class="dash-nav-item">
+                            <span class="flaticon-calendar"></span> Events
                         </a>
-                        <a href="/dashboard-revenue/" class="dash-nav-item ">
-                            <span class="flaticon-money" style="margin-right:8px;"></span> Revenue
+                        <div class="sidebar-section-label">Finance</div>
+                        <a href="/dashboard-revenue/" class="dash-nav-item">
+                            <span class="flaticon-money"></span> Revenue
                         </a>
-                        <a href="/dashboard-bookings/" class="dash-nav-item ">
-                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Bookings
+                        <a href="/dashboard-bookings/" class="dash-nav-item">
+                            <span class="flaticon-calendar"></span> Bookings
                         </a>
-                        <a href="/dashboard-chat/" class="dash-nav-item ">
-                            <span class="flaticon-speech-bubble" style="margin-right:8px;"></span> Chat
+                        <div class="sidebar-section-label">Content</div>
+                        <a href="/dashboard-chat/" class="dash-nav-item">
+                            <span class="flaticon-speech-bubble"></span> Chat
                         </a>
-                        <a href="/dashboard-articles/" class="dash-nav-item ">
-                            <span class="flaticon-edit" style="margin-right:8px;"></span> Articles
+                        <a href="/dashboard-articles/" class="dash-nav-item">
+                            <span class="flaticon-edit"></span> Articles
                         </a>
-                        <a href="/dashboard-leaderboard/" class="dash-nav-item ">
-                            <span class="flaticon-trophy" style="margin-right:8px;"></span> Leaderboard
+                        <a href="/dashboard-social/" class="dash-nav-item">
+                            <span class="flaticon-share"></span> Social
                         </a>
-                        <a href="/dashboard-social/" class="dash-nav-item ">
-                            <span class="flaticon-share" style="margin-right:8px;"></span> Social
+                        <div class="sidebar-section-label">Progress</div>
+                        <a href="/dashboard-leaderboard/" class="dash-nav-item">
+                            <span class="flaticon-trophy"></span> Leaderboard
                         </a>
-                        <a href="/dashboard-profile/" class="dash-nav-item ">
-                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Profile
+                        <a href="/dashboard-profile/" class="dash-nav-item">
+                            <span class="flaticon-user-3"></span> Profile
                         </a>
                     </nav>
                 </div>
             </div>
             <div class="col-lg-9 col-md-8 col-sm-12">
-                <div class="dashboard-topbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;background:#fff;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                    <h3 style="margin:0;color:#001f29;">Welcome to Tokenomic Dashboard</h3>
+                <div class="dashboard-topbar" >
+                    <h3 style="margin:0;color:#0A0F1A;">Welcome to Tokenomic Dashboard</h3>
                     <div style="display:flex;align-items:center;gap:12px;">
                         <span class="wallet-status-text" style="font-size:0.85rem;color:#5a8299;">Not Connected</span>
                         <button class="theme-btn btn-style-one wallet-connect-btn" style="padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.connect()">Connect Wallet</button>
@@ -245,20 +236,20 @@
                     </div>
                 </div>
                 <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                    <div style="width:80px;height:80px;border-radius:50%;background:#001f29;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#0A0F1A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
                         <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
                     </div>
-                    <h3 style="color:#001f29;margin-bottom:8px;">Connect Your Wallet</h3>
+                    <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
                     <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
                     <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
                 </div>
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="dashboardHome()" x-init="init()">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
-        <span style="color:#5a8299;font-size:0.9rem;">View as:</span>
-        <button class="dash-btn dash-btn-outline" @click="setRole('institution')" :style="role === 'institution' ? 'border-color:#ff6000;color:#ff6000;background:rgba(255,96,0,0.05)' : ''">Institution</button>
-        <button class="dash-btn dash-btn-outline" @click="setRole('educator')" :style="role === 'educator' ? 'border-color:#00a651;color:#00a651;background:rgba(0,166,81,0.05)' : ''">Educator</button>
-        <button class="dash-btn dash-btn-outline" @click="setRole('consultant')" :style="role === 'consultant' ? 'border-color:#1976d2;color:#1976d2;background:rgba(25,118,210,0.05)' : ''">Consultant</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
+        <span style="color:#8899A6;font-size:0.82rem;font-weight:500;">View as:</span>
+        <button class="dash-btn dash-btn-outline" @click="setRole('institution')" :style="role === 'institution' ? 'border-color:#F7931A;color:#F7931A;background:rgba(247,147,26,0.05)' : ''">Institution</button>
+        <button class="dash-btn dash-btn-outline" @click="setRole('educator')" :style="role === 'educator' ? 'border-color:#00C853;color:#00C853;background:rgba(0,200,83,0.05)' : ''">Educator</button>
+        <button class="dash-btn dash-btn-outline" @click="setRole('consultant')" :style="role === 'consultant' ? 'border-color:#2196F3;color:#2196F3;background:rgba(33,150,243,0.05)' : ''">Consultant</button>
     </div>
 
     <div class="row clearfix" style="margin-bottom:24px;">
@@ -273,41 +264,55 @@
     </div>
 
     <div class="row clearfix">
-        <div class="col-lg-8 col-md-7 col-sm-12">
+        <div class="col-lg-8 col-md-7 col-sm-12" style="margin-bottom:20px;">
             <div class="dash-card">
                 <h4 x-text="role === 'institution' ? 'Student Enrollment Trend' : role === 'educator' ? 'Revenue Overview' : 'Booking Revenue'"></h4>
                 <canvas id="mainChart" height="200"></canvas>
             </div>
         </div>
-        <div class="col-lg-4 col-md-5 col-sm-12">
+        <div class="col-lg-4 col-md-5 col-sm-12" style="margin-bottom:20px;">
             <div class="dash-card">
                 <h4>Quick Actions</h4>
-                <div style="display:flex;flex-direction:column;gap:10px;">
+                <div class="quick-action-grid">
                     <template x-for="action in quickActions" :key="action.label">
-                        <a :href="action.url" class="theme-btn btn-style-one" style="text-align:center;padding:10px 16px;font-size:0.85rem;border-radius:8px;" x-text="action.label"></a>
+                        <a :href="action.url" class="quick-action-card">
+                            <div class="qa-icon" :style="'background:' + action.iconBg + ';color:' + action.iconColor">
+                                <span :class="action.icon"></span>
+                            </div>
+                            <div>
+                                <div class="qa-label" x-text="action.label"></div>
+                                <div class="qa-desc" x-text="action.desc"></div>
+                            </div>
+                        </a>
                     </template>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="dash-card" style="margin-top:20px;">
-        <h4>Recent Transactions</h4>
+    <div class="dash-card" style="margin-top:4px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h4 style="margin-bottom:0 !important;">Recent Transactions</h4>
+            <a href="/dashboard-revenue/" class="dash-btn dash-btn-outline" style="padding:5px 14px;font-size:0.75rem;">View All</a>
+        </div>
+        <div style="overflow-x:auto;">
         <table class="dash-table">
-            <thead><tr><th>Description</th><th>Amount</th><th>From</th><th>Split</th><th>Status</th><th>Date</th></tr></thead>
+            <thead><tr><th>Type</th><th>Description</th><th>Amount</th><th>From</th><th>Split</th><th>Status</th><th>Date</th></tr></thead>
             <tbody>
                 <template x-for="tx in recentTx" :key="tx.id">
                     <tr>
-                        <td x-text="tx.description"></td>
-                        <td><strong style="color:#00a651;" x-text="'$' + tx.amount_usdc + ' USDC'"></strong></td>
-                        <td style="font-family:monospace;font-size:0.8rem;" x-text="tx.sender_wallet"></td>
-                        <td style="font-size:0.8rem;color:#5a8299;" x-text="tx.split || '90/5/5'"></td>
-                        <td><span class="dash-badge dash-badge-success" x-text="tx.status"></span></td>
-                        <td x-text="new Date(tx.created_at).toLocaleDateString()"></td>
+                        <td><span class="dash-badge dash-badge-info" x-text="tx.type || 'Helio'"></span></td>
+                        <td style="font-weight:500;" x-text="tx.description"></td>
+                        <td><strong style="color:#0D7C3E;" x-text="'$' + tx.amount_usdc + ' USDC'"></strong></td>
+                        <td><span class="wallet-pill" style="padding:3px 8px;font-size:0.72rem;" x-text="tx.sender_wallet"></span></td>
+                        <td style="font-size:0.78rem;color:#8899A6;" x-text="tx.split || '90/5/5'"></td>
+                        <td><span class="dash-badge" :class="tx.status==='confirmed'?'dash-badge-success':'dash-badge-warning'" x-text="tx.status"></span></td>
+                        <td style="font-size:0.82rem;color:#5A6B7B;" x-text="new Date(tx.created_at).toLocaleDateString()"></td>
                     </tr>
                 </template>
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 
@@ -332,33 +337,36 @@ function dashboardHome() {
                     { label: 'Communities', value: '5', color: '#001f29' }
                 ];
                 this.quickActions = [
-                    { label: 'Manage Courses', url: '/dashboard-courses/' },
-                    { label: 'View Leaderboard', url: '/dashboard-leaderboard/' },
-                    { label: 'Communities', url: '/dashboard-communities/' }
+                    { label: 'Manage Courses', desc: 'Create & edit courses', url: '/dashboard-courses/', icon: 'flaticon-notebook', iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
+                    { label: 'Leaderboard', desc: 'Student rankings', url: '/dashboard-leaderboard/', icon: 'flaticon-trophy', iconBg: 'rgba(255,193,7,0.1)', iconColor: '#FFA000' },
+                    { label: 'Communities', desc: 'Manage groups', url: '/dashboard-communities/', icon: 'flaticon-user-3', iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
+                    { label: 'Events', desc: 'Schedule & sync', url: '/dashboard-events/', icon: 'flaticon-calendar', iconBg: 'rgba(0,200,83,0.1)', iconColor: '#00C853' }
                 ];
             } else if (this.role === 'educator') {
                 this.roleStats = [
-                    { label: 'Communities', value: '5', color: '#001f29' },
-                    { label: 'Total Students', value: '247', color: '#ff6000' },
-                    { label: 'Revenue (USDC)', value: '$2,450', color: '#00a651' },
-                    { label: 'Articles Published', value: '24', color: '#1976d2' }
+                    { label: 'Communities', value: '5', color: '#0A0F1A' },
+                    { label: 'Total Students', value: '247', color: '#F7931A' },
+                    { label: 'Revenue (USDC)', value: '$2,450', color: '#00C853' },
+                    { label: 'Articles Published', value: '24', color: '#2196F3' }
                 ];
                 this.quickActions = [
-                    { label: 'Write Article', url: '/dashboard-articles/' },
-                    { label: 'Social Posts', url: '/dashboard-social/' },
-                    { label: 'Revenue Details', url: '/dashboard-revenue/' }
+                    { label: 'Write Article', desc: 'Publish to learn site', url: '/dashboard-articles/', icon: 'flaticon-edit', iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
+                    { label: 'Social Posts', desc: 'Schedule content', url: '/dashboard-social/', icon: 'flaticon-share', iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
+                    { label: 'Revenue', desc: 'View earnings', url: '/dashboard-revenue/', icon: 'flaticon-money', iconBg: 'rgba(0,200,83,0.1)', iconColor: '#00C853' },
+                    { label: 'Chat', desc: 'Community messages', url: '/dashboard-chat/', icon: 'flaticon-speech-bubble', iconBg: 'rgba(255,143,0,0.1)', iconColor: '#FF8F00' }
                 ];
             } else {
                 this.roleStats = [
-                    { label: 'Upcoming Bookings', value: '3', color: '#ff6000' },
-                    { label: 'Total Earned', value: '$1,875', color: '#00a651' },
-                    { label: 'Sessions', value: '18', color: '#001f29' },
-                    { label: 'Client Rating', value: '4.9', color: '#1976d2' }
+                    { label: 'Upcoming Bookings', value: '3', color: '#F7931A' },
+                    { label: 'Total Earned', value: '$1,875', color: '#00C853' },
+                    { label: 'Sessions', value: '18', color: '#0A0F1A' },
+                    { label: 'Client Rating', value: '4.9', color: '#2196F3' }
                 ];
                 this.quickActions = [
-                    { label: 'Manage Bookings', url: '/dashboard-bookings/' },
-                    { label: 'Withdraw Funds', url: '/dashboard-revenue/' },
-                    { label: 'Client Messages', url: '/dashboard-chat/' }
+                    { label: 'Bookings', desc: 'Manage sessions', url: '/dashboard-bookings/', icon: 'flaticon-calendar', iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
+                    { label: 'Withdraw', desc: 'Claim funds', url: '/dashboard-revenue/', icon: 'flaticon-money', iconBg: 'rgba(0,200,83,0.1)', iconColor: '#00C853' },
+                    { label: 'Messages', desc: 'Client chat', url: '/dashboard-chat/', icon: 'flaticon-speech-bubble', iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
+                    { label: 'Profile', desc: 'Edit settings', url: '/dashboard-profile/', icon: 'flaticon-user-3', iconBg: 'rgba(156,39,176,0.1)', iconColor: '#9C27B0' }
                 ];
             }
         },
@@ -484,46 +492,7 @@ function dashboardHome() {
 <script src="/shared/assets/js/supabase-client.js"></script>
 
 
-<style>
-.dashboard-nav { display:flex;flex-direction:column;gap:4px; }
-.dash-nav-item { display:flex;align-items:center;padding:10px 14px;color:#b0bec5;text-decoration:none;border-radius:8px;font-size:0.9rem;transition:all 0.2s; }
-.dash-nav-item:hover { background:rgba(255,255,255,0.08);color:#fff;text-decoration:none; }
-.dash-nav-item.active { background:rgba(255,96,0,0.15);color:#ff6000;font-weight:600; }
 
-.dash-card { background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:20px; }
-.dash-card h4 { color:#001f29;margin-bottom:16px; }
-.dash-stat { background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);text-align:center; }
-.dash-stat .stat-val { font-size:1.75rem;font-weight:800;color:#001f29; }
-.dash-stat .stat-lbl { font-size:0.85rem;color:#5a8299;margin-top:4px; }
-
-.dash-table { width:100%;border-collapse:collapse; }
-.dash-table th { background:#f5f7fa;padding:10px 14px;text-align:left;font-size:0.8rem;text-transform:uppercase;color:#5a8299;letter-spacing:0.5px;border-bottom:2px solid #e8ecef; }
-.dash-table td { padding:10px 14px;border-bottom:1px solid #f0f2f5;color:#001f29;font-size:0.9rem; }
-.dash-table tr:hover { background:#f9fafb; }
-
-.dash-badge { display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:600; }
-.dash-badge-success { background:#e6f9f0;color:#00a651; }
-.dash-badge-warning { background:#fff8e1;color:#ff8f00; }
-.dash-badge-info { background:#e3f2fd;color:#1976d2; }
-.dash-badge-danger { background:#fce4ec;color:#d32f2f; }
-
-.dash-input { width:100%;padding:10px 14px;border:1px solid #dce3e8;border-radius:8px;font-size:0.9rem;background:#fff;color:#001f29;outline:none; }
-.dash-input:focus { border-color:#ff6000;box-shadow:0 0 0 3px rgba(255,96,0,0.1); }
-
-.dash-btn { padding:10px 20px;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;border:none;transition:all 0.2s; }
-.dash-btn-primary { background:#ff6000;color:#fff; }
-.dash-btn-primary:hover { background:#e55500; }
-.dash-btn-outline { background:transparent;border:1px solid #dce3e8;color:#001f29; }
-.dash-btn-outline:hover { border-color:#ff6000;color:#ff6000; }
-
-.dash-section-title { font-size:1.1rem;font-weight:700;color:#001f29;margin-bottom:16px; }
-
-@media(max-width:991px){
-    .dashboard-sidebar { position:relative; }
-    .dashboard-nav { flex-direction:row;flex-wrap:wrap;gap:4px; }
-    .dash-nav-item { font-size:0.8rem;padding:6px 10px; }
-}
-</style>
 
         </div>
         <!--End pagewrapper-->
@@ -549,7 +518,7 @@ function dashboardHome() {
         <script src="/shared/assets/js/web3-wallet.js"></script>
         <div id="wallet-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;">
             <div style="max-width:420px;margin:auto;margin-top:20vh;background:#fff;border-radius:12px;padding:40px;text-align:center;">
-                <h3 style="color:#001f29;margin-bottom:16px;">Connect a Wallet</h3>
+                <h3 style="color:#0A0F1A;margin-bottom:16px;">Connect a Wallet</h3>
                 <p style="color:#5a8299;margin-bottom:24px;">Install a Web3 wallet to log in to Tokenomic</p>
                 <div style="display:flex;flex-direction:column;gap:12px;">
                     <a href="https://metamask.io/download/" target="_blank" class="theme-btn btn-style-one" style="text-align:center;">Install MetaMask</a>

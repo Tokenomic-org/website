@@ -3,51 +3,62 @@ layout: dashboard
 title: "Articles"
 permalink: /dashboard-articles/
 ---
-<section class="dashboard-section" style="padding:60px 0;background:#f5f7fa;min-height:80vh;">
+<section class="dashboard-section" >
     <div class="auto-container">
         <div class="row">
             <div class="col-lg-3 col-md-4 col-sm-12">
-                <div class="dashboard-sidebar" style="background:#001f29;border-radius:12px;padding:20px;margin-bottom:30px;">
+                <div class="dashboard-sidebar">
+                    <div class="sidebar-brand">
+                        <div class="brand-icon">T</div>
+                        <div>
+                            <div class="brand-text">Tokenomic</div>
+                            <div class="brand-sub">Dashboard</div>
+                        </div>
+                    </div>
                     <nav class="dashboard-nav">
-                        <a href="/dashboard/" class="dash-nav-item ">
-                            <span class="flaticon-home-1" style="margin-right:8px;"></span> Dashboard
+                        <div class="sidebar-section-label">Main</div>
+                        <a href="/dashboard/" class="dash-nav-item">
+                            <span class="flaticon-home-1"></span> Dashboard
                         </a>
-                        <a href="/dashboard-communities/" class="dash-nav-item ">
-                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Communities
+                        <a href="/dashboard-communities/" class="dash-nav-item">
+                            <span class="flaticon-user-3"></span> Communities
                         </a>
-                        <a href="/dashboard-courses/" class="dash-nav-item ">
-                            <span class="flaticon-notebook" style="margin-right:8px;"></span> Courses
+                        <a href="/dashboard-courses/" class="dash-nav-item">
+                            <span class="flaticon-notebook"></span> Courses
                         </a>
-                        <a href="/dashboard-events/" class="dash-nav-item ">
-                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Events
+                        <a href="/dashboard-events/" class="dash-nav-item">
+                            <span class="flaticon-calendar"></span> Events
                         </a>
-                        <a href="/dashboard-revenue/" class="dash-nav-item ">
-                            <span class="flaticon-money" style="margin-right:8px;"></span> Revenue
+                        <div class="sidebar-section-label">Finance</div>
+                        <a href="/dashboard-revenue/" class="dash-nav-item">
+                            <span class="flaticon-money"></span> Revenue
                         </a>
-                        <a href="/dashboard-bookings/" class="dash-nav-item ">
-                            <span class="flaticon-calendar" style="margin-right:8px;"></span> Bookings
+                        <a href="/dashboard-bookings/" class="dash-nav-item">
+                            <span class="flaticon-calendar"></span> Bookings
                         </a>
-                        <a href="/dashboard-chat/" class="dash-nav-item ">
-                            <span class="flaticon-speech-bubble" style="margin-right:8px;"></span> Chat
+                        <div class="sidebar-section-label">Content</div>
+                        <a href="/dashboard-chat/" class="dash-nav-item">
+                            <span class="flaticon-speech-bubble"></span> Chat
                         </a>
                         <a href="/dashboard-articles/" class="dash-nav-item active">
-                            <span class="flaticon-edit" style="margin-right:8px;"></span> Articles
+                            <span class="flaticon-edit"></span> Articles
                         </a>
-                        <a href="/dashboard-leaderboard/" class="dash-nav-item ">
-                            <span class="flaticon-trophy" style="margin-right:8px;"></span> Leaderboard
+                        <a href="/dashboard-social/" class="dash-nav-item">
+                            <span class="flaticon-share"></span> Social
                         </a>
-                        <a href="/dashboard-social/" class="dash-nav-item ">
-                            <span class="flaticon-share" style="margin-right:8px;"></span> Social
+                        <div class="sidebar-section-label">Progress</div>
+                        <a href="/dashboard-leaderboard/" class="dash-nav-item">
+                            <span class="flaticon-trophy"></span> Leaderboard
                         </a>
-                        <a href="/dashboard-profile/" class="dash-nav-item ">
-                            <span class="flaticon-user-3" style="margin-right:8px;"></span> Profile
+                        <a href="/dashboard-profile/" class="dash-nav-item">
+                            <span class="flaticon-user-3"></span> Profile
                         </a>
                     </nav>
                 </div>
             </div>
             <div class="col-lg-9 col-md-8 col-sm-12">
-                <div class="dashboard-topbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;background:#fff;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                    <h3 style="margin:0;color:#001f29;">Educator Studio</h3>
+                <div class="dashboard-topbar" >
+                    <h3 style="margin:0;color:#0A0F1A;">Educator Studio</h3>
                     <div style="display:flex;align-items:center;gap:12px;">
                         <span class="wallet-status-text" style="font-size:0.85rem;color:#5a8299;">Not Connected</span>
                         <button class="theme-btn btn-style-one wallet-connect-btn" style="padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.connect()">Connect Wallet</button>
@@ -55,10 +66,10 @@ permalink: /dashboard-articles/
                     </div>
                 </div>
                 <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                    <div style="width:80px;height:80px;border-radius:50%;background:#001f29;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#0A0F1A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
                         <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
                     </div>
-                    <h3 style="color:#001f29;margin-bottom:8px;">Connect Your Wallet</h3>
+                    <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
                     <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
                     <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
                 </div>

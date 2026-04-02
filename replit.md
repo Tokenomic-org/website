@@ -26,9 +26,11 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - `assets/` — CSS, images, fonts, JS libraries
 
 ## Branding
-- Primary: `#ff6000` (orange), Dark: `#001f29` (navy), Muted: `#5a8299`
-- Font: Default Bootstrap stack
+- Primary: `#F7931A` (gold-orange), Dark: `#0A0F1A` (navy-black), Muted: `#8899A6`
+- Dashboard palette: Sidebar `#0A0F1A`, accent `#F7931A`, bg `#F0F2F5`, cards `#fff`, success `#00C853`, blue `#2196F3`
+- Font: Inter (dashboard), Default Bootstrap stack (main site)
 - Logo: `/assets/images/logo.png`
+- Dashboard CSS: `assets/css/dashboard.css` (design system with Inter font, card shadows, nav items, badges, tables)
 
 ## Pages
 - **Homepage** (`/`) — Hero, platform preview, audience targeting, trust, services, training, wallet-gated community CTA
@@ -59,8 +61,12 @@ Defined in `_data/navigation.yml`: Home, About (Contact), Educators, Consultants
 - Each uses `layout: dashboard` with `permalink` front matter
 - Dashboard layout (`_layouts/dashboard.html`) uses `header_5.html` (includes wallet Login/Dashboard buttons)
 - Dashboard layout has NO page banner — goes straight from header to content
-- Dashboard header has solid dark navy background (`#001f29`) with tighter nav spacing
+- Dashboard header has solid dark navy background (`#0A0F1A`) with tighter nav spacing
 - Content extracted from pre-built `_site/` pages for GitHub Pages compatibility
+- Dashboard sidebar: Dark (#0A0F1A) with Tokenomic branding, section labels (Main/Finance/Content/Progress), gold-orange active indicator
+- Sidebar is hidden when no wallet is connected (wallet gate logic in web3-wallet.js showGate/hideGate)
+- Banner sections removed from _site/ dashboard pages for cleaner layout
+- Old inline `<style>` blocks removed from _site/ files — all dashboard styling now from dashboard.css
 
 ## Important Notes
 - Ruby/Jekyll is NOT installed locally — cannot run `jekyll build`

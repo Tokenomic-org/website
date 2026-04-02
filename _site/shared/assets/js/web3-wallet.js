@@ -183,18 +183,26 @@ const TokenomicWallet = {
     var gate = document.getElementById('tkn-login-gate');
     var content = document.querySelector('.dashboard-content');
     var sidebar = document.querySelector('.dashboard-sidebar');
+    var sidebarCol = sidebar ? sidebar.closest('.col-lg-3') : null;
+    var contentCol = gate ? gate.closest('.col-lg-9') : null;
     if (gate) gate.style.display = 'flex';
     if (content) content.style.display = 'none';
     if (sidebar) sidebar.style.display = 'none';
+    if (sidebarCol) sidebarCol.style.display = 'none';
+    if (contentCol) { contentCol.className = 'col-12'; }
   },
 
   hideGate() {
     var gate = document.getElementById('tkn-login-gate');
     var content = document.querySelector('.dashboard-content');
     var sidebar = document.querySelector('.dashboard-sidebar');
+    var sidebarCol = sidebar ? sidebar.closest('.col-lg-3') : null;
+    var contentCol = content ? content.closest('.col-lg-9, .col-12') : null;
     if (gate) gate.style.display = 'none';
     if (content) content.style.display = '';
     if (sidebar) sidebar.style.display = '';
+    if (sidebarCol) sidebarCol.style.display = '';
+    if (contentCol) { contentCol.className = 'col-lg-9 col-md-8 col-sm-12'; }
   },
 
   showModal() {
