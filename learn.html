@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     html += '<div class="authors-link"><a href="/educators/">View all &rsaquo;</a></div>';
     html += '</div></div></div>';
 
-    var categoryOrder = ['Strategy', 'Technical', 'DeFi', 'Governance'];
+    var categoryOrder = ['Strategy', 'Technical', 'Market'];
     categoryOrder.forEach(function(cat) {
         var catArticles = categories[cat];
         if (!catArticles || catArticles.length === 0) return;
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         html += '<div class="category-header">';
         html += '<h3>' + cat + '</h3>';
         if (catArticles.length > 3) {
-            html += '<a href="/category/' + slug + '/" class="view-all-btn">View all &rsaquo;</a>';
+            html += '<a href="https://learn.tokenomic.org/latest/" class="view-all-btn">View all &rsaquo;</a>';
         }
         html += '</div>';
         html += '<div class="article-grid">';
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
             var dateStr = date.getDate().toString().padStart(2,'0') + ' ' + months[date.getMonth()].toUpperCase() + ', ' + date.getFullYear();
             var authorName = article.profiles ? article.profiles.display_name : 'Tokenomic Team';
-            var link = '/' + article.slug;
+            var link = 'https://learn.tokenomic.org/latest/' + article.slug;
 
             html += '<div class="article-card" onclick="window.location.href=\'' + link + '\'">';
             html += '<div class="card-image"><img src="' + article.image_url + '" alt="' + article.title.replace(/'/g, '') + '"></div>';
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             var day = date.getDate(); if (day < 10) day = '0' + day;
             var dateStr = day + ' ' + months[date.getMonth()].toUpperCase() + ', ' + date.getFullYear();
             var authorName = art.profiles ? art.profiles.display_name : 'Tokenomic Team';
-            var link = '/' + art.slug;
+            var link = 'https://learn.tokenomic.org/latest/' + art.slug;
             rhtml += '<div class="article-card" onclick="window.location.href=\'' + link + '\'">';
             rhtml += '<div class="card-image"><img src="' + art.image_url + '" alt="' + art.title.replace(/'/g,'') + '"></div>';
             rhtml += '<div class="card-meta"><span class="cat-tag">' + art.category + '</span><span>' + dateStr + '</span></div>';
