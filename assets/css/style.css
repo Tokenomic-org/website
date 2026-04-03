@@ -2850,9 +2850,9 @@ img.lazy-image.loaded{
         display: block;
         font-size: 80px;
         line-height: 1.1em;
-        color: #000000;
+        color: #ffffff;
         font-weight: 700;
-        margin-bottom: 0px;
+        margin-bottom: 30px;
         text-transform: capitalize;
         font-family: 'Poppins', sans-serif;
         text-shadow: 0px 10px 15px rgba(0,0,0,0.30);
@@ -2865,12 +2865,13 @@ img.lazy-image.loaded{
         color: #ffffff;
         font-weight: 400;
         margin-top: 25px;
+        margin-bottom: 30px;
 }
 
 .banner-two .content-box .link-box{
         position: relative;
         display: block;
-        margin-top: 0;
+        margin-top: 25px;
 }
 
 .banner-two .content-box .content-image{
