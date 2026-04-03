@@ -12,10 +12,13 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - **Payments**: USDC on Base L2 via Helio, 0xSplits revenue distribution (90/5/5)
 
 ## GitHub Pages Deployment
+- **Workflow**: `.github/workflows/jekyll.yml` — deploys via `actions/jekyll-build-pages@v1`
+- **Concurrency**: `cancel-in-progress: true` — new pushes cancel stuck/old deployment runs
+- **Build timeout**: 10 minutes (`timeout-minutes: 10` on build job)
 - **Gemfile**: Uses `github-pages` gem for compatibility with GitHub Pages built-in builder
 - **Plugins**: `jekyll-feed`, `jekyll-paginate`, `jekyll-seo-tag` (all supported by github-pages)
-- **Excludes**: `website/`, `vendor/`, `node_modules/`, `attached_assets/`, `.local/` excluded in `_config.yml`
-- **Important**: `_site/` is in `.gitignore` — GitHub Pages rebuilds it. Run `git rm --cached -r _site/` once to untrack the previously committed `_site/` directory.
+- **Excludes**: `website/`, `vendor/`, `node_modules/`, `attached_assets/`, `.local/`, `server.js`, `package.json`, `package-lock.json`, `.replit`, `replit.nix`, `.github/` excluded in `_config.yml`
+- **Important**: `_site/` is in `.gitignore` — GitHub Pages rebuilds it from source via Jekyll
 
 ## SEO & Feeds
 - **RSS Feed** (`/feed.xml`) — RSS 2.0 feed with all 16 learn articles, auto-discoverable via `<link rel="alternate">` in every page `<head>`
