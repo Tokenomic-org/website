@@ -15,6 +15,14 @@ const TokenomicWallet = {
   _listenersBound: false,
   _modalInjected: false,
 
+  isMobile() {
+    return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+  },
+
+  getSiteUrl() {
+    return window.location.host || 'tokenomic.org';
+  },
+
   async connect() {
     this.showModal();
     return null;
@@ -23,6 +31,9 @@ const TokenomicWallet = {
   async connectWithProvider(providerType) {
     this.hideModal();
     var ethereum = null;
+    var mobile = this.isMobile();
+    var siteUrl = this.getSiteUrl();
+    var currentPath = window.location.pathname + window.location.search;
 
     if (providerType === 'metamask') {
       if (window.ethereum && window.ethereum.isMetaMask) {
@@ -31,6 +42,10 @@ const TokenomicWallet = {
         ethereum = window.ethereum.providers.find(function(p) { return p.isMetaMask; });
       }
       if (!ethereum) {
+        if (mobile) {
+          window.location.href = 'https://metamask.app.link/dapp/' + siteUrl + currentPath;
+          return null;
+        }
         window.open('https://metamask.io/download/', '_blank');
         return null;
       }
@@ -41,8 +56,17 @@ const TokenomicWallet = {
         ethereum = window.ethereum.providers.find(function(p) { return p.isRabby; });
       }
       if (!ethereum) {
-        window.open('https://rabby.io/', '_blank');
-        return null;
+        if (mobile) {
+          if (window.ethereum) {
+            ethereum = window.ethereum;
+          } else {
+            window.open('https://rabby.io/', '_blank');
+            return null;
+          }
+        } else {
+          window.open('https://rabby.io/', '_blank');
+          return null;
+        }
       }
     } else if (providerType === 'coinbase') {
       if (window.ethereum && window.ethereum.isCoinbaseWallet) {
@@ -51,8 +75,16 @@ const TokenomicWallet = {
         ethereum = window.ethereum.providers.find(function(p) { return p.isCoinbaseWallet; });
       }
       if (!ethereum) {
+        if (mobile) {
+          window.location.href = 'https://go.cb-w.com/dapp?cb_url=' + encodeURIComponent('https://' + siteUrl + currentPath);
+          return null;
+        }
         window.open('https://www.coinbase.com/wallet', '_blank');
         return null;
+      }
+    } else if (providerType === 'any') {
+      if (window.ethereum) {
+        ethereum = window.ethereum;
       }
     }
 
@@ -61,7 +93,11 @@ const TokenomicWallet = {
     }
 
     if (!ethereum) {
-      alert('No wallet detected. Please install a Web3 wallet.');
+      if (mobile) {
+        window.location.href = 'https://metamask.app.link/dapp/' + siteUrl + currentPath;
+      } else {
+        alert('No wallet detected. Please install MetaMask, Coinbase Wallet, or Rabby.');
+      }
       return null;
     }
 
@@ -260,6 +296,16 @@ const TokenomicWallet = {
     if (this._modalInjected) return;
     this._modalInjected = true;
 
+    var existing = document.getElementById('wallet-modal');
+    if (existing) existing.remove();
+
+    var mobile = this.isMobile();
+    var mmLabel = mobile ? 'MetaMask' : 'MetaMask';
+    var rbLabel = mobile ? 'Rabby Wallet' : 'Rabby Wallet';
+    var cbLabel = mobile ? 'Coinbase Wallet' : 'Coinbase Wallet';
+    var mmNote = mobile ? '<span class="wm-note">Opens MetaMask app</span>' : '';
+    var cbNote = mobile ? '<span class="wm-note">Opens Coinbase app</span>' : '';
+
     var overlay = document.createElement('div');
     overlay.id = 'wallet-modal';
     overlay.innerHTML =
@@ -271,28 +317,31 @@ const TokenomicWallet = {
         '<p class="wm-subtitle">Choose your preferred wallet to continue</p>' +
         '<div class="wm-wallets">' +
           '<button class="wm-wallet-btn" onclick="TokenomicWallet.connectWithProvider(\'metamask\')">' +
-            '<div class="wm-icon wm-icon-mm"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="10" fill="#F6851B"/><path d="M30.7 10l-8.2 6.1 1.5-3.6L30.7 10z" fill="#E2761B" stroke="#E2761B" stroke-width=".2"/><path d="M9.3 10l8.1 6.2-1.4-3.7L9.3 10zm18 17.8l-2.2 3.3 4.6 1.3 1.3-4.5-3.7-.1zm-22 .1l1.3 4.5 4.6-1.3-2.2-3.3-3.7.1z" fill="#E4761B" stroke="#E4761B" stroke-width=".2"/><path d="M15 19.5l-1.3 2 4.5.2-.2-5-3 2.8zm10 0l-3.1-2.9-.1 5.1 4.5-.2-1.3-2z" fill="#E4761B" stroke="#E4761B" stroke-width=".2"/><path d="M15.7 31.1l2.7-1.3-2.3-1.8-.4 3.1zm5.9-1.3l2.7 1.3-.4-3.1-2.3 1.8z" fill="#E4761B" stroke="#E4761B" stroke-width=".2"/><path d="M24.3 31.1l-2.7-1.3.2 1.7v.7l2.5-1.1zm-8.6 0l2.5 1.1v-.7l.2-1.7-2.7 1.3z" fill="#D7C1B3" stroke="#D7C1B3" stroke-width=".2"/><path d="M18.3 25.4l-2.2-.7 1.6-.7.6 1.4zm3.4 0l.6-1.4 1.6.7-2.2.7z" fill="#233447" stroke="#233447" stroke-width=".2"/><path d="M15.7 31.1l.4-3.3-2.6.1 2.2 3.2zm8.2-3.3l.4 3.3 2.2-3.2-2.6-.1zm2-6.3l-4.5.2.4 2.3.6-1.4 1.6.7 1.9-1.8zm-11.8 1.8l1.6-.7.6 1.4.4-2.3-4.5-.2 1.9 1.8z" fill="#CD6116" stroke="#CD6116" stroke-width=".2"/><path d="M13.7 21.5l2 3.9-.1-1.9-1.9-2zm12.6 2l-.1 1.9 2-3.9-1.9 2zm-8.1-1.8l-.4 2.3.5 2.7.1-3.5-.2-1.5zm3.6 0l-.2 1.5.1 3.5.5-2.7-.4-2.3z" fill="#E4751F" stroke="#E4751F" stroke-width=".2"/><path d="M26.5 21.5l-1.9 2 .1 1.9 2-3.9zm-12.8 0l-2 3.9.1-1.9 1.9-2z" fill="#F6851B" stroke="#F6851B" stroke-width=".2"/></svg></div>' +
-            '<span>MetaMask</span>' +
-            '<svg class="wm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>' +
-          '</button>' +
-          '<button class="wm-wallet-btn" onclick="TokenomicWallet.connectWithProvider(\'rabby\')">' +
-            '<div class="wm-icon wm-icon-rabby"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="10" fill="#7C71DF"/><ellipse cx="20" cy="18" rx="9" ry="8" fill="#fff" opacity=".9"/><ellipse cx="17" cy="16" rx="2" ry="2.5" fill="#7C71DF"/><ellipse cx="23" cy="16" rx="2" ry="2.5" fill="#7C71DF"/><path d="M14 22c0 0 2 4 6 4s6-4 6-4" stroke="#7C71DF" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="14" r="3" fill="#fff" opacity=".7"/><circle cx="28" cy="14" r="3" fill="#fff" opacity=".7"/></svg></div>' +
-            '<span>Rabby Wallet</span>' +
+            '<div class="wm-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="10" fill="#F6851B"/><path d="M30.7 10l-8.2 6.1 1.5-3.6L30.7 10z" fill="#E2761B" stroke="#E2761B" stroke-width=".2"/><path d="M9.3 10l8.1 6.2-1.4-3.7L9.3 10zm18 17.8l-2.2 3.3 4.6 1.3 1.3-4.5-3.7-.1zm-22 .1l1.3 4.5 4.6-1.3-2.2-3.3-3.7.1z" fill="#E4761B" stroke="#E4761B" stroke-width=".2"/><path d="M15 19.5l-1.3 2 4.5.2-.2-5-3 2.8zm10 0l-3.1-2.9-.1 5.1 4.5-.2-1.3-2z" fill="#E4761B" stroke="#E4761B" stroke-width=".2"/></svg></div>' +
+            '<div class="wm-info"><span class="wm-name">' + mmLabel + '</span>' + mmNote + '</div>' +
             '<svg class="wm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>' +
           '</button>' +
           '<button class="wm-wallet-btn" onclick="TokenomicWallet.connectWithProvider(\'coinbase\')">' +
-            '<div class="wm-icon wm-icon-cb"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="10" fill="#1652F0"/><circle cx="20" cy="20" r="12" fill="#1652F0"/><circle cx="20" cy="20" r="10" fill="#fff"/><rect x="15" y="17" width="4" height="6" rx="1" fill="#1652F0"/><rect x="21" y="17" width="4" height="6" rx="1" fill="#1652F0"/></svg></div>' +
-            '<span>Coinbase Wallet</span>' +
+            '<div class="wm-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="10" fill="#0052FF"/><circle cx="20" cy="20" r="12" fill="#0052FF"/><circle cx="20" cy="20" r="10" fill="#fff"/><rect x="15" y="17" width="4" height="6" rx="1" fill="#0052FF"/><rect x="21" y="17" width="4" height="6" rx="1" fill="#0052FF"/></svg></div>' +
+            '<div class="wm-info"><span class="wm-name">' + cbLabel + '</span>' + cbNote + '</div>' +
+            '<svg class="wm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>' +
+          '</button>' +
+          '<button class="wm-wallet-btn" onclick="TokenomicWallet.connectWithProvider(\'rabby\')">' +
+            '<div class="wm-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="10" fill="#7C71DF"/><ellipse cx="20" cy="18" rx="9" ry="8" fill="#fff" opacity=".9"/><ellipse cx="17" cy="16" rx="2" ry="2.5" fill="#7C71DF"/><ellipse cx="23" cy="16" rx="2" ry="2.5" fill="#7C71DF"/><path d="M14 22c0 0 2 4 6 4s6-4 6-4" stroke="#7C71DF" stroke-width="1.5" stroke-linecap="round"/></svg></div>' +
+            '<div class="wm-info"><span class="wm-name">' + rbLabel + '</span></div>' +
             '<svg class="wm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>' +
           '</button>' +
         '</div>' +
+        (window.ethereum ? '<div class="wm-divider"><span>or</span></div>' +
+          '<button class="wm-detect-btn" onclick="TokenomicWallet.connectWithProvider(\'any\')">Use Detected Wallet</button>' : '') +
+        (mobile ? '<p class="wm-mobile-hint">On mobile? Tap a wallet to open its app. If you don\'t have one installed, it will take you to the app store.</p>' : '') +
       '</div>';
 
     var style = document.createElement('style');
     style.textContent =
       '#wallet-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;align-items:center;justify-content:center;}' +
       '#wallet-modal .wm-backdrop{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);}' +
-      '#wallet-modal .wm-box{position:relative;background:#111827;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:40px 36px 36px;max-width:420px;width:90%;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,0.5);animation:wmFadeIn 0.25s ease;}' +
+      '#wallet-modal .wm-box{position:relative;background:#111827;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:40px 36px 36px;max-width:420px;width:90%;margin:auto;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,0.5);animation:wmFadeIn 0.25s ease;max-height:90vh;overflow-y:auto;}' +
       '@keyframes wmFadeIn{from{opacity:0;transform:scale(0.95) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}' +
       '#wallet-modal .wm-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.08);border:none;color:#9ca3af;font-size:22px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;line-height:1;}' +
       '#wallet-modal .wm-close:hover{background:rgba(255,255,255,0.15);color:#fff;}' +
@@ -303,12 +352,18 @@ const TokenomicWallet = {
       '#wallet-modal .wm-wallets{display:flex;flex-direction:column;gap:10px;}' +
       '#wallet-modal .wm-wallet-btn{display:flex;align-items:center;gap:14px;width:100%;padding:14px 18px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;cursor:pointer;transition:all 0.2s;color:#fff;font-size:16px;font-weight:500;text-align:left;}' +
       '#wallet-modal .wm-wallet-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.15);transform:translateY(-1px);}' +
-      '#wallet-modal .wm-wallet-btn img{width:40px;height:40px;border-radius:10px;object-fit:contain;flex-shrink:0;}' +
       '#wallet-modal .wm-icon{width:40px;height:40px;flex-shrink:0;border-radius:10px;overflow:hidden;}' +
       '#wallet-modal .wm-icon svg{width:100%;height:100%;display:block;}' +
-      '#wallet-modal .wm-wallet-btn span{flex:1;}' +
+      '#wallet-modal .wm-info{flex:1;display:flex;flex-direction:column;align-items:flex-start;}' +
+      '#wallet-modal .wm-name{display:block;}' +
+      '#wallet-modal .wm-note{display:block;font-size:12px;color:#9ca3af;font-weight:400;margin-top:2px;}' +
       '#wallet-modal .wm-wallet-btn .wm-arrow{width:20px;height:20px;color:#6b7280;flex-shrink:0;transition:color 0.2s;}' +
-      '#wallet-modal .wm-wallet-btn:hover .wm-arrow{color:#fff;}';
+      '#wallet-modal .wm-wallet-btn:hover .wm-arrow{color:#fff;}' +
+      '#wallet-modal .wm-divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:#6b7280;font-size:13px;}' +
+      '#wallet-modal .wm-divider::before,#wallet-modal .wm-divider::after{content:"";flex:1;height:1px;background:rgba(255,255,255,0.1);}' +
+      '#wallet-modal .wm-detect-btn{width:100%;padding:12px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);border-radius:12px;color:#f97316;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;}' +
+      '#wallet-modal .wm-detect-btn:hover{background:rgba(249,115,22,0.25);}' +
+      '#wallet-modal .wm-mobile-hint{color:#6b7280;font-size:12px;margin:16px 0 0;line-height:1.5;}';
 
     document.head.appendChild(style);
     document.body.appendChild(overlay);
@@ -327,6 +382,11 @@ const TokenomicWallet = {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
+  var oldModal = document.getElementById('wallet-modal');
+  if (oldModal && !TokenomicWallet._modalInjected) {
+    oldModal.remove();
+  }
+
   var saved = sessionStorage.getItem('tkn_wallet');
   if (saved && window.ethereum) {
     window.ethereum.request({ method: 'eth_accounts' }).then(function(accounts) {
