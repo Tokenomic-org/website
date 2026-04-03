@@ -93,7 +93,7 @@
                         title: ed.display_name || 'Educator',
                         subtitle: ed.specialty || '',
                         badge: 'Educator',
-                        link: '/educators/',
+                        link: '/experts/',
                         score: edMatch
                     });
                 }
@@ -127,7 +127,7 @@
                             title: con.display_name || 'Consultant',
                             subtitle: con.specialty || '',
                             badge: 'Consultant',
-                            link: '/educators/#consultants',
+                            link: '/experts/#consultants',
                             score: conMatch
                         });
                     }
