@@ -493,6 +493,72 @@ app.post('/api/profile/upload-photo', function(req, res) {
     res.json({ success: true, url: photoUrl });
 });
 
+var ARTICLE_COMMENTS_DIR = path.join(__dirname, 'article-comments');
+
+app.get('/api/articles/:slug/comments', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!slug) return res.status(400).json({ error: 'Invalid article slug' });
+    var commentsFile = path.join(ARTICLE_COMMENTS_DIR, slug + '.json');
+
+    if (!fs.existsSync(commentsFile)) {
+        return res.json({ comments: [] });
+    }
+
+    try {
+        var comments = JSON.parse(fs.readFileSync(commentsFile, 'utf-8'));
+        res.json({ comments: comments });
+    } catch(err) {
+        console.error('Get article comments error:', err.message);
+        res.status(500).json({ error: 'Failed to load comments' });
+    }
+});
+
+app.post('/api/articles/:slug/comments', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!slug) return res.status(400).json({ error: 'Invalid article slug' });
+
+    var text = (req.body.text || '').trim();
+    var author = (req.body.author || 'Anonymous').trim().substring(0, 50);
+    var wallet = (req.body.wallet || '').trim().substring(0, 50);
+
+    if (!author) author = 'Anonymous';
+
+    if (!text) {
+        return res.status(400).json({ error: 'Comment text is required' });
+    }
+    if (text.length > 2000) {
+        return res.status(400).json({ error: 'Comment too long. Maximum 2000 characters.' });
+    }
+
+    try {
+        if (!fs.existsSync(ARTICLE_COMMENTS_DIR)) {
+            fs.mkdirSync(ARTICLE_COMMENTS_DIR, { recursive: true });
+        }
+
+        var commentsFile = path.join(ARTICLE_COMMENTS_DIR, slug + '.json');
+        var comments = [];
+        if (fs.existsSync(commentsFile)) {
+            comments = JSON.parse(fs.readFileSync(commentsFile, 'utf-8'));
+        }
+
+        var newComment = {
+            id: 'ac' + Date.now(),
+            author: author,
+            wallet: wallet,
+            text: text,
+            created_at: new Date().toISOString()
+        };
+
+        comments.push(newComment);
+        fs.writeFileSync(commentsFile, JSON.stringify(comments, null, 2));
+
+        res.json({ success: true, comment: newComment });
+    } catch(err) {
+        console.error('Add article comment error:', err.message);
+        res.status(500).json({ error: 'Failed to add comment' });
+    }
+});
+
 app.get('/profile/:slug', function(req, res) {
     res.sendFile(path.join(__dirname, '_site', 'profile', 'index.html'));
 });

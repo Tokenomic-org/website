@@ -35,6 +35,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - `assets/images/learn/` — Article images pulled from learn.tokenomic.org (cover images + inline content images)
 - `scripts/` — Build scripts (scrape-articles.js, generate-article-pages.js, sync-assets.sh)
 - `global-community/` — File-based community storage (each subfolder = one community with `community.json` + `comments.json`)
+- `article-comments/` — File-based article comment storage (per-slug JSON files, created on first comment via API)
 
 ## Removed (unused)
 - `website/` — Legacy/backup directory (was excluded in _config.yml)
@@ -55,8 +56,8 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 ## Pages
 - **Homepage** (`/`) — Hero, platform preview, audience targeting, trust, services, training, wallet-gated community CTA
 - **Learn** (`/learn/`) — Category-based article hub (Strategy, Technical, Market) with "Meet our authors" section and inline search; articles from Supabase `articles` table with local images; links to `/learn/[slug]` article pages
-- **Article Pages** (`/learn/[slug]/`) — Full article content pages with featured image, author, date, category, share buttons, back-to-learn navigation; generated from learn.tokenomic.org content using `scripts/generate-article-pages.js`; images served from `/assets/images/learn/`
-- **Educators** (`/educators/`) — Auto-populated cards of community-approved educators from Supabase profiles (role=educator, approved=true)
+- **Article Pages** (`/learn/[slug]/`) — Full article content pages with featured image, author, date, category, reading time estimate, social share links (Twitter/X, Facebook, LinkedIn, Reddit, copy link), expert profile card (avatar, name, specialty, bio, wallet), comments section with form (name/text input, wallet-aware) backed by file-based API; generated from learn.tokenomic.org content using `scripts/generate-article-pages.js`; images served from `/assets/images/learn/`; Open Graph meta tags for social sharing
+- **Experts** (`/experts/`) — Auto-populated cards of community-approved educators from Supabase profiles (role=educator, approved=true)
 - **Consultants** (`/consultants/`) — Auto-populated cards of community-approved consultants with ratings, pricing, and booking links
 - **Dashboard** (`/dashboard/`) — Main analytics with stats, recent activity, progress
 - **Courses** (`/dashboard-courses/`) — Three views: Manage (CRUD), My Learning (progression), Certifications
@@ -75,7 +76,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - **Terms** (`/terms/`) — Terms of service
 
 ## Navigation
-Defined in `_data/navigation.yml`: Home, About, Educators, Consultants, Learn
+Defined in `_data/navigation.yml`: Home, About, Experts, Learn
 - Learn is a direct link (no dropdown) — the page dynamically loads category-based article sections from Supabase
 
 ## Dashboard Source Files
