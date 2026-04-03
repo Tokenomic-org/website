@@ -58,7 +58,7 @@ permalink: /dashboard-social/
             </div>
             <div class="col-lg-9 col-md-8 col-sm-12">
                 <div class="dashboard-topbar" >
-                    <h3 style="margin:0;color:#0A0F1A;">Social Auto-Poster</h3>
+                    <h3 style="margin:0;color:#0A0F1A;">Social Media Manager</h3>
                     <div style="display:flex;align-items:center;gap:12px;">
                         <span class="wallet-status-text" style="font-size:0.85rem;color:#5a8299;">Not Connected</span>
                         <button class="theme-btn btn-style-one wallet-connect-btn" style="padding:8px 20px;font-size:0.85rem;" onclick="TokenomicWallet.connect()">Connect Wallet</button>
@@ -75,92 +75,231 @@ permalink: /dashboard-social/
                 </div>
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="socialPage()">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <p style="color:#5a8299;">Manage and schedule social media content across platforms</p>
+
+    <div style="background:linear-gradient(135deg,#0A0F1A 0%,#1a2744 100%);border-radius:12px;padding:24px 28px;margin-bottom:28px;display:flex;align-items:flex-start;gap:16px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,96,0,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">
+            <span class="flaticon-share" style="color:#ff6000;font-size:1.1rem;"></span>
+        </div>
+        <div>
+            <p style="color:#fff;font-size:0.95rem;margin:0 0 6px;font-weight:600;">This page is for posting on Tokenomic's official social media channels.</p>
+            <p style="color:#8899A6;font-size:0.85rem;margin:0;line-height:1.5;">Content you create here will be published to <strong style="color:#ccc;">@tknmic</strong> across all platforms. Post analytics (views, likes, shares, comments) are tracked per post below. This is not connected to your personal social media accounts.</p>
+        </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+        <div>
+            <h4 style="margin:0 0 4px;color:#0A0F1A;">Tokenomic Social Channels</h4>
+            <p style="color:#5a8299;margin:0;font-size:0.85rem;">Manage and schedule content across Tokenomic's official profiles</p>
+        </div>
         <button class="dash-btn dash-btn-primary" @click="showComposer=!showComposer">+ New Post</button>
     </div>
 
-    <div class="row clearfix" style="margin-bottom:20px;">
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1DA1F2;">2.4K</div><div class="stat-lbl">Twitter Followers</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#FF0000;">890</div><div class="stat-lbl">YouTube Subscribers</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#E1306C;">1.2K</div><div class="stat-lbl">Instagram Followers</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#0077B5;">3.1K</div><div class="stat-lbl">LinkedIn Connections</div></div></div>
+    <div class="row clearfix" style="margin-bottom:28px;">
+        <div class="col-lg-2 col-md-4 col-sm-4 col-6" style="margin-bottom:12px;">
+            <a href="https://www.facebook.com/tknmic" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+                <div style="padding:16px 12px;border:1px solid #e8ecef;border-radius:10px;text-align:center;transition:all 0.2s;background:#fff;">
+                    <i class="fab fa-facebook" style="font-size:1.5rem;color:#1877F2;margin-bottom:8px;display:block;"></i>
+                    <div style="font-size:0.75rem;font-weight:600;color:#0A0F1A;">Facebook</div>
+                    <div style="font-size:0.7rem;color:#5a8299;">@tknmic</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-4 col-6" style="margin-bottom:12px;">
+            <a href="https://twitter.com/tknmic" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+                <div style="padding:16px 12px;border:1px solid #e8ecef;border-radius:10px;text-align:center;transition:all 0.2s;background:#fff;">
+                    <i class="fab fa-twitter" style="font-size:1.5rem;color:#1DA1F2;margin-bottom:8px;display:block;"></i>
+                    <div style="font-size:0.75rem;font-weight:600;color:#0A0F1A;">Twitter / X</div>
+                    <div style="font-size:0.7rem;color:#5a8299;">@tknmic</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-4 col-6" style="margin-bottom:12px;">
+            <a href="https://www.linkedin.com/company/tknmic" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+                <div style="padding:16px 12px;border:1px solid #e8ecef;border-radius:10px;text-align:center;transition:all 0.2s;background:#fff;">
+                    <i class="fab fa-linkedin" style="font-size:1.5rem;color:#0077B5;margin-bottom:8px;display:block;"></i>
+                    <div style="font-size:0.75rem;font-weight:600;color:#0A0F1A;">LinkedIn</div>
+                    <div style="font-size:0.7rem;color:#5a8299;">tknmic</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-4 col-6" style="margin-bottom:12px;">
+            <a href="https://instagram.com/tknmic" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+                <div style="padding:16px 12px;border:1px solid #e8ecef;border-radius:10px;text-align:center;transition:all 0.2s;background:#fff;">
+                    <i class="fab fa-instagram" style="font-size:1.5rem;color:#E1306C;margin-bottom:8px;display:block;"></i>
+                    <div style="font-size:0.75rem;font-weight:600;color:#0A0F1A;">Instagram</div>
+                    <div style="font-size:0.7rem;color:#5a8299;">@tknmic</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-4 col-6" style="margin-bottom:12px;">
+            <a href="https://www.youtube.com/@tknmic" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+                <div style="padding:16px 12px;border:1px solid #e8ecef;border-radius:10px;text-align:center;transition:all 0.2s;background:#fff;">
+                    <i class="fab fa-youtube" style="font-size:1.5rem;color:#FF0000;margin-bottom:8px;display:block;"></i>
+                    <div style="font-size:0.75rem;font-weight:600;color:#0A0F1A;">YouTube</div>
+                    <div style="font-size:0.7rem;color:#5a8299;">@tknmic</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-4 col-6" style="margin-bottom:12px;">
+            <a href="https://www.tiktok.com/@tknmic" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+                <div style="padding:16px 12px;border:1px solid #e8ecef;border-radius:10px;text-align:center;transition:all 0.2s;background:#fff;">
+                    <i class="fab fa-tiktok" style="font-size:1.5rem;color:#010101;margin-bottom:8px;display:block;"></i>
+                    <div style="font-size:0.75rem;font-weight:600;color:#0A0F1A;">TikTok</div>
+                    <div style="font-size:0.7rem;color:#5a8299;">@tknmic</div>
+                </div>
+            </a>
+        </div>
     </div>
 
     <div x-show="showComposer" x-transition class="dash-card">
-        <h4>Compose Post</h4>
+        <h4>Compose Post for @tknmic</h4>
         <div style="display:flex;flex-direction:column;gap:14px;">
-            <div><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Content</label><textarea x-model="newPost.content" class="dash-input" rows="3" placeholder="Write your post..."></textarea></div>
+            <div><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Content</label><textarea x-model="newPost.content" class="dash-input" rows="4" placeholder="Write your post for Tokenomic's social channels..."></textarea></div>
             <div class="row clearfix">
                 <div class="col-md-6">
-                    <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Platforms</label>
-                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                    <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Publish to</label>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="facebook" style="accent-color:#1877F2;" /> <span style="color:#1877F2;font-weight:600;font-size:0.85rem;">Facebook</span></label>
                         <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="twitter" style="accent-color:#1DA1F2;" /> <span style="color:#1DA1F2;font-weight:600;font-size:0.85rem;">Twitter</span></label>
-                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="youtube" style="accent-color:#FF0000;" /> <span style="color:#FF0000;font-weight:600;font-size:0.85rem;">YouTube</span></label>
-                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="instagram" style="accent-color:#E1306C;" /> <span style="color:#E1306C;font-weight:600;font-size:0.85rem;">Instagram</span></label>
                         <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="linkedin" style="accent-color:#0077B5;" /> <span style="color:#0077B5;font-weight:600;font-size:0.85rem;">LinkedIn</span></label>
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="instagram" style="accent-color:#E1306C;" /> <span style="color:#E1306C;font-weight:600;font-size:0.85rem;">Instagram</span></label>
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="youtube" style="accent-color:#FF0000;" /> <span style="color:#FF0000;font-weight:600;font-size:0.85rem;">YouTube</span></label>
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="tiktok" style="accent-color:#010101;" /> <span style="color:#010101;font-weight:600;font-size:0.85rem;">TikTok</span></label>
                     </div>
                 </div>
-                <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Date</label><input x-model="newPost.date" type="date" class="dash-input" /></div>
-                <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Time</label><input x-model="newPost.time" type="time" class="dash-input" /></div>
+                <div class="col-lg-3 col-md-3 col-sm-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Date</label><input x-model="newPost.date" type="date" class="dash-input" /></div>
+                <div class="col-lg-3 col-md-3 col-sm-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Time</label><input x-model="newPost.time" type="time" class="dash-input" /></div>
             </div>
             <div style="display:flex;gap:8px;">
                 <button class="dash-btn dash-btn-primary" @click="schedulePost()">Schedule</button>
                 <button class="dash-btn dash-btn-outline" @click="postNow()">Post Now</button>
-                <button class="dash-btn dash-btn-outline" @click="showComposer=false" style="margin-left:auto;">Cancel</button>
+                <button class="dash-btn dash-btn-outline" @click="showComposer=false;editingPostId=null;newPost={content:'',platforms:[],date:'',time:''}" style="margin-left:auto;">Cancel</button>
             </div>
         </div>
     </div>
 
     <div class="dash-card">
-        <h4>Scheduled & Recent Posts</h4>
-        <table class="dash-table">
-            <thead><tr><th>Content</th><th>Platforms</th><th>Scheduled</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody>
-                <template x-for="post in posts" :key="post.id">
-                    <tr>
-                        <td style="max-width:300px;" x-text="post.content.substring(0,80)+(post.content.length>80?'...':'')"></td>
-                        <td><template x-for="p in post.platforms" :key="p"><span class="dash-badge dash-badge-info" style="margin-right:4px;" x-text="p"></span></template></td>
-                        <td style="font-size:0.85rem;" x-text="post.scheduled_at||'Immediate'"></td>
-                        <td><span class="dash-badge" :class="post.status==='published'?'dash-badge-success':post.status==='scheduled'?'dash-badge-info':'dash-badge-warning'" x-text="post.status"></span></td>
-                        <td><button class="dash-btn dash-btn-outline" style="padding:3px 10px;font-size:0.75rem;" x-show="post.status!=='published'">Edit</button></td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
-    </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+            <h4 style="margin:0;">Published & Scheduled Posts</h4>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button class="dash-btn" :class="filter==='all'?'dash-btn-primary':'dash-btn-outline'" @click="filter='all'" style="padding:4px 14px;font-size:0.78rem;">All</button>
+                <button class="dash-btn" :class="filter==='published'?'dash-btn-primary':'dash-btn-outline'" @click="filter='published'" style="padding:4px 14px;font-size:0.78rem;">Published</button>
+                <button class="dash-btn" :class="filter==='scheduled'?'dash-btn-primary':'dash-btn-outline'" @click="filter='scheduled'" style="padding:4px 14px;font-size:0.78rem;">Scheduled</button>
+            </div>
+        </div>
 
-    <div class="dash-card" style="margin-top:20px;">
-        <h4>API Connections</h4>
-        <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;">Connect accounts to enable auto-posting.</p>
-        <div class="row clearfix">
-            <div class="col-md-3 col-sm-6" style="margin-bottom:10px;"><div style="padding:12px;border:1px solid #e8ecef;border-radius:8px;display:flex;justify-content:space-between;align-items:center;"><strong style="color:#1DA1F2;">Twitter</strong><span class="dash-badge dash-badge-warning">Not Connected</span></div></div>
-            <div class="col-md-3 col-sm-6" style="margin-bottom:10px;"><div style="padding:12px;border:1px solid #e8ecef;border-radius:8px;display:flex;justify-content:space-between;align-items:center;"><strong style="color:#FF0000;">YouTube</strong><span class="dash-badge dash-badge-warning">Not Connected</span></div></div>
-            <div class="col-md-3 col-sm-6" style="margin-bottom:10px;"><div style="padding:12px;border:1px solid #e8ecef;border-radius:8px;display:flex;justify-content:space-between;align-items:center;"><strong style="color:#E1306C;">Instagram</strong><span class="dash-badge dash-badge-warning">Not Connected</span></div></div>
-            <div class="col-md-3 col-sm-6" style="margin-bottom:10px;"><div style="padding:12px;border:1px solid #e8ecef;border-radius:8px;display:flex;justify-content:space-between;align-items:center;"><strong style="color:#0077B5;">LinkedIn</strong><span class="dash-badge dash-badge-warning">Not Connected</span></div></div>
+        <template x-for="post in filteredPosts()" :key="post.id">
+            <div style="border:1px solid #e8ecef;border-radius:10px;padding:18px 20px;margin-bottom:14px;background:#fff;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;">
+                    <div style="flex:1;">
+                        <p style="margin:0 0 8px;color:#0A0F1A;font-size:0.92rem;line-height:1.5;" x-text="post.content"></p>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                            <template x-for="p in post.platforms" :key="p">
+                                <span style="display:inline-flex;align-items:center;gap:3px;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;background:#f0f2f5;color:#5a8299;">
+                                    <i class="fab" :class="'fa-'+p" style="font-size:0.7rem;"></i>
+                                    <span x-text="p.charAt(0).toUpperCase()+p.slice(1)"></span>
+                                </span>
+                            </template>
+                            <span style="font-size:0.78rem;color:#8899A6;margin-left:6px;" x-text="post.scheduled_at ? 'Scheduled: '+post.scheduled_at : 'Posted immediately'"></span>
+                        </div>
+                    </div>
+                    <div style="flex-shrink:0;">
+                        <span class="dash-badge" :class="post.status==='published'?'dash-badge-success':post.status==='scheduled'?'dash-badge-info':'dash-badge-warning'" x-text="post.status" style="text-transform:capitalize;"></span>
+                    </div>
+                </div>
+                <template x-if="post.status==='published' && post.analytics">
+                    <div style="display:flex;gap:20px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #f0f2f5;">
+                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#5a8299;" title="Views">
+                            <i class="fas fa-eye" style="color:#8899A6;font-size:0.75rem;"></i>
+                            <span x-text="post.analytics.views.toLocaleString()"></span>
+                            <span style="color:#8899A6;">views</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#5a8299;" title="Likes">
+                            <i class="fas fa-heart" style="color:#e53e3e;font-size:0.75rem;"></i>
+                            <span x-text="post.analytics.likes.toLocaleString()"></span>
+                            <span style="color:#8899A6;">likes</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#5a8299;" title="Shares">
+                            <i class="fas fa-retweet" style="color:#1DA1F2;font-size:0.75rem;"></i>
+                            <span x-text="post.analytics.shares.toLocaleString()"></span>
+                            <span style="color:#8899A6;">shares</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#5a8299;" title="Comments">
+                            <i class="fas fa-comment" style="color:#0077B5;font-size:0.75rem;"></i>
+                            <span x-text="post.analytics.comments.toLocaleString()"></span>
+                            <span style="color:#8899A6;">comments</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#5a8299;" title="Engagement Rate">
+                            <i class="fas fa-chart-line" style="color:#38a169;font-size:0.75rem;"></i>
+                            <span x-text="post.analytics.engagement+'%'"></span>
+                            <span style="color:#8899A6;">engagement</span>
+                        </div>
+                    </div>
+                </template>
+                <template x-if="post.status==='scheduled'">
+                    <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid #f0f2f5;">
+                        <button class="dash-btn dash-btn-outline" style="padding:4px 14px;font-size:0.78rem;" @click="editPost(post)">Edit</button>
+                        <button class="dash-btn dash-btn-outline" style="padding:4px 14px;font-size:0.78rem;color:#e53e3e;border-color:#e53e3e;" @click="deletePost(post.id)">Delete</button>
+                    </div>
+                </template>
+            </div>
+        </template>
+        <div x-show="filteredPosts().length===0" style="text-align:center;padding:40px 20px;color:#8899A6;">
+            <p>No posts found for this filter.</p>
         </div>
     </div>
+
 </div>
 
 <script>
 function socialPage() {
     return {
+        filter: 'all',
         posts:[
-            {id:1,content:'Just launched our new DeFi Tokenomics course! Learn the fundamentals of token design and economic modeling.',platforms:['twitter','linkedin'],scheduled_at:null,status:'published'},
-            {id:2,content:'Live workshop this Friday: Smart Contract Security Best Practices.',platforms:['twitter','instagram'],scheduled_at:'2026-04-18 10:00',status:'scheduled'},
-            {id:3,content:'New research article: Yield Farming Strategies for 2026.',platforms:['twitter','linkedin','youtube'],scheduled_at:'2026-04-20 14:00',status:'scheduled'},
+            {id:1,content:'Just launched our new DeFi Tokenomics course! Learn the fundamentals of token design and economic modeling. Enroll now at tokenomic.org/training',platforms:['facebook','twitter','linkedin'],scheduled_at:null,status:'published',analytics:{views:4820,likes:312,shares:87,comments:24,engagement:8.8}},
+            {id:2,content:'New research: Analysis of DeFi\'s Impact on Traditional Financial Markets. Deep dive into cross-market dynamics and institutional adoption trends.',platforms:['twitter','linkedin','facebook'],scheduled_at:null,status:'published',analytics:{views:3150,likes:198,shares:63,comments:15,engagement:8.7}},
+            {id:3,content:'Zero-Knowledge Proofs explained: A Pillar of Cryptographic Privacy. Our latest article breaks down ZKPs for institutional audiences.',platforms:['twitter','linkedin','youtube'],scheduled_at:null,status:'published',analytics:{views:2740,likes:156,shares:42,comments:11,engagement:7.6}},
+            {id:4,content:'Live workshop this Friday: Smart Contract Security Best Practices. Join our experts for a hands-on session covering auditing, common vulnerabilities, and mitigation strategies.',platforms:['facebook','twitter','instagram','linkedin','tiktok'],scheduled_at:'2026-04-18 10:00',status:'scheduled',analytics:null},
+            {id:5,content:'New article dropping next week: Yield Farming Strategies for 2026. We cover risk-adjusted returns, impermanent loss hedging, and multi-protocol stacking.',platforms:['twitter','linkedin','youtube','tiktok'],scheduled_at:'2026-04-20 14:00',status:'scheduled',analytics:null},
+            {id:6,content:'Gas Optimization in Solidity: our latest technical guide is live. Learn how to reduce on-chain costs by 40-60% with proven patterns.',platforms:['twitter','linkedin'],scheduled_at:null,status:'published',analytics:{views:1890,likes:121,shares:38,comments:9,engagement:8.9}},
         ],
         showComposer:false,
+        editingPostId:null,
         newPost:{content:'',platforms:[],date:'',time:''},
+        filteredPosts(){
+            if(this.filter==='all') return this.posts;
+            return this.posts.filter(p=>p.status===this.filter);
+        },
         schedulePost(){
-            if(!this.newPost.content||this.newPost.platforms.length===0){alert('Add content and select platforms.');return;}
-            this.posts.unshift({id:Date.now(),content:this.newPost.content,platforms:[...this.newPost.platforms],scheduled_at:this.newPost.date+' '+this.newPost.time,status:'scheduled'});
+            if(!this.newPost.content||this.newPost.platforms.length===0){alert('Add content and select at least one platform.');return;}
+            if(!this.newPost.date||!this.newPost.time){alert('Set a date and time to schedule.');return;}
+            if(this.editingPostId){
+                var p=this.posts.find(x=>x.id===this.editingPostId);
+                if(p){p.content=this.newPost.content;p.platforms=[...this.newPost.platforms];p.scheduled_at=this.newPost.date+' '+this.newPost.time;}
+                this.editingPostId=null;
+            } else {
+                this.posts.unshift({id:Date.now(),content:this.newPost.content,platforms:[...this.newPost.platforms],scheduled_at:this.newPost.date+' '+this.newPost.time,status:'scheduled',analytics:null});
+            }
             this.newPost={content:'',platforms:[],date:'',time:''};this.showComposer=false;
         },
         postNow(){
-            if(!this.newPost.content||this.newPost.platforms.length===0){alert('Add content and select platforms.');return;}
-            this.posts.unshift({id:Date.now(),content:this.newPost.content,platforms:[...this.newPost.platforms],scheduled_at:null,status:'published'});
+            if(!this.newPost.content||this.newPost.platforms.length===0){alert('Add content and select at least one platform.');return;}
+            if(this.editingPostId){
+                var p=this.posts.find(x=>x.id===this.editingPostId);
+                if(p){p.content=this.newPost.content;p.platforms=[...this.newPost.platforms];p.scheduled_at=null;p.status='published';p.analytics={views:0,likes:0,shares:0,comments:0,engagement:0};}
+                this.editingPostId=null;
+            } else {
+                this.posts.unshift({id:Date.now(),content:this.newPost.content,platforms:[...this.newPost.platforms],scheduled_at:null,status:'published',analytics:{views:0,likes:0,shares:0,comments:0,engagement:0}});
+            }
             this.newPost={content:'',platforms:[],date:'',time:''};this.showComposer=false;
+        },
+        editPost(post){
+            this.editingPostId=post.id;
+            this.newPost={content:post.content,platforms:[...post.platforms],date:post.scheduled_at?post.scheduled_at.split(' ')[0]:'',time:post.scheduled_at?post.scheduled_at.split(' ')[1]:''};
+            this.showComposer=true;
+        },
+        deletePost(id){
+            this.posts=this.posts.filter(p=>p.id!==id);
         }
     };
 }
