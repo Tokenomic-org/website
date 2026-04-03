@@ -11,6 +11,7 @@
         <link rel="icon" href="/assets/images/favicon.png" type="image/x-icon" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=2.0,minimum-scale=1.0" />
+        <style>[x-cloak]{display:none!important;}</style>
         <!--[if lt IE 9]><script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script><![endif]-->
         <!--[if lt IE 9]><script src="/assets/js/respond.js"></script><![endif]-->
         <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -193,13 +194,13 @@
                     <div x-data="articlesPage()" x-init="init()">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
         <div>
-            <p style="color:#5a8299;margin:0;">Write and publish articles to learn.tokenomic.org via GitHub API</p>
+            <p style="color:#5a8299;margin:0;">Write and publish articles to tokenomic.org/learn via GitHub API</p>
         </div>
         <div style="display:flex;gap:8px;">
             <button class="dash-btn dash-btn-outline" @click="activeTab='analytics'" :style="activeTab==='analytics'?'border-color:#ff6000;color:#ff6000':''">
                 <i class="fas fa-chart-bar" style="margin-right:4px;"></i> Analytics
             </button>
-            <button class="dash-btn dash-btn-primary" @click="showEditor = !showEditor;activeTab='editor'">+ New Article</button>
+            <button class="dash-btn dash-btn-primary" @click="openNewArticle()">+ New Article</button>
         </div>
     </div>
 
@@ -455,25 +456,6 @@
     <template x-if="activeTab==='editor'">
     <div>
 
-    <div x-show="showEditor" x-transition class="dash-card">
-        <h4>Article Editor</h4>
-        <div style="display:flex;flex-direction:column;gap:14px;">
-            <div><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Title</label><input x-model="draft.title" class="dash-input" placeholder="Article title" /></div>
-            <div class="row clearfix">
-                <div class="col-lg-3 col-md-4 col-sm-12"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Category</label><select x-model="draft.category" class="dash-input"><option value="defi">DeFi</option><option value="tokenomics">Tokenomics</option><option value="security">Security</option><option value="research">Research</option><option value="tutorial">Tutorial</option></select></div>
-                <div class="col-lg-3 col-md-4 col-sm-12"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Sponsorship</label><select x-model="draft.sponsorship" class="dash-input"><option value="">None</option><option value="bronze">Bronze ($250)</option><option value="silver">Silver ($500)</option><option value="gold">Gold ($1,000)</option></select></div>
-                <div class="col-lg-3 col-md-4 col-sm-12"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Revenue Share</label><input x-model="draft.revenue_share" type="number" class="dash-input" placeholder="10" /></div>
-                <div class="col-lg-3 col-md-4 col-sm-12"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Target Repo</label><select x-model="draft.target_repo" class="dash-input"><option value="Tokenomic-org/learn">learn.tokenomic.org</option><option value="Tokenomic-org/website">tokenomic.org</option></select></div>
-            </div>
-            <div><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Content (Markdown)</label><textarea x-model="draft.content" class="dash-input" rows="12" placeholder="Write your article in Markdown..." style="font-family:monospace;"></textarea></div>
-            <div style="display:flex;gap:10px;">
-                <button class="dash-btn dash-btn-primary" @click="saveDraft()">Save Draft</button>
-                <button class="dash-btn dash-btn-outline" style="border-color:#00a651;color:#00a651;" @click="publishToGitHub()">Publish to GitHub</button>
-                <button class="dash-btn dash-btn-outline" @click="showEditor = false" style="margin-left:auto;">Cancel</button>
-            </div>
-        </div>
-    </div>
-
     <div x-show="publishStatus" x-transition class="dash-card" style="border-left:4px solid #00a651;">
         <div style="display:flex;align-items:center;gap:10px;">
             <strong style="color:#00a651;" x-text="publishStatus"></strong>
@@ -543,6 +525,152 @@
 
     </div>
     </template>
+
+    <div x-show="showEditorModal" x-transition.opacity style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:#f5f7fa;" x-cloak>
+        <div style="display:flex;flex-direction:column;height:100%;">
+            <div style="background:#fff;border-bottom:1px solid #e2e8f0;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+                <div style="display:flex;align-items:center;gap:16px;">
+                    <img src="/assets/images/logo.png" alt="Tokenomic" style="height:32px;">
+                    <h3 style="margin:0;font-size:1.2rem;font-weight:700;color:#0A0F1A;" x-text="draft.id ? 'Edit Article' : 'New Article'"></h3>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <button class="dash-btn dash-btn-outline" style="padding:6px 16px;font-size:0.85rem;" @click="closeEditor()">Cancel</button>
+                    <button class="dash-btn dash-btn-outline" style="padding:6px 16px;font-size:0.85rem;" @click="saveDraft()">
+                        <i class="fas fa-save" style="margin-right:4px;"></i> Save Draft
+                    </button>
+                    <button class="dash-btn dash-btn-outline" style="padding:6px 16px;font-size:0.85rem;" @click="previewArticle()">
+                        <i class="fas fa-eye" style="margin-right:4px;"></i> Preview
+                    </button>
+                    <button class="dash-btn dash-btn-primary" style="padding:8px 20px;font-size:0.85rem;" @click="publishToGitHub()">
+                        <i class="fas fa-rocket" style="margin-right:4px;"></i> Publish to tokenomic.org/learn
+                    </button>
+                </div>
+            </div>
+
+            <div style="flex:1;overflow-y:auto;padding:24px;">
+                <div style="max-width:1200px;margin:0 auto;">
+                    <div class="row clearfix">
+                        <div class="col-lg-8 col-md-7 col-sm-12">
+                            <div class="dash-card" style="margin-bottom:16px;">
+                                <div style="margin-bottom:14px;">
+                                    <input x-model="draft.title" @input="autoSlug()" class="dash-input" placeholder="Article Title" style="font-size:1.3rem;font-weight:700;padding:14px 16px;" />
+                                </div>
+                                <div class="row clearfix" style="margin-bottom:14px;">
+                                    <div class="col-lg-6 col-md-6 col-sm-12" style="margin-bottom:8px;">
+                                        <label style="display:block;color:#5a8299;font-size:0.78rem;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Slug</label>
+                                        <div style="display:flex;align-items:center;gap:0;">
+                                            <span style="background:#f0f2f5;border:1px solid #d1d5db;border-right:none;padding:8px 10px;border-radius:6px 0 0 6px;color:#8899A6;font-size:0.82rem;white-space:nowrap;">/learn/</span>
+                                            <input x-model="draft.slug" class="dash-input" style="border-radius:0 6px 6px 0;margin:0;" placeholder="article-slug" />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-12" style="margin-bottom:8px;">
+                                        <label style="display:block;color:#5a8299;font-size:0.78rem;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Category</label>
+                                        <select x-model="draft.category" class="dash-input">
+                                            <option value="defi">DeFi</option>
+                                            <option value="trading">Trading</option>
+                                            <option value="web3">Web3</option>
+                                            <option value="tokenomics">Tokenomics</option>
+                                            <option value="security">Security</option>
+                                            <option value="research">Research</option>
+                                            <option value="tutorial">Tutorial</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div style="margin-bottom:14px;">
+                                    <label style="display:block;color:#5a8299;font-size:0.78rem;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Tags (comma-separated)</label>
+                                    <input x-model="draft.tags" class="dash-input" placeholder="defi, ethereum, smart-contracts" />
+                                </div>
+                                <div style="margin-bottom:14px;">
+                                    <label style="display:block;color:#5a8299;font-size:0.78rem;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Excerpt / Meta Description <span style="color:#d1d5db;" x-text="'('+((draft.excerpt||'').length)+'/160)'"></span></label>
+                                    <textarea x-model="draft.excerpt" class="dash-input" rows="2" maxlength="160" placeholder="Brief description for SEO and article cards..." style="resize:vertical;"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="dash-card" style="margin-bottom:16px;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                                    <label style="color:#5a8299;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;margin:0;">Content (Markdown)</label>
+                                    <div style="display:flex;gap:4px;">
+                                        <button class="dash-btn dash-btn-outline" style="padding:2px 8px;font-size:0.72rem;" @click="insertMd('**','**')"><b>B</b></button>
+                                        <button class="dash-btn dash-btn-outline" style="padding:2px 8px;font-size:0.72rem;font-style:italic;" @click="insertMd('*','*')">I</button>
+                                        <button class="dash-btn dash-btn-outline" style="padding:2px 8px;font-size:0.72rem;" @click="insertMd('## ','')">H2</button>
+                                        <button class="dash-btn dash-btn-outline" style="padding:2px 8px;font-size:0.72rem;" @click="insertMd('### ','')">H3</button>
+                                        <button class="dash-btn dash-btn-outline" style="padding:2px 8px;font-size:0.72rem;" @click="insertMd('- ','')"><i class="fas fa-list"></i></button>
+                                        <button class="dash-btn dash-btn-outline" style="padding:2px 8px;font-size:0.72rem;" @click="insertMd('[','](url)')"><i class="fas fa-link"></i></button>
+                                        <button class="dash-btn dash-btn-outline" style="padding:2px 8px;font-size:0.72rem;" @click="insertMd('`','`')"><i class="fas fa-code"></i></button>
+                                        <button class="dash-btn dash-btn-outline" style="padding:2px 8px;font-size:0.72rem;" @click="insertMd('> ','')"><i class="fas fa-quote-right"></i></button>
+                                        <button class="dash-btn dash-btn-outline" style="padding:2px 8px;font-size:0.72rem;" @click="insertMd('![alt](',')')"><i class="fas fa-image"></i></button>
+                                    </div>
+                                </div>
+                                <textarea x-model="draft.content" id="md-editor" class="dash-input" rows="22" placeholder="Write your article in Markdown..." style="font-family:'JetBrains Mono',monospace;font-size:0.88rem;line-height:1.7;resize:vertical;min-height:400px;"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4 col-md-5 col-sm-12">
+                            <div class="dash-card" style="margin-bottom:16px;">
+                                <h5 style="margin-bottom:14px;font-size:0.9rem;">Publish Settings</h5>
+                                <div style="margin-bottom:12px;">
+                                    <label style="display:block;color:#5a8299;font-size:0.78rem;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Author</label>
+                                    <input x-model="draft.author" class="dash-input" placeholder="Your name or wallet" />
+                                </div>
+                                <div style="margin-bottom:12px;">
+                                    <label style="display:block;color:#5a8299;font-size:0.78rem;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Publish Date</label>
+                                    <input x-model="draft.date" type="date" class="dash-input" />
+                                </div>
+                                <div style="margin-bottom:12px;">
+                                    <label style="display:block;color:#5a8299;font-size:0.78rem;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Target Repository</label>
+                                    <select x-model="draft.target_repo" class="dash-input">
+                                        <option value="Tokenomic-org/website">Tokenomic-org/website</option>
+                                    </select>
+                                </div>
+                                <div style="margin-bottom:12px;">
+                                    <label style="display:block;color:#5a8299;font-size:0.78rem;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Sponsorship</label>
+                                    <select x-model="draft.sponsorship" class="dash-input">
+                                        <option value="">None</option>
+                                        <option value="bronze">Bronze ($250)</option>
+                                        <option value="silver">Silver ($500)</option>
+                                        <option value="gold">Gold ($1,000)</option>
+                                    </select>
+                                </div>
+                                <div style="margin-bottom:12px;">
+                                    <label style="display:block;color:#5a8299;font-size:0.78rem;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Revenue Share %</label>
+                                    <input x-model="draft.revenue_share" type="number" class="dash-input" placeholder="10" min="0" max="100" />
+                                </div>
+                            </div>
+
+                            <div class="dash-card" style="margin-bottom:16px;background:#f8fafc;">
+                                <h5 style="margin-bottom:10px;font-size:0.9rem;">Preview Info</h5>
+                                <div style="font-size:0.8rem;color:#5a8299;line-height:1.6;">
+                                    <div style="margin-bottom:6px;">
+                                        <strong style="color:#0A0F1A;">URL:</strong>
+                                        <span x-text="draft.slug ? 'tokenomic.org/learn/'+draft.slug : 'Set a title to generate URL'"></span>
+                                    </div>
+                                    <div style="margin-bottom:6px;">
+                                        <strong style="color:#0A0F1A;">GitHub:</strong>
+                                        <span x-text="draft.slug ? 'Tokenomic-org/website → _posts/'+draft.slug+'.md' : '—'"></span>
+                                    </div>
+                                    <div>
+                                        <strong style="color:#0A0F1A;">Words:</strong>
+                                        <span x-text="(draft.content||'').split(/\s+/).filter(w=>w).length"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="dash-card" style="border:2px dashed #d1d5db;text-align:center;padding:30px 20px;cursor:pointer;background:#fafbfc;" @click="document.getElementById('feat-img-upload').click()">
+                                <i class="fas fa-cloud-upload-alt" style="font-size:2rem;color:#d1d5db;margin-bottom:8px;"></i>
+                                <p style="color:#8899A6;font-size:0.82rem;margin:0;">Drop featured image here<br>or click to upload</p>
+                                <input type="file" id="feat-img-upload" accept="image/*" style="display:none;" @change="handleFeaturedImage($event)">
+                                <template x-if="draft.featured_image">
+                                    <div style="margin-top:12px;">
+                                        <img :src="draft.featured_image" style="max-width:100%;border-radius:8px;max-height:150px;object-fit:cover;">
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -554,26 +682,26 @@ function articlesPage() {
         sortField: 'views',
         sortDir: 'desc',
         articles: [
-            { id:1, title:'Understanding DeFi Tokenomics', category:'tokenomics', sponsorship:'gold', revenue_share:10, status:'published', date:'2026-03-15', content:'', target_repo:'Tokenomic-org/learn',
-              github_url:'https://github.com/Tokenomic-org/learn/blob/main/content/defi-tokenomics.md', live_url:'https://learn.tokenomic.org/defi-tokenomics',
+            { id:1, title:'Understanding DeFi Tokenomics', category:'tokenomics', sponsorship:'gold', revenue_share:10, status:'published', date:'2026-03-15', content:'', target_repo:'Tokenomic-org/website',
+              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-03-15-defi-tokenomics.md', live_url:'https://tokenomic.org/learn/defi-tokenomics',
               traffic:{views:8420,visitors:5230,avg_time:'4:32',bounce_rate:'32%',shares:187,revenue:1420,
                 referrers:[{source:'Google',visits:2840,pct:54},{source:'Twitter',visits:1120,pct:21},{source:'LinkedIn',visits:680,pct:13},{source:'Direct',visits:590,pct:11}]}},
-            { id:2, title:'Smart Contract Security Best Practices', category:'security', sponsorship:'silver', revenue_share:10, status:'published', date:'2026-03-10', content:'', target_repo:'Tokenomic-org/learn',
-              github_url:'https://github.com/Tokenomic-org/learn/blob/main/content/smart-contract-security.md', live_url:'https://learn.tokenomic.org/smart-contract-security',
+            { id:2, title:'Smart Contract Security Best Practices', category:'security', sponsorship:'silver', revenue_share:10, status:'published', date:'2026-03-10', content:'', target_repo:'Tokenomic-org/website',
+              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-03-10-smart-contract-security.md', live_url:'https://tokenomic.org/learn/smart-contract-security',
               traffic:{views:6150,visitors:3890,avg_time:'5:18',bounce_rate:'28%',shares:142,revenue:980,
                 referrers:[{source:'Google',visits:1950,pct:50},{source:'Reddit',visits:780,pct:20},{source:'Twitter',visits:620,pct:16},{source:'GitHub',visits:540,pct:14}]}},
-            { id:3, title:'Yield Farming Strategies for 2026', category:'defi', sponsorship:'', revenue_share:'', status:'draft', date:'2026-03-20', content:'', target_repo:'Tokenomic-org/learn',
+            { id:3, title:'Yield Farming Strategies for 2026', category:'defi', sponsorship:'', revenue_share:'', status:'draft', date:'2026-03-20', content:'', target_repo:'Tokenomic-org/website',
               github_url:'', live_url:'', traffic:null},
-            { id:4, title:'Introduction to Liquidity Pools', category:'tutorial', sponsorship:'bronze', revenue_share:10, status:'published', date:'2026-02-28', content:'', target_repo:'Tokenomic-org/learn',
-              github_url:'https://github.com/Tokenomic-org/learn/blob/main/content/liquidity-pools.md', live_url:'https://learn.tokenomic.org/liquidity-pools',
+            { id:4, title:'Introduction to Liquidity Pools', category:'tutorial', sponsorship:'bronze', revenue_share:10, status:'published', date:'2026-02-28', content:'', target_repo:'Tokenomic-org/website',
+              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-02-28-liquidity-pools.md', live_url:'https://tokenomic.org/learn/liquidity-pools',
               traffic:{views:4280,visitors:2710,avg_time:'3:45',bounce_rate:'41%',shares:94,revenue:580,
                 referrers:[{source:'Google',visits:1370,pct:51},{source:'Twitter',visits:650,pct:24},{source:'Direct',visits:420,pct:15},{source:'LinkedIn',visits:270,pct:10}]}},
-            { id:5, title:'Zero-Knowledge Proofs: Privacy in DeFi', category:'research', sponsorship:'gold', revenue_share:15, status:'published', date:'2026-03-01', content:'', target_repo:'Tokenomic-org/learn',
-              github_url:'https://github.com/Tokenomic-org/learn/blob/main/content/zk-proofs-privacy.md', live_url:'https://learn.tokenomic.org/zk-proofs-privacy',
+            { id:5, title:'Zero-Knowledge Proofs: Privacy in DeFi', category:'research', sponsorship:'gold', revenue_share:15, status:'published', date:'2026-03-01', content:'', target_repo:'Tokenomic-org/website',
+              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-03-01-zk-proofs-privacy.md', live_url:'https://tokenomic.org/learn/zk-proofs-privacy',
               traffic:{views:5890,visitors:3640,avg_time:'6:12',bounce_rate:'24%',shares:168,revenue:1650,
                 referrers:[{source:'Google',visits:1760,pct:48},{source:'Twitter',visits:910,pct:25},{source:'Hacker News',visits:580,pct:16},{source:'Direct',visits:390,pct:11}]}},
             { id:6, title:'Gas Optimization in Solidity', category:'tutorial', sponsorship:'', revenue_share:10, status:'published', date:'2026-02-15', content:'', target_repo:'Tokenomic-org/website',
-              github_url:'https://github.com/Tokenomic-org/website/blob/main/content/gas-optimization.md', live_url:'https://tokenomic.org/gas-optimization',
+              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-02-15-gas-optimization.md', live_url:'https://tokenomic.org/learn/gas-optimization',
               traffic:{views:3210,visitors:2180,avg_time:'4:05',bounce_rate:'38%',shares:76,revenue:320,
                 referrers:[{source:'Google',visits:1280,pct:59},{source:'Stack Overflow',visits:430,pct:20},{source:'Twitter',visits:290,pct:13},{source:'Direct',visits:180,pct:8}]}}
         ],
@@ -592,9 +720,47 @@ function articlesPage() {
             {name:'Referral',pct:10,color:'#8b5cf6'},
             {name:'Email',pct:4,color:'#ff8f00'}
         ],
-        showEditor:false, filter:'all', publishStatus:'', publishDetails:'',
-        draft:{ title:'', category:'defi', content:'', sponsorship:'', revenue_share:10, target_repo:'Tokenomic-org/learn' },
-        init() {},
+        showEditor:false, showEditorModal:false, filter:'all', publishStatus:'', publishDetails:'',
+        draft:{ title:'', slug:'', category:'defi', tags:'', excerpt:'', content:'', sponsorship:'', revenue_share:10, target_repo:'Tokenomic-org/website', author:'', date:new Date().toISOString().split('T')[0], featured_image:'' },
+        init() {
+            var saved = sessionStorage.getItem('tkn_wallet');
+            if (saved) this.draft.author = saved.slice(0,6)+'...'+saved.slice(-4);
+        },
+        openNewArticle() {
+            this.draft = { title:'', slug:'', category:'defi', tags:'', excerpt:'', content:'', sponsorship:'', revenue_share:10, target_repo:'Tokenomic-org/website', author:this.draft.author||'', date:new Date().toISOString().split('T')[0], featured_image:'' };
+            this.showEditorModal = true;
+            this.activeTab = 'editor';
+        },
+        closeEditor() {
+            this.showEditorModal = false;
+        },
+        autoSlug() {
+            this.draft.slug = this.draft.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        },
+        insertMd(before, after) {
+            var ta = document.getElementById('md-editor');
+            if (!ta) return;
+            var start = ta.selectionStart, end = ta.selectionEnd;
+            var text = this.draft.content || '';
+            var selected = text.substring(start, end);
+            this.draft.content = text.substring(0, start) + before + selected + after + text.substring(end);
+            this.$nextTick(function(){ ta.focus(); ta.setSelectionRange(start + before.length, start + before.length + selected.length); });
+        },
+        previewArticle() {
+            if (this.draft.slug) {
+                window.open('https://tokenomic.org/learn/' + this.draft.slug, '_blank');
+            } else {
+                alert('Add a title first to generate the article URL.');
+            }
+        },
+        handleFeaturedImage(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            var self = this;
+            reader.onload = function(e) { self.draft.featured_image = e.target.result; };
+            reader.readAsDataURL(file);
+        },
         get filteredArticles() { return this.filter==='all' ? this.articles : this.articles.filter(a=>a.status===this.filter); },
         publishedArticles(){ return this.articles.filter(a=>a.status==='published'&&a.traffic); },
         sortedPublishedArticles(){
@@ -651,27 +817,76 @@ function articlesPage() {
                 var share=a.revenue_share?parseFloat(a.revenue_share)/100:0;return s+Math.round(a.traffic.revenue*share);
             },0);
         },
-        editArticle(a) { this.draft={...a,target_repo:a.target_repo||'Tokenomic-org/learn'}; this.showEditor=true; this.activeTab='editor'; },
+        editArticle(a) {
+            this.draft = {
+                id:a.id, title:a.title, slug:a.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''),
+                category:a.category, tags:a.tags||'', excerpt:a.excerpt||'', content:a.content,
+                sponsorship:a.sponsorship, revenue_share:a.revenue_share,
+                target_repo:'Tokenomic-org/website', author:a.author||this.draft.author||'',
+                date:a.date, featured_image:a.featured_image||''
+            };
+            this.showEditorModal = true;
+            this.activeTab = 'editor';
+        },
         saveDraft() {
-            if (!this.draft.title) return;
-            var existing=this.articles.find(a=>a.id===this.draft.id);
-            if(existing){Object.assign(existing,{title:this.draft.title,category:this.draft.category,sponsorship:this.draft.sponsorship,revenue_share:this.draft.revenue_share,content:this.draft.content,target_repo:this.draft.target_repo});}
-            else{this.articles.unshift({id:Date.now(),title:this.draft.title,category:this.draft.category,sponsorship:this.draft.sponsorship,revenue_share:this.draft.revenue_share,status:'draft',date:new Date().toISOString().split('T')[0],content:this.draft.content,target_repo:this.draft.target_repo||'Tokenomic-org/learn',github_url:'',live_url:'',traffic:null});}
-            this.draft={ title:'', category:'defi', content:'', sponsorship:'', revenue_share:10, target_repo:'Tokenomic-org/learn' };
-            this.showEditor=false;
+            if (!this.draft.title) { alert('Add a title first.'); return; }
+            var slug = this.draft.slug || this.draft.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+            var existing = this.articles.find(a=>a.id===this.draft.id);
+            if (existing) {
+                Object.assign(existing, {title:this.draft.title, category:this.draft.category, sponsorship:this.draft.sponsorship, revenue_share:this.draft.revenue_share, content:this.draft.content, target_repo:'Tokenomic-org/website', tags:this.draft.tags, excerpt:this.draft.excerpt, author:this.draft.author, featured_image:this.draft.featured_image});
+            } else {
+                this.articles.unshift({id:Date.now(), title:this.draft.title, category:this.draft.category, sponsorship:this.draft.sponsorship, revenue_share:this.draft.revenue_share, status:'draft', date:this.draft.date, content:this.draft.content, target_repo:'Tokenomic-org/website', github_url:'', live_url:'', traffic:null, tags:this.draft.tags, excerpt:this.draft.excerpt, author:this.draft.author, featured_image:this.draft.featured_image});
+            }
+            try { localStorage.setItem('tkn_draft_'+slug, JSON.stringify(this.draft)); } catch(e){}
+            this.publishStatus = 'Draft saved!';
+            this.publishDetails = slug;
+            this.showEditorModal = false;
         },
         async publishToGitHub() {
-            if (!this.draft.title||!this.draft.content) { alert('Add title and content.'); return; }
-            this.publishStatus='Published successfully! (demo mode)';
-            this.publishDetails='Set GITHUB_PERSONAL_ACCESS_TOKEN secret for live publishing.';
-            var slug=this.draft.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-            var repo=this.draft.target_repo||'Tokenomic-org/learn';
-            var domain=repo.includes('learn')?'learn.tokenomic.org':'tokenomic.org';
-            this.articles.unshift({id:Date.now(),title:this.draft.title,category:this.draft.category,sponsorship:this.draft.sponsorship,revenue_share:this.draft.revenue_share,status:'published',date:new Date().toISOString().split('T')[0],content:this.draft.content,target_repo:repo,
-                github_url:'https://github.com/'+repo+'/blob/main/content/'+slug+'.md',live_url:'https://'+domain+'/'+slug,
-                traffic:{views:0,visitors:0,avg_time:'0:00',bounce_rate:'0%',shares:0,revenue:0,referrers:[]}});
-            this.draft={ title:'', category:'defi', content:'', sponsorship:'', revenue_share:10, target_repo:'Tokenomic-org/learn' };
-            this.showEditor=false;
+            if (!this.draft.title || !this.draft.content) { alert('Add title and content.'); return; }
+            var slug = this.draft.slug || this.draft.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+            var repo = 'Tokenomic-org/website';
+            var date = this.draft.date || new Date().toISOString().split('T')[0];
+            var frontmatter = '---\n' +
+                'title: "' + this.draft.title.replace(/"/g,'\\"') + '"\n' +
+                'date: ' + date + '\n' +
+                'category: ' + this.draft.category + '\n' +
+                (this.draft.tags ? 'tags: [' + this.draft.tags.split(',').map(function(t){return '"'+t.trim()+'"';}).join(', ') + ']\n' : '') +
+                (this.draft.excerpt ? 'excerpt: "' + this.draft.excerpt.replace(/"/g,'\\"') + '"\n' : '') +
+                (this.draft.author ? 'author: "' + this.draft.author + '"\n' : '') +
+                (this.draft.sponsorship ? 'sponsorship: ' + this.draft.sponsorship + '\n' : '') +
+                (this.draft.featured_image ? 'image: /assets/images/learn/' + slug + '-cover.webp\n' : '') +
+                'slug: ' + slug + '\n' +
+                '---\n\n';
+            var fullContent = frontmatter + this.draft.content;
+            var filePath = '_posts/' + date + '-' + slug + '.md';
+            var articleData = {id:Date.now(), title:this.draft.title, category:this.draft.category, sponsorship:this.draft.sponsorship, revenue_share:this.draft.revenue_share, date:date, content:this.draft.content, target_repo:repo, tags:this.draft.tags, excerpt:this.draft.excerpt, author:this.draft.author,
+                github_url:'https://github.com/'+repo+'/blob/main/'+filePath, live_url:'https://tokenomic.org/learn/'+slug,
+                traffic:{views:0,visitors:0,avg_time:'0:00',bounce_rate:'0%',shares:0,revenue:0,referrers:[]}};
+            try {
+                var resp = await fetch('/api/github/publish', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({repo:repo, path:filePath, content:fullContent, message:'Add article: '+this.draft.title, slug:slug})
+                });
+                if (resp.ok) {
+                    articleData.status = 'published';
+                    this.publishStatus = 'Published to GitHub!';
+                    this.publishDetails = 'Live at tokenomic.org/learn/' + slug;
+                } else {
+                    var err = await resp.json().catch(function(){return {};});
+                    articleData.status = 'draft';
+                    this.publishStatus = 'Saved as draft';
+                    this.publishDetails = (err.error || 'GitHub API not configured') + ' — add GITHUB_PERSONAL_ACCESS_TOKEN to publish live.';
+                }
+            } catch(e) {
+                articleData.status = 'draft';
+                this.publishStatus = 'Saved as draft';
+                this.publishDetails = 'GitHub API not available — article saved locally as draft.';
+            }
+            this.articles.unshift(articleData);
+            try { localStorage.removeItem('tkn_draft_'+slug); } catch(e){}
+            this.showEditorModal = false;
         }
     };
 }

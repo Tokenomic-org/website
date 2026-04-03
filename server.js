@@ -502,6 +502,106 @@ app.use(express.static(path.join(__dirname, '_site'), {
     }
 }));
 
+app.post('/api/github/publish', function(req, res) {
+    var token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+    if (!token) {
+        return res.status(400).json({ error: 'GITHUB_PERSONAL_ACCESS_TOKEN not configured' });
+    }
+    var body = req.body;
+    if (!body.repo || !body.path || !body.content) {
+        return res.status(400).json({ error: 'Missing repo, path, or content' });
+    }
+    if (body.repo !== 'Tokenomic-org/website') {
+        return res.status(403).json({ error: 'Publishing only allowed to Tokenomic-org/website' });
+    }
+    var pathPattern = /^_posts\/\d{4}-\d{2}-\d{2}-[a-z0-9-]+\.md$/;
+    if (!pathPattern.test(body.path)) {
+        return res.status(403).json({ error: 'Invalid file path format' });
+    }
+    var owner = 'Tokenomic-org';
+    var repoName = 'website';
+    var contentBase64 = Buffer.from(body.content).toString('base64');
+    var apiPath = '/repos/' + owner + '/' + repoName + '/contents/' + body.path;
+
+    function doRequest(sha) {
+        var payload = JSON.stringify({
+            message: body.message || 'Add article via Tokenomic dashboard',
+            content: contentBase64,
+            branch: 'main'
+        });
+        if (sha) {
+            var parsed = JSON.parse(payload);
+            parsed.sha = sha;
+            payload = JSON.stringify(parsed);
+        }
+        var options = {
+            hostname: 'api.github.com',
+            path: apiPath,
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'User-Agent': 'Tokenomic-Dashboard',
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payload),
+                'Accept': 'application/vnd.github+json'
+            }
+        };
+        var ghReq = https.request(options, function(ghRes) {
+            var data = '';
+            ghRes.on('data', function(chunk) { data += chunk; });
+            ghRes.on('end', function() {
+                try {
+                    var result = JSON.parse(data);
+                    if (ghRes.statusCode === 200 || ghRes.statusCode === 201) {
+                        res.json({
+                            success: true,
+                            html_url: result.content ? result.content.html_url : '',
+                            sha: result.content ? result.content.sha : ''
+                        });
+                    } else {
+                        res.status(ghRes.statusCode).json({ error: result.message || 'GitHub API error', details: result });
+                    }
+                } catch(e) {
+                    res.status(500).json({ error: 'Failed to parse GitHub response' });
+                }
+            });
+        });
+        ghReq.on('error', function(e) {
+            res.status(500).json({ error: 'GitHub API request failed: ' + e.message });
+        });
+        ghReq.write(payload);
+        ghReq.end();
+    }
+
+    var checkOptions = {
+        hostname: 'api.github.com',
+        path: apiPath + '?ref=main',
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'User-Agent': 'Tokenomic-Dashboard',
+            'Accept': 'application/vnd.github+json'
+        }
+    };
+    var checkReq = https.get(checkOptions, function(checkRes) {
+        var data = '';
+        checkRes.on('data', function(chunk) { data += chunk; });
+        checkRes.on('end', function() {
+            if (checkRes.statusCode === 200) {
+                try {
+                    var existing = JSON.parse(data);
+                    doRequest(existing.sha);
+                } catch(e) {
+                    doRequest(null);
+                }
+            } else {
+                doRequest(null);
+            }
+        });
+    });
+    checkReq.on('error', function() { doRequest(null); });
+});
+
 var SITE_ROOT = path.resolve(path.join(__dirname, '_site'));
 
 app.use(function(req, res) {
