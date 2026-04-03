@@ -26,14 +26,24 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 ## Key Directories
 - `_site/` — Pre-built static output (served directly in Replit, rebuilt by GitHub Pages)
 - `_layouts/` — `default`, `page`, `post`, `category`, `tag_page`, `dashboard`
-- `_includes/`, `_data/` — Jekyll source templates and data
+- `_includes/` — Jekyll partials (only actively-used includes kept; unused theme includes removed)
+- `_data/` — Jekyll data files (navigation.yml)
 - `_site/dashboard*/` — Dashboard pages (11 pages)
 - `_site/learn/*/` — Article detail pages (13 articles, statically generated + 3 slug aliases)
 - `shared/assets/js/` — Shared JS (wallet, Supabase client, site-search, profile-photo)
 - `assets/` — CSS, images, fonts, JS libraries
 - `assets/images/learn/` — Article images pulled from learn.tokenomic.org (cover images + inline content images)
-- `scripts/` — Build scripts (scrape-articles.js, generate-article-pages.js)
+- `scripts/` — Build scripts (scrape-articles.js, generate-article-pages.js, sync-assets.sh)
 - `global-community/` — File-based community storage (each subfolder = one community with `community.json` + `comments.json`)
+
+## Removed (unused)
+- `website/` — Legacy/backup directory (was excluded in _config.yml)
+- `.sass-cache/`, `.agents/` — Cache/empty directories
+- 8 unused root HTML source files (portfolio-2, services-2, blog, artists, team, join, events, services)
+- 45 unused `_includes/` partials (theme variants not referenced by any layout or page)
+- 19 orphaned `_site/` HTML files (old slug redirects with zero references)
+- `_site/2025/`, `_site/2026/`, `_site/tag/`, `_site/category/` — Empty Jekyll archive stubs
+- `search.json` — Not referenced by any JS (site-search uses Supabase data)
 
 ## Branding
 - Primary: `#F7931A` (gold-orange), Dark: `#0A0F1A` (navy-black), Muted: `#8899A6`
