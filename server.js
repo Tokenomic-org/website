@@ -493,6 +493,10 @@ app.post('/api/profile/upload-photo', function(req, res) {
     res.json({ success: true, url: photoUrl });
 });
 
+app.get('/profile/:slug', function(req, res) {
+    res.sendFile(path.join(__dirname, '_site', 'profile', 'index.html'));
+});
+
 app.use(express.static(path.join(__dirname, '_site'), {
     extensions: ['html'],
     setHeaders: function(res, filePath) {
