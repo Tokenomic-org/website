@@ -56,8 +56,8 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - **Bookings** (`/dashboard-bookings/`) — Consultant booking, wallet & Helio payments
 - **Chat** (`/dashboard-chat/`) — Channel-based messaging
 - **Leaderboard** (`/dashboard-leaderboard/`) — XP rankings, progress tracking, module tracker
-- **Articles** (`/dashboard-articles/`) — Content management
-- **Social** (`/dashboard-social/`) — Social feed
+- **Articles** (`/dashboard-articles/`) — Content management with full analytics: two-tab layout (Analytics/Editor), traffic overview (views, visitors, avg read time, bounce rate with period selectors 7d/30d/90d/All), daily traffic bar chart, traffic sources breakdown, revenue breakdown (sponsorship/ad CPM/your share), per-article performance table (sortable by views/visitors/revenue), click-to-expand article detail with referral sources and GitHub/live links; each article has `target_repo` linking to GitHub, `traffic` object with per-article metrics, and computed revenue
+- **Social** (`/dashboard-social/`) — Social Media Manager for @tknmic official channels; dark explanatory banner, 6 platform cards (Facebook/Twitter/LinkedIn/Instagram/YouTube/TikTok) linking to profiles, per-post analytics (views/likes/shares/comments/engagement), post filter (All/Published/Scheduled), non-destructive edit via `editingPostId`, delete for scheduled posts
 - **Profile** (`/dashboard-profile/`) — User profile management with photo upload (camera icon overlay on avatar, uploads to server, persists URL in localStorage)
 - **Pricing** (`/pricing/`) — Three tiers (Explorer/Professional/Institution), individual course pricing, FAQ
 - **Privacy** (`/privacy/`) — Privacy policy

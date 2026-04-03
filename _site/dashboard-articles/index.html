@@ -191,19 +191,269 @@
                 </div>
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="articlesPage()" x-init="init()">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
-        <p style="color:#5a8299;">Write and publish articles to learn.tokenomic.org via GitHub API</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+        <div>
+            <p style="color:#5a8299;margin:0;">Write and publish articles to learn.tokenomic.org via GitHub API</p>
+        </div>
         <div style="display:flex;gap:8px;">
-            <button class="dash-btn dash-btn-primary" @click="showEditor = !showEditor">+ New Article</button>
+            <button class="dash-btn dash-btn-outline" @click="activeTab='analytics'" :style="activeTab==='analytics'?'border-color:#ff6000;color:#ff6000':''">
+                <i class="fas fa-chart-bar" style="margin-right:4px;"></i> Analytics
+            </button>
+            <button class="dash-btn dash-btn-primary" @click="showEditor = !showEditor;activeTab='editor'">+ New Article</button>
         </div>
     </div>
 
-    <div class="row clearfix" style="margin-bottom:32px;">
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="articles.filter(a=>a.status==='published').length"></div><div class="stat-lbl">Published</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#ff8f00;" x-text="articles.filter(a=>a.status==='draft').length"></div><div class="stat-lbl">Drafts</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="articles.filter(a=>a.sponsorship).length"></div><div class="stat-lbl">Sponsored</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:16px;"><div class="dash-stat"><div class="stat-val">$1,750</div><div class="stat-lbl">Sponsor Revenue</div></div></div>
+    <div class="row clearfix" style="margin-bottom:24px;">
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="articles.filter(a=>a.status==='published').length"></div><div class="stat-lbl">Published</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff8f00;" x-text="articles.filter(a=>a.status==='draft').length"></div><div class="stat-lbl">Drafts</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="articles.filter(a=>a.sponsorship).length"></div><div class="stat-lbl">Sponsored</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="'$'+totalRevenue().toLocaleString()"></div><div class="stat-lbl">Total Revenue</div></div></div>
     </div>
+
+    <template x-if="activeTab==='analytics'">
+    <div>
+
+    <div class="dash-card" style="margin-bottom:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
+            <h4 style="margin:0;">Traffic Overview <span style="font-size:0.65rem;font-weight:400;color:#8899A6;background:#f0f2f5;padding:2px 8px;border-radius:10px;margin-left:6px;vertical-align:middle;">Demo Data</span></h4>
+            <div style="display:flex;gap:6px;">
+                <button class="dash-btn" :class="analyticsPeriod==='7d'?'dash-btn-primary':'dash-btn-outline'" @click="analyticsPeriod='7d'" style="padding:4px 12px;font-size:0.78rem;">7 Days</button>
+                <button class="dash-btn" :class="analyticsPeriod==='30d'?'dash-btn-primary':'dash-btn-outline'" @click="analyticsPeriod='30d'" style="padding:4px 12px;font-size:0.78rem;">30 Days</button>
+                <button class="dash-btn" :class="analyticsPeriod==='90d'?'dash-btn-primary':'dash-btn-outline'" @click="analyticsPeriod='90d'" style="padding:4px 12px;font-size:0.78rem;">90 Days</button>
+                <button class="dash-btn" :class="analyticsPeriod==='all'?'dash-btn-primary':'dash-btn-outline'" @click="analyticsPeriod='all'" style="padding:4px 12px;font-size:0.78rem;">All Time</button>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:14px;">
+                <div style="background:linear-gradient(135deg,#0A0F1A,#1a2744);border-radius:10px;padding:20px;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                        <i class="fas fa-eye" style="color:#ff6000;font-size:0.9rem;"></i>
+                        <span style="color:#8899A6;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;">Total Views</span>
+                    </div>
+                    <div style="font-size:1.6rem;font-weight:700;color:#fff;" x-text="totalTrafficStat('views').toLocaleString()"></div>
+                    <div style="font-size:0.75rem;margin-top:4px;" :style="'color:'+(trafficTrend('views')>=0?'#38a169':'#e53e3e')">
+                        <i class="fas" :class="trafficTrend('views')>=0?'fa-arrow-up':'fa-arrow-down'"></i>
+                        <span x-text="Math.abs(trafficTrend('views'))+'%'"></span> vs prior period
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:14px;">
+                <div style="background:linear-gradient(135deg,#0A0F1A,#1a2744);border-radius:10px;padding:20px;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                        <i class="fas fa-users" style="color:#1DA1F2;font-size:0.9rem;"></i>
+                        <span style="color:#8899A6;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;">Unique Visitors</span>
+                    </div>
+                    <div style="font-size:1.6rem;font-weight:700;color:#fff;" x-text="totalTrafficStat('visitors').toLocaleString()"></div>
+                    <div style="font-size:0.75rem;margin-top:4px;" :style="'color:'+(trafficTrend('visitors')>=0?'#38a169':'#e53e3e')">
+                        <i class="fas" :class="trafficTrend('visitors')>=0?'fa-arrow-up':'fa-arrow-down'"></i>
+                        <span x-text="Math.abs(trafficTrend('visitors'))+'%'"></span> vs prior period
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:14px;">
+                <div style="background:linear-gradient(135deg,#0A0F1A,#1a2744);border-radius:10px;padding:20px;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                        <i class="fas fa-clock" style="color:#38a169;font-size:0.9rem;"></i>
+                        <span style="color:#8899A6;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;">Avg Read Time</span>
+                    </div>
+                    <div style="font-size:1.6rem;font-weight:700;color:#fff;" x-text="avgReadTime()"></div>
+                    <div style="font-size:0.75rem;color:#8899A6;margin-top:4px;">across all articles</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:14px;">
+                <div style="background:linear-gradient(135deg,#0A0F1A,#1a2744);border-radius:10px;padding:20px;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                        <i class="fas fa-percentage" style="color:#e53e3e;font-size:0.9rem;"></i>
+                        <span style="color:#8899A6;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;">Bounce Rate</span>
+                    </div>
+                    <div style="font-size:1.6rem;font-weight:700;color:#fff;" x-text="avgBounceRate()+'%'"></div>
+                    <div style="font-size:0.75rem;margin-top:4px;" :style="'color:'+(bounceTrend()<=0?'#38a169':'#e53e3e')">
+                        <i class="fas" :class="bounceTrend()<=0?'fa-arrow-down':'fa-arrow-up'"></i>
+                        <span x-text="Math.abs(bounceTrend())+'%'"></span> vs prior period
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row clearfix" style="margin-bottom:24px;">
+        <div class="col-lg-8 col-md-7 col-sm-12" style="margin-bottom:14px;">
+            <div class="dash-card" style="height:100%;">
+                <h4 style="margin-bottom:16px;">Daily Traffic (Last 14 Days)</h4>
+                <div style="display:flex;align-items:flex-end;gap:4px;height:160px;padding:0 4px;">
+                    <template x-for="(day, i) in trafficChart" :key="i">
+                        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+                            <div style="width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#ff6000,#ff8533);min-height:4px;transition:height 0.3s;" :style="'height:'+Math.max(4,day.views/maxChartVal*140)+'px'" :title="day.views+' views'"></div>
+                            <span style="font-size:0.6rem;color:#8899A6;writing-mode:vertical-lr;transform:rotate(180deg);height:30px;overflow:hidden;" x-text="day.label"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-5 col-sm-12" style="margin-bottom:14px;">
+            <div class="dash-card" style="height:100%;">
+                <h4 style="margin-bottom:16px;">Traffic Sources</h4>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <template x-for="source in trafficSources" :key="source.name">
+                        <div>
+                            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                                <span style="font-size:0.82rem;color:#0A0F1A;font-weight:500;" x-text="source.name"></span>
+                                <span style="font-size:0.82rem;color:#5a8299;" x-text="source.pct+'%'"></span>
+                            </div>
+                            <div style="height:6px;background:#f0f2f5;border-radius:3px;overflow:hidden;">
+                                <div style="height:100%;border-radius:3px;transition:width 0.3s;" :style="'width:'+source.pct+'%;background:'+source.color"></div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-card" style="margin-bottom:24px;">
+        <h4 style="margin-bottom:16px;">Revenue Breakdown</h4>
+        <div class="row clearfix" style="margin-bottom:20px;">
+            <div class="col-lg-4 col-md-4 col-sm-6" style="margin-bottom:12px;">
+                <div style="border:1px solid #e8ecef;border-radius:10px;padding:18px;text-align:center;">
+                    <div style="font-size:0.78rem;color:#8899A6;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Sponsorship Revenue</div>
+                    <div style="font-size:1.8rem;font-weight:700;color:#ff8f00;" x-text="'$'+sponsorRevenue().toLocaleString()"></div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-6" style="margin-bottom:12px;">
+                <div style="border:1px solid #e8ecef;border-radius:10px;padding:18px;text-align:center;">
+                    <div style="font-size:0.78rem;color:#8899A6;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Ad Revenue (CPM)</div>
+                    <div style="font-size:1.8rem;font-weight:700;color:#1976d2;" x-text="'$'+adRevenue().toLocaleString()"></div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-6" style="margin-bottom:12px;">
+                <div style="border:1px solid #e8ecef;border-radius:10px;padding:18px;text-align:center;">
+                    <div style="font-size:0.78rem;color:#8899A6;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Your Revenue Share</div>
+                    <div style="font-size:1.8rem;font-weight:700;color:#00a651;" x-text="'$'+yourShare().toLocaleString()"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-card" style="margin-bottom:24px;">
+        <h4 style="margin-bottom:16px;">Per-Article Performance</h4>
+        <div style="overflow-x:auto;">
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th style="cursor:pointer;" @click="sortArticles('title')">Article <i class="fas fa-sort" style="font-size:0.7rem;color:#8899A6;"></i></th>
+                    <th style="cursor:pointer;" @click="sortArticles('views')">Views <i class="fas fa-sort" style="font-size:0.7rem;color:#8899A6;"></i></th>
+                    <th style="cursor:pointer;" @click="sortArticles('visitors')">Visitors <i class="fas fa-sort" style="font-size:0.7rem;color:#8899A6;"></i></th>
+                    <th>Avg Time</th>
+                    <th>Bounce</th>
+                    <th style="cursor:pointer;" @click="sortArticles('revenue')">Revenue <i class="fas fa-sort" style="font-size:0.7rem;color:#8899A6;"></i></th>
+                    <th>Repo</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="article in sortedPublishedArticles()" :key="article.id">
+                    <tr style="cursor:pointer;" @click="selectedArticle=selectedArticle===article.id?null:article.id">
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <strong style="font-size:0.88rem;" x-text="article.title"></strong>
+                                <span class="dash-badge dash-badge-info" style="font-size:0.65rem;" x-text="article.category"></span>
+                            </div>
+                            <div style="font-size:0.75rem;color:#8899A6;margin-top:2px;" x-text="'Published '+article.date"></div>
+                        </td>
+                        <td style="font-weight:600;" x-text="article.traffic.views.toLocaleString()"></td>
+                        <td x-text="article.traffic.visitors.toLocaleString()"></td>
+                        <td x-text="article.traffic.avg_time"></td>
+                        <td>
+                            <span :style="'color:'+(parseFloat(article.traffic.bounce_rate)<40?'#38a169':parseFloat(article.traffic.bounce_rate)<60?'#ff8f00':'#e53e3e')" x-text="article.traffic.bounce_rate"></span>
+                        </td>
+                        <td style="font-weight:600;color:#00a651;" x-text="'$'+article.traffic.revenue.toLocaleString()"></td>
+                        <td>
+                            <a :href="article.github_url" target="_blank" rel="noopener noreferrer" style="color:#5a8299;font-size:0.8rem;text-decoration:none;" @click.stop>
+                                <i class="fab fa-github" style="margin-right:3px;"></i>
+                                <span x-text="article.target_repo.split('/')[1]"></span>
+                            </a>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <template x-if="selectedArticle">
+    <div class="dash-card" style="margin-bottom:24px;border-left:4px solid #ff6000;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+            <div>
+                <h4 style="margin:0 0 4px;" x-text="getArticle(selectedArticle).title"></h4>
+                <p style="color:#8899A6;font-size:0.82rem;margin:0;">Detailed traffic breakdown &middot; Published <span x-text="getArticle(selectedArticle).date"></span></p>
+            </div>
+            <button class="dash-btn dash-btn-outline" style="padding:4px 14px;font-size:0.78rem;" @click="selectedArticle=null">Close</button>
+        </div>
+        <div class="row clearfix">
+            <div class="col-lg-2 col-md-4 col-sm-4 col-6" style="margin-bottom:12px;">
+                <div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:8px;">
+                    <div style="font-size:0.7rem;color:#8899A6;text-transform:uppercase;margin-bottom:4px;">Page Views</div>
+                    <div style="font-size:1.2rem;font-weight:700;color:#0A0F1A;" x-text="getArticle(selectedArticle).traffic.views.toLocaleString()"></div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-4 col-6" style="margin-bottom:12px;">
+                <div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:8px;">
+                    <div style="font-size:0.7rem;color:#8899A6;text-transform:uppercase;margin-bottom:4px;">Unique Visitors</div>
+                    <div style="font-size:1.2rem;font-weight:700;color:#0A0F1A;" x-text="getArticle(selectedArticle).traffic.visitors.toLocaleString()"></div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-4 col-6" style="margin-bottom:12px;">
+                <div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:8px;">
+                    <div style="font-size:0.7rem;color:#8899A6;text-transform:uppercase;margin-bottom:4px;">Avg Time</div>
+                    <div style="font-size:1.2rem;font-weight:700;color:#0A0F1A;" x-text="getArticle(selectedArticle).traffic.avg_time"></div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-4 col-6" style="margin-bottom:12px;">
+                <div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:8px;">
+                    <div style="font-size:0.7rem;color:#8899A6;text-transform:uppercase;margin-bottom:4px;">Bounce Rate</div>
+                    <div style="font-size:1.2rem;font-weight:700;" :style="'color:'+(parseFloat(getArticle(selectedArticle).traffic.bounce_rate)<40?'#38a169':'#e53e3e')" x-text="getArticle(selectedArticle).traffic.bounce_rate"></div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-4 col-6" style="margin-bottom:12px;">
+                <div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:8px;">
+                    <div style="font-size:0.7rem;color:#8899A6;text-transform:uppercase;margin-bottom:4px;">Shares</div>
+                    <div style="font-size:1.2rem;font-weight:700;color:#0A0F1A;" x-text="getArticle(selectedArticle).traffic.shares"></div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-4 col-6" style="margin-bottom:12px;">
+                <div style="text-align:center;padding:12px;background:#e8f5e9;border-radius:8px;">
+                    <div style="font-size:0.7rem;color:#8899A6;text-transform:uppercase;margin-bottom:4px;">Revenue</div>
+                    <div style="font-size:1.2rem;font-weight:700;color:#00a651;" x-text="'$'+getArticle(selectedArticle).traffic.revenue.toLocaleString()"></div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top:16px;">
+            <h5 style="font-size:0.85rem;color:#5a8299;margin-bottom:10px;">Referral Sources</h5>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <template x-for="ref in getArticle(selectedArticle).traffic.referrers" :key="ref.source">
+                    <div style="padding:8px 16px;border:1px solid #e8ecef;border-radius:8px;display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:0.82rem;font-weight:500;color:#0A0F1A;" x-text="ref.source"></span>
+                        <span style="font-size:0.75rem;color:#5a8299;" x-text="ref.visits+' visits'"></span>
+                        <span style="font-size:0.72rem;font-weight:600;padding:2px 8px;border-radius:12px;background:#f0f2f5;" :style="'color:'+(ref.pct>20?'#00a651':'#5a8299')" x-text="ref.pct+'%'"></span>
+                    </div>
+                </template>
+            </div>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:8px;">
+            <a :href="getArticle(selectedArticle).github_url" target="_blank" rel="noopener noreferrer" class="dash-btn dash-btn-outline" style="padding:6px 16px;font-size:0.82rem;text-decoration:none;">
+                <i class="fab fa-github" style="margin-right:4px;"></i> View on GitHub
+            </a>
+            <a :href="getArticle(selectedArticle).live_url" target="_blank" rel="noopener noreferrer" class="dash-btn dash-btn-outline" style="padding:6px 16px;font-size:0.82rem;text-decoration:none;border-color:#00a651;color:#00a651;">
+                <i class="fas fa-external-link-alt" style="margin-right:4px;"></i> View Live
+            </a>
+        </div>
+    </div>
+    </template>
+
+    </div>
+    </template>
+
+    <template x-if="activeTab==='editor'">
+    <div>
 
     <div x-show="showEditor" x-transition class="dash-card">
         <h4>Article Editor</h4>
@@ -252,7 +502,12 @@
                         <td style="font-size:0.85rem;" x-text="article.revenue_share ? article.revenue_share+'% share' : '-'"></td>
                         <td><span class="dash-badge" :class="article.status==='published'?'dash-badge-success':'dash-badge-warning'" x-text="article.status"></span></td>
                         <td x-text="article.date"></td>
-                        <td><button class="dash-btn dash-btn-outline" style="padding:3px 10px;font-size:0.75rem;" @click="editArticle(article)">Edit</button></td>
+                        <td>
+                            <div style="display:flex;gap:4px;">
+                                <button class="dash-btn dash-btn-outline" style="padding:3px 10px;font-size:0.75rem;" @click="editArticle(article)">Edit</button>
+                                <button class="dash-btn dash-btn-outline" style="padding:3px 10px;font-size:0.75rem;" x-show="article.status==='published'" @click="selectedArticle=article.id;activeTab='analytics'"><i class="fas fa-chart-bar"></i></button>
+                            </div>
+                        </td>
                     </tr>
                 </template>
             </tbody>
@@ -285,25 +540,123 @@
             </div>
         </div>
     </div>
+
+    </div>
+    </template>
 </div>
 
 <script>
 function articlesPage() {
     return {
+        activeTab: 'analytics',
+        analyticsPeriod: '30d',
+        selectedArticle: null,
+        sortField: 'views',
+        sortDir: 'desc',
         articles: [
-            { id:1, title:'Understanding DeFi Tokenomics', category:'tokenomics', sponsorship:'gold', revenue_share:10, status:'published', date:'2026-03-15', content:'' },
-            { id:2, title:'Smart Contract Security Best Practices', category:'security', sponsorship:'silver', revenue_share:10, status:'published', date:'2026-03-10', content:'' },
-            { id:3, title:'Yield Farming Strategies for 2026', category:'defi', sponsorship:'', revenue_share:'', status:'draft', date:'2026-03-20', content:'' },
-            { id:4, title:'Introduction to Liquidity Pools', category:'tutorial', sponsorship:'bronze', revenue_share:10, status:'published', date:'2026-02-28', content:'' }
+            { id:1, title:'Understanding DeFi Tokenomics', category:'tokenomics', sponsorship:'gold', revenue_share:10, status:'published', date:'2026-03-15', content:'', target_repo:'Tokenomic-org/learn',
+              github_url:'https://github.com/Tokenomic-org/learn/blob/main/content/defi-tokenomics.md', live_url:'https://learn.tokenomic.org/defi-tokenomics',
+              traffic:{views:8420,visitors:5230,avg_time:'4:32',bounce_rate:'32%',shares:187,revenue:1420,
+                referrers:[{source:'Google',visits:2840,pct:54},{source:'Twitter',visits:1120,pct:21},{source:'LinkedIn',visits:680,pct:13},{source:'Direct',visits:590,pct:11}]}},
+            { id:2, title:'Smart Contract Security Best Practices', category:'security', sponsorship:'silver', revenue_share:10, status:'published', date:'2026-03-10', content:'', target_repo:'Tokenomic-org/learn',
+              github_url:'https://github.com/Tokenomic-org/learn/blob/main/content/smart-contract-security.md', live_url:'https://learn.tokenomic.org/smart-contract-security',
+              traffic:{views:6150,visitors:3890,avg_time:'5:18',bounce_rate:'28%',shares:142,revenue:980,
+                referrers:[{source:'Google',visits:1950,pct:50},{source:'Reddit',visits:780,pct:20},{source:'Twitter',visits:620,pct:16},{source:'GitHub',visits:540,pct:14}]}},
+            { id:3, title:'Yield Farming Strategies for 2026', category:'defi', sponsorship:'', revenue_share:'', status:'draft', date:'2026-03-20', content:'', target_repo:'Tokenomic-org/learn',
+              github_url:'', live_url:'', traffic:null},
+            { id:4, title:'Introduction to Liquidity Pools', category:'tutorial', sponsorship:'bronze', revenue_share:10, status:'published', date:'2026-02-28', content:'', target_repo:'Tokenomic-org/learn',
+              github_url:'https://github.com/Tokenomic-org/learn/blob/main/content/liquidity-pools.md', live_url:'https://learn.tokenomic.org/liquidity-pools',
+              traffic:{views:4280,visitors:2710,avg_time:'3:45',bounce_rate:'41%',shares:94,revenue:580,
+                referrers:[{source:'Google',visits:1370,pct:51},{source:'Twitter',visits:650,pct:24},{source:'Direct',visits:420,pct:15},{source:'LinkedIn',visits:270,pct:10}]}},
+            { id:5, title:'Zero-Knowledge Proofs: Privacy in DeFi', category:'research', sponsorship:'gold', revenue_share:15, status:'published', date:'2026-03-01', content:'', target_repo:'Tokenomic-org/learn',
+              github_url:'https://github.com/Tokenomic-org/learn/blob/main/content/zk-proofs-privacy.md', live_url:'https://learn.tokenomic.org/zk-proofs-privacy',
+              traffic:{views:5890,visitors:3640,avg_time:'6:12',bounce_rate:'24%',shares:168,revenue:1650,
+                referrers:[{source:'Google',visits:1760,pct:48},{source:'Twitter',visits:910,pct:25},{source:'Hacker News',visits:580,pct:16},{source:'Direct',visits:390,pct:11}]}},
+            { id:6, title:'Gas Optimization in Solidity', category:'tutorial', sponsorship:'', revenue_share:10, status:'published', date:'2026-02-15', content:'', target_repo:'Tokenomic-org/website',
+              github_url:'https://github.com/Tokenomic-org/website/blob/main/content/gas-optimization.md', live_url:'https://tokenomic.org/gas-optimization',
+              traffic:{views:3210,visitors:2180,avg_time:'4:05',bounce_rate:'38%',shares:76,revenue:320,
+                referrers:[{source:'Google',visits:1280,pct:59},{source:'Stack Overflow',visits:430,pct:20},{source:'Twitter',visits:290,pct:13},{source:'Direct',visits:180,pct:8}]}}
+        ],
+        trafficChart: [
+            {label:'Mar 21',views:890},{label:'Mar 22',views:1020},{label:'Mar 23',views:780},
+            {label:'Mar 24',views:1150},{label:'Mar 25',views:1340},{label:'Mar 26',views:980},
+            {label:'Mar 27',views:1200},{label:'Mar 28',views:1450},{label:'Mar 29',views:1100},
+            {label:'Mar 30',views:1380},{label:'Mar 31',views:1520},{label:'Apr 1',views:1680},
+            {label:'Apr 2',views:1420},{label:'Apr 3',views:960}
+        ],
+        get maxChartVal(){ return Math.max(...this.trafficChart.map(d=>d.views)); },
+        trafficSources: [
+            {name:'Organic Search',pct:48,color:'#38a169'},
+            {name:'Social Media',pct:24,color:'#1DA1F2'},
+            {name:'Direct',pct:14,color:'#ff6000'},
+            {name:'Referral',pct:10,color:'#8b5cf6'},
+            {name:'Email',pct:4,color:'#ff8f00'}
         ],
         showEditor:false, filter:'all', publishStatus:'', publishDetails:'',
         draft:{ title:'', category:'defi', content:'', sponsorship:'', revenue_share:10, target_repo:'Tokenomic-org/learn' },
         init() {},
         get filteredArticles() { return this.filter==='all' ? this.articles : this.articles.filter(a=>a.status===this.filter); },
-        editArticle(a) { this.draft={...a,target_repo:'Tokenomic-org/learn'}; this.showEditor=true; },
+        publishedArticles(){ return this.articles.filter(a=>a.status==='published'&&a.traffic); },
+        sortedPublishedArticles(){
+            var arts=this.publishedArticles().slice();
+            var f=this.sortField,d=this.sortDir==='asc'?1:-1;
+            arts.sort(function(a,b){
+                var va,vb;
+                if(f==='title'){va=a.title.toLowerCase();vb=b.title.toLowerCase();return va<vb?-d:va>vb?d:0;}
+                if(f==='views'){va=a.traffic.views;vb=b.traffic.views;}
+                else if(f==='visitors'){va=a.traffic.visitors;vb=b.traffic.visitors;}
+                else if(f==='revenue'){va=a.traffic.revenue;vb=b.traffic.revenue;}
+                else{va=a.traffic.views;vb=b.traffic.views;}
+                return (va-vb)*d;
+            });
+            return arts;
+        },
+        sortArticles(field){
+            if(this.sortField===field) this.sortDir=this.sortDir==='asc'?'desc':'asc';
+            else{this.sortField=field;this.sortDir='desc';}
+        },
+        getArticle(id){ return this.articles.find(a=>a.id===id)||this.articles[0]; },
+        totalTrafficStat(key){
+            var multiplier=this.analyticsPeriod==='7d'?0.25:this.analyticsPeriod==='30d'?1:this.analyticsPeriod==='90d'?2.8:4.2;
+            return Math.round(this.publishedArticles().reduce(function(s,a){return s+a.traffic[key];},0)*multiplier);
+        },
+        trafficTrend(key){
+            var trends={views:{7:12,30:18,90:24,all:0},visitors:{7:8,30:15,90:21,all:0}};
+            var p=this.analyticsPeriod==='7d'?7:this.analyticsPeriod==='30d'?30:this.analyticsPeriod==='90d'?90:'all';
+            return trends[key]?trends[key][p]||0:0;
+        },
+        avgReadTime(){
+            var arts=this.publishedArticles();if(!arts.length) return '0:00';
+            var total=arts.reduce(function(s,a){var p=a.traffic.avg_time.split(':');return s+parseInt(p[0])*60+parseInt(p[1]);},0);
+            var avg=Math.round(total/arts.length);return Math.floor(avg/60)+':'+(avg%60<10?'0':'')+avg%60;
+        },
+        avgBounceRate(){
+            var arts=this.publishedArticles();if(!arts.length) return 0;
+            return Math.round(arts.reduce(function(s,a){return s+parseFloat(a.traffic.bounce_rate);},0)/arts.length);
+        },
+        bounceTrend(){ return this.analyticsPeriod==='7d'?-3:this.analyticsPeriod==='30d'?-5:this.analyticsPeriod==='90d'?-8:0; },
+        totalRevenue(){
+            return this.publishedArticles().reduce(function(s,a){return s+a.traffic.revenue;},0);
+        },
+        sponsorRevenue(){
+            return this.publishedArticles().filter(function(a){return a.sponsorship;}).reduce(function(s,a){
+                var amt=a.sponsorship==='gold'?1000:a.sponsorship==='silver'?500:250;return s+amt;
+            },0);
+        },
+        adRevenue(){
+            return this.publishedArticles().reduce(function(s,a){return s+Math.round(a.traffic.views*0.012);},0);
+        },
+        yourShare(){
+            return this.publishedArticles().reduce(function(s,a){
+                var share=a.revenue_share?parseFloat(a.revenue_share)/100:0;return s+Math.round(a.traffic.revenue*share);
+            },0);
+        },
+        editArticle(a) { this.draft={...a,target_repo:a.target_repo||'Tokenomic-org/learn'}; this.showEditor=true; this.activeTab='editor'; },
         saveDraft() {
             if (!this.draft.title) return;
-            this.articles.unshift({ id:Date.now(), title:this.draft.title, category:this.draft.category, sponsorship:this.draft.sponsorship, revenue_share:this.draft.revenue_share, status:'draft', date:new Date().toISOString().split('T')[0], content:this.draft.content });
+            var existing=this.articles.find(a=>a.id===this.draft.id);
+            if(existing){Object.assign(existing,{title:this.draft.title,category:this.draft.category,sponsorship:this.draft.sponsorship,revenue_share:this.draft.revenue_share,content:this.draft.content,target_repo:this.draft.target_repo});}
+            else{this.articles.unshift({id:Date.now(),title:this.draft.title,category:this.draft.category,sponsorship:this.draft.sponsorship,revenue_share:this.draft.revenue_share,status:'draft',date:new Date().toISOString().split('T')[0],content:this.draft.content,target_repo:this.draft.target_repo||'Tokenomic-org/learn',github_url:'',live_url:'',traffic:null});}
             this.draft={ title:'', category:'defi', content:'', sponsorship:'', revenue_share:10, target_repo:'Tokenomic-org/learn' };
             this.showEditor=false;
         },
@@ -311,7 +664,12 @@ function articlesPage() {
             if (!this.draft.title||!this.draft.content) { alert('Add title and content.'); return; }
             this.publishStatus='Published successfully! (demo mode)';
             this.publishDetails='Set GITHUB_PERSONAL_ACCESS_TOKEN secret for live publishing.';
-            this.articles.unshift({ id:Date.now(), title:this.draft.title, category:this.draft.category, sponsorship:this.draft.sponsorship, revenue_share:this.draft.revenue_share, status:'published', date:new Date().toISOString().split('T')[0], content:this.draft.content });
+            var slug=this.draft.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+            var repo=this.draft.target_repo||'Tokenomic-org/learn';
+            var domain=repo.includes('learn')?'learn.tokenomic.org':'tokenomic.org';
+            this.articles.unshift({id:Date.now(),title:this.draft.title,category:this.draft.category,sponsorship:this.draft.sponsorship,revenue_share:this.draft.revenue_share,status:'published',date:new Date().toISOString().split('T')[0],content:this.draft.content,target_repo:repo,
+                github_url:'https://github.com/'+repo+'/blob/main/content/'+slug+'.md',live_url:'https://'+domain+'/'+slug,
+                traffic:{views:0,visitors:0,avg_time:'0:00',bounce_rate:'0%',shares:0,revenue:0,referrers:[]}});
             this.draft={ title:'', category:'defi', content:'', sponsorship:'', revenue_share:10, target_repo:'Tokenomic-org/learn' };
             this.showEditor=false;
         }
