@@ -75,56 +75,174 @@ permalink: /dashboard-courses/
                 </div>
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="coursesPage()">
+
+    <div id="course-toast-container" style="position:fixed;top:24px;right:24px;z-index:9999;"></div>
+
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-        <div style="display:flex;gap:8px;">
-            <button class="dash-btn" :class="viewMode==='manage'?'dash-btn-primary':'dash-btn-outline'" @click="viewMode='manage'">Manage Courses</button>
-            <button class="dash-btn" :class="viewMode==='learn'?'dash-btn-primary':'dash-btn-outline'" @click="viewMode='learn'">My Learning</button>
-            <button class="dash-btn" :class="viewMode==='certs'?'dash-btn-primary':'dash-btn-outline'" @click="viewMode='certs'">Certifications</button>
+        <div style="display:flex;gap:0;border-bottom:2px solid #f0f2f5;">
+            <button class="course-tab" :class="viewMode==='manage' && 'course-tab-active'" @click="viewMode='manage'">Manage Courses</button>
+            <button class="course-tab" :class="viewMode==='learn' && 'course-tab-active'" @click="viewMode='learn'">My Learning</button>
+            <button class="course-tab" :class="viewMode==='certs' && 'course-tab-active'" @click="viewMode='certs'">Certifications</button>
         </div>
-        <button class="dash-btn dash-btn-primary" x-show="viewMode==='manage'" @click="showCreate=!showCreate">+ New Course</button>
+        <button class="dash-btn dash-btn-primary" x-show="viewMode==='manage'" @click="showCreate=!showCreate" style="white-space:nowrap;">+ New Course</button>
     </div>
 
-    <!-- MANAGE VIEW -->
     <div x-show="viewMode==='manage'" x-transition>
+
     <div class="row clearfix" style="margin-bottom:20px;">
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="courses.length"></div><div class="stat-lbl">Total Courses</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="courses.filter(c=>c.status==='published').length"></div><div class="stat-lbl">Published</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="courses.reduce((s,c)=>s+c.enrolled,0)"></div><div class="stat-lbl">Enrolled Students</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="'$'+courses.reduce((s,c)=>s+c.price*c.enrolled,0)"></div><div class="stat-lbl">Gross Revenue</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;">
+            <div class="dash-stat">
+                <div class="stat-val" style="color:#f97316;" x-text="courses.length"></div>
+                <div class="stat-lbl">Total Courses</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;">
+            <div class="dash-stat">
+                <div class="stat-val" style="color:#10b981;" x-text="courses.filter(function(c){return c.status==='published'}).length"></div>
+                <div class="stat-lbl">Published</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;">
+            <div class="dash-stat">
+                <div class="stat-val" style="color:#3b82f6;" x-text="totalEnrolled"></div>
+                <div class="stat-lbl">Enrolled Students</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;">
+            <div class="dash-stat">
+                <div class="stat-val" x-text="'$'+totalRevenue"></div>
+                <div class="stat-lbl">Gross Revenue</div>
+            </div>
+        </div>
     </div>
 
-    <div x-show="showCreate" x-transition class="dash-card" style="margin-bottom:20px;">
-        <h4>Create Course</h4>
+    <div x-show="showCreate" x-transition x-cloak class="dash-card" style="margin-bottom:24px;border:1px solid #e2e8f0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h4 style="margin:0;">Create Course</h4>
+            <button @click="showCreate=false" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#5a8299;">&times;</button>
+        </div>
         <div class="row clearfix" style="margin-bottom:14px;">
-            <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Title</label><input x-model="nc.title" class="dash-input" placeholder="Course title" /></div>
-            <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Level</label><select x-model="nc.level" class="dash-input"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></div>
-            <div class="col-md-3"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Price (USDC)</label><input x-model="nc.price" type="number" class="dash-input" placeholder="0" /></div>
+            <div class="col-md-6">
+                <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Title <span style="color:#e53e3e;">*</span></label>
+                <input x-model="nc.title" @input="nc.slug=slugify(nc.title)" class="dash-input" placeholder="e.g. Introduction to DeFi" />
+            </div>
+            <div class="col-md-6">
+                <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Slug</label>
+                <input x-model="nc.slug" class="dash-input" placeholder="auto-generated-slug" style="font-family:monospace;font-size:0.85rem;" />
+            </div>
         </div>
-        <div style="margin-bottom:14px;"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Description</label><textarea x-model="nc.description" class="dash-input" rows="2" placeholder="Course description"></textarea></div>
-        <div style="display:flex;gap:8px;">
-            <button class="dash-btn dash-btn-primary" @click="create()">Create Course</button>
+        <div class="row clearfix" style="margin-bottom:14px;">
+            <div class="col-md-4">
+                <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Level</label>
+                <select x-model="nc.level" class="dash-input">
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                    <option value="expert">Expert</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Price (USDC)</label>
+                <input x-model="nc.priceUSDC" type="number" class="dash-input" placeholder="0" min="0" step="1" />
+            </div>
+            <div class="col-md-4">
+                <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Visibility</label>
+                <div style="display:flex;gap:8px;margin-top:4px;">
+                    <button @click="nc.visibility='public'" class="dash-btn" :class="nc.visibility==='public' ? 'dash-btn-primary' : 'dash-btn-outline'" style="flex:1;padding:8px 0;font-size:0.85rem;">Public</button>
+                    <button @click="nc.visibility='private'" class="dash-btn" :class="nc.visibility==='private' ? 'dash-btn-primary' : 'dash-btn-outline'" style="flex:1;padding:8px 0;font-size:0.85rem;">Private</button>
+                </div>
+            </div>
+        </div>
+        <div style="margin-bottom:14px;">
+            <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Description</label>
+            <textarea x-model="nc.description" class="dash-input" rows="3" placeholder="What will students learn in this course?"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <button class="dash-btn dash-btn-primary" @click="createCourse()" :disabled="creating" style="min-width:130px;">
+                <span x-text="creating ? 'Creating...' : 'Create Course'"></span>
+            </button>
             <button class="dash-btn dash-btn-outline" @click="showCreate=false">Cancel</button>
+            <span x-show="createError" x-text="createError" style="color:#e53e3e;font-size:0.85rem;margin-left:8px;"></span>
+        </div>
+        <div x-show="nc.slug" style="margin-top:12px;padding:10px 14px;background:#f8fafb;border-radius:6px;font-size:0.8rem;color:#5a8299;">
+            GitHub repo: <strong style="color:#0A0F1A;">tokenomic-course-<span x-text="nc.slug"></span></strong>
+            &nbsp;&bull;&nbsp; Public URL: <strong style="color:#f97316;">tokenomic.org/courses/<span x-text="nc.slug"></span></strong>
         </div>
     </div>
 
-    <div class="row clearfix">
-        <template x-for="course in courses" :key="course.id">
+    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+            <input x-model="searchQuery" @input="filterCourses()" class="dash-input" placeholder="Search courses..." style="width:100%;" />
+        </div>
+        <select x-model="filterLevel" @change="filterCourses()" class="dash-input" style="width:auto;min-width:140px;">
+            <option value="">All Levels</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+            <option value="expert">Expert</option>
+        </select>
+        <select x-model="filterStatus" @change="filterCourses()" class="dash-input" style="width:auto;min-width:140px;">
+            <option value="">All Status</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+        </select>
+    </div>
+
+    <div x-show="loading" style="text-align:center;padding:60px 40px;">
+        <div style="width:48px;height:48px;border:3px solid #f0f2f5;border-top-color:#f97316;border-radius:50%;animation:crspin 0.8s linear infinite;margin:0 auto 16px;"></div>
+        <p style="color:#5a8299;">Loading courses from GitHub...</p>
+    </div>
+
+    <div x-show="!loading && filtered.length === 0 && courses.length === 0" style="text-align:center;padding:60px 40px;">
+        <div style="width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#0A0F1A,#1a2332);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+            <svg width="48" height="48" fill="none" stroke="#f97316" stroke-width="2" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <h4 style="color:#0A0F1A;margin-bottom:8px;">Create your first course</h4>
+        <p style="color:#5a8299;max-width:400px;margin:0 auto 20px;">Build courses backed by GitHub repositories. Each course gets its own repo with modules, images, and GitHub Pages deployment.</p>
+        <button class="dash-btn dash-btn-primary" @click="showCreate=true">+ New Course</button>
+    </div>
+
+    <div x-show="!loading && filtered.length === 0 && courses.length > 0" style="text-align:center;padding:40px;">
+        <p style="color:#5a8299;">No courses match your search criteria.</p>
+    </div>
+
+    <div class="row clearfix" x-show="!loading && filtered.length > 0">
+        <template x-for="course in filtered" :key="course.id">
             <div class="col-lg-4 col-md-6 col-sm-12" style="margin-bottom:16px;">
-                <div class="dash-card">
-                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-                        <span class="dash-badge" :class="course.level==='advanced'?'dash-badge-danger':course.level==='intermediate'?'dash-badge-warning':'dash-badge-success'" x-text="course.level"></span>
-                        <span class="dash-badge" :class="course.status==='published'?'dash-badge-success':'dash-badge-warning'" x-text="course.status"></span>
+                <div class="dash-card course-card" style="border-top:3px solid;position:relative;" :style="'border-color:'+levelColor(course.level)">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <span class="course-badge" :style="'background:'+levelColor(course.level)+'20;color:'+levelColor(course.level)" x-text="levelLabel(course.level)"></span>
+                        <div style="display:flex;gap:4px;align-items:center;">
+                            <span class="course-badge" :style="course.status==='published' ? 'background:#10b98120;color:#10b981' : 'background:#f59e0b20;color:#f59e0b'" x-text="course.status"></span>
+                        </div>
                     </div>
-                    <h5 style="margin-bottom:6px;" x-text="course.title"></h5>
-                    <p style="color:#5a8299;font-size:0.85rem;margin-bottom:10px;" x-text="course.description"></p>
-                    <div style="padding:8px;background:#f5f7fa;border-radius:6px;margin-bottom:10px;">
-                        <div style="display:flex;justify-content:space-between;"><span style="color:#5a8299;font-size:0.8rem;">Modules</span><strong x-text="course.modules"></strong></div>
-                        <div style="display:flex;justify-content:space-between;"><span style="color:#5a8299;font-size:0.8rem;">Enrolled</span><strong x-text="course.enrolled"></strong></div>
-                        <div style="display:flex;justify-content:space-between;"><span style="color:#5a8299;font-size:0.8rem;">Completion</span><strong x-text="course.completion+'%'"></strong></div>
+                    <h5 style="margin:0 0 6px;font-size:0.95rem;" x-text="course.title"></h5>
+                    <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.4em;" x-text="course.description || 'No description'"></p>
+                    <div style="padding:8px 10px;background:#f8fafb;border-radius:6px;margin-bottom:10px;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                            <span style="color:#5a8299;font-size:0.8rem;">Modules</span>
+                            <strong style="font-size:0.85rem;" x-text="course.modules || 0"></strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                            <span style="color:#5a8299;font-size:0.8rem;">Enrolled</span>
+                            <strong style="font-size:0.85rem;color:#3b82f6;" x-text="course.enrolledCount || 0"></strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;">
+                            <span style="color:#5a8299;font-size:0.8rem;">Revenue</span>
+                            <strong style="font-size:0.85rem;color:#10b981;" x-text="'$'+((course.priceUSDC||0)*(course.enrolledCount||0))"></strong>
+                        </div>
                     </div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <strong style="color:#00a651;" x-text="course.price>0?'$'+course.price+' USDC':'Free'"></strong>
-                        <button class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.8rem;">Edit</button>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <strong :style="'color:'+(course.priceUSDC > 0 ? '#10b981' : '#5a8299')" x-text="course.priceUSDC > 0 ? '$'+course.priceUSDC+' USDC' : 'Free'"></strong>
+                    </div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <button class="dash-btn dash-btn-outline" style="padding:5px 10px;font-size:0.78rem;flex:1;" @click="editCourse(course)">Edit</button>
+                        <button class="dash-btn" :class="course.status==='published' ? 'dash-btn-outline' : 'dash-btn-primary'" style="padding:5px 10px;font-size:0.78rem;flex:1;" @click="togglePublish(course)">
+                            <span x-text="course.status==='published' ? 'Unpublish' : 'Publish'"></span>
+                        </button>
+                        <a :href="course.html_url" target="_blank" class="dash-btn dash-btn-outline" style="padding:5px 8px;font-size:0.78rem;" title="GitHub Repo">
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="vertical-align:middle;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -132,15 +250,14 @@ permalink: /dashboard-courses/
     </div>
     </div>
 
-    <!-- LEARNER PROGRESSION VIEW -->
     <div x-show="viewMode==='learn'" x-transition>
         <template x-if="enrolled.length>0">
-        <div class="dash-card" style="margin-bottom:20px;border-left:4px solid #ff6000;">
+        <div class="dash-card" style="margin-bottom:20px;border-left:4px solid #f97316;">
             <h4 style="margin-bottom:4px;">Continue Where You Left Off</h4>
             <p style="color:#5a8299;font-size:0.85rem;margin-bottom:16px;">Pick up your most recent course right where you stopped.</p>
             <div style="display:flex;align-items:center;gap:20px;padding:16px;background:#f5f7fa;border-radius:8px;flex-wrap:wrap;">
-                <div style="width:60px;height:60px;border-radius:12px;background:#001f29;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <span class="flaticon-notebook" style="color:#ff6000;font-size:1.5rem;"></span>
+                <div style="width:60px;height:60px;border-radius:12px;background:#0A0F1A;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <span class="flaticon-notebook" style="color:#f97316;font-size:1.5rem;"></span>
                 </div>
                 <div style="flex:1;min-width:200px;">
                     <h5 style="margin:0 0 4px 0;" x-text="enrolled[0].title"></h5>
@@ -150,7 +267,7 @@ permalink: /dashboard-courses/
                     <div style="position:relative;width:56px;height:56px;margin:0 auto 4px;">
                         <svg viewBox="0 0 36 36" style="width:56px;height:56px;transform:rotate(-90deg);">
                             <circle cx="18" cy="18" r="15.915" fill="none" stroke="#e0e0e0" stroke-width="3"></circle>
-                            <circle cx="18" cy="18" r="15.915" fill="none" stroke="#ff6000" stroke-width="3" :stroke-dasharray="enrolled[0].progress+' '+(100-enrolled[0].progress)" stroke-linecap="round"></circle>
+                            <circle cx="18" cy="18" r="15.915" fill="none" stroke="#f97316" stroke-width="3" :stroke-dasharray="enrolled[0].progress+' '+(100-enrolled[0].progress)" stroke-linecap="round"></circle>
                         </svg>
                         <span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:0.75rem;font-weight:700;color:#0A0F1A;" x-text="enrolled[0].progress+'%'"></span>
                     </div>
@@ -166,13 +283,13 @@ permalink: /dashboard-courses/
                 <div class="col-lg-6 col-sm-12" style="margin-bottom:16px;">
                     <div class="dash-card" style="display:flex;gap:16px;align-items:flex-start;">
                         <div style="width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"
-                            :style="'background:'+(course.progress===100?'#e8f5e9':'#001f29')">
-                            <span :class="course.progress===100?'flaticon-correct':'flaticon-notebook'" :style="'font-size:1.2rem;color:'+(course.progress===100?'#2e7d32':'#ff6000')"></span>
+                            :style="'background:'+(course.progress===100?'#dcfce7':'#0A0F1A')">
+                            <span :class="course.progress===100?'flaticon-correct':'flaticon-notebook'" :style="'font-size:1.2rem;color:'+(course.progress===100?'#16a34a':'#f97316')"></span>
                         </div>
                         <div style="flex:1;">
                             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
                                 <h5 style="margin:0;" x-text="course.title"></h5>
-                                <span class="dash-badge" :class="course.level==='advanced'?'dash-badge-danger':course.level==='intermediate'?'dash-badge-warning':'dash-badge-success'" x-text="course.level" style="flex-shrink:0;"></span>
+                                <span class="course-badge" :style="'background:'+levelColor(course.level)+'20;color:'+levelColor(course.level)" x-text="levelLabel(course.level)" style="flex-shrink:0;"></span>
                             </div>
                             <p style="color:#5a8299;font-size:0.8rem;margin:0 0 8px 0;">
                                 Module <span x-text="course.currentModule"></span>/<span x-text="course.totalModules"></span>
@@ -181,7 +298,7 @@ permalink: /dashboard-courses/
                             </p>
                             <div style="background:#e0e0e0;border-radius:6px;height:8px;overflow:hidden;">
                                 <div style="height:100%;border-radius:6px;transition:width 0.5s;"
-                                    :style="'width:'+course.progress+'%;background:'+(course.progress===100?'#2e7d32':'#ff6000')"></div>
+                                    :style="'width:'+course.progress+'%;background:'+(course.progress===100?'#16a34a':'#f97316')"></div>
                             </div>
                             <div style="display:flex;justify-content:space-between;margin-top:6px;">
                                 <span style="color:#5a8299;font-size:0.75rem;" x-text="course.progress+'% complete'"></span>
@@ -203,24 +320,23 @@ permalink: /dashboard-courses/
         </div>
     </div>
 
-    <!-- CERTIFICATIONS VIEW -->
     <div x-show="viewMode==='certs'" x-transition>
         <div class="row clearfix" style="margin-bottom:20px;">
-            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="certs.length"></div><div class="stat-lbl">Certifications Earned</div></div></div>
-            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="enrolled.filter(c=>c.progress===100).length"></div><div class="stat-lbl">Courses Completed</div></div></div>
-            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="enrolled.length"></div><div class="stat-lbl">Total Enrolled</div></div></div>
+            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#f97316;" x-text="certs.length"></div><div class="stat-lbl">Certifications Earned</div></div></div>
+            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#10b981;" x-text="enrolled.filter(function(c){return c.progress===100}).length"></div><div class="stat-lbl">Courses Completed</div></div></div>
+            <div class="col-lg-4 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#3b82f6;" x-text="enrolled.length"></div><div class="stat-lbl">Total Enrolled</div></div></div>
         </div>
 
         <template x-for="cert in certs" :key="cert.id">
             <div class="dash-card" style="margin-bottom:16px;border:2px solid #e0e0e0;position:relative;overflow:hidden;">
                 <div style="position:absolute;top:0;right:0;width:80px;height:80px;">
-                    <div style="position:absolute;top:12px;right:-22px;background:#ff6000;color:#fff;font-size:0.65rem;font-weight:700;padding:4px 28px;transform:rotate(45deg);text-transform:uppercase;">Verified</div>
+                    <div style="position:absolute;top:12px;right:-22px;background:#f97316;color:#fff;font-size:0.65rem;font-weight:700;padding:4px 28px;transform:rotate(45deg);text-transform:uppercase;">Verified</div>
                 </div>
-                <div style="display:flex;align-items:center;gap:20px;">
-                    <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#001f29,#003040);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:3px solid #ff6000;">
-                        <span class="flaticon-trophy" style="color:#ff6000;font-size:1.8rem;"></span>
+                <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+                    <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#0A0F1A,#1a2332);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:3px solid #f97316;">
+                        <span class="flaticon-trophy" style="color:#f97316;font-size:1.8rem;"></span>
                     </div>
-                    <div style="flex:1;">
+                    <div style="flex:1;min-width:200px;">
                         <p style="color:#5a8299;font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;margin:0 0 2px 0;">Tokenomic Certificate of Completion</p>
                         <h4 style="margin:0 0 4px 0;color:#0A0F1A;" x-text="cert.course"></h4>
                         <div style="display:flex;gap:16px;flex-wrap:wrap;">
@@ -248,35 +364,223 @@ permalink: /dashboard-courses/
             </div>
         </template>
     </div>
+
+    <template x-if="editingCourse">
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;" @click.self="editingCourse=null">
+        <div style="background:#fff;border-radius:12px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;padding:30px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h4 style="margin:0;" x-text="'Edit: ' + editingCourse.title"></h4>
+                <button @click="editingCourse=null" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#5a8299;">&times;</button>
+            </div>
+            <div style="margin-bottom:16px;">
+                <h5 style="margin-bottom:12px;">Modules</h5>
+                <div x-show="loadingModules" style="text-align:center;padding:20px;">
+                    <p style="color:#5a8299;">Loading modules...</p>
+                </div>
+                <div x-show="!loadingModules && editModules.length === 0" style="text-align:center;padding:20px;">
+                    <p style="color:#5a8299;">No modules found.</p>
+                </div>
+                <template x-for="(m, idx) in editModules" :key="idx">
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #f0f2f5;">
+                        <div style="width:32px;height:32px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.8rem;font-weight:700;" x-text="idx+1"></div>
+                        <div style="flex:1;">
+                            <strong style="font-size:0.9rem;" x-text="m.name"></strong>
+                            <div style="color:#5a8299;font-size:0.75rem;" x-text="(m.size || 0) + ' bytes'"></div>
+                        </div>
+                        <a :href="m.html_url" target="_blank" class="dash-btn dash-btn-outline" style="padding:4px 10px;font-size:0.75rem;">Edit on GitHub</a>
+                    </div>
+                </template>
+            </div>
+            <div style="padding-top:16px;border-top:1px solid #f0f2f5;display:flex;gap:8px;flex-wrap:wrap;">
+                <a :href="editingCourse.html_url" target="_blank" class="dash-btn dash-btn-primary" style="padding:8px 16px;font-size:0.85rem;">Open in GitHub</a>
+                <a :href="editingCourse.html_url + '/tree/main/modules'" target="_blank" class="dash-btn dash-btn-outline" style="padding:8px 16px;font-size:0.85rem;">Manage Modules</a>
+                <button class="dash-btn dash-btn-outline" @click="editingCourse=null" style="padding:8px 16px;font-size:0.85rem;margin-left:auto;">Close</button>
+            </div>
+        </div>
+    </div>
+    </template>
+
 </div>
+
+<style>
+@keyframes crspin { to { transform: rotate(360deg); } }
+.course-badge { padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;display:inline-block; }
+.course-card { transition:transform 0.15s,box-shadow 0.15s; }
+.course-card:hover { transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.1) !important; }
+.course-tab { padding:10px 20px;border:none;background:none;cursor:pointer;font-size:0.9rem;color:#5a8299;font-weight:500;border-bottom:2px solid transparent;transition:all 0.15s; }
+.course-tab:hover { color:#0A0F1A; }
+.course-tab-active { color:#f97316 !important;border-bottom-color:#f97316 !important; }
+.cr-toast { padding:12px 20px;border-radius:8px;color:#fff;font-size:0.9rem;margin-bottom:8px;animation:crslide 0.3s ease;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:flex;align-items:center;gap:8px; }
+.cr-toast-success { background:#10b981; }
+.cr-toast-error { background:#e53e3e; }
+@keyframes crslide { from { transform:translateX(100%);opacity:0; } to { transform:translateX(0);opacity:1; } }
+</style>
 
 <script>
 function coursesPage() {
     return {
-        viewMode:'learn',
-        courses:[
-            {id:1,title:'Introduction to DeFi',level:'beginner',description:'Core DeFi concepts, protocols, and how to interact safely.',modules:12,enrolled:87,completion:78,price:0,status:'published'},
-            {id:2,title:'Tokenomics Design Masterclass',level:'advanced',description:'Design sustainable token economies from first principles.',modules:8,enrolled:42,completion:65,price:150,status:'published'},
-            {id:3,title:'Smart Contract Security',level:'intermediate',description:'Learn to audit Solidity and detect common vulnerabilities.',modules:10,enrolled:56,completion:52,price:100,status:'published'},
-            {id:4,title:'DeFi Governance & DAOs',level:'intermediate',description:'On-chain governance, vote delegation, and DAO tooling.',modules:6,enrolled:31,completion:40,price:75,status:'published'},
-            {id:5,title:'Advanced Yield Strategies',level:'advanced',description:'Multi-protocol yield optimization and risk management.',modules:8,enrolled:24,completion:0,price:200,status:'draft'},
-            {id:6,title:'Blockchain Compliance',level:'beginner',description:'Regulatory landscape for digital assets and DeFi.',modules:5,enrolled:7,completion:0,price:50,status:'draft'}
-        ],
-        enrolled:[
+        viewMode: 'manage',
+        courses: [],
+        filtered: [],
+        loading: true,
+        showCreate: false,
+        creating: false,
+        createError: '',
+        searchQuery: '',
+        filterLevel: '',
+        filterStatus: '',
+        nc: { title: '', slug: '', level: 'beginner', priceUSDC: 0, description: '', visibility: 'public' },
+        totalEnrolled: 0,
+        totalRevenue: 0,
+        editingCourse: null,
+        editModules: [],
+        loadingModules: false,
+        enrolled: [
             {id:1,title:'Smart Contract Security',level:'intermediate',progress:68,currentModule:7,totalModules:10,currentLesson:'Reentrancy Attack Patterns',lastActivity:'2 hours ago'},
             {id:2,title:'Introduction to DeFi',level:'beginner',progress:100,currentModule:12,totalModules:12,currentLesson:'Final Assessment',lastActivity:'3 days ago'},
             {id:3,title:'DeFi Governance & DAOs',level:'intermediate',progress:33,currentModule:2,totalModules:6,currentLesson:'Vote Delegation Mechanics',lastActivity:'1 day ago'},
             {id:4,title:'Tokenomics Design Masterclass',level:'advanced',progress:12,currentModule:1,totalModules:8,currentLesson:'Token Supply Models',lastActivity:'5 days ago'}
         ],
-        certs:[
+        certs: [
             {id:1,course:'Introduction to DeFi',level:'Beginner',date:'Mar 28, 2026',wallet:'0x7a3B...f4E2',certId:'TKN-CERT-2026-0412',contractAddr:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'}
         ],
-        showCreate:false,
-        nc:{title:'',level:'beginner',price:'',description:''},
-        create(){
-            if(!this.nc.title)return;
-            this.courses.unshift({id:Date.now(),title:this.nc.title,level:this.nc.level,price:parseFloat(this.nc.price)||0,description:this.nc.description,modules:0,enrolled:0,completion:0,status:'draft'});
-            this.nc={title:'',level:'beginner',price:'',description:''};this.showCreate=false;
+
+        init() {
+            this.loadCourses();
+        },
+
+        slugify(text) {
+            return text.toLowerCase().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').replace(/^-+|-+$/g,'').substring(0,80);
+        },
+
+        levelColor(level) {
+            var colors = { 'beginner':'#10b981','intermediate':'#f59e0b','advanced':'#ef4444','expert':'#8b5cf6' };
+            return colors[level] || '#64748b';
+        },
+
+        levelLabel(level) {
+            var labels = { 'beginner':'Beginner','intermediate':'Intermediate','advanced':'Advanced','expert':'Expert' };
+            return labels[level] || level || 'Beginner';
+        },
+
+        getWallet() {
+            var el = document.querySelector('.wallet-status-text');
+            return (el && el.textContent && el.textContent.indexOf('0x') !== -1) ? el.textContent.trim() : '';
+        },
+
+        showToast(message, type) {
+            var container = document.getElementById('course-toast-container');
+            if (!container) return;
+            var toast = document.createElement('div');
+            toast.className = 'cr-toast cr-toast-' + (type || 'success');
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(function() { toast.remove(); }, 4000);
+        },
+
+        computeStats() {
+            var self = this;
+            self.totalEnrolled = self.courses.reduce(function(s,c){ return s + (c.enrolledCount || 0); }, 0);
+            self.totalRevenue = self.courses.reduce(function(s,c){ return s + ((c.priceUSDC || 0) * (c.enrolledCount || 0)); }, 0);
+        },
+
+        loadCourses() {
+            var self = this;
+            self.loading = true;
+            fetch('/api/courses')
+                .then(function(r) {
+                    if (!r.ok) throw new Error('Server error ' + r.status);
+                    return r.json();
+                })
+                .then(function(data) {
+                    if (data.error) { self.showToast(data.error, 'error'); self.courses = []; self.filtered = []; self.loading = false; return; }
+                    self.courses = data.courses || [];
+                    self.computeStats();
+                    self.filterCourses();
+                    self.loading = false;
+                })
+                .catch(function(err) {
+                    console.error('Failed to load courses:', err);
+                    self.showToast('Failed to load courses', 'error');
+                    self.courses = []; self.filtered = []; self.loading = false;
+                });
+        },
+
+        filterCourses() {
+            var self = this;
+            var q = self.searchQuery.toLowerCase();
+            self.filtered = self.courses.filter(function(c) {
+                if (q && (c.title||'').toLowerCase().indexOf(q) === -1 && (c.description||'').toLowerCase().indexOf(q) === -1) return false;
+                if (self.filterLevel && c.level !== self.filterLevel) return false;
+                if (self.filterStatus && c.status !== self.filterStatus) return false;
+                return true;
+            });
+        },
+
+        createCourse() {
+            if (!this.nc.title) return;
+            var self = this;
+            self.creating = true;
+            self.createError = '';
+            fetch('/api/courses', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: self.nc.title,
+                    slug: self.nc.slug || self.slugify(self.nc.title),
+                    level: self.nc.level,
+                    priceUSDC: parseFloat(self.nc.priceUSDC) || 0,
+                    description: self.nc.description,
+                    visibility: self.nc.visibility,
+                    wallet: self.getWallet()
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                self.creating = false;
+                if (data.error) { self.createError = data.error; return; }
+                self.courses.unshift(data.course);
+                self.computeStats();
+                self.filterCourses();
+                self.nc = { title: '', slug: '', level: 'beginner', priceUSDC: 0, description: '', visibility: 'public' };
+                self.showCreate = false;
+                self.showToast('Course created! Repo: ' + (data.course.repo_name || ''), 'success');
+            })
+            .catch(function() {
+                self.creating = false;
+                self.createError = 'Failed to create course. Check GitHub token.';
+            });
+        },
+
+        togglePublish(course) {
+            var self = this;
+            var newState = course.status !== 'published';
+            fetch('/api/courses/' + course.id + '/publish', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ published: newState })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.error) { self.showToast(data.error, 'error'); return; }
+                course.status = newState ? 'published' : 'draft';
+                self.showToast(newState ? 'Course published!' : 'Course unpublished', 'success');
+            })
+            .catch(function() { self.showToast('Failed to update publish status', 'error'); });
+        },
+
+        editCourse(course) {
+            var self = this;
+            self.editingCourse = course;
+            self.editModules = [];
+            self.loadingModules = true;
+            fetch('/api/courses/' + course.id + '/modules')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    self.editModules = data.modules || [];
+                    self.loadingModules = false;
+                })
+                .catch(function() { self.loadingModules = false; });
         }
     };
 }

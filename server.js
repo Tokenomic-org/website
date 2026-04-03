@@ -744,6 +744,275 @@ app.post('/api/communities/:slug/members', function(req, res) {
     });
 });
 
+var COURSE_TOPIC = 'tokenomic-course';
+var COURSE_REPO_PREFIX = 'tokenomic-course-';
+
+app.get('/api/courses', function(req, res) {
+    if (!process.env.GITHUB_PERSONAL_ACCESS_TOKEN) {
+        return res.json({ courses: [], warning: 'GitHub token not configured' });
+    }
+    var q = 'topic:' + COURSE_TOPIC + ' org:' + GITHUB_ORG;
+    var searchPath = '/search/repositories?q=' + encodeURIComponent(q) + '&per_page=100&sort=created&order=desc';
+    ghRequest('GET', searchPath, null, function(err, data, status) {
+        if (err) return res.status(500).json({ error: 'GitHub API error: ' + err.message });
+        if (status !== 200) return res.status(status).json({ error: data.message || 'GitHub search failed' });
+        var courses = (data.items || []).map(function(repo) {
+            var slug = repo.name.replace(COURSE_REPO_PREFIX, '');
+            return {
+                id: slug,
+                repo_name: repo.name,
+                name: slug,
+                title: slug,
+                description: repo.description || '',
+                level: 'beginner',
+                priceUSDC: 0,
+                status: 'draft',
+                enrolledCount: 0,
+                revenue: 0,
+                modules: 0,
+                visibility: repo.private ? 'private' : 'public',
+                created_at: repo.created_at,
+                updated_at: repo.updated_at,
+                html_url: repo.html_url,
+                full_name: repo.full_name,
+                has_pages: repo.has_pages || false
+            };
+        });
+        var pending = courses.length;
+        if (pending === 0) return res.json({ courses: [] });
+        courses.forEach(function(c) {
+            var metaPath = '/repos/' + GITHUB_ORG + '/' + c.repo_name + '/contents/course.json';
+            ghRequest('GET', metaPath, null, function(err2, fileData, s2) {
+                if (!err2 && s2 === 200 && fileData.content) {
+                    try {
+                        var meta = JSON.parse(Buffer.from(fileData.content, 'base64').toString('utf-8'));
+                        c.title = meta.title || c.title;
+                        c.name = meta.title || c.name;
+                        c.level = meta.level || c.level;
+                        c.priceUSDC = meta.priceUSDC || 0;
+                        c.description = meta.description || c.description;
+                        c.status = meta.published ? 'published' : 'draft';
+                        c.enrolledCount = meta.enrolledCount || 0;
+                        c.revenue = meta.revenue || 0;
+                        c.educatorWallet = meta.educatorWallet || '';
+                    } catch(e) {}
+                }
+                var modulesPath = '/repos/' + GITHUB_ORG + '/' + c.repo_name + '/contents/modules';
+                ghRequest('GET', modulesPath, null, function(err3, modData, s3) {
+                    if (!err3 && s3 === 200 && Array.isArray(modData)) {
+                        c.modules = modData.filter(function(f) { return f.name.endsWith('.md'); }).length;
+                    }
+                    pending--;
+                    if (pending === 0) {
+                        courses.sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+                        res.json({ courses: courses });
+                    }
+                });
+            });
+        });
+    });
+});
+
+app.get('/api/courses/:slug', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!slug) return res.status(400).json({ error: 'Invalid course slug' });
+    var repoName = COURSE_REPO_PREFIX + slug;
+    ghRequest('GET', '/repos/' + GITHUB_ORG + '/' + repoName, null, function(err, repo, status) {
+        if (err) return res.status(500).json({ error: 'GitHub API error' });
+        if (status === 404) return res.status(404).json({ error: 'Course not found' });
+        if (status !== 200) return res.status(status).json({ error: repo.message || 'Failed to fetch course' });
+        var course = {
+            id: slug, repo_name: repoName, title: slug, description: repo.description || '',
+            level: 'beginner', priceUSDC: 0, status: 'draft', enrolledCount: 0, revenue: 0, modules: 0,
+            visibility: repo.private ? 'private' : 'public', created_at: repo.created_at,
+            html_url: repo.html_url, full_name: repo.full_name, has_pages: repo.has_pages || false
+        };
+        ghRequest('GET', '/repos/' + GITHUB_ORG + '/' + repoName + '/contents/course.json', null, function(err2, fileData, s2) {
+            if (!err2 && s2 === 200 && fileData.content) {
+                try {
+                    var meta = JSON.parse(Buffer.from(fileData.content, 'base64').toString('utf-8'));
+                    course.title = meta.title || course.title;
+                    course.level = meta.level || course.level;
+                    course.priceUSDC = meta.priceUSDC || 0;
+                    course.description = meta.description || course.description;
+                    course.status = meta.published ? 'published' : 'draft';
+                    course.enrolledCount = meta.enrolledCount || 0;
+                    course.revenue = meta.revenue || 0;
+                    course.educatorWallet = meta.educatorWallet || '';
+                } catch(e) {}
+            }
+            res.json(course);
+        });
+    });
+});
+
+app.post('/api/courses', function(req, res) {
+    var token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+    if (!token) return res.status(400).json({ error: 'GitHub token not configured. Set GITHUB_PERSONAL_ACCESS_TOKEN.' });
+    var VALID_LEVELS = ['beginner', 'intermediate', 'advanced', 'expert'];
+    var title = (req.body.title || '').trim().substring(0, 200);
+    var slug = (req.body.slug || '').trim() || makeSlug(title);
+    slug = makeSlug(slug).substring(0, 80);
+    var level = VALID_LEVELS.indexOf(req.body.level) !== -1 ? req.body.level : 'beginner';
+    var priceUSDC = Math.max(0, Math.min(parseFloat(req.body.priceUSDC) || 0, 999999));
+    var description = (req.body.description || '').trim().substring(0, 2000);
+    var visibility = req.body.visibility === 'private' ? 'private' : 'public';
+    var wallet = (req.body.wallet || '').trim().substring(0, 42);
+    if (!title) return res.status(400).json({ error: 'Course title is required' });
+    if (!slug || slug.length < 2) return res.status(400).json({ error: 'Course title must contain at least 2 alphanumeric characters' });
+    var repoName = COURSE_REPO_PREFIX + slug;
+    var isPrivate = visibility === 'private';
+    var courseMeta = {
+        title: title, slug: slug, level: level, priceUSDC: priceUSDC,
+        description: description, educatorWallet: wallet,
+        createdAt: new Date().toISOString(), published: false,
+        enrolledCount: 0, revenue: 0
+    };
+    var readmeContent = '# ' + title + '\n\n' + (description || 'A Tokenomic course.') + '\n\n' +
+        '## Course Details\n\n' +
+        '- **Level**: ' + level.charAt(0).toUpperCase() + level.slice(1) + '\n' +
+        '- **Price**: ' + (priceUSDC > 0 ? priceUSDC + ' USDC' : 'Free') + '\n' +
+        '- **Created**: ' + courseMeta.createdAt + '\n\n' +
+        '## Modules\n\n' +
+        'Check the `modules/` folder for lesson content.\n\n' +
+        '## Links\n\n' +
+        '- [Course Dashboard](https://tokenomic.org/dashboard-courses/)\n' +
+        '- [Public Page](https://tokenomic.org/courses/' + slug + ')\n';
+    var moduleTemplate = '---\ntitle: "Module 1: Getting Started"\norder: 1\n---\n\n' +
+        '# Module 1: Getting Started\n\n' +
+        'Welcome to **' + title + '**!\n\n' +
+        '## Learning Objectives\n\n' +
+        '- Understand the fundamentals\n' +
+        '- Complete the first exercise\n\n' +
+        '## Content\n\n' +
+        'Add your lesson content here using Markdown.\n\n' +
+        '## Quiz\n\n' +
+        '1. What is the main concept covered in this module?\n';
+    var deployYml = 'name: Deploy to GitHub Pages\n' +
+        'on:\n  push:\n    branches: [main]\n' +
+        'permissions:\n  contents: read\n  pages: write\n  id-token: write\n' +
+        'jobs:\n  deploy:\n    runs-on: ubuntu-latest\n' +
+        '    steps:\n' +
+        '      - uses: actions/checkout@v4\n' +
+        '      - uses: actions/configure-pages@v4\n' +
+        '      - uses: actions/upload-pages-artifact@v3\n' +
+        '        with:\n          path: \".\"\n' +
+        '      - uses: actions/deploy-pages@v4\n';
+    var enrolledData = JSON.stringify({ enrolled: [] }, null, 2);
+    ghRequest('POST', '/orgs/' + GITHUB_ORG + '/repos', {
+        name: repoName, description: title + ' | ' + level + ' | ' + (priceUSDC > 0 ? priceUSDC + ' USDC' : 'Free'),
+        private: isPrivate, auto_init: false, has_issues: true, has_projects: false, has_wiki: false
+    }, function(err, repoData, status) {
+        if (err) return res.status(500).json({ error: 'GitHub API error: ' + err.message });
+        if (status === 422) return res.status(409).json({ error: 'A course with this name already exists on GitHub' });
+        if (status !== 201) return res.status(status).json({ error: repoData.message || 'Failed to create repository' });
+        ghRequest('PUT', '/repos/' + GITHUB_ORG + '/' + repoName + '/topics', {
+            names: [COURSE_TOPIC, 'tokenomic', level]
+        }, function() {
+            var files = [
+                { path: 'README.md', content: readmeContent },
+                { path: 'course.json', content: JSON.stringify(courseMeta, null, 2) },
+                { path: 'modules/module-01.md', content: moduleTemplate },
+                { path: 'images/.gitkeep', content: '' },
+                { path: '.github/workflows/deploy.yml', content: deployYml },
+                { path: 'enrolled.json', content: enrolledData }
+            ];
+            var treeItems = files.map(function(f) {
+                return { path: f.path, mode: '100644', type: 'blob', content: f.content };
+            });
+            ghRequest('POST', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/trees', {
+                tree: treeItems
+            }, function(err3, treeData, s3) {
+                if (err3 || s3 !== 201) {
+                    return res.json({ success: true, course: {
+                        id: slug, repo_name: repoName, title: title, level: level, priceUSDC: priceUSDC,
+                        description: description, status: 'draft', enrolledCount: 0, revenue: 0, modules: 1,
+                        visibility: visibility, created_at: courseMeta.createdAt,
+                        html_url: repoData.html_url, full_name: repoData.full_name, educatorWallet: wallet
+                    }, warning: 'Repo created but initial files may not have been committed' });
+                }
+                ghRequest('POST', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/commits', {
+                    message: 'Initialize Tokenomic course: ' + title, tree: treeData.sha
+                }, function(err4, commitData, s4) {
+                    if (err4 || s4 !== 201) {
+                        return res.json({ success: true, course: {
+                            id: slug, repo_name: repoName, title: title, level: level, priceUSDC: priceUSDC,
+                            description: description, status: 'draft', enrolledCount: 0, revenue: 0, modules: 1,
+                            visibility: visibility, created_at: courseMeta.createdAt,
+                            html_url: repoData.html_url, full_name: repoData.full_name, educatorWallet: wallet
+                        }, warning: 'Repo created but commit may have failed' });
+                    }
+                    ghRequest('PATCH', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/refs/heads/main', {
+                        sha: commitData.sha
+                    }, function(err5, refData, s5) {
+                        if (s5 === 422 || s5 === 404) {
+                            ghRequest('POST', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/refs', {
+                                ref: 'refs/heads/main', sha: commitData.sha
+                            }, function() {
+                                res.json({ success: true, course: {
+                                    id: slug, repo_name: repoName, title: title, level: level, priceUSDC: priceUSDC,
+                                    description: description, status: 'draft', enrolledCount: 0, revenue: 0, modules: 1,
+                                    visibility: visibility, created_at: courseMeta.createdAt,
+                                    html_url: repoData.html_url, full_name: repoData.full_name, educatorWallet: wallet
+                                }});
+                            });
+                        } else {
+                            res.json({ success: true, course: {
+                                id: slug, repo_name: repoName, title: title, level: level, priceUSDC: priceUSDC,
+                                description: description, status: 'draft', enrolledCount: 0, revenue: 0, modules: 1,
+                                visibility: visibility, created_at: courseMeta.createdAt,
+                                html_url: repoData.html_url, full_name: repoData.full_name, educatorWallet: wallet
+                            }});
+                        }
+                    });
+                });
+            });
+        });
+    });
+});
+
+app.patch('/api/courses/:slug/publish', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!slug) return res.status(400).json({ error: 'Invalid course slug' });
+    var repoName = COURSE_REPO_PREFIX + slug;
+    var publish = req.body.published !== false;
+    var metaPath = '/repos/' + GITHUB_ORG + '/' + repoName + '/contents/course.json';
+    ghRequest('GET', metaPath, null, function(err, fileData, status) {
+        if (err || status !== 200) return res.status(status || 500).json({ error: 'Failed to fetch course metadata' });
+        try {
+            var meta = JSON.parse(Buffer.from(fileData.content, 'base64').toString('utf-8'));
+            meta.published = publish;
+            var updated = Buffer.from(JSON.stringify(meta, null, 2)).toString('base64');
+            ghRequest('PUT', metaPath, {
+                message: (publish ? 'Publish' : 'Unpublish') + ' course: ' + (meta.title || slug),
+                content: updated, sha: fileData.sha
+            }, function(err2, putData, s2) {
+                if (err2 || (s2 !== 200 && s2 !== 201)) return res.status(s2 || 500).json({ error: 'Failed to update course' });
+                res.json({ success: true, published: publish });
+            });
+        } catch(e) {
+            res.status(500).json({ error: 'Failed to parse course metadata' });
+        }
+    });
+});
+
+app.get('/api/courses/:slug/modules', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!slug) return res.status(400).json({ error: 'Invalid course slug' });
+    var repoName = COURSE_REPO_PREFIX + slug;
+    ghRequest('GET', '/repos/' + GITHUB_ORG + '/' + repoName + '/contents/modules', null, function(err, data, status) {
+        if (err) return res.status(500).json({ error: 'GitHub API error' });
+        if (status === 404) return res.json({ modules: [] });
+        if (status !== 200) return res.status(status).json({ error: 'Failed to fetch modules' });
+        var modules = (Array.isArray(data) ? data : [])
+            .filter(function(f) { return f.name.endsWith('.md'); })
+            .map(function(f) {
+                return { name: f.name, path: f.path, sha: f.sha, size: f.size, html_url: f.html_url };
+            });
+        res.json({ modules: modules });
+    });
+});
+
 app.post('/api/profile/upload-photo', function(req, res) {
     var photoData = req.body.photo;
     var walletAddress = req.body.wallet;
