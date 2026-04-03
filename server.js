@@ -494,7 +494,12 @@ app.post('/api/profile/upload-photo', function(req, res) {
 });
 
 app.use(express.static(path.join(__dirname, '_site'), {
-    extensions: ['html']
+    extensions: ['html'],
+    setHeaders: function(res, filePath) {
+        if (filePath.endsWith('.xml')) {
+            res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+        }
+    }
 }));
 
 var SITE_ROOT = path.resolve(path.join(__dirname, '_site'));

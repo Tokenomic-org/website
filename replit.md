@@ -17,6 +17,12 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - **Excludes**: `website/`, `vendor/`, `node_modules/`, `attached_assets/`, `.local/` excluded in `_config.yml`
 - **Important**: `_site/` is in `.gitignore` — GitHub Pages rebuilds it. Run `git rm --cached -r _site/` once to untrack the previously committed `_site/` directory.
 
+## SEO & Feeds
+- **RSS Feed** (`/feed.xml`) — RSS 2.0 feed with all 16 learn articles, auto-discoverable via `<link rel="alternate">` in every page `<head>`
+- **Sitemap** (`/sitemap.xml`) — XML sitemap with 28 URLs (12 main pages + 16 articles), priorities and change frequencies set per page type
+- **Robots.txt** (`/robots.txt`) — Allows all crawlers, points to sitemap
+- All three files live in `_site/` and are served as static files by Express with proper `application/xml` content type
+
 ## Key Directories
 - `_site/` — Pre-built static output (served directly in Replit, rebuilt by GitHub Pages)
 - `_layouts/` — `default`, `page`, `post`, `category`, `tag_page`, `dashboard`
