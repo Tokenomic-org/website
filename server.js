@@ -273,184 +273,475 @@ app.get('/api/admin/stats', requireAdmin, function(req, res) {
     });
 });
 
-var COMMUNITIES_DIR = path.join(__dirname, 'global-community');
+var GITHUB_ORG = 'Tokenomic-org';
+var COMMUNITY_TOPIC = 'tokenomic-community';
+var COMMUNITY_REPO_PREFIX = 'tokenomic-community-';
 
-app.get('/api/communities', function(req, res) {
-    try {
-        if (!fs.existsSync(COMMUNITIES_DIR)) {
-            return res.json({ communities: [] });
+function ghRequest(method, apiPath, body, callback) {
+    var token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+    if (!token) return callback(new Error('GITHUB_PERSONAL_ACCESS_TOKEN not configured'), null, 0);
+    var payload = body ? JSON.stringify(body) : '';
+    var options = {
+        hostname: 'api.github.com',
+        path: apiPath,
+        method: method,
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'User-Agent': 'Tokenomic-Dashboard',
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
         }
-        var dirs = fs.readdirSync(COMMUNITIES_DIR, { withFileTypes: true })
-            .filter(function(d) { return d.isDirectory(); })
-            .map(function(d) { return d.name; });
-
-        var communities = [];
-        dirs.forEach(function(dirName) {
-            var communityFile = path.join(COMMUNITIES_DIR, dirName, 'community.json');
-            if (fs.existsSync(communityFile)) {
-                try {
-                    var data = JSON.parse(fs.readFileSync(communityFile, 'utf-8'));
-                    data.id = data.id || dirName;
-                    var commentsFile = path.join(COMMUNITIES_DIR, dirName, 'comments.json');
-                    if (fs.existsSync(commentsFile)) {
-                        var comments = JSON.parse(fs.readFileSync(commentsFile, 'utf-8'));
-                        data.comments_count = comments.length;
-                    } else {
-                        data.comments_count = 0;
-                    }
-                    communities.push(data);
-                } catch(e) {
-                    console.error('Error reading community ' + dirName + ':', e.message);
-                }
+    };
+    if (payload) options.headers['Content-Length'] = Buffer.byteLength(payload);
+    var req = https.request(options, function(resp) {
+        var data = '';
+        resp.on('data', function(c) { data += c; });
+        resp.on('end', function() {
+            try {
+                var parsed = data ? JSON.parse(data) : {};
+                callback(null, parsed, resp.statusCode);
+            } catch(e) {
+                callback(null, { raw: data }, resp.statusCode);
             }
         });
+    });
+    req.on('error', function(e) { callback(e, null, 0); });
+    if (payload) req.write(payload);
+    req.end();
+}
 
-        communities.sort(function(a, b) {
-            return new Date(b.created_at) - new Date(a.created_at);
-        });
-
-        res.json({ communities: communities });
-    } catch(err) {
-        console.error('List communities error:', err.message);
-        res.status(500).json({ error: 'Failed to load communities' });
-    }
-});
-
-app.get('/api/communities/:id', function(req, res) {
-    var communityId = req.params.id.replace(/[^a-zA-Z0-9-_]/g, '');
-    if (!communityId) return res.status(400).json({ error: 'Invalid community ID' });
-    var communityDir = path.join(COMMUNITIES_DIR, communityId);
-
-    if (!fs.existsSync(communityDir)) {
-        return res.status(404).json({ error: 'Community not found' });
-    }
-
-    try {
-        var data = JSON.parse(fs.readFileSync(path.join(communityDir, 'community.json'), 'utf-8'));
-        data.id = data.id || communityId;
-
-        var commentsFile = path.join(communityDir, 'comments.json');
-        data.comments = fs.existsSync(commentsFile)
-            ? JSON.parse(fs.readFileSync(commentsFile, 'utf-8'))
-            : [];
-
-        res.json(data);
-    } catch(err) {
-        console.error('Get community error:', err.message);
-        res.status(500).json({ error: 'Failed to load community' });
-    }
-});
-
-app.post('/api/communities', function(req, res) {
-    var name = (req.body.name || '').trim();
-    var type = req.body.type || 'institution';
-    var access = req.body.access || 'open';
-    var description = (req.body.description || '').trim();
-    var wallet = req.body.wallet || '';
-
-    if (!name) {
-        return res.status(400).json({ error: 'Community name is required' });
-    }
-
-    var slug = name.toLowerCase()
+function makeSlug(name) {
+    return name.toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
         .replace(/^-+|-+$/g, '')
         .substring(0, 80);
+}
 
-    if (!slug || slug.length < 2) {
-        return res.status(400).json({ error: 'Community name must contain at least 2 alphanumeric characters' });
+app.get('/api/communities', function(req, res) {
+    if (!process.env.GITHUB_PERSONAL_ACCESS_TOKEN) {
+        return res.json({ communities: [], warning: 'GitHub token not configured' });
     }
+    var q = 'topic:' + COMMUNITY_TOPIC + ' org:' + GITHUB_ORG;
+    var searchPath = '/search/repositories?q=' + encodeURIComponent(q) + '&per_page=100&sort=created&order=desc';
+    ghRequest('GET', searchPath, null, function(err, data, status) {
+        if (err) return res.status(500).json({ error: 'GitHub API error: ' + err.message });
+        if (status !== 200) return res.status(status).json({ error: data.message || 'GitHub search failed' });
+        var communities = (data.items || []).map(function(repo) {
+            var slug = repo.name.replace(COMMUNITY_REPO_PREFIX, '');
+            return {
+                id: slug,
+                repo_name: repo.name,
+                name: repo.description ? repo.description.split(' | ')[0] : slug,
+                description: repo.description || '',
+                type: 'general',
+                access: repo.private ? 'invite' : 'open',
+                visibility: repo.private ? 'private' : 'public',
+                members_count: 0,
+                discussions_count: repo.open_issues_count || 0,
+                created_at: repo.created_at,
+                updated_at: repo.updated_at,
+                html_url: repo.html_url,
+                full_name: repo.full_name
+            };
+        });
+        var pending = communities.length;
+        if (pending === 0) return res.json({ communities: [] });
+        communities.forEach(function(c, i) {
+            var metaPath = '/repos/' + GITHUB_ORG + '/' + c.repo_name + '/contents/.tokenomic/community.json';
+            ghRequest('GET', metaPath, null, function(err2, fileData, s2) {
+                if (!err2 && s2 === 200 && fileData.content) {
+                    try {
+                        var decoded = Buffer.from(fileData.content, 'base64').toString('utf-8');
+                        var meta = JSON.parse(decoded);
+                        c.name = meta.name || c.name;
+                        c.type = meta.type || c.type;
+                        c.access = meta.access || c.access;
+                        c.description = meta.description || c.description;
+                        c.members_count = meta.memberCount || 0;
+                        c.creator_wallet = meta.creatorWallet || '';
+                    } catch(e) {}
+                }
+                pending--;
+                if (pending === 0) {
+                    communities.sort(function(a, b) {
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    });
+                    res.json({ communities: communities });
+                }
+            });
+        });
+    });
+});
 
-    var communityDir = path.join(COMMUNITIES_DIR, slug);
-    if (fs.existsSync(communityDir)) {
-        return res.status(409).json({ error: 'A community with a similar name already exists' });
-    }
-
-    try {
-        fs.mkdirSync(communityDir, { recursive: true });
-
-        var communityData = {
+app.get('/api/communities/:slug', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!slug) return res.status(400).json({ error: 'Invalid community slug' });
+    var repoName = COMMUNITY_REPO_PREFIX + slug;
+    ghRequest('GET', '/repos/' + GITHUB_ORG + '/' + repoName, null, function(err, repo, status) {
+        if (err) return res.status(500).json({ error: 'GitHub API error' });
+        if (status === 404) return res.status(404).json({ error: 'Community not found' });
+        if (status !== 200) return res.status(status).json({ error: repo.message || 'Failed to fetch community' });
+        var community = {
             id: slug,
-            name: name,
-            type: type,
-            access: access,
-            description: description,
-            members_count: 1,
-            educator_wallet: wallet,
-            created_at: new Date().toISOString()
+            repo_name: repoName,
+            name: slug,
+            description: repo.description || '',
+            type: 'general',
+            access: repo.private ? 'invite' : 'open',
+            visibility: repo.private ? 'private' : 'public',
+            members_count: 0,
+            discussions_count: repo.open_issues_count || 0,
+            created_at: repo.created_at,
+            html_url: repo.html_url,
+            full_name: repo.full_name
         };
-
-        fs.writeFileSync(path.join(communityDir, 'community.json'), JSON.stringify(communityData, null, 2));
-        fs.writeFileSync(path.join(communityDir, 'comments.json'), '[]');
-
-        communityData.comments_count = 0;
-        res.json({ success: true, community: communityData });
-    } catch(err) {
-        console.error('Create community error:', err.message);
-        res.status(500).json({ error: 'Failed to create community' });
-    }
+        var metaPath = '/repos/' + GITHUB_ORG + '/' + repoName + '/contents/.tokenomic/community.json';
+        ghRequest('GET', metaPath, null, function(err2, fileData, s2) {
+            if (!err2 && s2 === 200 && fileData.content) {
+                try {
+                    var meta = JSON.parse(Buffer.from(fileData.content, 'base64').toString('utf-8'));
+                    community.name = meta.name || community.name;
+                    community.type = meta.type || community.type;
+                    community.access = meta.access || community.access;
+                    community.description = meta.description || community.description;
+                    community.members_count = meta.memberCount || 0;
+                    community.creator_wallet = meta.creatorWallet || '';
+                } catch(e) {}
+            }
+            res.json(community);
+        });
+    });
 });
 
-app.get('/api/communities/:id/comments', function(req, res) {
-    var communityId = req.params.id.replace(/[^a-zA-Z0-9-_]/g, '');
-    if (!communityId) return res.status(400).json({ error: 'Invalid community ID' });
-    var commentsFile = path.join(COMMUNITIES_DIR, communityId, 'comments.json');
+app.post('/api/communities', function(req, res) {
+    var token = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+    if (!token) return res.status(400).json({ error: 'GitHub token not configured. Set GITHUB_PERSONAL_ACCESS_TOKEN.' });
 
-    if (!fs.existsSync(commentsFile)) {
-        return res.status(404).json({ error: 'Community not found' });
-    }
-
-    try {
-        var comments = JSON.parse(fs.readFileSync(commentsFile, 'utf-8'));
-        res.json({ comments: comments });
-    } catch(err) {
-        console.error('Get comments error:', err.message);
-        res.status(500).json({ error: 'Failed to load comments' });
-    }
-});
-
-app.post('/api/communities/:id/comments', function(req, res) {
-    var communityId = req.params.id.replace(/[^a-zA-Z0-9-_]/g, '');
-    if (!communityId) return res.status(400).json({ error: 'Invalid community ID' });
-    var communityDir = path.join(COMMUNITIES_DIR, communityId);
-    var commentsFile = path.join(communityDir, 'comments.json');
-
-    if (!fs.existsSync(communityDir)) {
-        return res.status(404).json({ error: 'Community not found' });
-    }
-
-    var text = (req.body.text || '').trim();
-    var author = (req.body.author || 'Anonymous').trim();
+    var name = (req.body.name || '').trim();
+    var slug = (req.body.slug || '').trim() || makeSlug(name);
+    slug = makeSlug(slug);
+    var type = req.body.type || 'general';
+    var access = req.body.access || 'open';
+    var description = (req.body.description || '').trim();
+    var visibility = req.body.visibility || 'public';
     var wallet = (req.body.wallet || '').trim();
 
-    if (!text) {
-        return res.status(400).json({ error: 'Comment text is required' });
-    }
+    if (!name) return res.status(400).json({ error: 'Community name is required' });
+    if (!slug || slug.length < 2) return res.status(400).json({ error: 'Community name must contain at least 2 alphanumeric characters' });
 
-    try {
-        var comments = [];
-        if (fs.existsSync(commentsFile)) {
-            comments = JSON.parse(fs.readFileSync(commentsFile, 'utf-8'));
+    var repoName = COMMUNITY_REPO_PREFIX + slug;
+    var isPrivate = visibility === 'private';
+
+    var communityMeta = {
+        name: name,
+        slug: slug,
+        type: type,
+        access: access,
+        description: description,
+        creatorWallet: wallet,
+        createdAt: new Date().toISOString(),
+        memberCount: 1
+    };
+
+    var readmeContent = '---\n' +
+        'name: "' + name.replace(/"/g, '\\"') + '"\n' +
+        'type: ' + type + '\n' +
+        'access: ' + access + '\n' +
+        'created: ' + communityMeta.createdAt + '\n' +
+        '---\n\n' +
+        '# ' + name + '\n\n' +
+        (description || 'A Tokenomic learning community.') + '\n\n' +
+        '## About\n\n' +
+        'This is a Tokenomic community repository. All community data, members, and resources are managed through this repo.\n\n' +
+        '## Links\n\n' +
+        '- [Community Dashboard](https://tokenomic.org/dashboard-communities/)\n' +
+        '- [Public Page](https://tokenomic.org/communities/' + slug + ')\n';
+
+    var membersData = JSON.stringify({
+        members: [
+            { wallet: wallet || 'creator', role: 'admin', joinedAt: communityMeta.createdAt }
+        ]
+    }, null, 2);
+
+    var resourcesReadme = '# Resources\n\nShared files, courses, and articles for this community.\n';
+
+    ghRequest('POST', '/orgs/' + GITHUB_ORG + '/repos', {
+        name: repoName,
+        description: name + ' | ' + type + ' | ' + access,
+        private: isPrivate,
+        auto_init: false,
+        has_issues: true,
+        has_projects: false,
+        has_wiki: false
+    }, function(err, repoData, status) {
+        if (err) return res.status(500).json({ error: 'GitHub API error: ' + err.message });
+        if (status === 422) return res.status(409).json({ error: 'A community with this name already exists on GitHub' });
+        if (status !== 201) return res.status(status).json({ error: repoData.message || 'Failed to create repository' });
+
+        ghRequest('PUT', '/repos/' + GITHUB_ORG + '/' + repoName + '/topics', {
+            names: [COMMUNITY_TOPIC, 'tokenomic', type]
+        }, function() {
+            var files = [
+                { path: 'README.md', content: readmeContent },
+                { path: '.tokenomic/community.json', content: JSON.stringify(communityMeta, null, 2) },
+                { path: 'members.json', content: membersData },
+                { path: 'resources/README.md', content: resourcesReadme }
+            ];
+
+            var treeItems = files.map(function(f) {
+                return { path: f.path, mode: '100644', type: 'blob', content: f.content };
+            });
+
+            ghRequest('POST', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/trees', {
+                tree: treeItems
+            }, function(err3, treeData, s3) {
+                if (err3 || s3 !== 201) {
+                    return res.json({
+                        success: true,
+                        community: {
+                            id: slug, repo_name: repoName, name: name, type: type, access: access,
+                            description: description, visibility: visibility, members_count: 1,
+                            discussions_count: 0, created_at: communityMeta.createdAt,
+                            html_url: repoData.html_url, full_name: repoData.full_name,
+                            creator_wallet: wallet
+                        },
+                        warning: 'Repo created but initial files may not have been committed'
+                    });
+                }
+
+                ghRequest('POST', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/commits', {
+                    message: 'Initialize Tokenomic community: ' + name,
+                    tree: treeData.sha
+                }, function(err4, commitData, s4) {
+                    if (err4 || s4 !== 201) {
+                        return res.json({
+                            success: true,
+                            community: {
+                                id: slug, repo_name: repoName, name: name, type: type, access: access,
+                                description: description, visibility: visibility, members_count: 1,
+                                discussions_count: 0, created_at: communityMeta.createdAt,
+                                html_url: repoData.html_url, full_name: repoData.full_name,
+                                creator_wallet: wallet
+                            },
+                            warning: 'Repo created but commit may have failed'
+                        });
+                    }
+
+                    ghRequest('PATCH', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/refs/heads/main', {
+                        sha: commitData.sha
+                    }, function(err5, refData, s5) {
+                        if (s5 === 422 || s5 === 404) {
+                            ghRequest('POST', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/refs', {
+                                ref: 'refs/heads/main',
+                                sha: commitData.sha
+                            }, function() {
+                                res.json({
+                                    success: true,
+                                    community: {
+                                        id: slug, repo_name: repoName, name: name, type: type, access: access,
+                                        description: description, visibility: visibility, members_count: 1,
+                                        discussions_count: 0, created_at: communityMeta.createdAt,
+                                        html_url: repoData.html_url, full_name: repoData.full_name,
+                                        creator_wallet: wallet
+                                    }
+                                });
+                            });
+                        } else {
+                            res.json({
+                                success: true,
+                                community: {
+                                    id: slug, repo_name: repoName, name: name, type: type, access: access,
+                                    description: description, visibility: visibility, members_count: 1,
+                                    discussions_count: 0, created_at: communityMeta.createdAt,
+                                    html_url: repoData.html_url, full_name: repoData.full_name,
+                                    creator_wallet: wallet
+                                }
+                            });
+                        }
+                    });
+                });
+            });
+        });
+    });
+});
+
+app.get('/api/communities/:slug/discussions', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!slug) return res.status(400).json({ error: 'Invalid community slug' });
+    var repoName = COMMUNITY_REPO_PREFIX + slug;
+    var page = parseInt(req.query.page) || 1;
+    ghRequest('GET', '/repos/' + GITHUB_ORG + '/' + repoName + '/issues?state=all&per_page=30&page=' + page + '&sort=created&direction=desc', null, function(err, data, status) {
+        if (err) return res.status(500).json({ error: 'GitHub API error' });
+        if (status === 404) return res.status(404).json({ error: 'Community not found' });
+        if (status !== 200) return res.status(status).json({ error: 'Failed to fetch discussions' });
+        var discussions = (Array.isArray(data) ? data : []).map(function(issue) {
+            return {
+                id: issue.number,
+                title: issue.title,
+                body: issue.body || '',
+                author: issue.user ? issue.user.login : 'unknown',
+                avatar_url: issue.user ? issue.user.avatar_url : '',
+                created_at: issue.created_at,
+                updated_at: issue.updated_at,
+                comments_count: issue.comments || 0,
+                state: issue.state,
+                labels: (issue.labels || []).map(function(l) { return l.name; }),
+                html_url: issue.html_url
+            };
+        });
+        res.json({ discussions: discussions });
+    });
+});
+
+app.post('/api/communities/:slug/discussions', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!slug) return res.status(400).json({ error: 'Invalid community slug' });
+    var title = (req.body.title || '').trim();
+    var body = (req.body.body || '').trim();
+    var wallet = (req.body.wallet || '').trim();
+    if (!title) return res.status(400).json({ error: 'Discussion title is required' });
+    var repoName = COMMUNITY_REPO_PREFIX + slug;
+    var fullBody = body;
+    if (wallet) fullBody += '\n\n---\n*Posted by wallet: `' + wallet + '`*';
+    ghRequest('POST', '/repos/' + GITHUB_ORG + '/' + repoName + '/issues', {
+        title: title,
+        body: fullBody,
+        labels: ['discussion']
+    }, function(err, data, status) {
+        if (err) return res.status(500).json({ error: 'GitHub API error' });
+        if (status !== 201) return res.status(status).json({ error: data.message || 'Failed to create discussion' });
+        res.json({
+            success: true,
+            discussion: {
+                id: data.number,
+                title: data.title,
+                body: data.body,
+                author: data.user ? data.user.login : 'unknown',
+                created_at: data.created_at,
+                comments_count: 0,
+                html_url: data.html_url
+            }
+        });
+    });
+});
+
+app.get('/api/communities/:slug/discussions/:number/comments', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    var number = parseInt(req.params.number);
+    if (!slug || !number) return res.status(400).json({ error: 'Invalid parameters' });
+    var repoName = COMMUNITY_REPO_PREFIX + slug;
+    ghRequest('GET', '/repos/' + GITHUB_ORG + '/' + repoName + '/issues/' + number + '/comments?per_page=100', null, function(err, data, status) {
+        if (err) return res.status(500).json({ error: 'GitHub API error' });
+        if (status !== 200) return res.status(status).json({ error: 'Failed to fetch comments' });
+        var comments = (Array.isArray(data) ? data : []).map(function(c) {
+            return {
+                id: c.id,
+                body: c.body || '',
+                author: c.user ? c.user.login : 'unknown',
+                avatar_url: c.user ? c.user.avatar_url : '',
+                created_at: c.created_at,
+                html_url: c.html_url
+            };
+        });
+        res.json({ comments: comments });
+    });
+});
+
+app.post('/api/communities/:slug/discussions/:number/comments', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    var number = parseInt(req.params.number);
+    if (!slug || !number) return res.status(400).json({ error: 'Invalid parameters' });
+    var body = (req.body.body || '').trim();
+    var wallet = (req.body.wallet || '').trim();
+    if (!body) return res.status(400).json({ error: 'Comment body is required' });
+    var repoName = COMMUNITY_REPO_PREFIX + slug;
+    var fullBody = body;
+    if (wallet) fullBody += '\n\n---\n*Posted by wallet: `' + wallet + '`*';
+    ghRequest('POST', '/repos/' + GITHUB_ORG + '/' + repoName + '/issues/' + number + '/comments', {
+        body: fullBody
+    }, function(err, data, status) {
+        if (err) return res.status(500).json({ error: 'GitHub API error' });
+        if (status !== 201) return res.status(status).json({ error: data.message || 'Failed to post comment' });
+        res.json({
+            success: true,
+            comment: {
+                id: data.id,
+                body: data.body,
+                author: data.user ? data.user.login : 'unknown',
+                avatar_url: data.user ? data.user.avatar_url : '',
+                created_at: data.created_at
+            }
+        });
+    });
+});
+
+app.get('/api/communities/:slug/members', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!slug) return res.status(400).json({ error: 'Invalid community slug' });
+    var repoName = COMMUNITY_REPO_PREFIX + slug;
+    ghRequest('GET', '/repos/' + GITHUB_ORG + '/' + repoName + '/contents/members.json', null, function(err, data, status) {
+        if (err) return res.status(500).json({ error: 'GitHub API error' });
+        if (status === 404) return res.json({ members: [] });
+        if (status !== 200) return res.status(status).json({ error: 'Failed to fetch members' });
+        try {
+            var decoded = JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8'));
+            res.json({ members: decoded.members || [], sha: data.sha });
+        } catch(e) {
+            res.json({ members: [] });
         }
+    });
+});
 
-        var newComment = {
-            id: 'c' + Date.now(),
-            author: author,
-            wallet: wallet,
-            text: text,
-            created_at: new Date().toISOString()
+app.post('/api/communities/:slug/members', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!slug) return res.status(400).json({ error: 'Invalid community slug' });
+    var wallet = (req.body.wallet || '').trim();
+    var role = req.body.role || 'member';
+    if (!wallet) return res.status(400).json({ error: 'Wallet address is required' });
+    var repoName = COMMUNITY_REPO_PREFIX + slug;
+    ghRequest('GET', '/repos/' + GITHUB_ORG + '/' + repoName + '/contents/members.json', null, function(err, data, status) {
+        if (err) return res.status(500).json({ error: 'GitHub API error' });
+        var members = [];
+        var sha = null;
+        if (status === 200 && data.content) {
+            try {
+                var decoded = JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8'));
+                members = decoded.members || [];
+                sha = data.sha;
+            } catch(e) {}
+        }
+        var exists = members.some(function(m) { return m.wallet === wallet; });
+        if (exists) return res.status(409).json({ error: 'Member already exists in this community' });
+        members.push({ wallet: wallet, role: role, joinedAt: new Date().toISOString() });
+        var updatedContent = Buffer.from(JSON.stringify({ members: members }, null, 2)).toString('base64');
+        var putBody = {
+            message: 'Add member ' + wallet.substring(0, 10) + '...',
+            content: updatedContent
         };
-
-        comments.push(newComment);
-        fs.writeFileSync(commentsFile, JSON.stringify(comments, null, 2));
-
-        res.json({ success: true, comment: newComment });
-    } catch(err) {
-        console.error('Add comment error:', err.message);
-        res.status(500).json({ error: 'Failed to add comment' });
-    }
+        if (sha) putBody.sha = sha;
+        ghRequest('PUT', '/repos/' + GITHUB_ORG + '/' + repoName + '/contents/members.json', putBody, function(err2, putData, s2) {
+            if (err2) return res.status(500).json({ error: 'Failed to update members' });
+            if (s2 !== 200 && s2 !== 201) return res.status(s2).json({ error: putData.message || 'Failed to add member' });
+            var metaPath = '/repos/' + GITHUB_ORG + '/' + repoName + '/contents/.tokenomic/community.json';
+            ghRequest('GET', metaPath, null, function(err3, metaFile, s3) {
+                if (!err3 && s3 === 200 && metaFile.content) {
+                    try {
+                        var meta = JSON.parse(Buffer.from(metaFile.content, 'base64').toString('utf-8'));
+                        meta.memberCount = members.length;
+                        var metaUpdated = Buffer.from(JSON.stringify(meta, null, 2)).toString('base64');
+                        ghRequest('PUT', metaPath, {
+                            message: 'Update member count to ' + members.length,
+                            content: metaUpdated,
+                            sha: metaFile.sha
+                        }, function() {});
+                    } catch(e) {}
+                }
+            });
+            res.json({ success: true, member: { wallet: wallet, role: role }, total: members.length });
+        });
+    });
 });
 
 app.post('/api/profile/upload-photo', function(req, res) {

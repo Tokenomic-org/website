@@ -34,7 +34,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - `assets/` — CSS, images, fonts, JS libraries
 - `assets/images/learn/` — Article images pulled from learn.tokenomic.org (cover images + inline content images)
 - `scripts/` — Build scripts (scrape-articles.js, generate-article-pages.js, sync-assets.sh)
-- `global-community/` — File-based community storage (each subfolder = one community with `community.json` + `comments.json`)
+- `global-community/` — Legacy file-based community storage (replaced by GitHub repo-backed system)
 - `article-comments/` — File-based article comment storage (per-slug JSON files, created on first comment via API)
 
 ## Removed (unused)
@@ -62,7 +62,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - **Dashboard** (`/dashboard/`) — Main analytics with stats, recent activity, progress
 - **Courses** (`/dashboard-courses/`) — Three views: Manage (CRUD), My Learning (progression), Certifications
 - **Revenue** (`/dashboard-revenue/`) — Charts with time filters (1W/1M/3M/YTD/ALL), CSV export, 0xSplits visualization, transaction history with status pills
-- **Communities** (`/dashboard-communities/`) — Community cards loaded from `global-community/` folder via API, with comment threads; create new communities, post comments
+- **Communities** (`/dashboard-communities/`) — GitHub repo-backed communities system; each community = a GitHub repo (`tokenomic-community-[slug]`) in the Tokenomic-org org; create community creates repo with README.md, `.tokenomic/community.json`, `members.json`, `/resources/`; list via GitHub topic search (`tokenomic-community`); discussions via GitHub Issues API; members managed via `members.json` in repo; community cards grid (3-col) with type/access badges, search/filter bar, detail view with tabs (Discussions/Members/Resources/Invite); requires `GITHUB_PERSONAL_ACCESS_TOKEN`
 - **Events** (`/dashboard-events/`) — Live Luma calendar sync (Calendar ID: `cal-on7sN7ID2LgtAB9`), auto-fetches events via `/api/luma-events` proxy, shows cover images, dates, locations, guest counts, and registration links
 - **Bookings** (`/dashboard-bookings/`) — Consultant booking, wallet & Helio payments
 - **Chat** (`/dashboard-chat/`) — Channel-based messaging
