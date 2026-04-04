@@ -417,6 +417,13 @@ textarea.dash-input {
     color: #2D3748 !important;
     transition: all 0.2s ease;
     border: 1px solid transparent;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.quick-action-card > div {
+    min-width: 0;
+    overflow: hidden;
 }
 
 .quick-action-card:hover {
