@@ -166,56 +166,73 @@ Object.keys(pageTitles).forEach(function(f) {
     '        <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>\n' +
     '        <script>\n' +
     '        (function() {\n' +
-    '            function initMobileSidebar() {\n' +
+    '            function initMobileDashNav() {\n' +
     '                if (window.innerWidth > 991) return;\n' +
-    '                var sidebarCol = document.querySelector(".dashboard-sidebar")\n' +
-    '                    ? document.querySelector(".dashboard-sidebar").parentElement\n' +
-    '                    : null;\n' +
-    '                if (!sidebarCol) return;\n' +
-    '                sidebarCol.classList.add("dashboard-sidebar-col");\n' +
-    '                var contentCol = sidebarCol.nextElementSibling;\n' +
+    '                var sidebar = document.querySelector(".dashboard-sidebar");\n' +
+    '                if (!sidebar) return;\n' +
+    '                var sidebarCol = sidebar.parentElement;\n' +
+    '                var contentCol = sidebarCol ? sidebarCol.nextElementSibling : null;\n' +
+    '                if (sidebarCol) sidebarCol.classList.add("dashboard-sidebar-col");\n' +
     '                if (contentCol) contentCol.classList.add("dashboard-content-col");\n' +
-    '                var sidebar = sidebarCol.querySelector(".dashboard-sidebar");\n' +
-    '                var closeBtn = document.createElement("button");\n' +
-    '                closeBtn.className = "sidebar-close-btn";\n' +
-    '                closeBtn.innerHTML = \'<i class="fas fa-times"></i>\';\n' +
-    '                closeBtn.setAttribute("aria-label", "Close menu");\n' +
-    '                sidebar.insertBefore(closeBtn, sidebar.firstChild);\n' +
-    '                var overlay = document.createElement("div");\n' +
-    '                overlay.className = "sidebar-overlay";\n' +
-    '                document.body.appendChild(overlay);\n' +
-    '                var toggleBtn = document.createElement("button");\n' +
-    '                toggleBtn.className = "sidebar-toggle-btn";\n' +
-    '                toggleBtn.innerHTML = \'<i class="fas fa-bars"></i>\';\n' +
-    '                toggleBtn.setAttribute("aria-label", "Open menu");\n' +
-    '                document.body.appendChild(toggleBtn);\n' +
-    '                function openSidebar() {\n' +
-    '                    sidebarCol.classList.add("open");\n' +
-    '                    overlay.classList.add("visible");\n' +
-    '                    toggleBtn.classList.add("open");\n' +
-    '                    document.body.style.overflow = "hidden";\n' +
+    '                var profileData = {};\n' +
+    '                try { profileData = JSON.parse(localStorage.getItem("tkn_profile_data") || "{}"); } catch(e) {}\n' +
+    '                var userName = profileData.displayName || profileData.name || "Tokenomic";\n' +
+    '                var photo = localStorage.getItem("tkn_profile_photo") || "";\n' +
+    '                var initials = (userName || "T").trim().charAt(0).toUpperCase();\n' +
+    '                var avatarHtml = photo\n' +
+    '                    ? \'<img src="\' + photo + \'" alt="\' + userName + \'" />\'\n' +
+    '                    : initials;\n' +
+    '                var navItemsHtml = "";\n' +
+    '                var children = sidebar.querySelectorAll(".sidebar-section-label, .dash-nav-item");\n' +
+    '                for (var i = 0; i < children.length; i++) {\n' +
+    '                    var el = children[i];\n' +
+    '                    if (el.classList.contains("sidebar-section-label")) {\n' +
+    '                        navItemsHtml += \'<div class="mob-section-label">\' + el.textContent.trim() + "</div>";\n' +
+    '                    } else {\n' +
+    '                        var href = el.getAttribute("href") || "#";\n' +
+    '                        var iconEl = el.querySelector("i");\n' +
+    '                        var iconHtml = iconEl ? iconEl.outerHTML : "";\n' +
+    '                        var spanEl = el.querySelector("span");\n' +
+    '                        var label = spanEl ? spanEl.textContent.trim() : el.textContent.trim();\n' +
+    '                        var isActive = el.classList.contains("active") ? " active" : "";\n' +
+    '                        navItemsHtml += \'<a href="\' + href + \'" class="mob-nav-item\' + isActive + \'">\' + iconHtml + label + "</a>";\n' +
+    '                    }\n' +
     '                }\n' +
-    '                function closeSidebar() {\n' +
-    '                    sidebarCol.classList.remove("open");\n' +
-    '                    overlay.classList.remove("visible");\n' +
-    '                    toggleBtn.classList.remove("open");\n' +
-    '                    document.body.style.overflow = "";\n' +
+    '                var barHtml = \'<div class="mobile-dash-bar" id="mobileDashBar">\' +\n' +
+    '                    \'<div class="mobile-dash-bar-user">\' +\n' +
+    '                    \'<div class="mobile-dash-bar-avatar">\' + avatarHtml + "</div>" +\n' +
+    '                    \'<div class="mobile-dash-bar-info">\' +\n' +
+    '                    \'<span class="mobile-dash-bar-name">\' + userName + "</span>" +\n' +
+    '                    \'<span class="mobile-dash-bar-label">Dashboard</span>\' +\n' +
+    '                    "</div></div>" +\n' +
+    '                    \'<button class="mobile-dash-bar-toggle" aria-label="Toggle navigation">\' +\n' +
+    '                    \'Menu <i class="fas fa-chevron-down mob-chevron"></i>\' +\n' +
+    '                    "</button></div>";\n' +
+    '                var dropdownHtml = \'<div class="mobile-dash-dropdown" id="mobileDashDropdown">\' + navItemsHtml + "</div>";\n' +
+    '                if (contentCol) {\n' +
+    '                    contentCol.insertAdjacentHTML("afterbegin", dropdownHtml);\n' +
+    '                    contentCol.insertAdjacentHTML("afterbegin", barHtml);\n' +
     '                }\n' +
-    '                toggleBtn.addEventListener("click", openSidebar);\n' +
-    '                closeBtn.addEventListener("click", closeSidebar);\n' +
-    '                overlay.addEventListener("click", closeSidebar);\n' +
-    '                var navLinks = sidebar.querySelectorAll(".dash-nav-item");\n' +
-    '                for (var i = 0; i < navLinks.length; i++) {\n' +
-    '                    navLinks[i].addEventListener("click", closeSidebar);\n' +
+    '                var bar = document.getElementById("mobileDashBar");\n' +
+    '                var dropdown = document.getElementById("mobileDashDropdown");\n' +
+    '                if (bar && dropdown) {\n' +
+    '                    bar.addEventListener("click", function() {\n' +
+    '                        bar.classList.toggle("open");\n' +
+    '                        dropdown.classList.toggle("open");\n' +
+    '                    });\n' +
+    '                    var links = dropdown.querySelectorAll(".mob-nav-item");\n' +
+    '                    for (var j = 0; j < links.length; j++) {\n' +
+    '                        links[j].addEventListener("click", function() {\n' +
+    '                            bar.classList.remove("open");\n' +
+    '                            dropdown.classList.remove("open");\n' +
+    '                        });\n' +
+    '                    }\n' +
     '                }\n' +
-    '                window.addEventListener("resize", function() {\n' +
-    '                    if (window.innerWidth > 991) closeSidebar();\n' +
-    '                });\n' +
     '            }\n' +
     '            if (document.readyState === "loading") {\n' +
-    '                document.addEventListener("DOMContentLoaded", initMobileSidebar);\n' +
+    '                document.addEventListener("DOMContentLoaded", initMobileDashNav);\n' +
     '            } else {\n' +
-    '                initMobileSidebar();\n' +
+    '                initMobileDashNav();\n' +
     '            }\n' +
     '        })();\n' +
     '        </script>\n' +
