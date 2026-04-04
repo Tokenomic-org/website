@@ -1,0 +1,175 @@
+---
+layout: article
+title: "Gas Optimization in Solidity"
+slug: gas-optimization-solidity
+category: Technical
+date: 2024-11-15
+author: "Guillaume Lauzier"
+featured_image: /assets/images/learn/cyber_security_crypto.png
+reading_time: 5
+permalink: /articles/gas-optimization-solidity/
+author_specialty: "DeFi & Technical Implementation"
+author_bio: "Founder of and Institutional Educator at Tokenomic, specializing in technical implementation, financial analysis, and digital assets."
+author_avatar: /assets/images/learn/100.jpg
+author_wallet: 0x1234...abcd
+---
+<h1 id="gas-optimization-in-solidity">Gas Optimization in Solidity</h1>
+
+<p><em>Estimated reading time: 12 minutes</em></p>
+
+<p>Gas costs are one of the most critical considerations when developing smart contracts on Ethereum and EVM-compatible blockchains. Every operation in a smart contract consumes gas, and inefficient code can result in prohibitively expensive transactions for users. This article explores practical techniques for optimizing gas consumption in Solidity smart contracts, helping developers write more efficient and cost-effective code.</p>
+
+<h2 id="understanding-gas-in-ethereum">Understanding Gas in Ethereum</h2>
+
+<p>Gas is the unit of computational effort required to execute operations on the Ethereum Virtual Machine (EVM). Each opcode has a fixed gas cost, and the total gas consumed by a transaction determines its cost. Key concepts include:</p>
+
+<ul>
+<li><strong>Gas Price</strong>: The amount of ETH a user is willing to pay per unit of gas, measured in gwei.</li>
+<li><strong>Gas Limit</strong>: The maximum amount of gas a user is willing to spend on a transaction.</li>
+<li><strong>Block Gas Limit</strong>: The maximum total gas allowed in a single block, which constrains transaction complexity.</li>
+</ul>
+
+<p>Understanding the EVM's gas cost structure is essential for optimization. Storage operations (SSTORE, SLOAD) are among the most expensive, while memory and stack operations are relatively cheap.</p>
+
+<h2 id="storage-optimization">Storage Optimization</h2>
+
+<p>Storage is the most expensive resource in the EVM. Writing to storage costs 20,000 gas for a new slot and 5,000 gas for updating an existing one. Reading from storage costs 2,100 gas (cold) or 100 gas (warm, after first access in a transaction).</p>
+
+<h3 id="variable-packing">Variable Packing</h3>
+
+<p>The EVM uses 32-byte storage slots. Multiple smaller variables can be packed into a single slot to reduce storage costs:</p>
+
+<pre><code>// Unoptimized: uses 3 storage slots
+uint256 a;
+uint256 b;
+uint256 c;
+
+// Optimized: packs into 1 storage slot
+uint128 a;
+uint64 b;
+uint64 c;</code></pre>
+
+<p>Solidity automatically packs variables declared consecutively if they fit within a single 32-byte slot. Order your struct fields and state variables by size to maximize packing.</p>
+
+<h3 id="minimize-storage-writes">Minimize Storage Writes</h3>
+
+<p>Cache storage variables in memory when reading them multiple times within a function:</p>
+
+<pre><code>// Unoptimized: reads from storage 3 times
+function calculate() public view returns (uint256) {
+    return storedValue * storedValue + storedValue;
+}
+
+// Optimized: reads from storage once
+function calculate() public view returns (uint256) {
+    uint256 cached = storedValue;
+    return cached * cached + cached;
+}</code></pre>
+
+<h3 id="use-mappings-over-arrays">Use Mappings Over Arrays</h3>
+
+<p>Mappings are generally more gas-efficient than arrays for lookups. Arrays require iteration and have additional length storage overhead, while mappings provide O(1) access.</p>
+
+<h2 id="function-optimization">Function Optimization</h2>
+
+<h3 id="use-external-over-public">Use External Over Public</h3>
+
+<p>For functions that are only called externally, use the <code>external</code> visibility modifier instead of <code>public</code>. External functions can read arguments directly from calldata, which is cheaper than copying to memory as public functions do.</p>
+
+<h3 id="short-circuit-evaluation">Short-Circuit Evaluation</h3>
+
+<p>Place the most likely condition to fail first in require statements and conditional expressions. Solidity uses short-circuit evaluation, so if the first condition fails, the remaining conditions are not evaluated:</p>
+
+<pre><code>// Put cheap and likely-to-fail checks first
+require(msg.sender == owner, "Not owner");
+require(balances[msg.sender] >= amount, "Insufficient balance");</code></pre>
+
+<h3 id="use-custom-errors">Use Custom Errors</h3>
+
+<p>Custom errors (introduced in Solidity 0.8.4) are more gas-efficient than revert strings because they use less bytecode and don't store string data:</p>
+
+<pre><code>// Expensive: stores string in bytecode
+require(balance >= amount, "Insufficient balance");
+
+// Cheaper: custom error
+error InsufficientBalance(uint256 available, uint256 required);
+if (balance < amount) revert InsufficientBalance(balance, amount);</code></pre>
+
+<h2 id="loop-optimization">Loop Optimization</h2>
+
+<h3 id="unchecked-arithmetic">Unchecked Arithmetic</h3>
+
+<p>In Solidity 0.8+, arithmetic operations include overflow/underflow checks by default. For loop counters that cannot realistically overflow, wrapping the increment in an <code>unchecked</code> block saves gas:</p>
+
+<pre><code>for (uint256 i = 0; i < length;) {
+    // loop body
+    unchecked { ++i; }
+}</code></pre>
+
+<h3 id="cache-array-length">Cache Array Length</h3>
+
+<p>Reading array length from storage in every iteration is wasteful. Cache it in a local variable:</p>
+
+<pre><code>uint256 len = myArray.length;
+for (uint256 i = 0; i < len;) {
+    // process myArray[i]
+    unchecked { ++i; }
+}</code></pre>
+
+<h2 id="data-types-and-operations">Data Types and Operations</h2>
+
+<h3 id="use-bytes32-over-string">Use bytes32 Over string</h3>
+
+<p>For fixed-length data (like identifiers or hashes), <code>bytes32</code> is significantly cheaper than <code>string</code> because it fits in a single storage slot and doesn't require dynamic memory allocation.</p>
+
+<h3 id="use-prefix-increment">Use Prefix Increment</h3>
+
+<p><code>++i</code> is slightly cheaper than <code>i++</code> because it doesn't create a temporary variable to hold the original value.</p>
+
+<h3 id="bitwise-operations">Bitwise Operations</h3>
+
+<p>Bitwise operations are cheaper than arithmetic equivalents. For example, multiplying or dividing by powers of 2 can use bit shifts:</p>
+
+<pre><code>// Expensive
+uint256 result = value * 8;
+uint256 half = value / 2;
+
+// Cheaper
+uint256 result = value << 3;
+uint256 half = value >> 1;</code></pre>
+
+<h2 id="design-patterns">Design Patterns for Gas Efficiency</h2>
+
+<h3 id="batch-operations">Batch Operations</h3>
+
+<p>Combine multiple operations into a single transaction to amortize the base transaction cost (21,000 gas). For example, batch token transfers instead of individual ones.</p>
+
+<h3 id="lazy-evaluation">Lazy Evaluation</h3>
+
+<p>Defer expensive computations until they are actually needed. Instead of computing values on write, compute them on read if reads are less frequent.</p>
+
+<h3 id="events-over-storage">Events Over Storage</h3>
+
+<p>If data only needs to be accessible off-chain, emit events instead of writing to storage. Events cost significantly less gas than storage writes:</p>
+
+<pre><code>// Expensive: stores in contract state
+mapping(address => uint256[]) public userActions;
+
+// Cheaper: emit event for off-chain indexing
+event ActionPerformed(address indexed user, uint256 actionId, uint256 timestamp);</code></pre>
+
+<h2 id="tools-and-analysis">Tools for Gas Analysis</h2>
+
+<p>Several tools can help identify gas optimization opportunities:</p>
+
+<ul>
+<li><strong>Hardhat Gas Reporter</strong>: Provides gas usage reports for each function call in your tests.</li>
+<li><strong>Foundry</strong>: Forge includes built-in gas snapshots and reports.</li>
+<li><strong>Remix IDE</strong>: Shows gas estimates for transactions in its debugger.</li>
+<li><strong>Slither</strong>: Static analysis tool that can detect certain gas-inefficient patterns.</li>
+<li><strong>EVM Codes</strong>: Reference for opcode gas costs at <a href="https://www.evm.codes/">evm.codes</a>.</li>
+</ul>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Gas optimization is both an art and a science. While micro-optimizations like using prefix increments or unchecked blocks can save small amounts per operation, the biggest gains typically come from architectural decisions—minimizing storage operations, using efficient data structures, and designing contracts that batch operations effectively. Always profile your contracts with gas reporting tools and prioritize optimizations that have the largest impact on real-world usage patterns. Remember that readability and security should never be sacrificed for marginal gas savings.</p>

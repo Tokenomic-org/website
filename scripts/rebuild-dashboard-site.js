@@ -38,7 +38,7 @@ headerHtml = headerHtml.replace(/\{\{site\.url\}\}/g, site.url)
 var navHtml = '<li><a href="/">Home</a></li>\n' +
   '                                    <li><a href="/courses/">Courses</a></li>\n' +
   '                                    <li><a href="/experts/">Experts</a></li>\n' +
-  '                                    <li><a href="/learn/">Learn</a></li>';
+  '                                    <li><a href="/articles/">Articles</a></li>';
 
 var navLoopStart = headerHtml.indexOf('{% for navigation');
 if (navLoopStart !== -1) {
@@ -234,7 +234,7 @@ Object.keys(pageTitles).forEach(function(f) {
 var publicPages = {
   'courses.html': { dir: '_site/courses', title: 'Courses' },
   'educators.html': { dir: '_site/experts', title: 'Experts' },
-  'learn.html': { dir: '_site/learn', title: 'Learn' }
+  'articles.html': { dir: '_site/articles', title: 'Articles' }
 };
 
 Object.keys(publicPages).forEach(function(f) {
@@ -328,7 +328,7 @@ Object.keys(publicPages).forEach(function(f) {
     .filter(function(a) { return a.slug && a.title && a.date; })
     .sort(function(a, b) { return new Date(b.date) - new Date(a.date); })
     .map(function(a) {
-      var url = siteUrl + '/learn/' + a.slug + '/';
+      var url = siteUrl + '/articles/' + a.slug + '/';
       var excerpt = escXml(stripHtml(a.content));
       var imgLine = a.featured_image ? '\n      <enclosure url="' + siteUrl + a.featured_image + '" type="image/jpeg" length="0" />' : '';
       return '    <item>\n' +

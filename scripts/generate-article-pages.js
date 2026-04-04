@@ -2,7 +2,7 @@ var fs = require('fs');
 var path = require('path');
 
 var articles = JSON.parse(fs.readFileSync('scripts/articles-data.json', 'utf-8'));
-var learnIndex = fs.readFileSync('_site/learn/index.html', 'utf-8');
+var learnIndex = fs.readFileSync('_site/articles/index.html', 'utf-8');
 
 var headerEnd = learnIndex.indexOf('<section class="learn-hero">');
 if (headerEnd === -1) headerEnd = learnIndex.indexOf('<!-- Banner Section -->');
@@ -205,7 +205,7 @@ function getArticleStyle() {
 }
 
 function getShareSection(article) {
-  var url = 'https://tokenomic.org/learn/' + article.slug;
+  var url = 'https://tokenomic.org/articles/' + article.slug;
   var title = encodeURIComponent(article.title);
   var encodedUrl = encodeURIComponent(url);
 
@@ -348,7 +348,7 @@ function getCommentsScript(slug) {
     '}\n' +
     '\n' +
     'function copyArticleLink(btn) {\n' +
-    '  var url = "https://tokenomic.org/learn/' + slug + '";\n' +
+    '  var url = "https://tokenomic.org/articles/' + slug + '";\n' +
     '  if (navigator.clipboard) {\n' +
     '    navigator.clipboard.writeText(url).then(function() {\n' +
     '      btn.classList.add("copied");\n' +
@@ -387,7 +387,7 @@ articles.forEach(function(article) {
     '</head>',
     '<meta property="og:title" content="' + escapeHtml(article.title) + '">\n' +
     '<meta property="og:type" content="article">\n' +
-    '<meta property="og:url" content="https://tokenomic.org/learn/' + article.slug + '">\n' +
+    '<meta property="og:url" content="https://tokenomic.org/articles/' + article.slug + '">\n' +
     (featuredImg ? '<meta property="og:image" content="https://tokenomic.org' + featuredImg + '">\n' : '') +
     '<meta name="twitter:card" content="summary_large_image">\n' +
     '<meta name="twitter:title" content="' + escapeHtml(article.title) + '">\n' +
@@ -407,7 +407,7 @@ articles.forEach(function(article) {
     '                <div class="page-nav">\n' +
     '                    <ul class="bread-crumb clearfix">\n' +
     '                        <li><a href="/">Home</a></li>\n' +
-    '                        <li><a href="/learn/">Learn</a></li>\n' +
+    '                        <li><a href="/articles/">Articles</a></li>\n' +
     '                        <li class="active">' + escapeHtml(article.category) + '</li>\n' +
     '                    </ul>\n' +
     '                </div>\n' +
@@ -417,7 +417,7 @@ articles.forEach(function(article) {
     '</section>\n\n' +
     '<section class="article-detail">\n' +
     '    <div class="auto-container">\n' +
-    '        <a href="/learn/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Learn</a>\n' +
+    '        <a href="/articles/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Articles</a>\n' +
     '        <div class="article-header">\n' +
     '            <div class="article-meta">\n' +
     '                <span class="cat-tag">' + escapeHtml(article.category) + '</span>\n' +
@@ -439,10 +439,10 @@ articles.forEach(function(article) {
     getCommentsScript(article.slug) +
     footerHtml;
 
-  var dir = '_site/learn/' + article.slug;
+  var dir = '_site/articles/' + article.slug;
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(dir + '/index.html', pageHtml);
-  console.log('Generated: /learn/' + article.slug + '/');
+  console.log('Generated: /articles/' + article.slug + '/');
 });
 
 console.log('\nDone! Generated ' + articles.filter(function(a) { return a.content.length >= 50; }).length + ' article pages.');

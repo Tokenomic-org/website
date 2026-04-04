@@ -67,7 +67,7 @@
                         title: a.title,
                         subtitle: 'By ' + ((a.profiles && a.profiles.display_name) ? a.profiles.display_name : 'Tokenomic Team'),
                         badge: a.category || 'Article',
-                        link: '/learn/' + a.slug,
+                        link: '/articles/' + a.slug,
                         score: matchCount
                     });
                 }

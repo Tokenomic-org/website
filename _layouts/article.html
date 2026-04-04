@@ -11,7 +11,7 @@ layout: default
                 <div class="page-nav">
                     <ul class="bread-crumb clearfix">
                         <li><a href="/">Home</a></li>
-                        <li><a href="/learn/">Learn</a></li>
+                        <li><a href="/articles/">Articles</a></li>
                         <li class="active">{{ page.category }}</li>
                     </ul>
                 </div>
@@ -22,7 +22,7 @@ layout: default
 
 <section class="article-detail">
     <div class="auto-container">
-        <a href="/learn/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Learn</a>
+        <a href="/articles/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Articles</a>
         <div class="article-header">
             <div class="article-meta">
                 <span class="cat-tag">{{ page.category }}</span>
@@ -41,10 +41,10 @@ layout: default
 
         <div class="share-section">
             <span class="share-label">Share this article:</span>
-            <a href="https://twitter.com/intent/tweet?text={{ page.title | url_encode }}&url=https://tokenomic.org/learn/{{ page.slug }}" target="_blank" rel="noopener" class="share-btn twitter" title="Share on X (Twitter)"><i class="fab fa-twitter"></i></a>
-            <a href="https://www.facebook.com/sharer/sharer.php?u=https://tokenomic.org/learn/{{ page.slug }}" target="_blank" rel="noopener" class="share-btn facebook" title="Share on Facebook"><i class="fab fa-facebook-f"></i></a>
-            <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://tokenomic.org/learn/{{ page.slug }}&title={{ page.title | url_encode }}" target="_blank" rel="noopener" class="share-btn linkedin" title="Share on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-            <a href="https://www.reddit.com/submit?url=https://tokenomic.org/learn/{{ page.slug }}&title={{ page.title | url_encode }}" target="_blank" rel="noopener" class="share-btn reddit" title="Share on Reddit"><i class="fab fa-reddit-alien"></i></a>
+            <a href="https://twitter.com/intent/tweet?text={{ page.title | url_encode }}&url=https://tokenomic.org/articles/{{ page.slug }}" target="_blank" rel="noopener" class="share-btn twitter" title="Share on X (Twitter)"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://tokenomic.org/articles/{{ page.slug }}" target="_blank" rel="noopener" class="share-btn facebook" title="Share on Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://tokenomic.org/articles/{{ page.slug }}&title={{ page.title | url_encode }}" target="_blank" rel="noopener" class="share-btn linkedin" title="Share on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="https://www.reddit.com/submit?url=https://tokenomic.org/articles/{{ page.slug }}&title={{ page.title | url_encode }}" target="_blank" rel="noopener" class="share-btn reddit" title="Share on Reddit"><i class="fab fa-reddit-alien"></i></a>
             <button class="share-btn copy-link" title="Copy link" onclick="copyArticleLink(this)" style="position:relative;"><i class="fas fa-link"></i><span class="copy-tooltip">Copied!</span></button>
         </div>
 
@@ -173,7 +173,7 @@ function submitArticleComment() {
 }
 
 function copyArticleLink(btn) {
-  var url = "https://tokenomic.org/learn/" + articleSlug;
+  var url = "https://tokenomic.org/articles/" + articleSlug;
   if (navigator.clipboard) {
     navigator.clipboard.writeText(url).then(function() {
       btn.classList.add("copied");

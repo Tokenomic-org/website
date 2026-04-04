@@ -434,7 +434,7 @@ permalink: /dashboard-articles/
                                     <div class="col-lg-6 col-md-6 col-sm-12" style="margin-bottom:8px;">
                                         <label style="display:block;color:#5a8299;font-size:0.78rem;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Slug</label>
                                         <div style="display:flex;align-items:center;gap:0;">
-                                            <span style="background:#f0f2f5;border:1px solid #d1d5db;border-right:none;padding:8px 10px;border-radius:6px 0 0 6px;color:#8899A6;font-size:0.82rem;white-space:nowrap;">/learn/</span>
+                                            <span style="background:#f0f2f5;border:1px solid #d1d5db;border-right:none;padding:8px 10px;border-radius:6px 0 0 6px;color:#8899A6;font-size:0.82rem;white-space:nowrap;">/articles/</span>
                                             <input x-model="draft.slug" class="dash-input" style="border-radius:0 6px 6px 0;margin:0;" placeholder="article-slug" />
                                         </div>
                                     </div>
@@ -517,7 +517,7 @@ permalink: /dashboard-articles/
                                 <div style="font-size:0.8rem;color:#5a8299;line-height:1.6;">
                                     <div style="margin-bottom:6px;">
                                         <strong style="color:#0A0F1A;">URL:</strong>
-                                        <span x-text="draft.slug ? 'tokenomic.org/learn/'+draft.slug : 'Set a title to generate URL'"></span>
+                                        <span x-text="draft.slug ? 'tokenomic.org/articles/'+draft.slug : 'Set a title to generate URL'"></span>
                                     </div>
                                     <div style="margin-bottom:6px;">
                                         <strong style="color:#0A0F1A;">GitHub:</strong>
@@ -558,25 +558,25 @@ function articlesPage() {
         sortDir: 'desc',
         articles: [
             { id:1, title:'Understanding DeFi Tokenomics', category:'tokenomics', sponsorship:'gold', revenue_share:10, status:'published', date:'2026-03-15', content:'', target_repo:'Tokenomic-org/website',
-              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-03-15-defi-tokenomics.md', live_url:'https://tokenomic.org/learn/defi-tokenomics',
+              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-03-15-defi-tokenomics.md', live_url:'https://tokenomic.org/articles/defi-tokenomics',
               traffic:{views:8420,visitors:5230,avg_time:'4:32',bounce_rate:'32%',shares:187,revenue:1420,
                 referrers:[{source:'Google',visits:2840,pct:54},{source:'Twitter',visits:1120,pct:21},{source:'LinkedIn',visits:680,pct:13},{source:'Direct',visits:590,pct:11}]}},
             { id:2, title:'Smart Contract Security Best Practices', category:'security', sponsorship:'silver', revenue_share:10, status:'published', date:'2026-03-10', content:'', target_repo:'Tokenomic-org/website',
-              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-03-10-smart-contract-security.md', live_url:'https://tokenomic.org/learn/smart-contract-security',
+              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-03-10-smart-contract-security.md', live_url:'https://tokenomic.org/articles/smart-contract-security',
               traffic:{views:6150,visitors:3890,avg_time:'5:18',bounce_rate:'28%',shares:142,revenue:980,
                 referrers:[{source:'Google',visits:1950,pct:50},{source:'Reddit',visits:780,pct:20},{source:'Twitter',visits:620,pct:16},{source:'GitHub',visits:540,pct:14}]}},
             { id:3, title:'Yield Farming Strategies for 2026', category:'defi', sponsorship:'', revenue_share:'', status:'draft', date:'2026-03-20', content:'', target_repo:'Tokenomic-org/website',
               github_url:'', live_url:'', traffic:null},
             { id:4, title:'Introduction to Liquidity Pools', category:'tutorial', sponsorship:'bronze', revenue_share:10, status:'published', date:'2026-02-28', content:'', target_repo:'Tokenomic-org/website',
-              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-02-28-liquidity-pools.md', live_url:'https://tokenomic.org/learn/liquidity-pools',
+              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-02-28-liquidity-pools.md', live_url:'https://tokenomic.org/articles/liquidity-pools',
               traffic:{views:4280,visitors:2710,avg_time:'3:45',bounce_rate:'41%',shares:94,revenue:580,
                 referrers:[{source:'Google',visits:1370,pct:51},{source:'Twitter',visits:650,pct:24},{source:'Direct',visits:420,pct:15},{source:'LinkedIn',visits:270,pct:10}]}},
             { id:5, title:'Zero-Knowledge Proofs: Privacy in DeFi', category:'research', sponsorship:'gold', revenue_share:15, status:'published', date:'2026-03-01', content:'', target_repo:'Tokenomic-org/website',
-              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-03-01-zk-proofs-privacy.md', live_url:'https://tokenomic.org/learn/zk-proofs-privacy',
+              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-03-01-zk-proofs-privacy.md', live_url:'https://tokenomic.org/articles/zk-proofs-privacy',
               traffic:{views:5890,visitors:3640,avg_time:'6:12',bounce_rate:'24%',shares:168,revenue:1650,
                 referrers:[{source:'Google',visits:1760,pct:48},{source:'Twitter',visits:910,pct:25},{source:'Hacker News',visits:580,pct:16},{source:'Direct',visits:390,pct:11}]}},
             { id:6, title:'Gas Optimization in Solidity', category:'tutorial', sponsorship:'', revenue_share:10, status:'published', date:'2026-02-15', content:'', target_repo:'Tokenomic-org/website',
-              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-02-15-gas-optimization.md', live_url:'https://tokenomic.org/learn/gas-optimization',
+              github_url:'https://github.com/Tokenomic-org/website/blob/main/_posts/2026-02-15-gas-optimization.md', live_url:'https://tokenomic.org/articles/gas-optimization',
               traffic:{views:3210,visitors:2180,avg_time:'4:05',bounce_rate:'38%',shares:76,revenue:320,
                 referrers:[{source:'Google',visits:1280,pct:59},{source:'Stack Overflow',visits:430,pct:20},{source:'Twitter',visits:290,pct:13},{source:'Direct',visits:180,pct:8}]}}
         ],
@@ -623,7 +623,7 @@ function articlesPage() {
         },
         previewArticle() {
             if (this.draft.slug) {
-                window.open('https://tokenomic.org/learn/' + this.draft.slug, '_blank');
+                window.open('https://tokenomic.org/articles/' + this.draft.slug, '_blank');
             } else {
                 alert('Add a title first to generate the article URL.');
             }
@@ -730,13 +730,13 @@ function articlesPage() {
                 (this.draft.excerpt ? 'excerpt: "' + this.draft.excerpt.replace(/"/g,'\\"') + '"\n' : '') +
                 (this.draft.author ? 'author: "' + this.draft.author + '"\n' : '') +
                 (this.draft.sponsorship ? 'sponsorship: ' + this.draft.sponsorship + '\n' : '') +
-                (this.draft.featured_image ? 'image: /assets/images/learn/' + slug + '-cover.webp\n' : '') +
+                (this.draft.featured_image ? 'image: /assets/images/articles/' + slug + '-cover.webp\n' : '') +
                 'slug: ' + slug + '\n' +
                 '---\n\n';
             var fullContent = frontmatter + this.draft.content;
             var filePath = '_posts/' + date + '-' + slug + '.md';
             var articleData = {id:Date.now(), title:this.draft.title, category:this.draft.category, sponsorship:this.draft.sponsorship, revenue_share:this.draft.revenue_share, date:date, content:this.draft.content, target_repo:repo, tags:this.draft.tags, excerpt:this.draft.excerpt, author:this.draft.author,
-                github_url:'https://github.com/'+repo+'/blob/main/'+filePath, live_url:'https://tokenomic.org/learn/'+slug,
+                github_url:'https://github.com/'+repo+'/blob/main/'+filePath, live_url:'https://tokenomic.org/articles/'+slug,
                 traffic:{views:0,visitors:0,avg_time:'0:00',bounce_rate:'0%',shares:0,revenue:0,referrers:[]}};
             try {
                 var resp = await fetch('/api/github/publish', {
@@ -747,7 +747,7 @@ function articlesPage() {
                 if (resp.ok) {
                     articleData.status = 'published';
                     this.publishStatus = 'Published to GitHub!';
-                    this.publishDetails = 'Live at tokenomic.org/learn/' + slug;
+                    this.publishDetails = 'Live at tokenomic.org/articles/' + slug;
                 } else {
                     var err = await resp.json().catch(function(){return {};});
                     articleData.status = 'draft';

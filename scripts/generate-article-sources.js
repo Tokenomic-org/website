@@ -99,7 +99,7 @@ articles.forEach(function(article) {
   frontMatter += 'author: "' + authorName.replace(/"/g, '\\"') + '"\n';
   frontMatter += 'featured_image: ' + featuredImg + '\n';
   frontMatter += 'reading_time: ' + readingTime + '\n';
-  frontMatter += 'permalink: /learn/' + article.slug + '/\n';
+  frontMatter += 'permalink: /articles/' + article.slug + '/\n';
 
   if (profile.specialty) {
     frontMatter += 'author_specialty: "' + profile.specialty.replace(/"/g, '\\"') + '"\n';

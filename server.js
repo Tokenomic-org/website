@@ -1197,6 +1197,10 @@ app.get('/expert/:id', function(req, res) {
     res.sendFile(path.join(__dirname, '_site', 'expert', 'index.html'));
 });
 
+app.get('/learn/', function(req, res) { res.redirect(301, '/articles/'); });
+app.get('/learn/:slug', function(req, res) { res.redirect(301, '/articles/' + req.params.slug); });
+app.get('/learn/:slug/', function(req, res) { res.redirect(301, '/articles/' + req.params.slug + '/'); });
+
 app.use(express.static(path.join(__dirname, '_site'), {
     extensions: ['html'],
     setHeaders: function(res, filePath) {
