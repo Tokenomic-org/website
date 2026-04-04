@@ -1120,6 +1120,9 @@ app.post('/api/profile/upload-photo', function(req, res) {
 var ARTICLE_COMMENTS_DIR = path.join(__dirname, 'article-comments');
 
 app.get('/api/articles/:slug/comments', function(req, res) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
     var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
     if (!slug) return res.status(400).json({ error: 'Invalid article slug' });
     var commentsFile = path.join(ARTICLE_COMMENTS_DIR, slug + '.json');
@@ -1138,6 +1141,9 @@ app.get('/api/articles/:slug/comments', function(req, res) {
 });
 
 app.post('/api/articles/:slug/comments', function(req, res) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
     var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
     if (!slug) return res.status(400).json({ error: 'Invalid article slug' });
 

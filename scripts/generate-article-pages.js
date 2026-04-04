@@ -333,7 +333,7 @@ function getCommentsScript(slug) {
     '    headers: { "Content-Type": "application/json" },\n' +
     '    body: JSON.stringify({ author: author || "Anonymous", text: text, wallet: wallet })\n' +
     '  })\n' +
-    '  .then(function(r) { return r.json(); })\n' +
+    '  .then(function(r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })\n' +
     '  .then(function(data) {\n' +
     '    if (data.success) {\n' +
     '      msg.textContent = "Comment posted!"; msg.className = "form-msg success";\n' +
@@ -343,7 +343,7 @@ function getCommentsScript(slug) {
     '      msg.textContent = data.error || "Failed to post."; msg.className = "form-msg error";\n' +
     '    }\n' +
     '  })\n' +
-    '  .catch(function() { msg.textContent = "Network error."; msg.className = "form-msg error"; })\n' +
+    '  .catch(function(err) { msg.textContent = "Error: " + (err.message || "Network error"); msg.className = "form-msg error"; })\n' +
     '  .finally(function() { btn.disabled = false; btn.textContent = "Post Comment"; });\n' +
     '}\n' +
     '\n' +
