@@ -1,3 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Tokenomic - Communities</title>
+        <link href="/assets/css/bootstrap.css" rel="stylesheet" />
+        <link href="/assets/css/style.css" rel="stylesheet" />
+        <link href="/assets/css/responsive.css" rel="stylesheet" />
+        <link href="/assets/css/dashboard.css" rel="stylesheet" />
+        <link rel="shortcut icon" href="/assets/images/favicon.png" type="image/x-icon" />
+        <link rel="icon" href="/assets/images/favicon.png" type="image/x-icon" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=2.0,minimum-scale=1.0" />
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MD9B5BB1P"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag("js", new Date());
+          gtag("config", "G-1MD9B5BB1P");
+        </script>
+        <style>
+            .header-style-two { top: 0; background: #0A0F1A; }
+            .dashboard-section { padding-top: 100px !important; }
+            .main-menu .navigation > li { margin-right: 20px; }
+            .main-menu .navigation > li > a { font-size: 15px; }
+        </style>
+        <link rel="alternate" type="application/rss+xml" title="Tokenomic RSS Feed" href="/feed.xml" />
+    </head>
+    <body>
+        <div class="page-wrapper">
+<style>
+.header-upper .inner { display:flex !important;align-items:center;justify-content:space-between; }
+.header-upper .nav-content { float:none !important;width:auto !important;flex:1; }
+.header-upper .other-links { display:flex !important;align-items:center;gap:12px;float:none !important;background:none !important;padding:0 !important;position:static !important;top:auto !important;flex-shrink:0; }
+.header-upper .search-btn { float:none !important;display:flex !important;align-items:center; } .header-upper .search-btn .search-toggler { display:flex !important;align-items:center;justify-content:center;background:none !important;border:none !important;padding:0 !important;margin:0 !important;cursor:pointer;color:#ffffff;font-size:18px;line-height:1;width:32px;height:32px; }
+.wallet-btn-header { display:inline-flex;align-items:center; }
+.wallet-btn-header a.wallet-login-btn,.wallet-btn-header a.wallet-logged-in-btn { align-items:center;gap:6px;padding:6px 18px;font-size:12px;font-weight:600;border-radius:30px;background:#ff6000;color:#fff;text-decoration:none;white-space:nowrap;letter-spacing:0.5px;transition:background 0.2s;border:none;box-shadow:none;line-height:1.4; }
+.wallet-btn-header a:hover { background:#e55500 !important; }
+@media (max-width: 991px) {
+    .wallet-btn-header { display:none !important; }
+    .main-header .header-upper { padding:8px 0 !important; }
+    .header-upper .inner { display:flex !important;align-items:center;justify-content:space-between;flex-wrap:nowrap; }
+    .header-upper .logo-box { flex-shrink:0; }
+    .header-upper .nav-content { float:none !important;width:auto !important;flex:none !important;order:3; }
+    .header-upper .other-links { display:flex !important;align-items:center;gap:8px;flex-shrink:0;order:2;margin-left:auto; }
+    .nav-outer .mobile-nav-toggler { margin:0 !important;padding:8px 0 !important;float:none !important; }
+}
+.mobile-menu .wallet-mobile-btn a {
+    display:block;text-align:center;padding:14px 20px;border-radius:30px;
+    background:#ff6000;color:#fff;font-size:14px;font-weight:600;
+    text-decoration:none;letter-spacing:0.5px;transition:background 0.2s;
+}
+.mobile-menu .wallet-mobile-btn a:hover { background:#e55500; }
+</style>
+<header class="main-header header-style-two">
+    <div class="header-upper">
+        <div class="auto-container clearfix">
+            <div class="inner clearfix tkn-header-flex">
+                <div class="logo-box">
+                    <div class="logo">
+                        <a href="https://tokenomic.org" title="Tokenomic">
+                            <img src="/assets/images/logo.png" alt="Tokenomic" title="Tokenomic" />
+                        </a>
+                    </div>
+                </div>
+                <div class="nav-content clearfix">
+                    <div class="nav-outer clearfix">
+                        <div class="mobile-nav-toggler"><span class="icon flaticon-menu"></span></div>
+                        <nav class="main-menu navbar-expand-md navbar-light">
+                            <div class="collapse navbar-collapse show clearfix">
+                                <ul class="navigation clearfix">
+                                    <li><a href="/">Home</a></li>
+                                    <li><a href="/about/">About</a></li>
+                                    <li><a href="/experts/">Experts</a></li>
+                                    <li><a href="/learn/">Learn</a></li>
+                                </ul>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+                <div class="other-links clearfix">
+                    <div class="search-btn">
+                        <button class="search-toggler"><span class="flaticon-search"></span></button>
+                    </div>
+                    <div class="wallet-btn-header">
+                        <a href="#" class="wallet-login-btn" onclick="TokenomicWallet.connect(); return false;">Connect Wallet</a>
+                        <a href="/dashboard/" class="wallet-logged-in-btn" style="display:none;">Dashboard</a>
+                    </div>
+                </div>
+        </div>
+    </div>
+    <div class="mobile-menu">
+        <div class="menu-backdrop"></div>
+        <div class="close-btn"><span class="icon flaticon-targeting-cross"></span></div>
+        <nav class="menu-box">
+            <div class="nav-logo">
+                <a href="https://tokenomic.org">
+                    <img src="/assets/images/logo.png" alt="Tokenomic" title="Tokenomic" width="200px" />
+                </a>
+            </div>
+            <div class="menu-outer"></div>
+            <div class="mobile-login-box" style="padding:20px 30px;">
+                <a href="#" class="theme-btn btn-style-one wallet-login-btn" onclick="TokenomicWallet.connect(); return false;" style="display:block;text-align:center;padding:12px 20px;">
+                    <span class="btn-title">Login with Wallet</span>
+                </a>
+                <a href="/dashboard/" class="theme-btn btn-style-one wallet-logged-in-btn" style="display:none;text-align:center;padding:12px 20px;">
+                    <span class="btn-title wallet-addr-text">Dashboard</span>
+                </a>
+            </div>
+            <div class="social-links">
+                <ul class="clearfix">
+                    <li><a href="https://twitter.com/tknmic"><span class="fab fa-twitter"></span></a></li>
+                    <li><a href="https://facebook.com/tknmic"><span class="fab fa-facebook-square"></span></a></li>
+                    <li><a href="https://instagram.com/tknmic"><span class="fab fa-instagram"></span></a></li>
+                    <li><a href="https://www.youtube.com/@tknmic"><span class="fab fa-youtube"></span></a></li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<section class="hidden-bar right-align">
+    <div class="hidden-bar-closer">
+        <button><span class="flaticon-letter-x"></span></button>
+    </div>
+    <div class="hidden-bar-wrapper">
+        <div class="logo">
+            <a href="/"><img src="/assets/images/logo.png" alt="Tokenomic" /></a>
+        </div>
+        <div class="content-box">
+            <h3>Get In Touch</h3>
+            <div class="text">Tokenomic provides concise, tailored courses, consultations, and market analysis for DeFi integration. Our experts span technical, legal, financial, and artistic fields, delivering comprehensive support. Through workshops and insights, we enable institutions to succeed in digital finance.</div>
+            <a href="/about/" class="theme-btn btn-style-two"><div class="btn-title">Consultation</div></a>
+        </div>
+        <div class="contact-info">
+            <h2>Contact Info</h2>
+            <ul class="list-style-two">
+                <li><span class="icon fa fa-map-marker-alt"></span>Rue Robert-Céard 6, 1204 Geneva, Switzerland</li>
+                <li><span class="icon fa fa-envelope-open"></span> <a href="mailto:info@tokenomic.org">info@tokenomic.org</a></li>
+            </ul>
+        </div>
+    </div>
+</section>
 
 <section class="dashboard-section" >
     <div class="auto-container">
@@ -53,27 +196,7 @@
                 </div>
             </div>
             <div class="col-lg-9 col-md-8 col-sm-12">
-                <div class="dashboard-topbar" style="background:#0A0F1A;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;gap:40px;border-bottom:1px solid rgba(255,255,255,0.1);">
-                    <div style="display:flex;align-items:center;gap:30px;min-width:0;">
-                        <a href="/" style="display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0;">
-                            <img src="/assets/images/logo.png" alt="Tokenomic" style="height:32px;width:auto;" />
-                        </a>
-                        <nav style="display:flex;gap:24px;align-items:center;">
-                            <a href="/" style="color:#fff;text-decoration:none;font-size:14px;font-weight:500;transition:color 0.2s;">Home</a>
-                            <a href="/about/" style="color:#fff;text-decoration:none;font-size:14px;font-weight:500;transition:color 0.2s;">About</a>
-                            <a href="/experts/" style="color:#fff;text-decoration:none;font-size:14px;font-weight:500;transition:color 0.2s;">Experts</a>
-                            <a href="/learn/" style="color:#fff;text-decoration:none;font-size:14px;font-weight:500;transition:color 0.2s;">Learn</a>
-                        </nav>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:16px;flex-shrink:0;">
-                        <button style="background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;" onclick="document.querySelector('.site-search-input')?.focus()">
-                            <span class="flaticon-search"></span>
-                        </button>
-                        <button class="wallet-connect-btn" style="padding:8px 20px;font-size:0.85rem;border-radius:6px;background:#f97316;color:#fff;border:none;cursor:pointer;font-weight:600;transition:opacity 0.2s;" onclick="TokenomicWallet.connect()">Connect Wallet</button>
-                        <button class="wallet-disconnect-btn" style="display:none;padding:8px 20px;font-size:0.85rem;border-radius:6px;background:#374151;color:#fff;border:none;cursor:pointer;font-weight:600;" onclick="TokenomicWallet.disconnect()">Disconnect</button>
-                    </div>
-                </div>
-                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
                     <div style="width:80px;height:80px;border-radius:50%;background:#0A0F1A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
                         <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
                     </div>
@@ -738,12 +861,6 @@ function communitiesPage() {
         </div>
     </div>
 </section>
-
-
-
-
-
-
 <footer class="main-footer alternate">
     <div class="auto-container">
         <!--Widgets Section-->
@@ -806,12 +923,13 @@ function communitiesPage() {
     <div class="footer-bottom-two">
         <div class="auto-container">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;">
-                <div class="copyright">Copyright &copy; <span id="copyright-year"></span> Tokenomic.org. All rights reserved.</div><script>document.getElementById("copyright-year").textContent=new Date().getFullYear();</script>
+                <div class="copyright">Copyright &copy; <span id="copyright-year"></span> Tokenomic.org. All rights reserved.</div>
+                <script>document.getElementById('copyright-year').textContent=new Date().getFullYear();</script>
                 <div style="display:flex;gap:30px;align-items:center;flex-wrap:wrap;">
                     <a href="https://tokenomic.org/privacy" style="color:#5a8299;text-decoration:none;font-size:13px;">Privacy Policy</a>
                     <a href="https://tokenomic.org/terms" style="color:#5a8299;text-decoration:none;font-size:13px;">Terms of Service</a>
                 </div>
-                <div class="social-links" style="display:flex;gap:16px;">
+                <div class="social-links" style="display:flex;gap:12px;">
                     <a href="https://www.facebook.com/tknmic" title="Facebook" style="color:#5a8299;"><i class="fab fa-facebook-square"></i></a>
                     <a href="https://twitter.com/tknmic" title="Twitter" style="color:#5a8299;"><i class="fab fa-twitter"></i></a>
                     <a href="https://www.linkedin.com/company/tknmic" title="LinkedIn" style="color:#5a8299;"><i class="fab fa-linkedin"></i></a>
@@ -826,19 +944,8 @@ function communitiesPage() {
     </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/shared/assets/js/supabase-client.js"></script>
-<script src="/shared/assets/js/profile-photo.js"></script>
-
-
-
-
+<script>function submitNewsletter(e){e.preventDefault();var f=e.target;var email=f.querySelector("input[name=email]").value;var btn=f.querySelector("button");var msg=f.closest(".newsletter-widget").querySelector(".newsletter-msg")||document.createElement("div");btn.disabled=true;btn.textContent="Subscribing...";fetch("/api/newsletter/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email})}).then(function(r){return r.json()}).then(function(d){if(d.success){btn.textContent="Subscribed!";btn.style.background="#38a169";if(msg.classList){msg.textContent=d.message;msg.style.display="block";msg.style.color="#38a169";}f.querySelector("input[name=email]").value="";}else{throw new Error(d.error)}}).catch(function(err){btn.textContent="Subscribe Now";btn.disabled=false;if(msg.classList){msg.textContent=err.message||"Please try again";msg.style.display="block";msg.style.color="#e53e3e";}});return false;}</script>
         </div>
-        <!--End pagewrapper-->
-        <!--Scroll to top-->
         <div class="scroll-to-top scroll-to-target" data-target="html"><span class="flaticon-up-arrow"></span></div>
         <script src="/assets/js/jquery.js"></script>
         <script src="/assets/js/popper.min.js"></script>
@@ -853,11 +960,9 @@ function communitiesPage() {
         <script src="/assets/js/isotope.js"></script>
         <script src="/assets/js/appear.js"></script>
         <script src="/assets/js/wow.js"></script>
-        <script src="/assets/js/simple-jekyll-search.min.js"></script>
-        <script src="/assets/js/element-in-view.js"></script>
         <script src="/assets/js/custom-script.js"></script>
+        <script src="/shared/assets/js/supabase-client.js"></script>
+        <script src="/shared/assets/js/profile-photo.js"></script>
         <script src="/shared/assets/js/web3-wallet.js"></script>
-<script src="/shared/assets/js/site-search.js"></script>
-<script>function submitNewsletter(e){e.preventDefault();var f=e.target;var email=f.querySelector("input[name=email]").value;var btn=f.querySelector("button");var msg=f.closest(".newsletter-widget").querySelector(".newsletter-msg")||document.createElement("div");btn.disabled=true;btn.textContent="Subscribing...";fetch("/api/newsletter/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email})}).then(function(r){return r.json()}).then(function(d){if(d.success){btn.textContent="Subscribed!";btn.style.background="#38a169";if(msg.classList){msg.textContent=d.message;msg.style.display="block";msg.style.color="#38a169";}f.querySelector("input[name=email]").value="";}else{throw new Error(d.error)}}).catch(function(err){btn.textContent="Subscribe Now";btn.disabled=false;if(msg.classList){msg.textContent=err.message||"Please try again";msg.style.display="block";msg.style.color="#e53e3e";}});return false;}</script>
-</body>
+    </body>
 </html>
