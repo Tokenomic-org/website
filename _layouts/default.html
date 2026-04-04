@@ -2,7 +2,17 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>Tokenomic - Advance Your Decentralized Finance Expertise</title>
+        <title>{% if page.title %}{{ page.title }} - Tokenomic{% else %}Tokenomic - Advance Your Decentralized Finance Expertise{% endif %}</title>
+        {% if page.layout == 'article' %}
+        <link href="/assets/css/article.css" rel="stylesheet" />
+        <meta property="og:title" content="{{ page.title }}">
+        <meta property="og:type" content="article">
+        <meta property="og:url" content="https://tokenomic.org/learn/{{ page.slug }}">
+        {% if page.featured_image %}<meta property="og:image" content="https://tokenomic.org{{ page.featured_image }}">{% endif %}
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ page.title }}">
+        <link rel="alternate" type="application/rss+xml" title="Tokenomic RSS Feed" href="/feed.xml" />
+        {% endif %}
         <link href="/assets/css/bootstrap.css" rel="stylesheet" />
         <link href="/assets/css/style.css" rel="stylesheet" />
         <link href="/assets/css/responsive.css" rel="stylesheet" />

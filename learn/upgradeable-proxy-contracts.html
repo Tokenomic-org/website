@@ -1,0 +1,191 @@
+---
+layout: article
+title: "Upgradeable Proxy Contracts"
+slug: upgradeable-proxy-contracts
+category: Technical
+date: 2024-09-20
+author: "Guillaume Lauzier"
+featured_image: /assets/images/learn/smart-contracts.png
+reading_time: 6
+permalink: /learn/upgradeable-proxy-contracts/
+author_specialty: "DeFi & Technical Implementation"
+author_bio: "Founder of and Institutional Educator at Tokenomic, specializing in technical implementation, financial analysis, and digital assets."
+author_avatar: /assets/images/learn/100.jpg
+author_wallet: 0x1234...abcd
+---
+<h1 id="upgradeable-proxy-contracts">Upgradeable Proxy Contracts</h1>
+
+<p><em>Estimated reading time: 11 minutes</em></p>
+
+<p>One of the fundamental properties of blockchain is immutability—once a smart contract is deployed, its code cannot be changed. While this provides strong security guarantees, it also presents challenges when bugs are discovered or new features need to be added. Upgradeable proxy contracts solve this problem by separating a contract's storage from its logic, allowing developers to update the logic while preserving the contract's state and address. This article explores the major proxy patterns, their implementation details, security considerations, and best practices.</p>
+
+<h2 id="why-upgradeability">Why Upgradeability?</h2>
+
+<p>Smart contracts handle billions of dollars in value, and real-world deployments often require updates for several reasons:</p>
+
+<ul>
+<li><strong>Bug Fixes</strong>: Critical vulnerabilities discovered post-deployment need immediate remediation.</li>
+<li><strong>Feature Additions</strong>: Protocols evolve, and new functionality may be needed.</li>
+<li><strong>Gas Optimization</strong>: Improved implementations can reduce transaction costs.</li>
+<li><strong>Regulatory Compliance</strong>: Changing legal requirements may necessitate contract updates.</li>
+</ul>
+
+<p>Without upgradeability patterns, the only option would be to deploy an entirely new contract and migrate all state data—an expensive, error-prone, and disruptive process.</p>
+
+<h2 id="the-proxy-pattern">The Proxy Pattern</h2>
+
+<p>The proxy pattern uses Solidity's <code>delegatecall</code> opcode to forward function calls from a proxy contract to an implementation (logic) contract. The key insight is that <code>delegatecall</code> executes the implementation's code in the context of the proxy's storage, meaning all state changes happen on the proxy contract.</p>
+
+<pre><code>// Simplified proxy contract
+contract Proxy {
+    address public implementation;
+
+    fallback() external payable {
+        address impl = implementation;
+        assembly {
+            calldatacopy(0, 0, calldatasize())
+            let result := delegatecall(gas(), impl, 0, calldatasize(), 0, 0)
+            returndatacopy(0, 0, returndatasize())
+            switch result
+            case 0 { revert(0, returndatasize()) }
+            default { return(0, returndatasize()) }
+        }
+    }
+}</code></pre>
+
+<p>This separation means:</p>
+<ul>
+<li>The <strong>proxy</strong> holds the contract's address and state (storage).</li>
+<li>The <strong>implementation</strong> holds the business logic.</li>
+<li>Users interact with the proxy address, which never changes.</li>
+</ul>
+
+<h2 id="transparent-proxy-pattern">Transparent Proxy Pattern</h2>
+
+<p>The Transparent Proxy Pattern, popularized by OpenZeppelin, addresses a critical issue: <strong>function selector clashing</strong>. If the proxy and implementation contracts have functions with the same selector, ambiguity arises about which function should execute.</p>
+
+<p>The transparent proxy solves this by enforcing a simple rule:</p>
+<ul>
+<li>The <strong>admin</strong> can only call proxy management functions (like <code>upgradeTo</code>).</li>
+<li><strong>All other callers</strong> have their calls delegated to the implementation.</li>
+</ul>
+
+<pre><code>function _fallback() internal {
+    if (msg.sender == admin) {
+        // Handle admin functions directly
+    } else {
+        // Delegate to implementation
+        _delegate(implementation);
+    }
+}</code></pre>
+
+<p><strong>Pros</strong>: Simple mental model, clear separation of admin and user calls.<br/>
+<strong>Cons</strong>: Every call requires an admin check (extra gas cost), admin cannot interact with the implementation as a regular user.</p>
+
+<h2 id="uups-pattern">UUPS (Universal Upgradeable Proxy Standard)</h2>
+
+<p>The UUPS pattern (EIP-1822) moves the upgrade logic from the proxy to the implementation contract. The proxy is minimal—it only contains the <code>delegatecall</code> forwarding logic and a storage slot for the implementation address.</p>
+
+<pre><code>// UUPS Implementation
+contract MyContractV1 is UUPSUpgradeable {
+    uint256 public value;
+
+    function initialize(uint256 _value) public initializer {
+        value = _value;
+    }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+}</code></pre>
+
+<p><strong>Pros</strong>: Cheaper deployment and calls (no admin check in proxy), smaller proxy bytecode.<br/>
+<strong>Cons</strong>: If the implementation doesn't include upgrade logic, the contract becomes permanently non-upgradeable. This is a security risk if developers forget to include the upgrade mechanism.</p>
+
+<h2 id="beacon-proxy-pattern">Beacon Proxy Pattern</h2>
+
+<p>The Beacon Proxy pattern is designed for scenarios where multiple proxy instances need to share the same implementation. Instead of each proxy storing its own implementation address, all proxies point to a single "beacon" contract that stores the implementation address.</p>
+
+<pre><code>contract Beacon {
+    address public implementation;
+
+    function upgrade(address newImplementation) external onlyOwner {
+        implementation = newImplementation;
+    }
+}
+
+contract BeaconProxy {
+    address public beacon;
+
+    fallback() external payable {
+        address impl = Beacon(beacon).implementation();
+        // delegatecall to impl
+    }
+}</code></pre>
+
+<p>Upgrading the beacon's implementation address simultaneously upgrades all proxy instances—a powerful feature for protocols that deploy many instances of the same contract (like individual user vaults or lending pools).</p>
+
+<h2 id="diamond-pattern">Diamond Pattern (EIP-2535)</h2>
+
+<p>The Diamond pattern extends the proxy concept to support multiple implementation contracts (called "facets"). A mapping of function selectors to facet addresses determines which implementation handles each function call.</p>
+
+<p>This pattern is useful for complex contracts that exceed the 24KB contract size limit, as logic can be split across multiple facets. However, it adds significant complexity and requires careful management of function selectors and storage layouts.</p>
+
+<h2 id="storage-considerations">Storage Layout Considerations</h2>
+
+<p>One of the most critical aspects of upgradeable contracts is maintaining consistent storage layouts between versions. Since the proxy's storage is used by all implementation versions, changing the order or type of state variables can corrupt data.</p>
+
+<h3 id="storage-collision">Avoiding Storage Collisions</h3>
+
+<p>Proxy patterns use specific storage slots (defined by EIP-1967) to store admin and implementation addresses, preventing collisions with implementation storage:</p>
+
+<pre><code>// EIP-1967 slots
+bytes32 constant IMPLEMENTATION_SLOT = bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1);
+bytes32 constant ADMIN_SLOT = bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1);</code></pre>
+
+<h3 id="upgrade-safe-rules">Rules for Upgrade-Safe Contracts</h3>
+
+<ul>
+<li><strong>Never remove or reorder</strong> existing state variables.</li>
+<li><strong>Only append</strong> new state variables at the end.</li>
+<li><strong>Never change the type</strong> of an existing variable.</li>
+<li><strong>Use storage gaps</strong> in base contracts to reserve space for future variables.</li>
+<li><strong>Use initializer functions</strong> instead of constructors (constructors only run in the implementation's context, not the proxy's).</li>
+</ul>
+
+<pre><code>contract MyContractV1 {
+    uint256 public value;
+    address public owner;
+    uint256[48] private __gap; // Reserve 48 slots for future use
+}
+
+contract MyContractV2 {
+    uint256 public value;
+    address public owner;
+    uint256 public newVariable; // Uses one gap slot
+    uint256[47] private __gap; // 47 remaining slots
+}</code></pre>
+
+<h2 id="security-considerations">Security Considerations</h2>
+
+<h3 id="initialization">Initialization</h3>
+
+<p>Since constructors don't work with proxies, initialization functions must be used—and they must be protected against being called multiple times using an <code>initializer</code> modifier.</p>
+
+<h3 id="access-control">Access Control for Upgrades</h3>
+
+<p>Upgrade functions must be strictly access-controlled. Common patterns include requiring a multi-sig wallet, a timelock, or governance approval before upgrades can be executed.</p>
+
+<h3 id="implementation-security">Implementation Contract Security</h3>
+
+<p>The implementation contract should be initialized or destroyed after deployment to prevent attackers from taking ownership of the implementation directly (which could allow them to <code>selfdestruct</code> it in pre-Cancun EVM versions).</p>
+
+<h2 id="tools-and-frameworks">Tools and Frameworks</h2>
+
+<ul>
+<li><strong>OpenZeppelin Upgrades Plugins</strong>: Provides Hardhat and Foundry plugins for deploying and managing upgradeable contracts with built-in safety checks.</li>
+<li><strong>OpenZeppelin Defender</strong>: Platform for managing upgrades, access control, and monitoring.</li>
+<li><strong>Foundry</strong>: Supports upgradeable contract testing with its fork and snapshot capabilities.</li>
+</ul>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Upgradeable proxy contracts are an essential tool in the smart contract developer's toolkit, enabling the evolution of on-chain systems while maintaining continuity for users. The choice between Transparent Proxy, UUPS, Beacon, or Diamond patterns depends on the specific requirements of your protocol—whether you prioritize simplicity, gas efficiency, multi-instance upgrades, or modular architecture. Regardless of the pattern chosen, maintaining strict storage layout discipline, implementing robust access controls, and thoroughly testing upgrade paths are non-negotiable practices for secure upgradeable contracts.</p>

@@ -101,12 +101,17 @@ Defined in `_data/navigation.yml`: Home, About, Experts, Learn
 - Articles originally from learn.tokenomic.org, now pulled to main site
 - Article content scraped and stored in `scripts/articles-data.json`
 - Article images downloaded to `assets/images/learn/` (cover images + inline content images)
-- Static pages generated at `_site/learn/[slug]/index.html` via `scripts/generate-article-pages.js`
-- To regenerate: run `node scripts/scrape-articles.js` then `node scripts/generate-article-pages.js`
+- **Jekyll source files**: `learn/*.html` — 13 article pages + 3 redirect aliases, each with front matter (`layout: article`, `permalink`, `title`, `slug`, `category`, `date`, `author`, `featured_image`, `reading_time`, author profile fields)
+- **Article layout**: `_layouts/article.html` — extends `default` layout, includes header, page banner with breadcrumbs, article detail section (meta, title, author, featured image, body, share buttons, expert profile card, comments)
+- **Article CSS**: `assets/css/article.css` — article detail styles (typography, share buttons, expert card, comments form); loaded conditionally via `default.html` when `page.layout == 'article'`
+- **OG meta tags**: Dynamic title, og:title, og:type, og:url, og:image, twitter:card added to `_layouts/default.html` head for article pages
+- **`_site/` pages**: Pre-built by `scripts/generate-article-pages.js` (for Replit preview); `_site/` is in `.gitignore` so GitHub Pages uses Jekyll source files
+- **To regenerate source files**: `node scripts/generate-article-sources.js` (creates `learn/*.html` from `scripts/articles-data.json`)
+- **To regenerate `_site/` pages**: `node scripts/generate-article-pages.js` (creates `_site/learn/[slug]/index.html`)
 - Demo data in supabase-client.js uses local image paths (`/assets/images/learn/`)
 - Site search (site-search.js) searches across articles, educators, and consultants — matches on names, descriptions/bios, specialties, categories, and keywords; results shown with color-coded type badges (orange=Article, green=Educator, blue=Consultant); popup HTML is dynamically injected if missing from the page
 - 13 articles across Strategy, Technical, and Market categories
-- Slug aliases (symlinks) for alternate URL patterns: `arbitrage-practical-guide`, `advanced-options-defi`, `smart-contract-security-basics`
+- Slug aliases (redirect pages) for alternate URL patterns: `arbitrage-practical-guide`, `advanced-options-defi`, `smart-contract-security-basics`
 
 ## Important Notes
 - Ruby/Jekyll is NOT installed locally — cannot run `jekyll build`
@@ -127,6 +132,7 @@ This project has a **dual-file architecture** that must be maintained:
 |---|---|
 | `assets/css/style.css` | `_site/assets/css/style.css` |
 | `assets/css/dashboard.css` | `_site/assets/css/dashboard.css` |
+| `assets/css/article.css` | `_site/assets/css/article.css` |
 | `shared/assets/js/site-search.js` | `_site/shared/assets/js/site-search.js` |
 | `shared/assets/js/supabase-client.js` | `_site/shared/assets/js/supabase-client.js` |
 | `shared/assets/js/web3-wallet.js` | `_site/shared/assets/js/web3-wallet.js` |

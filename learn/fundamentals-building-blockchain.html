@@ -1,0 +1,416 @@
+---
+layout: article
+title: "Building a Blockchain, A Comprehensive Guide"
+slug: fundamentals-building-blockchain
+category: Technical
+date: 2023-07-19
+author: "Guillaume Lauzier"
+featured_image: /assets/images/learn/fundamentals-building-blockchain.png
+reading_time: 15
+permalink: /learn/fundamentals-building-blockchain/
+author_specialty: "DeFi & Technical Implementation"
+author_bio: "Founder of and Institutional Educator at Tokenomic, specializing in technical implementation, financial analysis, and digital assets."
+author_avatar: /assets/images/learn/100.jpg
+author_wallet: 0x1234...abcd
+---
+<p>The blockchain is a transformative technology that has had a profound impact on various sectors from finance to supply chain management. While the journey to master blockchain development is a complex one, understanding its fundamentals is the first step towards proficiency. This article delves into these essential building blocks of creating a blockchain.</p>
+
+<h2 id="1-understanding-blockchain-basics">1. Understanding Blockchain Basics</h2>
+<p>Before you build a blockchain, it’s crucial to understand its core elements:</p>
+
+<h3 id="blockchain-structure">Blockchain Structure</h3>
+<p>A blockchain is a distributed ledger of transactions, organized into blocks. Each block contains a list of transactions, a reference to the previous block (through its hash), and the block’s unique hash. This chain of blocks forms the blockchain. Creating a blockchain structure involves creating a data structure to store blocks, and each block will contain a set of transactions. For simplicity, we’ll create a simple blockchain structure where each block stores a string as data. Also, we’ll use the SHA-256 cryptographic hash function to create the hash for each block.</p>
+
+<p>Here’s a simple C++ implementation:</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sstream&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;openssl/sha.h&gt;</span><span class="cp">
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="c1">// Function to calculate SHA256</span>
+<span class="n">string</span> <span class="nf">calculateSHA256</span><span class="p">(</span><span class="n">string</span> <span class="n">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">hash</span><span class="p">[</span><span class="n">SHA256_DIGEST_LENGTH</span><span class="p">];</span>
+    <span class="n">SHA256_CTX</span> <span class="n">sha256</span><span class="p">;</span>
+    <span class="n">SHA256_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sha256</span><span class="p">);</span>
+    <span class="n">SHA256_Update</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sha256</span><span class="p">,</span> <span class="n">data</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+    <span class="n">SHA256_Final</span><span class="p">(</span><span class="n">hash</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sha256</span><span class="p">);</span>
+
+    <span class="n">stringstream</span> <span class="n">ss</span><span class="p">;</span>
+    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">SHA256_DIGEST_LENGTH</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">ss</span> <span class="o">&lt;&lt;</span> <span class="n">hex</span> <span class="o">&lt;&lt;</span> <span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">setfill</span><span class="p">(</span><span class="sc">'0'</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">hash</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">ss</span><span class="p">.</span><span class="n">str</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="c1">// Block Structure</span>
+<span class="k">class</span> <span class="nc">Block</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="n">string</span> <span class="n">prevHash</span><span class="p">;</span>
+    <span class="n">string</span> <span class="n">data</span><span class="p">;</span>
+    <span class="n">string</span> <span class="n">blockHash</span><span class="p">;</span>
+    <span class="n">Block</span><span class="p">(</span><span class="n">string</span> <span class="n">data</span><span class="p">,</span> <span class="n">string</span> <span class="n">prevHash</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="o">-&gt;</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">;</span>
+        <span class="k">this</span><span class="o">-&gt;</span><span class="n">prevHash</span> <span class="o">=</span> <span class="n">prevHash</span><span class="p">;</span>
+        <span class="n">blockHash</span> <span class="o">=</span> <span class="n">calculateSHA256</span><span class="p">(</span><span class="n">prevHash</span> <span class="o">+</span> <span class="n">data</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="c1">// Blockchain Structure</span>
+<span class="k">class</span> <span class="nc">Blockchain</span> <span class="p">{</span>
+<span class="nl">private:</span>
+    <span class="n">vector</span><span class="o">&lt;</span><span class="n">Block</span><span class="o">&gt;</span> <span class="n">chain</span><span class="p">;</span>
+<span class="nl">public:</span>
+    <span class="c1">// Add Block to Blockchain</span>
+    <span class="kt">void</span> <span class="n">addBlock</span><span class="p">(</span><span class="n">string</span> <span class="n">data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">string</span> <span class="n">prevHash</span> <span class="o">=</span> <span class="n">chain</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span> <span class="o">?</span> <span class="n">string</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="sc">'0'</span><span class="p">)</span> <span class="o">:</span> <span class="n">chain</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">blockHash</span><span class="p">;</span>
+        <span class="n">Block</span> <span class="n">newBlock</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">prevHash</span><span class="p">);</span>
+        <span class="n">chain</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">newBlock</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Print Blockchain</span>
+    <span class="kt">void</span> <span class="n">printChain</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">for</span><span class="p">(</span><span class="n">Block</span> <span class="n">block</span> <span class="o">:</span> <span class="n">chain</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Data: "</span> <span class="o">&lt;&lt;</span> <span class="n">block</span><span class="p">.</span><span class="n">data</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+            <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Previous Hash: "</span> <span class="o">&lt;&lt;</span> <span class="n">block</span><span class="p">.</span><span class="n">prevHash</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+            <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Block Hash: "</span> <span class="o">&lt;&lt;</span> <span class="n">block</span><span class="p">.</span><span class="n">blockHash</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">Blockchain</span> <span class="n">myChain</span><span class="p">;</span>
+    <span class="n">myChain</span><span class="p">.</span><span class="n">addBlock</span><span class="p">(</span><span class="s">"Block 1"</span><span class="p">);</span>
+    <span class="n">myChain</span><span class="p">.</span><span class="n">addBlock</span><span class="p">(</span><span class="s">"Block 2"</span><span class="p">);</span>
+    <span class="n">myChain</span><span class="p">.</span><span class="n">addBlock</span><span class="p">(</span><span class="s">"Block 3"</span><span class="p">);</span>
+    <span class="n">myChain</span><span class="p">.</span><span class="n">printChain</span><span class="p">();</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Note that you need the OpenSSL library installed to compile this code.</p>
+
+<h3 id="consensus-mechanism">Consensus Mechanism</h3>
+<p>This is the method a blockchain uses to agree on the validity of transactions. The most known mechanisms are Proof-of-Work (PoW) and Proof-of-Stake (PoS), but other types, like Delegated Proof-of-Stake (DPoS), Byzantine Fault Tolerance (BFT), and more are also used.</p>
+
+<p>Implementing a consensus mechanism like Proof-of-Work (PoW) or Proof-of-Stake (PoS) in C++ would be a fairly complex task, as these algorithms require a network of nodes communicating with each other and other advanced features. However, a simplified implementation of Proof-of-Work can be done, which we will demonstrate below. In this example, we’ll use a simple mining function to demonstrate the PoW concept.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sstream&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;openssl/sha.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;iomanip&gt;</span><span class="cp">
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="n">string</span> <span class="nf">calculateSHA256</span><span class="p">(</span><span class="n">string</span> <span class="n">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">hash</span><span class="p">[</span><span class="n">SHA256_DIGEST_LENGTH</span><span class="p">];</span>
+    <span class="n">SHA256_CTX</span> <span class="n">sha256</span><span class="p">;</span>
+    <span class="n">SHA256_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sha256</span><span class="p">);</span>
+    <span class="n">SHA256_Update</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sha256</span><span class="p">,</span> <span class="n">data</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+    <span class="n">SHA256_Final</span><span class="p">(</span><span class="n">hash</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sha256</span><span class="p">);</span>
+
+    <span class="n">stringstream</span> <span class="n">ss</span><span class="p">;</span>
+    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">SHA256_DIGEST_LENGTH</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">ss</span> <span class="o">&lt;&lt;</span> <span class="n">hex</span> <span class="o">&lt;&lt;</span> <span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">setfill</span><span class="p">(</span><span class="sc">'0'</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">hash</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">ss</span><span class="p">.</span><span class="n">str</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">Block</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="n">string</span> <span class="n">prevHash</span><span class="p">;</span>
+    <span class="n">string</span> <span class="n">data</span><span class="p">;</span>
+    <span class="n">string</span> <span class="n">blockHash</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">nonce</span><span class="p">;</span>
+    <span class="n">Block</span><span class="p">(</span><span class="n">string</span> <span class="n">data</span><span class="p">,</span> <span class="n">string</span> <span class="n">prevHash</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="o">-&gt;</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">;</span>
+        <span class="k">this</span><span class="o">-&gt;</span><span class="n">prevHash</span> <span class="o">=</span> <span class="n">prevHash</span><span class="p">;</span>
+        <span class="n">nonce</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+        <span class="n">blockHash</span> <span class="o">=</span> <span class="n">mineBlock</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span>  <span class="c1">// 4 is the difficulty level</span>
+    <span class="p">}</span>
+
+    <span class="n">string</span> <span class="n">mineBlock</span><span class="p">(</span><span class="kt">int</span> <span class="n">difficulty</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">string</span> <span class="n">target</span><span class="p">(</span><span class="n">difficulty</span><span class="p">,</span> <span class="sc">'0'</span><span class="p">);</span>
+        <span class="n">string</span> <span class="n">newHash</span><span class="p">;</span>
+        <span class="k">do</span> <span class="p">{</span>
+            <span class="n">nonce</span><span class="o">++</span><span class="p">;</span>
+            <span class="n">newHash</span> <span class="o">=</span> <span class="n">calculateSHA256</span><span class="p">(</span><span class="n">prevHash</span> <span class="o">+</span> <span class="n">data</span> <span class="o">+</span> <span class="n">to_string</span><span class="p">(</span><span class="n">nonce</span><span class="p">));</span>
+        <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="n">newHash</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">difficulty</span><span class="p">)</span> <span class="o">!=</span> <span class="n">target</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">newHash</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Blockchain</span> <span class="p">{</span>
+<span class="nl">private:</span>
+    <span class="n">vector</span><span class="o">&lt;</span><span class="n">Block</span><span class="o">&gt;</span> <span class="n">chain</span><span class="p">;</span>
+<span class="nl">public:</span>
+    <span class="kt">void</span> <span class="n">addBlock</span><span class="p">(</span><span class="n">string</span> <span class="n">data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">string</span> <span class="n">prevHash</span> <span class="o">=</span> <span class="n">chain</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span> <span class="o">?</span> <span class="n">string</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="sc">'0'</span><span class="p">)</span> <span class="o">:</span> <span class="n">chain</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">blockHash</span><span class="p">;</span>
+        <span class="n">Block</span> <span class="n">newBlock</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">prevHash</span><span class="p">);</span>
+        <span class="n">chain</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">newBlock</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">printChain</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">for</span><span class="p">(</span><span class="n">Block</span> <span class="n">block</span> <span class="o">:</span> <span class="n">chain</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Data: "</span> <span class="o">&lt;&lt;</span> <span class="n">block</span><span class="p">.</span><span class="n">data</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+            <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Previous Hash: "</span> <span class="o">&lt;&lt;</span> <span class="n">block</span><span class="p">.</span><span class="n">prevHash</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+            <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Block Hash: "</span> <span class="o">&lt;&lt;</span> <span class="n">block</span><span class="p">.</span><span class="n">blockHash</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+            <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Nonce: "</span> <span class="o">&lt;&lt;</span> <span class="n">block</span><span class="p">.</span><span class="n">nonce</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">Blockchain</span> <span class="n">myChain</span><span class="p">;</span>
+    <span class="n">myChain</span><span class="p">.</span><span class="n">addBlock</span><span class="p">(</span><span class="s">"Block 1"</span><span class="p">);</span>
+    <span class="n">myChain</span><span class="p">.</span><span class="n">addBlock</span><span class="p">(</span><span class="s">"Block 2"</span><span class="p">);</span>
+    <span class="n">myChain</span><span class="p">.</span><span class="n">addBlock</span><span class="p">(</span><span class="s">"Block 3"</span><span class="p">);</span>
+    <span class="n">myChain</span><span class="p">.</span><span class="n">printChain</span><span class="p">();</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="2-node-creation">2. Node Creation</h2>
+<p>A blockchain network is made up of nodes. Each node is a computer that participates in the blockchain network and maintains a copy of the entire blockchain. Understanding how to set up these nodes, which involves installing the necessary software and connecting the node to the blockchain network, is fundamental to building a blockchain.</p>
+
+<p>Creating a node and establishing a network connection in C++ involves using networking libraries. We will use a simplified version in our example which uses the standard library’s networking facilities (as of C++20, C++ now includes native support for networking in the standard library).</p>
+
+<p>Below is a simple example of a blockchain node that can receive and display blocks from its peers. It does not validate the blocks or maintain a copy of the blockchain:</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;asio/ip/tcp.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">using</span> <span class="n">asio</span><span class="o">::</span><span class="n">ip</span><span class="o">::</span><span class="n">tcp</span><span class="p">;</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">Block</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="n">string</span> <span class="n">prevHash</span><span class="p">;</span>
+    <span class="n">string</span> <span class="n">data</span><span class="p">;</span>
+    <span class="n">string</span> <span class="n">blockHash</span><span class="p">;</span>
+    <span class="c1">// Assume these fields are properly set in the constructor</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Node</span> <span class="p">{</span>
+<span class="nl">private:</span>
+    <span class="n">asio</span><span class="o">::</span><span class="n">io_context</span> <span class="n">io_context</span><span class="p">;</span>
+    <span class="n">tcp</span><span class="o">::</span><span class="n">acceptor</span> <span class="n">acceptor</span><span class="p">;</span>
+    <span class="n">vector</span><span class="o">&lt;</span><span class="n">Block</span><span class="o">&gt;</span> <span class="n">blockchain</span><span class="p">;</span>
+
+    <span class="kt">void</span> <span class="n">startAccepting</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">tcp</span><span class="o">::</span><span class="n">socket</span> <span class="n">socket</span><span class="p">(</span><span class="n">io_context</span><span class="p">);</span>
+        <span class="n">acceptor</span><span class="p">.</span><span class="n">async_accept</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="p">[</span><span class="k">this</span><span class="p">](</span><span class="n">std</span><span class="o">::</span><span class="n">error_code</span> <span class="n">ec</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">ec</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">handleNewConnection</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">socket</span><span class="p">));</span>
+            <span class="p">}</span>
+            <span class="n">startAccepting</span><span class="p">();</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">handleNewConnection</span><span class="p">(</span><span class="n">tcp</span><span class="o">::</span><span class="n">socket</span> <span class="n">socket</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// For simplicity, assume each connection sends exactly one block,</span>
+        <span class="c1">// then closes the connection</span>
+        <span class="n">Block</span> <span class="n">newBlock</span><span class="p">;</span>
+        <span class="n">asio</span><span class="o">::</span><span class="n">async_read</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">asio</span><span class="o">::</span><span class="n">buffer</span><span class="p">(</span><span class="o">&amp;</span><span class="n">newBlock</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">newBlock</span><span class="p">)),</span> <span class="p">[</span><span class="k">this</span><span class="p">,</span> <span class="n">newBlock</span><span class="p">](</span><span class="n">std</span><span class="o">::</span><span class="n">error_code</span> <span class="n">ec</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="kt">size_t</span> <span class="cm">/*length*/</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">ec</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">handleNewBlock</span><span class="p">(</span><span class="n">newBlock</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">handleNewBlock</span><span class="p">(</span><span class="k">const</span> <span class="n">Block</span><span class="o">&amp;</span> <span class="n">newBlock</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// In a real blockchain node, you would validate the block here,</span>
+        <span class="c1">// update your UTXO database, handle forks, etc.</span>
+        <span class="c1">// This example simply prints the block and adds it to a vector.</span>
+        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Received a new block with data: "</span> <span class="o">&lt;&lt;</span> <span class="n">newBlock</span><span class="p">.</span><span class="n">data</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+        <span class="n">blockchain</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">newBlock</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="nl">public:</span>
+    <span class="n">Node</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">port</span><span class="p">)</span>
+    <span class="o">:</span> <span class="n">acceptor</span><span class="p">(</span><span class="n">io_context</span><span class="p">,</span> <span class="n">tcp</span><span class="o">::</span><span class="n">endpoint</span><span class="p">(</span><span class="n">tcp</span><span class="o">::</span><span class="n">v4</span><span class="p">(),</span> <span class="n">port</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">startAccepting</span><span class="p">();</span>
+        <span class="n">io_context</span><span class="p">.</span><span class="n">run</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">Node</span> <span class="n">node</span><span class="p">(</span><span class="mi">12345</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>As you can see, building a blockchain from scratch is a substantial task that requires a solid understanding of many areas including network programming, cryptography, databases, and multithreaded programming. It’s recommended to study existing open-source blockchain implementations to understand how they work in detail.</p>
+
+<h2 id="3-transaction-design">3. Transaction Design</h2>
+<p>Transactions are the heart of a blockchain as they represent the actions carried out on the network. In Bitcoin, for example, a transaction is a transfer of value from one person to another. Designing a transaction involves defining its structure (inputs, outputs) and how it’s validated (signature verification).</p>
+
+<p>Creating a transaction in a blockchain network involves dealing with cryptography, specifically with cryptographic signatures and hash functions. The C++ Standard Library doesn’t have cryptographic functions, so you’ll need to use a library like OpenSSL or Crypto++.</p>
+
+<p>In this simplified example, I’ll illustrate a basic structure of a transaction and its validation using Crypto++. However, bear in mind that a real-world blockchain transaction would be much more complex, would include additional checks and balances, and would be part of a larger system that includes blocks, a network of nodes, consensus mechanisms, etc.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;crypto++/secblock.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;crypto++/osrng.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;crypto++/eccrypto.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;crypto++/oids.h&gt;</span><span class="cp">
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">CryptoPP</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">Transaction</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="n">string</span> <span class="n">senderPublicKey</span><span class="p">;</span>
+    <span class="n">string</span> <span class="n">receiverPublicKey</span><span class="p">;</span>
+    <span class="kt">double</span> <span class="n">amount</span><span class="p">;</span>
+    <span class="n">string</span> <span class="n">signature</span><span class="p">;</span>
+
+    <span class="kt">bool</span> <span class="n">Validate</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// We'll use the secp256k1 curve, like Bitcoin.</span>
+        <span class="n">ECDSA</span><span class="o">&lt;</span><span class="n">ECP</span><span class="p">,</span> <span class="n">SHA256</span><span class="o">&gt;::</span><span class="n">PublicKey</span> <span class="n">publicKey</span><span class="p">;</span>
+        <span class="n">publicKey</span><span class="p">.</span><span class="n">Load</span><span class="p">(</span><span class="n">StringSource</span><span class="p">(</span><span class="n">senderPublicKey</span><span class="p">,</span> <span class="nb">true</span><span class="p">).</span><span class="n">Ref</span><span class="p">());</span>
+
+        <span class="n">ECDSA</span><span class="o">&lt;</span><span class="n">ECP</span><span class="p">,</span> <span class="n">SHA256</span><span class="o">&gt;::</span><span class="n">Verifier</span> <span class="n">verifier</span><span class="p">(</span><span class="n">publicKey</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">verifier</span><span class="p">.</span><span class="n">VerifyMessage</span><span class="p">((</span><span class="k">const</span> <span class="n">byte</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">amount</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">amount</span><span class="p">),</span> <span class="p">(</span><span class="k">const</span> <span class="n">byte</span><span class="o">*</span><span class="p">)</span><span class="n">signature</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">signature</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Wallet</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="n">ECDSA</span><span class="o">&lt;</span><span class="n">ECP</span><span class="p">,</span> <span class="n">SHA256</span><span class="o">&gt;::</span><span class="n">PrivateKey</span> <span class="n">privateKey</span><span class="p">;</span>
+    <span class="n">ECDSA</span><span class="o">&lt;</span><span class="n">ECP</span><span class="p">,</span> <span class="n">SHA256</span><span class="o">&gt;::</span><span class="n">PublicKey</span> <span class="n">publicKey</span><span class="p">;</span>
+
+    <span class="n">Wallet</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">AutoSeededRandomPool</span> <span class="n">rng</span><span class="p">;</span>
+        <span class="n">privateKey</span><span class="p">.</span><span class="n">Initialize</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">ASN1</span><span class="o">::</span><span class="n">secp256k1</span><span class="p">());</span>
+        <span class="n">publicKey</span> <span class="o">=</span> <span class="n">ECDSA</span><span class="o">&lt;</span><span class="n">ECP</span><span class="p">,</span> <span class="n">SHA256</span><span class="o">&gt;::</span><span class="n">PublicKey</span><span class="p">(</span><span class="n">privateKey</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">Transaction</span> <span class="n">SendFunds</span><span class="p">(</span><span class="n">string</span> <span class="n">receiverPublicKey</span><span class="p">,</span> <span class="kt">double</span> <span class="n">amount</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">Transaction</span> <span class="n">tx</span><span class="p">;</span>
+        <span class="n">tx</span><span class="p">.</span><span class="n">senderPublicKey</span> <span class="o">=</span> <span class="n">publicKey</span><span class="p">.</span><span class="n">Save</span><span class="p">(</span><span class="n">StringSink</span><span class="p">().</span><span class="n">Ref</span><span class="p">());</span>
+        <span class="n">tx</span><span class="p">.</span><span class="n">receiverPublicKey</span> <span class="o">=</span> <span class="n">receiverPublicKey</span><span class="p">;</span>
+        <span class="n">tx</span><span class="p">.</span><span class="n">amount</span> <span class="o">=</span> <span class="n">amount</span><span class="p">;</span>
+
+        <span class="n">AutoSeededRandomPool</span> <span class="n">rng</span><span class="p">;</span>
+        <span class="n">ECDSA</span><span class="o">&lt;</span><span class="n">ECP</span><span class="p">,</span> <span class="n">SHA256</span><span class="o">&gt;::</span><span class="n">Signer</span> <span class="n">signer</span><span class="p">(</span><span class="n">privateKey</span><span class="p">);</span>
+        <span class="kt">size_t</span> <span class="n">siglen</span> <span class="o">=</span> <span class="n">signer</span><span class="p">.</span><span class="n">MaxSignatureLength</span><span class="p">();</span>
+        <span class="n">tx</span><span class="p">.</span><span class="n">signature</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="n">siglen</span><span class="p">);</span>
+        <span class="n">siglen</span> <span class="o">=</span> <span class="n">signer</span><span class="p">.</span><span class="n">SignMessage</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="p">(</span><span class="k">const</span> <span class="n">byte</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">amount</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">amount</span><span class="p">),</span> <span class="p">(</span><span class="n">byte</span><span class="o">*</span><span class="p">)</span><span class="n">tx</span><span class="p">.</span><span class="n">signature</span><span class="p">.</span><span class="n">data</span><span class="p">());</span>
+        <span class="n">tx</span><span class="p">.</span><span class="n">signature</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="n">siglen</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="n">tx</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>In this example, a Transaction has a sender’s public key, a receiver’s public key, and the amount to be transferred. The <code class="language-plaintext highlighter-rouge">Validate</code> function checks the signature of the transaction to ensure that it has indeed been created by the sender. A Wallet has a private and a public key and can create a Transaction to send funds.</p>
+
+<p>A transaction is valid if the message (in this case, the amount being sent) signed with the sender’s private key can be verified with the sender’s public key. This is the essence of digital signatures, and it is how transactions are validated in many blockchains.</p>
+
+<p>It’s important to note that a real transaction system would also need to include measures to prevent double spending, to keep track of balances, and to handle transaction fees, among other things. Implementing such a system securely and efficiently is a significant task.</p>
+
+<p>From a mathematical perspective, digital signatures are based on the mathematics of elliptic curves. The secp256k1 curve used by Bitcoin, for example, is defined by the equation ( y^2 = x^3 + 7 ) over a finite field. The private key is a random number, and the public key is a point on the curve derived from the private key. The signature is a pair of numbers (r, s) derived from the private key, the message being signed, and a random number. The verification process uses the public key, the message, and the signature (r, s) to confirm that the signature was generated by someone with access to the corresponding private key. The details of this process involve complex mathematics including modular arithmetic, the properties of elliptic curves, and the discrete logarithm problem.</p>
+
+<h2 id="4-block-design">4. Block Design</h2>
+<p>A block is a container for transactions. Designing a block involves understanding its structure, which typically includes the following:</p>
+
+<ul>
+  <li><strong>Block Header:</strong> This includes metadata, such as a version number, the hash of the previous block (linking it to this block), a timestamp, and a nonce used in PoW.</li>
+  <li><strong>Transaction Counter:</strong> An indicator of the number of transactions in the block.</li>
+  <li><strong>Transactions:</strong> The transactions themselves.</li>
+</ul>
+
+<p>The process of creating a new block, often known as mining in PoW blockchains, involves validating and adding transactions to the block, and finding a value that, when hashed with the block’s contents, produces a hash that meets certain criteria.</p>
+
+<p>Here’s a simplified example of a block structure in C++. We’re not dealing with actual mining in this example, just the basic structure of a block.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;ctime&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;crypto++/sha.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;crypto++/hex.h&gt;</span><span class="cp">
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">CryptoPP</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">Transaction</span> <span class="p">{</span> <span class="cm">/* As previously defined */</span> <span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Block</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="n">string</span> <span class="n">previousHash</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">nonce</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kt">time_t</span> <span class="n">timestamp</span><span class="p">;</span>
+    <span class="n">vector</span><span class="o">&lt;</span><span class="n">Transaction</span><span class="o">&gt;</span> <span class="n">transactions</span><span class="p">;</span>
+
+    <span class="n">Block</span><span class="p">(</span><span class="n">string</span> <span class="n">previousHash</span><span class="p">,</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">Transaction</span><span class="o">&gt;</span> <span class="n">transactions</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="o">-&gt;</span><span class="n">previousHash</span> <span class="o">=</span> <span class="n">previousHash</span><span class="p">;</span>
+        <span class="k">this</span><span class="o">-&gt;</span><span class="n">timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+        <span class="k">this</span><span class="o">-&gt;</span><span class="n">transactions</span> <span class="o">=</span> <span class="n">transactions</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">string</span> <span class="n">GetBlockHash</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">SHA256</span> <span class="n">hash</span><span class="p">;</span>
+        <span class="n">string</span> <span class="n">src</span> <span class="o">=</span> <span class="n">to_string</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span> <span class="o">+</span> <span class="n">to_string</span><span class="p">(</span><span class="n">nonce</span><span class="p">)</span> <span class="o">+</span> <span class="n">previousHash</span> <span class="o">+</span> <span class="n">GetTransactionsData</span><span class="p">();</span>
+        <span class="n">string</span> <span class="n">digest</span><span class="p">;</span>
+        <span class="n">StringSource</span> <span class="n">s</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="nb">true</span><span class="p">,</span> <span class="k">new</span> <span class="n">HashFilter</span><span class="p">(</span><span class="n">hash</span><span class="p">,</span> <span class="k">new</span> <span class="n">HexEncoder</span><span class="p">(</span><span class="k">new</span> <span class="n">StringSink</span><span class="p">(</span><span class="n">digest</span><span class="p">))));</span>
+        <span class="k">return</span> <span class="n">digest</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">string</span> <span class="n">GetTransactionsData</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// Concatenate transaction data</span>
+        <span class="n">string</span> <span class="n">transactionData</span> <span class="o">=</span> <span class="s">""</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="o">&amp;</span><span class="n">transaction</span> <span class="o">:</span> <span class="n">transactions</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// Here we would typically include transaction-specific data</span>
+            <span class="n">transactionData</span> <span class="o">+=</span> <span class="n">transaction</span><span class="p">.</span><span class="n">amount</span><span class="p">;</span> <span class="c1">// Simplified for this example</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">transactionData</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">MineBlock</span><span class="p">(</span><span class="kt">int</span> <span class="n">difficulty</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">string</span> <span class="n">target</span><span class="p">(</span><span class="n">difficulty</span><span class="p">,</span> <span class="sc">'0'</span><span class="p">);</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">GetBlockHash</span><span class="p">().</span><span class="n">substr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">difficulty</span><span class="p">)</span> <span class="o">!=</span> <span class="n">target</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">nonce</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>In this code:</p>
+
+<ul>
+  <li>Each Block contains a previous block hash, a nonce (which is used during mining), a timestamp, and a list of transactions.</li>
+  <li><code class="language-plaintext highlighter-rouge">GetBlockHash()</code> generates a SHA-256 hash of the block data.</li>
+  <li><code class="language-plaintext highlighter-rouge">GetTransactionsData()</code> is a simplified example of how you might gather data from the block’s transactions.</li>
+  <li><code class="language-plaintext highlighter-rouge">MineBlock(int difficulty)</code> is a basic example of mining. It increments the nonce until the first difficulty characters of the block’s hash are zeros. This isn’t how real mining works, but it serves to illustrate the basic concept of trying different nonce values until you find one that makes the hash meet certain criteria.</li>
+</ul>
+
+<p>Bear in mind that this code is extremely simplified and should not be used for any real-world purposes. A production blockchain would include many more checks and balances, a mechanism for distributing blocks to other nodes, more complex transaction data, and much more. The code is provided to illustrate the fundamental concepts of a block in a blockchain and how it might be represented in code.</p>
+
+<p>For the mathematical part, the fundamental operation here is the SHA-256 hash function, which transforms any input data into a 256-bit number in such a way that even a tiny change to the input will produce a dramatically different output. The ‘mining’ process can be seen as a search for a specific input that will produce an output with certain properties (in this case, beginning with a certain number of zeros). The only way to find such an input is to try different possibilities one after another, which is why it requires a lot of computational work.</p>
+
+<h2 id="5-security-measures">5. Security Measures</h2>
+<p>Blockchain’s value proposition hinges on its security and immutability. Here are key security aspects to consider:</p>
+
+<ul>
+  <li><strong>Cryptography:</strong> Blockchains use cryptographic algorithms (like SHA-256 in Bitcoin) for various purposes, such as creating a digital signature or generating a block’s hash.</li>
+  <li><strong>Consensus Mechanism:</strong> The consensus mechanism ensures that all nodes agree on the validity of transactions, preventing double-spending and maintaining consistency across the network.</li>
+  <li><strong>Incentive Mechanism:</strong> This includes rewarding nodes (through mining rewards or transaction fees) to encourage honest behavior and secure the network.</li>
+</ul>
+
+<h2 id="6-smart-contracts">6. Smart Contracts</h2>
+<p>For blockchains like Ethereum, smart contracts are crucial. They are self-executing contracts with the terms of the agreement directly written into code. They enable complex applications and automate the enforcement of their rules. Building a blockchain with smart contract functionality involves designing the contract structure and the associated programming language.</p>
+
+<h2 id="7-interfacing-api-and-gui">7. Interfacing: API and GUI</h2>
+<p>To interact with your blockchain, you’ll need to create interfaces:</p>
+
+<ul>
+  <li><strong>Application Programming Interface (API):</strong> This allows other software (like applications or other nodes) to interact with your blockchain. It defines functions that command the node to perform certain actions like creating a transaction or fetching a block.</li>
+  <li><strong>Graphical User Interface (GUI):</strong> A GUI allows humans to interact with your blockchain more easily. This could be a wallet application that allows users to send transactions, view their balance, or any number of other interactions with the blockchain.</li>
+</ul>
+
+<p>Understanding and implementing these fundamental components will put you on the path to becoming proficient in blockchain development. As your knowledge deepens, you can explore more complex aspects like cross-chain interoperability, Layer-2 solutions, and privacy enhancements.</p>

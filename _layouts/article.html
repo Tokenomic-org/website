@@ -1,0 +1,193 @@
+---
+layout: default
+---
+{% include header.html %}
+<section class="page-banner">
+    <div class="image-layer" style="background-image:url(/assets/images/background/banner-image-1.jpg);"></div>
+    <div class="banner-inner">
+        <div class="auto-container">
+            <div class="inner-container clearfix">
+                <h1>{{ page.title }}</h1>
+                <div class="page-nav">
+                    <ul class="bread-crumb clearfix">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/learn/">Learn</a></li>
+                        <li class="active">{{ page.category }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="article-detail">
+    <div class="auto-container">
+        <a href="/learn/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Learn</a>
+        <div class="article-header">
+            <div class="article-meta">
+                <span class="cat-tag">{{ page.category }}</span>
+                <span>{{ page.date | date: "%B %d, %Y" }}</span>
+                <span class="reading-time"><i class="far fa-clock"></i> {{ page.reading_time }} min read</span>
+            </div>
+            <h1 class="article-title">{{ page.title }}</h1>
+            <div class="article-author-line">By <strong>{{ page.author }}</strong></div>
+        </div>
+        {% if page.featured_image %}
+        <img class="featured-image" src="{{ page.featured_image }}" alt="{{ page.title }}">
+        {% endif %}
+        <div class="article-body">
+            {{ content }}
+        </div>
+
+        <div class="share-section">
+            <span class="share-label">Share this article:</span>
+            <a href="https://twitter.com/intent/tweet?text={{ page.title | url_encode }}&url=https://tokenomic.org/learn/{{ page.slug }}" target="_blank" rel="noopener" class="share-btn twitter" title="Share on X (Twitter)"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://tokenomic.org/learn/{{ page.slug }}" target="_blank" rel="noopener" class="share-btn facebook" title="Share on Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://tokenomic.org/learn/{{ page.slug }}&title={{ page.title | url_encode }}" target="_blank" rel="noopener" class="share-btn linkedin" title="Share on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="https://www.reddit.com/submit?url=https://tokenomic.org/learn/{{ page.slug }}&title={{ page.title | url_encode }}" target="_blank" rel="noopener" class="share-btn reddit" title="Share on Reddit"><i class="fab fa-reddit-alien"></i></a>
+            <button class="share-btn copy-link" title="Copy link" onclick="copyArticleLink(this)" style="position:relative;"><i class="fas fa-link"></i><span class="copy-tooltip">Copied!</span></button>
+        </div>
+
+        {% if page.author_specialty %}
+        <div class="expert-profile-card">
+            <div class="profile-header">
+                {% if page.author_avatar %}
+                <img class="profile-avatar" src="{{ page.author_avatar }}" alt="{{ page.author }}">
+                {% else %}
+                <div class="profile-avatar-placeholder">{{ page.author | truncate: 2, "" | upcase }}</div>
+                {% endif %}
+                <div class="profile-info">
+                    <h3>{{ page.author }}</h3>
+                    <p class="profile-specialty">{{ page.author_specialty }}</p>
+                    {% if page.author_wallet %}
+                    <p class="profile-wallet">{{ page.author_wallet }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% if page.author_bio %}
+            <p class="profile-bio">{{ page.author_bio }}</p>
+            {% endif %}
+            <a href="/experts/" class="profile-link">View All Experts <i class="fas fa-arrow-right"></i></a>
+        </div>
+        {% endif %}
+
+        <div class="comments-section" id="comments">
+            <h3><i class="far fa-comments" style="color:#667eea;"></i> Discussion <span class="comment-count" id="comment-count">0</span></h3>
+            <div class="comment-form">
+                <div class="form-row">
+                    <input type="text" id="comment-author" placeholder="Your name" maxlength="50">
+                </div>
+                <textarea id="comment-text" placeholder="Share your thoughts on this article..." maxlength="2000"></textarea>
+                <button class="submit-btn" id="submit-comment" onclick="submitArticleComment()">Post Comment</button>
+                <div class="form-msg" id="comment-msg"></div>
+            </div>
+            <ul class="comments-list" id="comments-list">
+                <li class="no-comments" id="no-comments-msg">Be the first to share your thoughts!</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<script>
+var articleSlug = "{{ page.slug }}";
+
+function formatCommentDate(isoStr) {
+  var d = new Date(isoStr);
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var now = new Date();
+  var diff = Math.floor((now - d) / 1000);
+  if (diff < 60) return "just now";
+  if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+  if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+  if (diff < 604800) return Math.floor(diff / 86400) + "d ago";
+  return months[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
+}
+
+function renderComment(c) {
+  function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  var safeAuthor = esc(c.author || "Anonymous");
+  var safeText = esc(c.text);
+  var initials = (c.author || "A").split(" ").map(function(w){return w[0];}).join("").substring(0,2).toUpperCase();
+  return '<li class="comment-item">' +
+    '<div class="comment-header">' +
+    '<div class="comment-avatar">' + esc(initials) + '</div>' +
+    '<div><span class="comment-author">' + safeAuthor + '</span>' +
+    '<div class="comment-date">' + formatCommentDate(c.created_at) + '</div></div>' +
+    '</div>' +
+    '<p class="comment-text">' + safeText + '</p>' +
+    '</li>';
+}
+
+function loadArticleComments() {
+  fetch("/api/articles/" + articleSlug + "/comments")
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var list = document.getElementById("comments-list");
+      var count = document.getElementById("comment-count");
+      var noMsg = document.getElementById("no-comments-msg");
+      if (data.comments && data.comments.length > 0) {
+        if (noMsg) noMsg.style.display = "none";
+        var html = "";
+        data.comments.forEach(function(c) { html += renderComment(c); });
+        list.innerHTML = html;
+        count.textContent = data.comments.length;
+      }
+    })
+    .catch(function() {});
+}
+
+function submitArticleComment() {
+  var btn = document.getElementById("submit-comment");
+  var msg = document.getElementById("comment-msg");
+  var author = document.getElementById("comment-author").value.trim();
+  var text = document.getElementById("comment-text").value.trim();
+
+  if (!text) { msg.textContent = "Please enter a comment."; msg.className = "form-msg error"; return; }
+
+  btn.disabled = true;
+  btn.textContent = "Posting...";
+  msg.textContent = "";
+
+  var wallet = "";
+  if (typeof TokenomicWallet !== "undefined" && TokenomicWallet.account) {
+    wallet = TokenomicWallet.account;
+  }
+
+  fetch("/api/articles/" + articleSlug + "/comments", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ author: author || "Anonymous", text: text, wallet: wallet })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) {
+      msg.textContent = "Comment posted!"; msg.className = "form-msg success";
+      document.getElementById("comment-text").value = "";
+      loadArticleComments();
+    } else {
+      msg.textContent = data.error || "Failed to post."; msg.className = "form-msg error";
+    }
+  })
+  .catch(function() { msg.textContent = "Network error."; msg.className = "form-msg error"; })
+  .finally(function() { btn.disabled = false; btn.textContent = "Post Comment"; });
+}
+
+function copyArticleLink(btn) {
+  var url = "https://tokenomic.org/learn/" + articleSlug;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(function() {
+      btn.classList.add("copied");
+      setTimeout(function() { btn.classList.remove("copied"); }, 2000);
+    });
+  } else {
+    var input = document.createElement("input");
+    input.value = url; document.body.appendChild(input);
+    input.select(); document.execCommand("copy");
+    document.body.removeChild(input);
+    btn.classList.add("copied");
+    setTimeout(function() { btn.classList.remove("copied"); }, 2000);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadArticleComments);
+</script>
