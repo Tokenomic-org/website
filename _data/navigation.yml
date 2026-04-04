@@ -1,8 +1,8 @@
  - text: Home
    url: "/"
 
- - text: About
-   url: "/about/"
+ - text: Courses
+   url: "/courses/"
 
  - text: Experts
    url: "/experts/"

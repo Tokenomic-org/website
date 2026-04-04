@@ -60,6 +60,7 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - **Homepage** (`/`) — Hero, platform preview, audience targeting, trust, services, training, wallet-gated community CTA
 - **Learn** (`/learn/`) — Category-based article hub (Strategy, Technical, Market) with "Meet our authors" section and inline search; articles from Supabase `articles` table with local images; links to `/learn/[slug]` article pages
 - **Article Pages** (`/learn/[slug]/`) — Full article content pages with featured image, author, date, category, reading time estimate, social share links (Twitter/X, Facebook, LinkedIn, Reddit, copy link), expert profile card (avatar, name, specialty, bio, wallet), comments section with form (name/text input, wallet-aware) backed by file-based API; generated from learn.tokenomic.org content using `scripts/generate-article-pages.js`; images served from `/assets/images/learn/`; Open Graph meta tags for social sharing
+- **Courses** (`/courses/`) — Public course catalog page with 10 courses from 7 educators; hero section with stats (total courses/students/educators/hours); sticky filter bar with search, level filters (All/Beginner/Intermediate/Advanced), educator dropdown, sort options (Most Popular/Newest/Price); course cards with thumbnail, level badge (green/yellow/red), price badge, category, title, description, educator avatar+name link, stats (modules/students/hours); "Meet our educators" strip with avatar row + link to /experts/; CTA for wallet-gated course creation; source: `courses.html`, built by `scripts/rebuild-dashboard-site.js` into `_site/courses/index.html`
 - **Experts** (`/experts/`) — Auto-populated cards of community-approved educators from Supabase profiles (role=educator, approved=true)
 - **Consultants** (`/consultants/`) — Auto-populated cards of community-approved consultants with ratings, pricing, and booking links
 - **Dashboard** (`/dashboard/`) — Main analytics with stats, recent activity, progress
@@ -79,7 +80,8 @@ Institutional DeFi education and intelligence platform built on Jekyll.
 - **Terms** (`/terms/`) — Terms of service
 
 ## Navigation
-Defined in `_data/navigation.yml`: Home, About, Experts, Learn
+Defined in `_data/navigation.yml`: Home, Courses, Experts, Learn
+- Also hardcoded in `scripts/rebuild-dashboard-site.js` (must be updated in both places)
 - Learn is a direct link (no dropdown) — the page dynamically loads category-based article sections from Supabase
 
 ## Dashboard Source Files

@@ -1,0 +1,662 @@
+---
+layout: default
+title: Courses
+permalink: /courses/
+---
+
+{% include header.html %}
+
+<style>
+.courses-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #06c6ee 100%);
+    padding: 120px 0 48px;
+    text-align: center;
+}
+.courses-hero h1 {
+    color: #fff;
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+.courses-hero .breadcrumb-nav { margin-bottom: 20px; }
+.courses-hero .breadcrumb-nav a { color: #fff; text-decoration: none; font-size: 13px; transition: color 0.2s; }
+.courses-hero .breadcrumb-nav a:hover { color: #ff6000; }
+.courses-hero .breadcrumb-nav span { color: #fff; font-size: 13px; margin: 0 8px; }
+.courses-hero .breadcrumb-nav .current { color: #fff; font-size: 13px; }
+.courses-hero .subtitle {
+    color: #fff;
+    font-size: 16px;
+    max-width: 560px;
+    margin: 0 auto 32px;
+    line-height: 1.6;
+}
+.courses-hero .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    padding-bottom: 48px;
+}
+.courses-hero .stat-item {
+    text-align: center;
+}
+.courses-hero .stat-num {
+    display: block;
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+}
+.courses-hero .stat-label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.courses-filters {
+    background: #f8f9fb;
+    border-bottom: 1px solid #e8eef2;
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.courses-filters .filters-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.courses-filters .search-box {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+}
+.courses-filters .search-box input {
+    width: 100%;
+    padding: 10px 16px 10px 40px;
+    border: 1.5px solid #e0e4e8;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #fff;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+.courses-filters .search-box input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+.courses-filters .search-box i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 14px;
+}
+.courses-filters .filter-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.courses-filters .filter-btn {
+    padding: 8px 20px;
+    border-radius: 30px;
+    border: 1.5px solid #e0e4e8;
+    background: #fff;
+    color: #5a8299;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.courses-filters .filter-btn:hover {
+    border-color: #001f29;
+    color: #001f29;
+}
+.courses-filters .filter-btn.active {
+    background: #001f29;
+    color: #fff;
+    border-color: #001f29;
+}
+.courses-filters .educator-select {
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1.5px solid #e0e4e8;
+    background: #fff;
+    color: #5a8299;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    min-width: 160px;
+}
+.courses-filters .educator-select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.courses-page {
+    padding: 48px 0 60px;
+    background: #fff;
+}
+.courses-page .results-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    color: #5a8299;
+    font-size: 14px;
+}
+.courses-page .results-info .count {
+    font-weight: 600;
+    color: #001f29;
+}
+.courses-page .sort-select {
+    padding: 6px 12px;
+    border: 1px solid #e0e4e8;
+    border-radius: 8px;
+    font-size: 13px;
+    background: #fff;
+    color: #5a8299;
+    cursor: pointer;
+}
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+}
+@media (max-width: 991px) { .courses-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 575px) { .courses-grid { grid-template-columns: 1fr; } }
+
+.course-card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1.5px solid #f0f0f0;
+    transition: all 0.25s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+}
+.course-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 36px rgba(0,31,41,0.1);
+    border-color: rgba(102,126,234,0.3);
+}
+.course-card .card-thumb {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/10;
+    overflow: hidden;
+    background: #e8eef2;
+}
+.course-card .card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+.course-card:hover .card-thumb img {
+    transform: scale(1.05);
+}
+.course-card .card-thumb .level-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.course-card .card-thumb .level-badge.beginner { background: #10b981; color: #fff; }
+.course-card .card-thumb .level-badge.intermediate { background: #f59e0b; color: #fff; }
+.course-card .card-thumb .level-badge.advanced { background: #ef4444; color: #fff; }
+.course-card .card-thumb .price-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    backdrop-filter: blur(4px);
+}
+.course-card .card-thumb .price-badge.free {
+    background: #10b981;
+}
+.course-card .card-body {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.course-card .card-category {
+    display: inline-block;
+    padding: 3px 10px;
+    background: #f0f2f5;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #5a8299;
+    margin-bottom: 10px;
+    width: fit-content;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.course-card .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #001f29;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+.course-card .card-desc {
+    font-size: 13.5px;
+    color: #5a8299;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.course-card .card-educator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.course-card .card-educator .edu-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6000, #ff8f00);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.course-card .card-educator .edu-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #001f29;
+}
+.course-card .card-educator .edu-role {
+    font-size: 11px;
+    color: #9ca3af;
+}
+.course-card .card-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12.5px;
+    color: #5a8299;
+}
+.course-card .card-stats i {
+    margin-right: 4px;
+    font-size: 12px;
+}
+.course-card .card-stats .stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.educators-strip {
+    padding: 48px 0;
+    border-top: 1.5px solid #f0f0f0;
+    border-bottom: 1.5px solid #f0f0f0;
+    margin-bottom: 48px;
+}
+.educators-strip .strip-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.educators-strip h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #001f29;
+    margin: 0;
+}
+.educators-strip .edu-avatars {
+    display: flex;
+    align-items: center;
+}
+.educators-strip .edu-avatar-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6000, #ff8f00);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    margin-left: -10px;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+.educators-strip .edu-avatar-circle:first-child { margin-left: 0; }
+.educators-strip .edu-avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+.educators-strip .edu-link {
+    margin-left: 20px;
+}
+.educators-strip .edu-link a {
+    color: #ff6000;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 14px;
+}
+.educators-strip .edu-link a:hover { text-decoration: underline; }
+
+.courses-cta {
+    text-align: center;
+    padding: 50px 20px;
+    background: linear-gradient(135deg, #001f29 0%, #003d52 100%);
+    border-radius: 16px;
+    margin-bottom: 40px;
+}
+.courses-cta h3 { color: #fff; font-size: 24px; margin-bottom: 10px; }
+.courses-cta p { color: #8ab4c9; font-size: 15px; margin-bottom: 24px; }
+.courses-cta .cta-btn {
+    display: inline-block;
+    padding: 12px 32px;
+    background: #ff6000;
+    color: #fff;
+    border-radius: 30px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.courses-cta .cta-btn:hover { background: #e55500; }
+
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: #9ca3af;
+}
+.no-results i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+    color: #e0e4e8;
+}
+.no-results h4 {
+    font-size: 20px;
+    color: #001f29;
+    margin-bottom: 8px;
+}
+.no-results p {
+    font-size: 14px;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 60px 0;
+    color: #5a8299;
+    font-size: 16px;
+}
+
+@media (max-width: 767px) {
+    .courses-hero h1 { font-size: 30px; }
+    .courses-hero .stats-row { gap: 24px; }
+    .courses-hero .stat-num { font-size: 22px; }
+    .courses-filters .filters-inner { flex-direction: column; align-items: stretch; }
+    .courses-filters .search-box { min-width: unset; }
+    .educators-strip .strip-inner { flex-direction: column; gap: 16px; text-align: center; }
+}
+</style>
+
+<section class="courses-hero">
+    <div class="auto-container">
+        <div class="breadcrumb-nav">
+            <a href="/">Home</a><span>/</span><span class="current">Courses</span>
+        </div>
+        <h1>Courses</h1>
+        <div class="subtitle">Expert-led DeFi education programs designed for every skill level. Learn from top educators and earn on-chain credentials.</div>
+        <div class="stats-row" id="courses-stats">
+            <div class="stat-item"><span class="stat-num" id="stat-courses">—</span><span class="stat-label">Courses</span></div>
+            <div class="stat-item"><span class="stat-num" id="stat-students">—</span><span class="stat-label">Students</span></div>
+            <div class="stat-item"><span class="stat-num" id="stat-educators">—</span><span class="stat-label">Educators</span></div>
+            <div class="stat-item"><span class="stat-num" id="stat-hours">—</span><span class="stat-label">Hours of Content</span></div>
+        </div>
+    </div>
+</section>
+
+<section class="courses-filters">
+    <div class="auto-container">
+        <div class="filters-inner">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="course-search" placeholder="Search courses...">
+            </div>
+            <div class="filter-group" id="level-filters">
+                <button class="filter-btn active" data-level="all">All Levels</button>
+                <button class="filter-btn" data-level="beginner">Beginner</button>
+                <button class="filter-btn" data-level="intermediate">Intermediate</button>
+                <button class="filter-btn" data-level="advanced">Advanced</button>
+            </div>
+            <select class="educator-select" id="educator-filter">
+                <option value="all">All Educators</option>
+            </select>
+            <select class="sort-select" id="course-sort" style="padding:8px 16px;border-radius:10px;border:1.5px solid #e0e4e8;font-size:13px;font-weight:600;">
+                <option value="popular">Most Popular</option>
+                <option value="newest">Newest</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+            </select>
+        </div>
+    </div>
+</section>
+
+<section class="courses-page">
+    <div class="auto-container">
+        <div class="loading-state" id="courses-loading">Loading courses...</div>
+        <div id="courses-content" style="display:none;">
+            <div class="educators-strip" id="educators-strip"></div>
+            <div class="results-info">
+                <span><span class="count" id="results-count">0</span> courses found</span>
+            </div>
+            <div class="courses-grid" id="courses-grid"></div>
+            <div class="no-results" id="no-results" style="display:none;">
+                <i class="fas fa-search"></i>
+                <h4>No courses found</h4>
+                <p>Try adjusting your filters or search terms.</p>
+            </div>
+            <div class="courses-cta" style="margin-top:48px;">
+                <h3>Become an Educator</h3>
+                <p>Create and publish your own courses on the Tokenomic platform.</p>
+                <a href="#" class="cta-btn wallet-login-btn" onclick="TokenomicWallet.connect(); return false;">Connect Wallet to Start</a>
+                <a href="/dashboard-courses/" class="cta-btn wallet-logged-in-btn" style="display:none;">Go to Course Studio</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/shared/assets/js/supabase-client.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    TokenomicSupabase.init();
+
+    var courses = await TokenomicSupabase.getCourses();
+    var educators = await TokenomicSupabase.getEducators();
+
+    courses = courses.filter(function(c) { return c.status === 'active'; });
+
+    var totalStudents = 0;
+    var totalHours = 0;
+    var educatorNames = {};
+    courses.forEach(function(c) {
+        totalStudents += (c.enrolled_count || 0);
+        totalHours += (c.estimatedHours || 0);
+        if (c.educator_name) educatorNames[c.educator_name] = true;
+    });
+    document.getElementById('stat-courses').textContent = courses.length;
+    document.getElementById('stat-students').textContent = totalStudents.toLocaleString();
+    document.getElementById('stat-educators').textContent = Object.keys(educatorNames).length;
+    document.getElementById('stat-hours').textContent = totalHours + '+';
+
+    var educatorSelect = document.getElementById('educator-filter');
+    var uniqueEducators = [];
+    var seen = {};
+    courses.forEach(function(c) {
+        if (c.educator_name && !seen[c.educator_name]) {
+            seen[c.educator_name] = true;
+            uniqueEducators.push(c.educator_name);
+        }
+    });
+    uniqueEducators.sort();
+    uniqueEducators.forEach(function(name) {
+        var opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        educatorSelect.appendChild(opt);
+    });
+
+    var stripHtml = '<div class="strip-inner">';
+    stripHtml += '<h3>Meet our educators</h3>';
+    stripHtml += '<div style="display:flex;align-items:center;">';
+    stripHtml += '<div class="edu-avatars">';
+    var shownEducators = educators ? educators.slice(0, 5) : [];
+    shownEducators.forEach(function(edu) {
+        var initials = edu.display_name.split(' ').map(function(n){ return n[0]; }).join('');
+        if (edu.avatar_url) {
+            stripHtml += '<div class="edu-avatar-circle"><img src="' + edu.avatar_url + '" alt="' + edu.display_name + '"></div>';
+        } else {
+            stripHtml += '<div class="edu-avatar-circle">' + initials + '</div>';
+        }
+    });
+    stripHtml += '</div>';
+    stripHtml += '<div class="edu-link"><a href="/experts/">View all &rsaquo;</a></div>';
+    stripHtml += '</div></div>';
+    document.getElementById('educators-strip').innerHTML = stripHtml;
+
+    var activeLevel = 'all';
+    var activeEducator = 'all';
+    var searchQuery = '';
+    var sortBy = 'popular';
+
+    function getInitials(name) {
+        return name ? name.split(' ').map(function(n){ return n[0]; }).join('') : '?';
+    }
+
+    function slugify(name) {
+        return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
+
+    function renderCourses() {
+        var filtered = courses.filter(function(c) {
+            if (activeLevel !== 'all' && c.level !== activeLevel) return false;
+            if (activeEducator !== 'all' && c.educator_name !== activeEducator) return false;
+            if (searchQuery) {
+                var q = searchQuery.toLowerCase();
+                var match = (c.title || '').toLowerCase().indexOf(q) !== -1 ||
+                            (c.description || '').toLowerCase().indexOf(q) !== -1 ||
+                            (c.educator_name || '').toLowerCase().indexOf(q) !== -1 ||
+                            (c.category || '').toLowerCase().indexOf(q) !== -1;
+                if (!match) return false;
+            }
+            return true;
+        });
+
+        if (sortBy === 'popular') {
+            filtered.sort(function(a, b) { return (b.enrolled_count || 0) - (a.enrolled_count || 0); });
+        } else if (sortBy === 'newest') {
+            filtered.sort(function(a, b) { return (b.id || 0) - (a.id || 0); });
+        } else if (sortBy === 'price-low') {
+            filtered.sort(function(a, b) { return (a.price_usdc || 0) - (b.price_usdc || 0); });
+        } else if (sortBy === 'price-high') {
+            filtered.sort(function(a, b) { return (b.price_usdc || 0) - (a.price_usdc || 0); });
+        }
+
+        document.getElementById('results-count').textContent = filtered.length;
+
+        if (filtered.length === 0) {
+            document.getElementById('courses-grid').innerHTML = '';
+            document.getElementById('no-results').style.display = 'block';
+            return;
+        }
+
+        document.getElementById('no-results').style.display = 'none';
+
+        var html = '';
+        filtered.forEach(function(c) {
+            var priceLabel = c.price_usdc > 0 ? '$' + c.price_usdc + ' USDC' : 'Free';
+            var priceClass = c.price_usdc > 0 ? '' : ' free';
+            var levelClass = c.level || 'beginner';
+            var levelLabel = c.level ? c.level.charAt(0).toUpperCase() + c.level.slice(1) : 'Beginner';
+            var eduInitials = getInitials(c.educator_name || '');
+            var eduSlug = slugify(c.educator_name || '');
+            var thumbSrc = c.thumbnail_url || '/assets/images/resource/featured-image-10.jpg';
+
+            html += '<div class="course-card">';
+            html += '<div class="card-thumb">';
+            html += '<img src="' + thumbSrc + '" alt="' + (c.title || '').replace(/"/g, '') + '">';
+            html += '<span class="level-badge ' + levelClass + '">' + levelLabel + '</span>';
+            html += '<span class="price-badge' + priceClass + '">' + priceLabel + '</span>';
+            html += '</div>';
+            html += '<div class="card-body">';
+            html += '<span class="card-category">' + (c.category || 'General') + '</span>';
+            html += '<div class="card-title">' + (c.title || '') + '</div>';
+            html += '<div class="card-desc">' + (c.description || '') + '</div>';
+            html += '<a href="/expert/' + eduSlug + '" class="card-educator" onclick="event.stopPropagation();" style="text-decoration:none;color:inherit;">';
+            html += '<div class="edu-avatar">' + eduInitials + '</div>';
+            html += '<div><div class="edu-name">' + (c.educator_name || 'Unknown') + '</div><div class="edu-role">Educator</div></div>';
+            html += '</a>';
+            html += '<div class="card-stats">';
+            html += '<span class="stat"><i class="fas fa-book"></i> ' + (c.modules_count || 0) + ' modules</span>';
+            html += '<span class="stat"><i class="fas fa-users"></i> ' + (c.enrolled_count || 0) + ' students</span>';
+            html += '<span class="stat"><i class="fas fa-clock"></i> ' + (c.estimatedHours || 0) + 'h</span>';
+            html += '</div>';
+            html += '</div></div>';
+        });
+
+        document.getElementById('courses-grid').innerHTML = html;
+    }
+
+    renderCourses();
+    document.getElementById('courses-loading').style.display = 'none';
+    document.getElementById('courses-content').style.display = 'block';
+
+    document.getElementById('level-filters').addEventListener('click', function(e) {
+        var btn = e.target.closest('.filter-btn');
+        if (!btn) return;
+        activeLevel = btn.getAttribute('data-level');
+        var btns = document.querySelectorAll('#level-filters .filter-btn');
+        for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+        btn.classList.add('active');
+        renderCourses();
+    });
+
+    document.getElementById('educator-filter').addEventListener('change', function() {
+        activeEducator = this.value;
+        renderCourses();
+    });
+
+    document.getElementById('course-search').addEventListener('input', function() {
+        searchQuery = this.value;
+        renderCourses();
+    });
+
+    document.getElementById('course-sort').addEventListener('change', function() {
+        sortBy = this.value;
+        renderCourses();
+    });
+});
+</script>

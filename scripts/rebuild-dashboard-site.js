@@ -8,6 +8,16 @@ if (fs.existsSync('assets/css/dashboard.css')) {
   console.log('Copied dashboard.css to _site/assets/css/');
 }
 
+var sharedJsDir = path.join('_site', 'shared', 'assets', 'js');
+if (!fs.existsSync(sharedJsDir)) fs.mkdirSync(sharedJsDir, { recursive: true });
+['supabase-client.js', 'web3-wallet.js', 'profile-photo.js', 'site-search.js'].forEach(function(jsFile) {
+  var src = path.join('shared', 'assets', 'js', jsFile);
+  if (fs.existsSync(src)) {
+    fs.copyFileSync(src, path.join(sharedJsDir, jsFile));
+  }
+});
+console.log('Copied shared JS files to _site/shared/assets/js/');
+
 var site = {
   url: 'https://tokenomic.org',
   title: 'Tokenomic',
@@ -26,7 +36,7 @@ headerHtml = headerHtml.replace(/\{\{site\.url\}\}/g, site.url)
   .replace(/\{\{site\.logo_url\}\}/g, site.logo_url);
 
 var navHtml = '<li><a href="/">Home</a></li>\n' +
-  '                                    <li><a href="/about/">About</a></li>\n' +
+  '                                    <li><a href="/courses/">Courses</a></li>\n' +
   '                                    <li><a href="/experts/">Experts</a></li>\n' +
   '                                    <li><a href="/learn/">Learn</a></li>';
 
@@ -219,4 +229,83 @@ Object.keys(pageTitles).forEach(function(f) {
   }
   fs.writeFileSync(siteDir + '/index.html', page);
   console.log('Built: ' + siteDir + '/index.html (' + page.length + ' bytes)');
+});
+
+var publicPages = {
+  'courses.html': { dir: '_site/courses', title: 'Courses' },
+  'educators.html': { dir: '_site/experts', title: 'Experts' },
+  'learn.html': { dir: '_site/learn', title: 'Learn' }
+};
+
+Object.keys(publicPages).forEach(function(f) {
+  if (!fs.existsSync(f)) return;
+  var conf = publicPages[f];
+  var source = fs.readFileSync(f, 'utf-8');
+  var fmEnd = source.indexOf('---', 4);
+  var content = source.substring(fmEnd + 3).trim();
+  content = content.replace(/\{%\s*include\s+header\.html\s*%\}/g, '');
+  content = content.replace(/<script\s+src="\/shared\/assets\/js\/[^"]+"><\/script>\s*/g, '');
+
+  var publicPage = '<!DOCTYPE html>\n' +
+    '<html lang="en">\n' +
+    '    <head>\n' +
+    '        <meta charset="utf-8" />\n' +
+    '        <title>Tokenomic - ' + conf.title + '</title>\n' +
+    '        <link href="/assets/css/bootstrap.css" rel="stylesheet" />\n' +
+    '        <link href="/assets/css/style.css" rel="stylesheet" />\n' +
+    '        <link href="/assets/css/responsive.css" rel="stylesheet" />\n' +
+    '        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />\n' +
+    '        <link rel="shortcut icon" href="/assets/images/favicon.png" type="image/x-icon" />\n' +
+    '        <link rel="icon" href="/assets/images/favicon.png" type="image/x-icon" />\n' +
+    '        <meta http-equiv="X-UA-Compatible" content="IE=edge" />\n' +
+    '        <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=2.0,minimum-scale=1.0" />\n' +
+    '        <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MD9B5BB1P"></script>\n' +
+    '        <script>\n' +
+    '          window.dataLayer = window.dataLayer || [];\n' +
+    '          function gtag(){dataLayer.push(arguments);}\n' +
+    '          gtag("js", new Date());\n' +
+    '          gtag("config", "G-1MD9B5BB1P");\n' +
+    '        </script>\n' +
+    '        <style>\n' +
+    '            .header-style-two { top: 0; background: #0A0F1A; }\n' +
+    '            .main-menu .navigation > li { margin-right: 20px; }\n' +
+    '            .main-menu .navigation > li > a { font-size: 15px; }\n' +
+    '        </style>\n' +
+    '        <link rel="alternate" type="application/rss+xml" title="Tokenomic RSS Feed" href="/feed.xml" />\n' +
+    '    </head>\n' +
+    '    <body>\n' +
+    '        <div class="page-wrapper">\n' +
+    headerHtml + '\n' +
+    content + '\n' +
+    footer + '\n' +
+    newsletterScript + '\n' +
+    '        </div>\n' +
+    '        <div class="scroll-to-top scroll-to-target" data-target="html"><span class="flaticon-up-arrow"></span></div>\n' +
+    '        <script src="/assets/js/jquery.js"></script>\n' +
+    '        <script src="/assets/js/popper.min.js"></script>\n' +
+    '        <script src="/assets/js/bootstrap.min.js"></script>\n' +
+    '        <script src="/assets/js/jquery-ui.js"></script>\n' +
+    '        <script src="/assets/js/jquery.fancybox.js"></script>\n' +
+    '        <script src="/assets/js/owl.js"></script>\n' +
+    '        <script src="/assets/js/scrollbar.js"></script>\n' +
+    '        <script src="/assets/js/knob.js"></script>\n' +
+    '        <script src="/assets/js/paroller.js"></script>\n' +
+    '        <script src="/assets/js/tilt.js"></script>\n' +
+    '        <script src="/assets/js/isotope.js"></script>\n' +
+    '        <script src="/assets/js/appear.js"></script>\n' +
+    '        <script src="/assets/js/wow.js"></script>\n' +
+    '        <script src="/assets/js/custom-script.js"></script>\n' +
+    '        <script src="/shared/assets/js/supabase-client.js"></script>\n' +
+    '        <script src="/shared/assets/js/profile-photo.js"></script>\n' +
+    '        <script src="/shared/assets/js/web3-wallet.js"></script>\n' +
+    '        <script src="/assets/js/simple-jekyll-search.min.js"></script>\n' +
+    '        <script src="/shared/assets/js/site-search.js"></script>\n' +
+    '    </body>\n' +
+    '</html>\n';
+
+  if (!fs.existsSync(conf.dir)) {
+    fs.mkdirSync(conf.dir, { recursive: true });
+  }
+  fs.writeFileSync(conf.dir + '/index.html', publicPage);
+  console.log('Built: ' + conf.dir + '/index.html (' + publicPage.length + ' bytes)');
 });
