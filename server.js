@@ -1013,6 +1013,90 @@ app.get('/api/courses/:slug/modules', function(req, res) {
     });
 });
 
+app.post('/api/courses/:slug/thumbnail', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!slug) return res.status(400).json({ error: 'Invalid course slug' });
+    var thumbData = req.body.thumbnail;
+    if (!thumbData) return res.status(400).json({ error: 'Thumbnail data required' });
+    var match = thumbData.match(/^data:image\/(png|jpeg|jpg|webp|gif);base64,(.+)$/);
+    if (!match) return res.status(400).json({ error: 'Invalid image data' });
+    var ext = match[1] === 'jpeg' ? 'jpg' : match[1];
+    var buffer = Buffer.from(match[2], 'base64');
+    if (buffer.length > 5 * 1024 * 1024) return res.status(400).json({ error: 'Image too large. Max 5MB.' });
+    var dir = path.join(__dirname, '_site', 'uploads', 'courses');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    var existing = fs.readdirSync(dir);
+    existing.forEach(function(f) { if (f.startsWith(slug + '-thumb.')) fs.unlinkSync(path.join(dir, f)); });
+    var filename = slug + '-thumb.' + ext;
+    fs.writeFileSync(path.join(dir, filename), buffer);
+    res.json({ success: true, url: '/uploads/courses/' + filename });
+});
+
+app.patch('/api/courses/:slug', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!slug) return res.status(400).json({ error: 'Invalid course slug' });
+    var repoName = COURSE_REPO_PREFIX + slug;
+    var metaPath = '/repos/' + GITHUB_ORG + '/' + repoName + '/contents/course.json';
+    ghRequest('GET', metaPath, null, function(err, fileData, status) {
+        if (err || status !== 200) return res.status(status || 500).json({ error: 'Failed to fetch course metadata' });
+        try {
+            var meta = JSON.parse(Buffer.from(fileData.content, 'base64').toString('utf-8'));
+            var b = req.body;
+            if (b.title !== undefined) meta.title = b.title;
+            if (b.description !== undefined) meta.description = b.description;
+            if (b.level !== undefined) meta.level = b.level;
+            if (b.priceUSDC !== undefined) meta.priceUSDC = parseFloat(b.priceUSDC) || 0;
+            if (b.visibility !== undefined) meta.visibility = b.visibility;
+            if (b.specialization !== undefined) meta.specialization = b.specialization;
+            if (b.whatYouLearn !== undefined) meta.whatYouLearn = b.whatYouLearn;
+            if (b.prerequisites !== undefined) meta.prerequisites = b.prerequisites;
+            if (b.thumbnailUrl !== undefined) meta.thumbnailUrl = b.thumbnailUrl;
+            if (b.estimatedHours !== undefined) meta.estimatedHours = b.estimatedHours;
+            var updated = Buffer.from(JSON.stringify(meta, null, 2)).toString('base64');
+            ghRequest('PUT', metaPath, {
+                message: 'Update course metadata: ' + (meta.title || slug),
+                content: updated, sha: fileData.sha
+            }, function(err2, putData, s2) {
+                if (err2 || (s2 !== 200 && s2 !== 201)) return res.status(s2 || 500).json({ error: 'Failed to update course' });
+                res.json({ success: true, meta: meta });
+            });
+        } catch(e) {
+            res.status(500).json({ error: 'Failed to parse course metadata' });
+        }
+    });
+});
+
+app.post('/api/courses/:slug/modules', function(req, res) {
+    var slug = req.params.slug.replace(/[^a-zA-Z0-9-_]/g, '');
+    if (!slug) return res.status(400).json({ error: 'Invalid course slug' });
+    var repoName = COURSE_REPO_PREFIX + slug;
+    var title = (req.body.title || 'New Module').substring(0, 200);
+    var description = (req.body.description || '').substring(0, 2000);
+    var videoUrl = (req.body.videoUrl || '').substring(0, 500);
+    var duration = (req.body.duration || '').substring(0, 50);
+    var order = parseInt(req.body.order) || 1;
+    var orderStr = order < 10 ? '0' + order : '' + order;
+    var moduleSlug = title.toLowerCase().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').substring(0, 60) || 'module';
+    var filename = 'module-' + orderStr + '-' + moduleSlug + '.md';
+    var frontmatter = '---\ntitle: "' + title.replace(/"/g,'\\"') + '"\norder: ' + order + '\n';
+    if (duration) frontmatter += 'duration: "' + duration + '"\n';
+    if (videoUrl) frontmatter += 'video_url: "' + videoUrl + '"\n';
+    frontmatter += '---\n\n';
+    var body = '# ' + title + '\n\n';
+    if (description) body += description + '\n\n';
+    if (videoUrl) body += '## Video\n\n[![Watch Video](' + videoUrl + ')](' + videoUrl + ')\n\n';
+    body += '## Learning Objectives\n\n- Objective 1\n- Objective 2\n\n## Content\n\nAdd your lesson content here.\n\n## Quiz\n\n1. Question?\n   - a) Option A\n   - b) Option B\n';
+    var content = Buffer.from(frontmatter + body).toString('base64');
+    var filePath = '/repos/' + GITHUB_ORG + '/' + repoName + '/contents/modules/' + filename;
+    ghRequest('PUT', filePath, {
+        message: 'Add module: ' + title,
+        content: content
+    }, function(err, data, status) {
+        if (err || (status !== 200 && status !== 201)) return res.status(status || 500).json({ error: 'Failed to create module' });
+        res.json({ success: true, module: { name: filename, title: title, order: order, duration: duration, videoUrl: videoUrl } });
+    });
+});
+
 app.post('/api/profile/upload-photo', function(req, res) {
     var photoData = req.body.photo;
     var walletAddress = req.body.wallet;
