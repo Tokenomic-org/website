@@ -49,67 +49,83 @@
         <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>
         <script>
         (function() {
-            function initMobileSidebar() {
+            var flatIconMap = {"flaticon-home-1":"fas fa-home","flaticon-user-3":"fas fa-users","flaticon-notebook":"fas fa-book","flaticon-calendar":"fas fa-calendar","flaticon-money":"fas fa-chart-line","flaticon-speech-bubble":"fas fa-comments","flaticon-edit":"fas fa-pen-to-square","flaticon-share":"fas fa-share-nodes","flaticon-trophy":"fas fa-trophy","flaticon-suitcase":"fas fa-calendar-check","flaticon-user":"fas fa-user"};
+            function initMobileDashNav() {
                 if (window.innerWidth > 991) return;
-                var sidebarCol = document.querySelector('.dashboard-sidebar')
-                    ? document.querySelector('.dashboard-sidebar').parentElement
-                    : null;
-                if (!sidebarCol) return;
-
-                sidebarCol.classList.add('dashboard-sidebar-col');
-
-                var contentCol = sidebarCol.nextElementSibling;
+                var sidebar = document.querySelector('.dashboard-sidebar');
+                if (!sidebar) return;
+                var sidebarCol = sidebar.parentElement;
+                var contentCol = sidebarCol ? sidebarCol.nextElementSibling : null;
+                if (sidebarCol) sidebarCol.classList.add('dashboard-sidebar-col');
                 if (contentCol) contentCol.classList.add('dashboard-content-col');
-
-                var sidebar = sidebarCol.querySelector('.dashboard-sidebar');
-
-                var closeBtn = document.createElement('button');
-                closeBtn.className = 'sidebar-close-btn';
-                closeBtn.innerHTML = '<i class="fas fa-times"></i>';
-                closeBtn.setAttribute('aria-label', 'Close menu');
-                sidebar.insertBefore(closeBtn, sidebar.firstChild);
-
-                var overlay = document.createElement('div');
-                overlay.className = 'sidebar-overlay';
-                document.body.appendChild(overlay);
-
-                var toggleBtn = document.createElement('button');
-                toggleBtn.className = 'sidebar-toggle-btn';
-                toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
-                toggleBtn.setAttribute('aria-label', 'Open menu');
-                document.body.appendChild(toggleBtn);
-
-                function openSidebar() {
-                    sidebarCol.classList.add('open');
-                    overlay.classList.add('visible');
-                    toggleBtn.classList.add('open');
-                    document.body.style.overflow = 'hidden';
+                function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+                var profileData = {};
+                try { profileData = JSON.parse(localStorage.getItem('tkn_profile_data') || '{}'); } catch(e) {}
+                var userName = esc(profileData.displayName || profileData.name || 'Tokenomic');
+                var photo = esc(localStorage.getItem('tkn_profile_photo') || '');
+                var initials = (userName || 'T').trim().charAt(0).toUpperCase();
+                var avatarHtml = photo
+                    ? '<img src="' + photo + '" alt="' + userName + '" />'
+                    : initials;
+                var navItemsHtml = '';
+                var children = sidebar.querySelectorAll('.sidebar-section-label, .dash-nav-item');
+                for (var i = 0; i < children.length; i++) {
+                    var el = children[i];
+                    if (el.classList.contains('sidebar-section-label')) {
+                        navItemsHtml += '<div class="mob-section-label">' + el.textContent.trim() + '</div>';
+                    } else {
+                        var href = el.getAttribute('href') || '#';
+                        var iconEl = el.querySelector('i');
+                        var iconHtml = '';
+                        if (iconEl) { iconHtml = iconEl.outerHTML; }
+                        else {
+                            var spanIcon = el.querySelector('span[class*=flaticon]');
+                            if (spanIcon) {
+                                var cls = spanIcon.className.split(' ').filter(function(c){return c.indexOf('flaticon')===0;})[0] || '';
+                                var faClass = flatIconMap[cls] || 'fas fa-circle';
+                                iconHtml = '<i class="' + faClass + '"></i>';
+                            }
+                        }
+                        var label = el.textContent.trim();
+                        var isActive = el.classList.contains('active') ? ' active' : '';
+                        navItemsHtml += '<a href="' + href + '" class="mob-nav-item' + isActive + '">' + iconHtml + ' ' + label + '</a>';
+                    }
                 }
-                function closeSidebar() {
-                    sidebarCol.classList.remove('open');
-                    overlay.classList.remove('visible');
-                    toggleBtn.classList.remove('open');
-                    document.body.style.overflow = '';
+                var barHtml = '<div class="mobile-dash-bar" id="mobileDashBar">' +
+                    '<div class="mobile-dash-bar-user">' +
+                    '<div class="mobile-dash-bar-avatar">' + avatarHtml + '</div>' +
+                    '<div class="mobile-dash-bar-info">' +
+                    '<span class="mobile-dash-bar-name">' + userName + '</span>' +
+                    '<span class="mobile-dash-bar-label">Dashboard</span>' +
+                    '</div></div>' +
+                    '<button class="mobile-dash-bar-toggle" aria-label="Toggle navigation">' +
+                    'Menu <i class="fas fa-chevron-down mob-chevron"></i>' +
+                    '</button></div>';
+                var dropdownHtml = '<div class="mobile-dash-dropdown" id="mobileDashDropdown">' + navItemsHtml + '</div>';
+                if (contentCol) {
+                    contentCol.insertAdjacentHTML('afterbegin', dropdownHtml);
+                    contentCol.insertAdjacentHTML('afterbegin', barHtml);
                 }
-
-                toggleBtn.addEventListener('click', openSidebar);
-                closeBtn.addEventListener('click', closeSidebar);
-                overlay.addEventListener('click', closeSidebar);
-
-                var navLinks = sidebar.querySelectorAll('.dash-nav-item');
-                for (var i = 0; i < navLinks.length; i++) {
-                    navLinks[i].addEventListener('click', closeSidebar);
+                var bar = document.getElementById('mobileDashBar');
+                var dropdown = document.getElementById('mobileDashDropdown');
+                if (bar && dropdown) {
+                    bar.addEventListener('click', function() {
+                        bar.classList.toggle('open');
+                        dropdown.classList.toggle('open');
+                    });
+                    var links = dropdown.querySelectorAll('.mob-nav-item');
+                    for (var j = 0; j < links.length; j++) {
+                        links[j].addEventListener('click', function() {
+                            bar.classList.remove('open');
+                            dropdown.classList.remove('open');
+                        });
+                    }
                 }
-
-                window.addEventListener('resize', function() {
-                    if (window.innerWidth > 991) closeSidebar();
-                });
             }
-
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initMobileSidebar);
+                document.addEventListener('DOMContentLoaded', initMobileDashNav);
             } else {
-                initMobileSidebar();
+                initMobileDashNav();
             }
         })();
         </script>

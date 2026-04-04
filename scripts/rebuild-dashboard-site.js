@@ -166,6 +166,7 @@ Object.keys(pageTitles).forEach(function(f) {
     '        <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>\n' +
     '        <script>\n' +
     '        (function() {\n' +
+    '            var flatIconMap = {"flaticon-home-1":"fas fa-home","flaticon-user-3":"fas fa-users","flaticon-notebook":"fas fa-book","flaticon-calendar":"fas fa-calendar","flaticon-money":"fas fa-chart-line","flaticon-speech-bubble":"fas fa-comments","flaticon-edit":"fas fa-pen-to-square","flaticon-share":"fas fa-share-nodes","flaticon-trophy":"fas fa-trophy","flaticon-suitcase":"fas fa-calendar-check","flaticon-user":"fas fa-user"};\n' +
     '            function initMobileDashNav() {\n' +
     '                if (window.innerWidth > 991) return;\n' +
     '                var sidebar = document.querySelector(".dashboard-sidebar");\n' +
@@ -174,10 +175,11 @@ Object.keys(pageTitles).forEach(function(f) {
     '                var contentCol = sidebarCol ? sidebarCol.nextElementSibling : null;\n' +
     '                if (sidebarCol) sidebarCol.classList.add("dashboard-sidebar-col");\n' +
     '                if (contentCol) contentCol.classList.add("dashboard-content-col");\n' +
+    '                function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML;}\n' +
     '                var profileData = {};\n' +
     '                try { profileData = JSON.parse(localStorage.getItem("tkn_profile_data") || "{}"); } catch(e) {}\n' +
-    '                var userName = profileData.displayName || profileData.name || "Tokenomic";\n' +
-    '                var photo = localStorage.getItem("tkn_profile_photo") || "";\n' +
+    '                var userName = esc(profileData.displayName || profileData.name || "Tokenomic");\n' +
+    '                var photo = esc(localStorage.getItem("tkn_profile_photo") || "");\n' +
     '                var initials = (userName || "T").trim().charAt(0).toUpperCase();\n' +
     '                var avatarHtml = photo\n' +
     '                    ? \'<img src="\' + photo + \'" alt="\' + userName + \'" />\'\n' +
@@ -191,11 +193,19 @@ Object.keys(pageTitles).forEach(function(f) {
     '                    } else {\n' +
     '                        var href = el.getAttribute("href") || "#";\n' +
     '                        var iconEl = el.querySelector("i");\n' +
-    '                        var iconHtml = iconEl ? iconEl.outerHTML : "";\n' +
-    '                        var spanEl = el.querySelector("span");\n' +
-    '                        var label = spanEl ? spanEl.textContent.trim() : el.textContent.trim();\n' +
+    '                        var iconHtml = "";\n' +
+    '                        if (iconEl) { iconHtml = iconEl.outerHTML; }\n' +
+    '                        else {\n' +
+    '                            var spanIcon = el.querySelector("span[class*=flaticon]");\n' +
+    '                            if (spanIcon) {\n' +
+    '                                var cls = spanIcon.className.split(" ").filter(function(c){return c.indexOf("flaticon")===0;})[0] || "";\n' +
+    '                                var faClass = flatIconMap[cls] || "fas fa-circle";\n' +
+    '                                iconHtml = \'<i class="\' + faClass + \'"></i>\';\n' +
+    '                            }\n' +
+    '                        }\n' +
+    '                        var label = el.textContent.trim();\n' +
     '                        var isActive = el.classList.contains("active") ? " active" : "";\n' +
-    '                        navItemsHtml += \'<a href="\' + href + \'" class="mob-nav-item\' + isActive + \'">\' + iconHtml + label + "</a>";\n' +
+    '                        navItemsHtml += \'<a href="\' + href + \'" class="mob-nav-item\' + isActive + \'">\' + iconHtml + " " + label + "</a>";\n' +
     '                    }\n' +
     '                }\n' +
     '                var barHtml = \'<div class="mobile-dash-bar" id="mobileDashBar">\' +\n' +

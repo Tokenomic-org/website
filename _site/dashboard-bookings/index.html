@@ -521,6 +521,7 @@ function bookingsPage() {
         <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>
         <script>
         (function() {
+            var flatIconMap = {"flaticon-home-1":"fas fa-home","flaticon-user-3":"fas fa-users","flaticon-notebook":"fas fa-book","flaticon-calendar":"fas fa-calendar","flaticon-money":"fas fa-chart-line","flaticon-speech-bubble":"fas fa-comments","flaticon-edit":"fas fa-pen-to-square","flaticon-share":"fas fa-share-nodes","flaticon-trophy":"fas fa-trophy","flaticon-suitcase":"fas fa-calendar-check","flaticon-user":"fas fa-user"};
             function initMobileDashNav() {
                 if (window.innerWidth > 991) return;
                 var sidebar = document.querySelector(".dashboard-sidebar");
@@ -529,10 +530,11 @@ function bookingsPage() {
                 var contentCol = sidebarCol ? sidebarCol.nextElementSibling : null;
                 if (sidebarCol) sidebarCol.classList.add("dashboard-sidebar-col");
                 if (contentCol) contentCol.classList.add("dashboard-content-col");
+                function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML;}
                 var profileData = {};
                 try { profileData = JSON.parse(localStorage.getItem("tkn_profile_data") || "{}"); } catch(e) {}
-                var userName = profileData.displayName || profileData.name || "Tokenomic";
-                var photo = localStorage.getItem("tkn_profile_photo") || "";
+                var userName = esc(profileData.displayName || profileData.name || "Tokenomic");
+                var photo = esc(localStorage.getItem("tkn_profile_photo") || "");
                 var initials = (userName || "T").trim().charAt(0).toUpperCase();
                 var avatarHtml = photo
                     ? '<img src="' + photo + '" alt="' + userName + '" />'
@@ -546,11 +548,19 @@ function bookingsPage() {
                     } else {
                         var href = el.getAttribute("href") || "#";
                         var iconEl = el.querySelector("i");
-                        var iconHtml = iconEl ? iconEl.outerHTML : "";
-                        var spanEl = el.querySelector("span");
-                        var label = spanEl ? spanEl.textContent.trim() : el.textContent.trim();
+                        var iconHtml = "";
+                        if (iconEl) { iconHtml = iconEl.outerHTML; }
+                        else {
+                            var spanIcon = el.querySelector("span[class*=flaticon]");
+                            if (spanIcon) {
+                                var cls = spanIcon.className.split(" ").filter(function(c){return c.indexOf("flaticon")===0;})[0] || "";
+                                var faClass = flatIconMap[cls] || "fas fa-circle";
+                                iconHtml = '<i class="' + faClass + '"></i>';
+                            }
+                        }
+                        var label = el.textContent.trim();
                         var isActive = el.classList.contains("active") ? " active" : "";
-                        navItemsHtml += '<a href="' + href + '" class="mob-nav-item' + isActive + '">' + iconHtml + label + "</a>";
+                        navItemsHtml += '<a href="' + href + '" class="mob-nav-item' + isActive + '">' + iconHtml + " " + label + "</a>";
                     }
                 }
                 var barHtml = '<div class="mobile-dash-bar" id="mobileDashBar">' +

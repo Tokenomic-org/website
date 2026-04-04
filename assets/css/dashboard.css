@@ -578,23 +578,27 @@ textarea.dash-input {
 }
 
 .sidebar-toggle-btn {
-    display: none;
+    display: none !important;
 }
 .sidebar-overlay {
-    display: none;
+    display: none !important;
 }
 .sidebar-close-btn {
-    display: none;
+    display: none !important;
 }
 
 .mobile-dash-bar { display: none; }
 .mobile-dash-dropdown { display: none; }
 
 @media (max-width: 991px) {
-    .dashboard-sidebar-col {
+    .dashboard-sidebar-col,
+    .dashboard-section > .auto-container > .row > .col-lg-3,
+    .dashboard-section > .auto-container > .row > .col-md-4 {
         display: none !important;
     }
-    .dashboard-content-col {
+    .dashboard-content-col,
+    .dashboard-section > .auto-container > .row > .col-lg-9,
+    .dashboard-section > .auto-container > .row > .col-md-8 {
         width: 100% !important;
         flex: 0 0 100% !important;
         max-width: 100% !important;
