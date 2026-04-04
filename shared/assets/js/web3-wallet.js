@@ -317,17 +317,17 @@ const TokenomicWallet = {
         '<p class="wm-subtitle">Choose your preferred wallet to continue</p>' +
         '<div class="wm-wallets">' +
           '<button class="wm-wallet-btn" onclick="TokenomicWallet.connectWithProvider(\'metamask\')">' +
-            '<div class="wm-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="10" fill="#F6851B"/><path d="M30.7 10l-8.2 6.1 1.5-3.6L30.7 10z" fill="#E2761B" stroke="#E2761B" stroke-width=".2"/><path d="M9.3 10l8.1 6.2-1.4-3.7L9.3 10zm18 17.8l-2.2 3.3 4.6 1.3 1.3-4.5-3.7-.1zm-22 .1l1.3 4.5 4.6-1.3-2.2-3.3-3.7.1z" fill="#E4761B" stroke="#E4761B" stroke-width=".2"/><path d="M15 19.5l-1.3 2 4.5.2-.2-5-3 2.8zm10 0l-3.1-2.9-.1 5.1 4.5-.2-1.3-2z" fill="#E4761B" stroke="#E4761B" stroke-width=".2"/></svg></div>' +
+            '<div class="wm-icon"><img src="/assets/images/wallets/metamask.png" alt="MetaMask" style="width:100%;height:100%;object-fit:contain;"/></div>' +
             '<div class="wm-info"><span class="wm-name">' + mmLabel + '</span>' + mmNote + '</div>' +
             '<svg class="wm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>' +
           '</button>' +
           '<button class="wm-wallet-btn" onclick="TokenomicWallet.connectWithProvider(\'coinbase\')">' +
-            '<div class="wm-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="10" fill="#0052FF"/><circle cx="20" cy="20" r="12" fill="#0052FF"/><circle cx="20" cy="20" r="10" fill="#fff"/><rect x="15" y="17" width="4" height="6" rx="1" fill="#0052FF"/><rect x="21" y="17" width="4" height="6" rx="1" fill="#0052FF"/></svg></div>' +
+            '<div class="wm-icon"><img src="/assets/images/wallets/coinbase.png" alt="Coinbase" style="width:100%;height:100%;object-fit:contain;"/></div>' +
             '<div class="wm-info"><span class="wm-name">' + cbLabel + '</span>' + cbNote + '</div>' +
             '<svg class="wm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>' +
           '</button>' +
           '<button class="wm-wallet-btn" onclick="TokenomicWallet.connectWithProvider(\'rabby\')">' +
-            '<div class="wm-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="10" fill="#7C71DF"/><ellipse cx="20" cy="18" rx="9" ry="8" fill="#fff" opacity=".9"/><ellipse cx="17" cy="16" rx="2" ry="2.5" fill="#7C71DF"/><ellipse cx="23" cy="16" rx="2" ry="2.5" fill="#7C71DF"/><path d="M14 22c0 0 2 4 6 4s6-4 6-4" stroke="#7C71DF" stroke-width="1.5" stroke-linecap="round"/></svg></div>' +
+            '<div class="wm-icon"><img src="/assets/images/wallets/rabby.png" alt="Rabby" style="width:100%;height:100%;object-fit:contain;"/></div>' +
             '<div class="wm-info"><span class="wm-name">' + rbLabel + '</span></div>' +
             '<svg class="wm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>' +
           '</button>' +
