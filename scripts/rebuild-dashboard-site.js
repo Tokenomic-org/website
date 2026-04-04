@@ -154,6 +154,60 @@ Object.keys(pageTitles).forEach(function(f) {
     '        <script src="/assets/js/simple-jekyll-search.min.js"></script>\n' +
     '        <script src="/shared/assets/js/site-search.js"></script>\n' +
     '        <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>\n' +
+    '        <script>\n' +
+    '        (function() {\n' +
+    '            function initMobileSidebar() {\n' +
+    '                var sidebarCol = document.querySelector(".dashboard-sidebar")\n' +
+    '                    ? document.querySelector(".dashboard-sidebar").parentElement\n' +
+    '                    : null;\n' +
+    '                if (!sidebarCol) return;\n' +
+    '                sidebarCol.classList.add("dashboard-sidebar-col");\n' +
+    '                var contentCol = sidebarCol.nextElementSibling;\n' +
+    '                if (contentCol) contentCol.classList.add("dashboard-content-col");\n' +
+    '                var sidebar = sidebarCol.querySelector(".dashboard-sidebar");\n' +
+    '                var closeBtn = document.createElement("button");\n' +
+    '                closeBtn.className = "sidebar-close-btn";\n' +
+    '                closeBtn.innerHTML = \'<i class="fas fa-times"></i>\';\n' +
+    '                closeBtn.setAttribute("aria-label", "Close menu");\n' +
+    '                sidebar.insertBefore(closeBtn, sidebar.firstChild);\n' +
+    '                var overlay = document.createElement("div");\n' +
+    '                overlay.className = "sidebar-overlay";\n' +
+    '                document.body.appendChild(overlay);\n' +
+    '                var toggleBtn = document.createElement("button");\n' +
+    '                toggleBtn.className = "sidebar-toggle-btn";\n' +
+    '                toggleBtn.innerHTML = \'<i class="fas fa-bars"></i>\';\n' +
+    '                toggleBtn.setAttribute("aria-label", "Open menu");\n' +
+    '                document.body.appendChild(toggleBtn);\n' +
+    '                function openSidebar() {\n' +
+    '                    sidebarCol.classList.add("open");\n' +
+    '                    overlay.classList.add("visible");\n' +
+    '                    toggleBtn.classList.add("open");\n' +
+    '                    document.body.style.overflow = "hidden";\n' +
+    '                }\n' +
+    '                function closeSidebar() {\n' +
+    '                    sidebarCol.classList.remove("open");\n' +
+    '                    overlay.classList.remove("visible");\n' +
+    '                    toggleBtn.classList.remove("open");\n' +
+    '                    document.body.style.overflow = "";\n' +
+    '                }\n' +
+    '                toggleBtn.addEventListener("click", openSidebar);\n' +
+    '                closeBtn.addEventListener("click", closeSidebar);\n' +
+    '                overlay.addEventListener("click", closeSidebar);\n' +
+    '                var navLinks = sidebar.querySelectorAll(".dash-nav-item");\n' +
+    '                for (var i = 0; i < navLinks.length; i++) {\n' +
+    '                    navLinks[i].addEventListener("click", closeSidebar);\n' +
+    '                }\n' +
+    '                window.addEventListener("resize", function() {\n' +
+    '                    if (window.innerWidth > 991) closeSidebar();\n' +
+    '                });\n' +
+    '            }\n' +
+    '            if (document.readyState === "loading") {\n' +
+    '                document.addEventListener("DOMContentLoaded", initMobileSidebar);\n' +
+    '            } else {\n' +
+    '                initMobileSidebar();\n' +
+    '            }\n' +
+    '        })();\n' +
+    '        </script>\n' +
     '    </body>\n' +
     '</html>\n';
 

@@ -706,5 +706,59 @@ function handleAvatarDrop(event) {
         <script src="/assets/js/simple-jekyll-search.min.js"></script>
         <script src="/shared/assets/js/site-search.js"></script>
         <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>
+        <script>
+        (function() {
+            function initMobileSidebar() {
+                var sidebarCol = document.querySelector(".dashboard-sidebar")
+                    ? document.querySelector(".dashboard-sidebar").parentElement
+                    : null;
+                if (!sidebarCol) return;
+                sidebarCol.classList.add("dashboard-sidebar-col");
+                var contentCol = sidebarCol.nextElementSibling;
+                if (contentCol) contentCol.classList.add("dashboard-content-col");
+                var sidebar = sidebarCol.querySelector(".dashboard-sidebar");
+                var closeBtn = document.createElement("button");
+                closeBtn.className = "sidebar-close-btn";
+                closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                closeBtn.setAttribute("aria-label", "Close menu");
+                sidebar.insertBefore(closeBtn, sidebar.firstChild);
+                var overlay = document.createElement("div");
+                overlay.className = "sidebar-overlay";
+                document.body.appendChild(overlay);
+                var toggleBtn = document.createElement("button");
+                toggleBtn.className = "sidebar-toggle-btn";
+                toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                toggleBtn.setAttribute("aria-label", "Open menu");
+                document.body.appendChild(toggleBtn);
+                function openSidebar() {
+                    sidebarCol.classList.add("open");
+                    overlay.classList.add("visible");
+                    toggleBtn.classList.add("open");
+                    document.body.style.overflow = "hidden";
+                }
+                function closeSidebar() {
+                    sidebarCol.classList.remove("open");
+                    overlay.classList.remove("visible");
+                    toggleBtn.classList.remove("open");
+                    document.body.style.overflow = "";
+                }
+                toggleBtn.addEventListener("click", openSidebar);
+                closeBtn.addEventListener("click", closeSidebar);
+                overlay.addEventListener("click", closeSidebar);
+                var navLinks = sidebar.querySelectorAll(".dash-nav-item");
+                for (var i = 0; i < navLinks.length; i++) {
+                    navLinks[i].addEventListener("click", closeSidebar);
+                }
+                window.addEventListener("resize", function() {
+                    if (window.innerWidth > 991) closeSidebar();
+                });
+            }
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", initMobileSidebar);
+            } else {
+                initMobileSidebar();
+            }
+        })();
+        </script>
     </body>
 </html>

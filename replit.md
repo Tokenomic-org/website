@@ -89,7 +89,7 @@ Defined in `_data/navigation.yml`: Home, About, Experts, Learn
 - Dashboard layout has NO page banner — goes straight from header to content
 - Dashboard header has solid dark navy background (`#0A0F1A`) with tighter nav spacing
 - Content extracted from pre-built `_site/` pages for GitHub Pages compatibility
-- Dashboard sidebar: Dark (#0A0F1A) with Tokenomic branding, section labels (Main/Finance/Content/Progress), gold-orange active indicator
+- Dashboard sidebar: Dark (#0A0F1A) with Tokenomic branding, section labels (Main/Finance/Content/Progress), gold-orange active indicator; **mobile-responsive**: on screens ≤991px, sidebar collapses into a slide-out drawer (hidden by default, opened via floating hamburger button bottom-left, closed via X button/overlay tap/nav click); CSS in `dashboard.css` (`.sidebar-toggle-btn`, `.sidebar-overlay`, `.dashboard-sidebar-col`, `.sidebar-close-btn`); JS auto-injected via `_layouts/dashboard.html` and `scripts/rebuild-dashboard-site.js` (`initMobileSidebar()`); resize handler cleans up state when switching to desktop
 - Sidebar is hidden when no wallet is connected (wallet gate logic in web3-wallet.js showGate/hideGate)
 - Banner sections removed from _site/ dashboard pages for cleaner layout
 - Old inline `<style>` blocks removed from _site/ files — all dashboard styling now from dashboard.css
