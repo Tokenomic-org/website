@@ -7980,6 +7980,7 @@ img.lazy-image.loaded{
         display: block;
         border-radius: 50%;
         overflow: hidden;
+        background: #ffffff;
 }
 
 .about-section-four .image-column .image:before{
