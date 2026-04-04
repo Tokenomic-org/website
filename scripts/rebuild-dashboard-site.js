@@ -309,3 +309,59 @@ Object.keys(publicPages).forEach(function(f) {
   fs.writeFileSync(conf.dir + '/index.html', publicPage);
   console.log('Built: ' + conf.dir + '/index.html (' + publicPage.length + ' bytes)');
 });
+
+(function buildFeed() {
+  var articlesPath = path.join('scripts', 'articles-data.json');
+  if (!fs.existsSync(articlesPath)) return;
+  var articles = JSON.parse(fs.readFileSync(articlesPath, 'utf-8'));
+  var siteUrl = 'https://tokenomic.org';
+  var now = new Date().toUTCString();
+
+  function escXml(s) {
+    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function stripHtml(s) {
+    return (s || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 400);
+  }
+
+  var items = articles
+    .filter(function(a) { return a.slug && a.title && a.date; })
+    .sort(function(a, b) { return new Date(b.date) - new Date(a.date); })
+    .map(function(a) {
+      var url = siteUrl + '/learn/' + a.slug + '/';
+      var excerpt = escXml(stripHtml(a.content));
+      var imgLine = a.featured_image ? '\n      <enclosure url="' + siteUrl + a.featured_image + '" type="image/jpeg" length="0" />' : '';
+      return '    <item>\n' +
+        '      <title>' + escXml(a.title) + '</title>\n' +
+        '      <link>' + url + '</link>\n' +
+        '      <guid isPermaLink="true">' + url + '</guid>\n' +
+        '      <pubDate>' + new Date(a.date + 'T00:00:00Z').toUTCString() + '</pubDate>\n' +
+        '      <category>' + escXml(a.category) + '</category>\n' +
+        '      <author>' + escXml(a.author) + '</author>\n' +
+        '      <description>' + excerpt + '</description>' + imgLine + '\n' +
+        '    </item>';
+    }).join('\n');
+
+  var xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">\n' +
+    '  <channel>\n' +
+    '    <title>Tokenomic</title>\n' +
+    '    <link>' + siteUrl + '</link>\n' +
+    '    <description>Institutional DeFi education, intelligence, and tokenomic research.</description>\n' +
+    '    <language>en-us</language>\n' +
+    '    <managingEditor>hello@tokenomic.org (Guillaume Lauzier)</managingEditor>\n' +
+    '    <webMaster>hello@tokenomic.org (Guillaume Lauzier)</webMaster>\n' +
+    '    <lastBuildDate>' + now + '</lastBuildDate>\n' +
+    '    <atom:link href="' + siteUrl + '/feed.xml" rel="self" type="application/rss+xml" />\n' +
+    '    <image>\n' +
+    '      <url>' + siteUrl + '/assets/images/favicon.png</url>\n' +
+    '      <title>Tokenomic</title>\n' +
+    '      <link>' + siteUrl + '</link>\n' +
+    '    </image>\n' +
+    items + '\n' +
+    '  </channel>\n' +
+    '</rss>';
+
+  fs.writeFileSync(path.join('_site', 'feed.xml'), xml);
+  console.log('Built: _site/feed.xml (' + articles.length + ' articles)');
+})();

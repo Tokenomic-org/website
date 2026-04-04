@@ -1,0 +1,34 @@
+---
+layout: null
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>{{ site.title | xml_escape }}</title>
+    <link>{{ site.url }}</link>
+    <description>Institutional DeFi education, intelligence, and tokenomic research.</description>
+    <language>en-us</language>
+    <managingEditor>hello@tokenomic.org (Guillaume Lauzier)</managingEditor>
+    <webMaster>hello@tokenomic.org (Guillaume Lauzier)</webMaster>
+    <lastBuildDate>{{ site.time | date_to_rfc822 }}</lastBuildDate>
+    <atom:link href="{{ site.url }}/feed.xml" rel="self" type="application/rss+xml" />
+    <image>
+      <url>{{ site.url }}/assets/images/favicon.png</url>
+      <title>{{ site.title | xml_escape }}</title>
+      <link>{{ site.url }}</link>
+    </image>
+    {% assign posts = site.posts | sort: 'date' | reverse %}
+    {% for post in posts %}
+    <item>
+      <title>{{ post.title | xml_escape }}</title>
+      <link>{{ site.url }}{{ post.url }}</link>
+      <guid isPermaLink="true">{{ site.url }}{{ post.url }}</guid>
+      <pubDate>{{ post.date | date_to_rfc822 }}</pubDate>
+      {% if post.category %}<category>{{ post.category | xml_escape }}</category>{% endif %}
+      {% if post.author %}<author>{{ post.author | xml_escape }}</author>{% endif %}
+      <description>{{ post.excerpt | strip_html | normalize_whitespace | truncate: 400 | xml_escape }}</description>
+      {% if post.featured_image %}<enclosure url="{{ site.url }}{{ post.featured_image }}" type="image/jpeg" length="0" />{% endif %}
+    </item>
+    {% endfor %}
+  </channel>
+</rss>
