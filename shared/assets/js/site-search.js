@@ -4,22 +4,24 @@
     function loadSearchData(callback) {
         if (searchData) return callback(searchData);
         if (typeof TokenomicSupabase === 'undefined') {
-            searchData = { articles: [], educators: [], consultants: [] };
+            searchData = { articles: [], educators: [], consultants: [], courses: [], communities: [] };
             return callback(searchData);
         }
         if (!TokenomicSupabase.client && !TokenomicSupabase._initialized) {
             TokenomicSupabase.init();
             TokenomicSupabase._initialized = true;
         }
-        var loaded = { articles: null, educators: null, consultants: null };
-        var remaining = 3;
+        var loaded = { articles: null, educators: null, consultants: null, courses: null, communities: null };
+        var remaining = 5;
         function checkDone() {
             remaining--;
             if (remaining <= 0) {
                 searchData = {
                     articles: loaded.articles || [],
                     educators: loaded.educators || [],
-                    consultants: loaded.consultants || []
+                    consultants: loaded.consultants || [],
+                    courses: loaded.courses || [],
+                    communities: loaded.communities || []
                 };
                 callback(searchData);
             }
@@ -27,6 +29,8 @@
         TokenomicSupabase.getArticles().then(function(d) { loaded.articles = d; checkDone(); }).catch(function() { checkDone(); });
         TokenomicSupabase.getEducators().then(function(d) { loaded.educators = d; checkDone(); }).catch(function() { checkDone(); });
         TokenomicSupabase.getConsultants().then(function(d) { loaded.consultants = d; checkDone(); }).catch(function() { checkDone(); });
+        TokenomicSupabase.getCourses().then(function(d) { loaded.courses = d; checkDone(); }).catch(function() { checkDone(); });
+        TokenomicSupabase.getCommunities().then(function(d) { loaded.communities = d; checkDone(); }).catch(function() { checkDone(); });
     }
 
     function escapeHtml(str) {
@@ -131,6 +135,60 @@
                             score: conMatch
                         });
                     }
+                }
+            }
+
+            for (var cr = 0; cr < data.courses.length; cr++) {
+                var course = data.courses[cr];
+                var crText = [
+                    course.title || '',
+                    course.description || '',
+                    course.category || '',
+                    course.level || '',
+                    course.educator_name || '',
+                    'course'
+                ].join(' ').toLowerCase();
+
+                var crMatch = 0;
+                for (var t4 = 0; t4 < terms.length; t4++) {
+                    if (crText.indexOf(terms[t4]) !== -1) crMatch++;
+                }
+                if (crMatch > 0) {
+                    results.push({
+                        type: 'course',
+                        title: course.title || 'Course',
+                        subtitle: 'By ' + (course.educator_name || 'Tokenomic'),
+                        badge: course.category || 'Course',
+                        link: '/courses/',
+                        score: crMatch
+                    });
+                }
+            }
+
+            for (var cm = 0; cm < data.communities.length; cm++) {
+                var comm = data.communities[cm];
+                var cmText = [
+                    comm.name || '',
+                    comm.description || '',
+                    comm.category || '',
+                    comm.level || '',
+                    comm.educator_name || '',
+                    'community'
+                ].join(' ').toLowerCase();
+
+                var cmMatch = 0;
+                for (var t5 = 0; t5 < terms.length; t5++) {
+                    if (cmText.indexOf(terms[t5]) !== -1) cmMatch++;
+                }
+                if (cmMatch > 0) {
+                    results.push({
+                        type: 'community',
+                        title: comm.name || 'Community',
+                        subtitle: 'By ' + (comm.educator_name || 'Tokenomic'),
+                        badge: comm.category || 'Community',
+                        link: '/communities/',
+                        score: cmMatch
+                    });
                 }
             }
 
@@ -239,6 +297,8 @@
         '#results-container .sr-badge-article { background: #ff6000; color: #fff; }' +
         '#results-container .sr-badge-educator { background: #00C853; color: #fff; }' +
         '#results-container .sr-badge-consultant { background: #2196F3; color: #fff; }' +
+        '#results-container .sr-badge-course { background: #F7931A; color: #fff; }' +
+        '#results-container .sr-badge-community { background: #9C27B0; color: #fff; }' +
         '#results-container .sr-title { display: block; color: #fff; font-size: 16px; font-weight: 600; line-height: 1.4; margin-top: 4px; }' +
         '#results-container .sr-author { display: block; color: #5a8299; font-size: 12px; margin-top: 4px; }' +
         '#results-container .search-message { padding: 16px; color: #5a8299; font-size: 14px; text-align: center; }';
