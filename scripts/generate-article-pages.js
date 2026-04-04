@@ -53,7 +53,7 @@ var IMAGE_MAP = {
 };
 
 var AUTHOR_MAP = {
-  'iron-condor-butterfly-spread': 'Dr. Sarah Chen',
+  'iron-condor-butterfly-spread': 'Guillaume Lauzier',
   'advanced-strategies-in-defi': 'Guillaume Lauzier',
   'arbitrage-a-practical-guide': 'Guillaume Lauzier',
   'case-studies-successful-arbitrage': 'Guillaume Lauzier',
@@ -77,8 +77,8 @@ var AUTHOR_PROFILES = {
     wallet: '0x742d...bD1e'
   },
   'Guillaume Lauzier': {
-    specialty: 'DeFi & Technical Implementation',
-    bio: 'Founder of and Institutional Educator at Tokenomic, specializing in technical implementation, financial analysis, and digital assets.',
+    specialty: 'Technical Implementation & Institutional Strategy',
+    bio: 'Founder & Institutional Educator at Tokenomic. A visionary specializing in technical implementation, financial analysis, and digital asset strategy. Former crypto mining facility operator who bridges infrastructure and institutional finance. Expert in DeFi and generative techniques, dedicated to advancing the digital economy through innovative technology and rigorous education.',
     avatar: '/assets/images/learn/100.jpg',
     wallet: '0x1234...abcd'
   },
