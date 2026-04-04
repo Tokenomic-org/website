@@ -467,11 +467,18 @@ app.post('/api/communities', function(req, res) {
 
     var resourcesReadme = '# Resources\n\nShared files, courses, and articles for this community.\n';
 
+    var communityResult = {
+        id: slug, repo_name: repoName, name: name, type: type, access: access,
+        description: description, visibility: visibility, members_count: 1,
+        discussions_count: 0, created_at: communityMeta.createdAt,
+        creator_wallet: wallet
+    };
+
     ghRequest('POST', '/orgs/' + GITHUB_ORG + '/repos', {
         name: repoName,
         description: name + ' | ' + type + ' | ' + access,
         private: isPrivate,
-        auto_init: false,
+        auto_init: true,
         has_issues: true,
         has_projects: false,
         has_wiki: false
@@ -480,86 +487,59 @@ app.post('/api/communities', function(req, res) {
         if (status === 422) return res.status(409).json({ error: 'A community with this name already exists on GitHub' });
         if (status !== 201) return res.status(status).json({ error: repoData.message || 'Failed to create repository' });
 
+        communityResult.html_url = repoData.html_url;
+        communityResult.full_name = repoData.full_name;
+
         ghRequest('PUT', '/repos/' + GITHUB_ORG + '/' + repoName + '/topics', {
             names: [COMMUNITY_TOPIC, 'tokenomic', type]
         }, function() {
-            var files = [
-                { path: 'README.md', content: readmeContent },
-                { path: '.tokenomic/community.json', content: JSON.stringify(communityMeta, null, 2) },
-                { path: 'members.json', content: membersData },
-                { path: 'resources/README.md', content: resourcesReadme }
-            ];
 
-            var treeItems = files.map(function(f) {
-                return { path: f.path, mode: '100644', type: 'blob', content: f.content };
-            });
-
-            ghRequest('POST', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/trees', {
-                tree: treeItems
-            }, function(err3, treeData, s3) {
-                if (err3 || s3 !== 201) {
-                    return res.json({
-                        success: true,
-                        community: {
-                            id: slug, repo_name: repoName, name: name, type: type, access: access,
-                            description: description, visibility: visibility, members_count: 1,
-                            discussions_count: 0, created_at: communityMeta.createdAt,
-                            html_url: repoData.html_url, full_name: repoData.full_name,
-                            creator_wallet: wallet
-                        },
-                        warning: 'Repo created but initial files may not have been committed'
-                    });
+            ghRequest('GET', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/ref/heads/main', null, function(errRef, refData, sRef) {
+                if (errRef || sRef !== 200) {
+                    return res.json({ success: true, community: communityResult, warning: 'Repo created but could not read default branch' });
                 }
+                var parentSha = refData.object.sha;
 
-                ghRequest('POST', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/commits', {
-                    message: 'Initialize Tokenomic community: ' + name,
-                    tree: treeData.sha
-                }, function(err4, commitData, s4) {
-                    if (err4 || s4 !== 201) {
-                        return res.json({
-                            success: true,
-                            community: {
-                                id: slug, repo_name: repoName, name: name, type: type, access: access,
-                                description: description, visibility: visibility, members_count: 1,
-                                discussions_count: 0, created_at: communityMeta.createdAt,
-                                html_url: repoData.html_url, full_name: repoData.full_name,
-                                creator_wallet: wallet
-                            },
-                            warning: 'Repo created but commit may have failed'
-                        });
+                ghRequest('GET', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/commits/' + parentSha, null, function(errC, parentCommit, sC) {
+                    if (errC || sC !== 200) {
+                        return res.json({ success: true, community: communityResult, warning: 'Repo created but could not read parent commit' });
                     }
+                    var baseTreeSha = parentCommit.tree.sha;
 
-                    ghRequest('PATCH', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/refs/heads/main', {
-                        sha: commitData.sha
-                    }, function(err5, refData, s5) {
-                        if (s5 === 422 || s5 === 404) {
-                            ghRequest('POST', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/refs', {
-                                ref: 'refs/heads/main',
+                    var files = [
+                        { path: 'README.md', content: readmeContent },
+                        { path: '.tokenomic/community.json', content: JSON.stringify(communityMeta, null, 2) },
+                        { path: 'members.json', content: membersData },
+                        { path: 'resources/README.md', content: resourcesReadme }
+                    ];
+
+                    var treeItems = files.map(function(f) {
+                        return { path: f.path, mode: '100644', type: 'blob', content: f.content };
+                    });
+
+                    ghRequest('POST', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/trees', {
+                        base_tree: baseTreeSha,
+                        tree: treeItems
+                    }, function(err3, treeData, s3) {
+                        if (err3 || s3 !== 201) {
+                            return res.json({ success: true, community: communityResult, warning: 'Repo created but initial files may not have been committed' });
+                        }
+
+                        ghRequest('POST', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/commits', {
+                            message: 'Initialize Tokenomic community: ' + name,
+                            tree: treeData.sha,
+                            parents: [parentSha]
+                        }, function(err4, commitData, s4) {
+                            if (err4 || s4 !== 201) {
+                                return res.json({ success: true, community: communityResult, warning: 'Repo created but commit may have failed' });
+                            }
+
+                            ghRequest('PATCH', '/repos/' + GITHUB_ORG + '/' + repoName + '/git/refs/heads/main', {
                                 sha: commitData.sha
                             }, function() {
-                                res.json({
-                                    success: true,
-                                    community: {
-                                        id: slug, repo_name: repoName, name: name, type: type, access: access,
-                                        description: description, visibility: visibility, members_count: 1,
-                                        discussions_count: 0, created_at: communityMeta.createdAt,
-                                        html_url: repoData.html_url, full_name: repoData.full_name,
-                                        creator_wallet: wallet
-                                    }
-                                });
+                                res.json({ success: true, community: communityResult });
                             });
-                        } else {
-                            res.json({
-                                success: true,
-                                community: {
-                                    id: slug, repo_name: repoName, name: name, type: type, access: access,
-                                    description: description, visibility: visibility, members_count: 1,
-                                    discussions_count: 0, created_at: communityMeta.createdAt,
-                                    html_url: repoData.html_url, full_name: repoData.full_name,
-                                    creator_wallet: wallet
-                                }
-                            });
-                        }
+                        });
                     });
                 });
             });
