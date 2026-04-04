@@ -65,6 +65,19 @@ permalink: /courses/
     display: flex;
     align-items: center;
     gap: 16px;
+    justify-content: space-between;
+}
+.courses-filters .filters-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+.courses-filters .filters-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     flex-wrap: wrap;
 }
 .courses-filters .search-box {
@@ -447,7 +460,10 @@ permalink: /courses/
     .courses-hero .stats-row { gap: 24px; }
     .courses-hero .stat-num { font-size: 22px; }
     .courses-filters .filters-inner { flex-direction: column; align-items: stretch; }
+    .courses-filters .filters-left { flex-direction: column; align-items: stretch; }
+    .courses-filters .filters-right { flex-direction: column; align-items: stretch; }
     .courses-filters .search-box { min-width: unset; }
+    .courses-filters .educator-select, .courses-filters .sort-select { width: 100%; }
     .educators-strip .strip-inner { flex-direction: column; gap: 16px; text-align: center; }
 }
 </style>
@@ -471,25 +487,29 @@ permalink: /courses/
 <section class="courses-filters">
     <div class="auto-container">
         <div class="filters-inner">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="course-search" placeholder="Search courses...">
+            <div class="filters-left">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="course-search" placeholder="Search courses...">
+                </div>
+                <div class="filter-group" id="level-filters">
+                    <button class="filter-btn active" data-level="all">All Levels</button>
+                    <button class="filter-btn" data-level="beginner">Beginner</button>
+                    <button class="filter-btn" data-level="intermediate">Intermediate</button>
+                    <button class="filter-btn" data-level="advanced">Advanced</button>
+                </div>
             </div>
-            <div class="filter-group" id="level-filters">
-                <button class="filter-btn active" data-level="all">All Levels</button>
-                <button class="filter-btn" data-level="beginner">Beginner</button>
-                <button class="filter-btn" data-level="intermediate">Intermediate</button>
-                <button class="filter-btn" data-level="advanced">Advanced</button>
+            <div class="filters-right">
+                <select class="educator-select" id="educator-filter">
+                    <option value="all">All Educators</option>
+                </select>
+                <select class="sort-select" id="course-sort">
+                    <option value="popular">Most Popular</option>
+                    <option value="newest">Newest</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                </select>
             </div>
-            <select class="educator-select" id="educator-filter">
-                <option value="all">All Educators</option>
-            </select>
-            <select class="sort-select" id="course-sort">
-                <option value="popular">Most Popular</option>
-                <option value="newest">Newest</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-            </select>
         </div>
     </div>
 </section>
