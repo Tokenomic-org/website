@@ -85,7 +85,7 @@ Defined in `_data/navigation.yml`: Home, About, Experts, Learn
 ## Dashboard Source Files
 - 11 Jekyll source files at project root: `dashboard.html`, `dashboard-courses.html`, etc.
 - Each uses `layout: dashboard` with `permalink` front matter
-- Dashboard layout (`_layouts/dashboard.html`) uses `header_5.html` (includes wallet Login/Dashboard buttons)
+- Dashboard layout (`_layouts/dashboard.html`) uses `header.html` (same header as /learn/ — includes Connect Wallet button, search popup, mobile menu)
 - Dashboard layout has NO page banner — goes straight from header to content
 - Dashboard header has solid dark navy background (`#0A0F1A`) with tighter nav spacing
 - Content extracted from pre-built `_site/` pages for GitHub Pages compatibility
@@ -93,6 +93,9 @@ Defined in `_data/navigation.yml`: Home, About, Experts, Learn
 - Sidebar is hidden when no wallet is connected (wallet gate logic in web3-wallet.js showGate/hideGate)
 - Banner sections removed from _site/ dashboard pages for cleaner layout
 - Old inline `<style>` blocks removed from _site/ files — all dashboard styling now from dashboard.css
+- Alpine.js (3.13.3 CDN) loaded in dashboard layout for reactive UI components
+- Font Awesome (6.4.0 CDN) loaded in dashboard layout for icons
+- Search scripts (simple-jekyll-search.min.js, site-search.js) loaded for header search functionality
 
 ## Learn/Articles System
 - Articles originally from learn.tokenomic.org, now pulled to main site

@@ -1,4 +1,12 @@
 var fs = require('fs');
+var path = require('path');
+
+var cssDir = path.join('_site', 'assets', 'css');
+if (!fs.existsSync(cssDir)) fs.mkdirSync(cssDir, { recursive: true });
+if (fs.existsSync('assets/css/dashboard.css')) {
+  fs.copyFileSync('assets/css/dashboard.css', path.join(cssDir, 'dashboard.css'));
+  console.log('Copied dashboard.css to _site/assets/css/');
+}
 
 var site = {
   url: 'https://tokenomic.org',
@@ -98,6 +106,7 @@ Object.keys(pageTitles).forEach(function(f) {
     '        <link href="/assets/css/style.css" rel="stylesheet" />\n' +
     '        <link href="/assets/css/responsive.css" rel="stylesheet" />\n' +
     '        <link href="/assets/css/dashboard.css" rel="stylesheet" />\n' +
+    '        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />\n' +
     '        <link rel="shortcut icon" href="/assets/images/favicon.png" type="image/x-icon" />\n' +
     '        <link rel="icon" href="/assets/images/favicon.png" type="image/x-icon" />\n' +
     '        <meta http-equiv="X-UA-Compatible" content="IE=edge" />\n' +
@@ -144,6 +153,7 @@ Object.keys(pageTitles).forEach(function(f) {
     '        <script src="/shared/assets/js/web3-wallet.js"></script>\n' +
     '        <script src="/assets/js/simple-jekyll-search.min.js"></script>\n' +
     '        <script src="/shared/assets/js/site-search.js"></script>\n' +
+    '        <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>\n' +
     '    </body>\n' +
     '</html>\n';
 
