@@ -157,6 +157,7 @@ Object.keys(pageTitles).forEach(function(f) {
     '        <script>\n' +
     '        (function() {\n' +
     '            function initMobileSidebar() {\n' +
+    '                if (window.innerWidth > 991) return;\n' +
     '                var sidebarCol = document.querySelector(".dashboard-sidebar")\n' +
     '                    ? document.querySelector(".dashboard-sidebar").parentElement\n' +
     '                    : null;\n' +

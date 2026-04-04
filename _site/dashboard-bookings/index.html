@@ -522,6 +522,7 @@ function bookingsPage() {
         <script>
         (function() {
             function initMobileSidebar() {
+                if (window.innerWidth > 991) return;
                 var sidebarCol = document.querySelector(".dashboard-sidebar")
                     ? document.querySelector(".dashboard-sidebar").parentElement
                     : null;
