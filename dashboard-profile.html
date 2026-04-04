@@ -66,12 +66,101 @@ permalink: /dashboard-profile/
                     <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
                 </div>
                 <div class="dashboard-content" style="display:none;">
-                    <div x-data="profilePage()">
+                    <div x-data="profilePage()" x-init="init()">
+
+<style>
+.avatar-upload-wrap {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 16px;
+    cursor: pointer;
+}
+.avatar-upload-wrap .avatar-circle {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: #ff6000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 2.4rem;
+    font-weight: 800;
+    overflow: hidden;
+    transition: filter 0.2s;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+}
+.avatar-upload-wrap .avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+.avatar-upload-wrap .avatar-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    gap: 4px;
+}
+.avatar-upload-wrap:hover .avatar-overlay,
+.avatar-upload-wrap.drag-over .avatar-overlay {
+    opacity: 1;
+}
+.avatar-upload-wrap:hover .avatar-circle,
+.avatar-upload-wrap.drag-over .avatar-circle {
+    filter: brightness(0.7);
+}
+.avatar-upload-wrap.drag-over {
+    outline: 3px dashed #ff6000;
+    outline-offset: 4px;
+    border-radius: 50%;
+}
+.avatar-upload-wrap .avatar-overlay i { font-size: 20px; }
+.photo-status {
+    font-size: 12px;
+    margin-top: 6px;
+    min-height: 18px;
+    text-align: center;
+}
+.photo-status.success { color: #22c55e; }
+.photo-status.error { color: #ef4444; }
+.photo-status.loading { color: #5a8299; }
+</style>
+
+<input type="file" id="avatar-file-input" accept="image/*" style="display:none;" onchange="handleAvatarFileSelect(event)">
+
     <div class="row clearfix">
         <div class="col-lg-4 col-md-5 col-sm-12" style="margin-bottom:20px;">
-            <div class="dash-card" style="text-align:center;">
-                <div style="width:80px;height:80px;border-radius:50%;background:#ff6000;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:#fff;font-size:2rem;font-weight:800;" x-text="profile.name.charAt(0)"></div>
-                <h4 x-text="profile.name"></h4>
+            <div class="dash-card" style="text-align:center;padding-top:28px;">
+                <div class="avatar-upload-wrap"
+                     id="avatar-drop-zone"
+                     onclick="document.getElementById('avatar-file-input').click()"
+                     ondragover="handleAvatarDragOver(event)"
+                     ondragleave="handleAvatarDragLeave(event)"
+                     ondrop="handleAvatarDrop(event)"
+                     title="Click or drag an image to upload your profile photo">
+                    <div class="avatar-circle" id="avatar-circle">
+                        <span x-text="profile.name.charAt(0)" id="avatar-initials"></span>
+                    </div>
+                    <div class="avatar-overlay">
+                        <i class="fas fa-camera"></i>
+                        <span>Upload Photo</span>
+                    </div>
+                </div>
+                <div class="photo-status" id="photo-status"></div>
+                <h4 x-text="profile.name" style="margin-top:4px;"></h4>
                 <p style="color:#ff6000;font-size:0.85rem;margin-bottom:4px;" x-text="profile.role"></p>
                 <p style="font-family:monospace;font-size:0.8rem;color:#5a8299;" x-text="profile.wallet||'No wallet connected'"></p>
                 <hr style="margin:16px 0;">
@@ -132,18 +221,149 @@ permalink: /dashboard-profile/
 <script>
 function profilePage() {
     return {
-        profile:{name:'Tokenomic User',email:'user@tokenomic.org',role:'Educator',bio:'DeFi educator and researcher.',wallet:'',xp:2340,courses:4,badges:6},
-        badgeList:['DeFi Explorer','Yield Farmer','Smart Contract Dev','Community Builder','Top 10%','Early Adopter'],
-        notifications:[
-            {label:'Course Updates',description:'New module releases and course changes.',enabled:true},
-            {label:'Community Messages',description:'New messages in your channels.',enabled:true},
-            {label:'Revenue Alerts',description:'Payment received and split distributions.',enabled:true},
-            {label:'Event Reminders',description:'Upcoming event notifications.',enabled:false},
-            {label:'Leaderboard Changes',description:'Rank changes and achievements.',enabled:false}
+        profile: { name:'Tokenomic User', email:'user@tokenomic.org', role:'Educator', bio:'DeFi educator and researcher.', wallet:'', xp:2340, courses:4, badges:6 },
+        badgeList: ['DeFi Explorer','Yield Farmer','Smart Contract Dev','Community Builder','Top 10%','Early Adopter'],
+        notifications: [
+            { label:'Course Updates', description:'New module releases and course changes.', enabled:true },
+            { label:'Community Messages', description:'New messages in your channels.', enabled:true },
+            { label:'Revenue Alerts', description:'Payment received and split distributions.', enabled:true },
+            { label:'Event Reminders', description:'Upcoming event notifications.', enabled:false },
+            { label:'Leaderboard Changes', description:'Rank changes and achievements.', enabled:false }
         ],
-        consultantForm:{specialty:'',rate:'',experience:'3-5'},
-        saveProfile(){ alert('Profile saved! (Connect wallet for on-chain persistence via Supabase)'); }
+        consultantForm: { specialty:'', rate:'', experience:'3-5' },
+        init() {
+            var saved = JSON.parse(localStorage.getItem('tkn_profile_data') || '{}');
+            if (saved.name) this.profile.name = saved.name;
+            if (saved.email) this.profile.email = saved.email;
+            if (saved.role) this.profile.role = saved.role;
+            if (saved.bio) this.profile.bio = saved.bio;
+            if (typeof TokenomicWallet !== 'undefined' && TokenomicWallet.account) {
+                this.profile.wallet = TokenomicWallet.account;
+            }
+            applyStoredAvatar();
+        },
+        saveProfile() {
+            localStorage.setItem('tkn_profile_data', JSON.stringify({
+                name: this.profile.name,
+                email: this.profile.email,
+                role: this.profile.role,
+                bio: this.profile.bio
+            }));
+            var statusEl = document.getElementById('photo-status');
+            statusEl.textContent = 'Profile saved!';
+            statusEl.className = 'photo-status success';
+            setTimeout(function() { statusEl.textContent = ''; statusEl.className = 'photo-status'; }, 3000);
+        }
     };
+}
+
+function applyStoredAvatar() {
+    var photoUrl = '';
+    try {
+        var data = JSON.parse(localStorage.getItem('tkn_profile_photo') || '{}');
+        photoUrl = data.url || '';
+    } catch(e) {}
+    if (photoUrl) {
+        setAvatarPhoto(photoUrl);
+    }
+}
+
+function setAvatarPhoto(url) {
+    var circle = document.getElementById('avatar-circle');
+    var initials = document.getElementById('avatar-initials');
+    if (!circle) return;
+    if (initials) initials.style.display = 'none';
+    var existing = circle.querySelector('img');
+    if (existing) existing.remove();
+    var img = document.createElement('img');
+    img.src = url;
+    img.alt = 'Profile photo';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+    circle.appendChild(img);
+}
+
+function setPhotoStatus(msg, type) {
+    var el = document.getElementById('photo-status');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'photo-status ' + (type || '');
+    if (type === 'success') {
+        setTimeout(function() { el.textContent = ''; el.className = 'photo-status'; }, 4000);
+    }
+}
+
+function processAvatarFile(file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+        setPhotoStatus('Please select an image file.', 'error');
+        return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        setPhotoStatus('Image too large. Max 5MB.', 'error');
+        return;
+    }
+
+    setPhotoStatus('Uploading...', 'loading');
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var dataUrl = e.target.result;
+        setAvatarPhoto(dataUrl);
+
+        var wallet = (typeof TokenomicWallet !== 'undefined' && TokenomicWallet.account) ? TokenomicWallet.account : '';
+
+        if (wallet) {
+            fetch('/api/profile/upload-photo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ photo: dataUrl, wallet: wallet })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    try { localStorage.setItem('tkn_profile_photo', JSON.stringify({ url: data.url, updated: Date.now() })); } catch(e) {}
+                    setPhotoStatus('Photo saved!', 'success');
+                } else {
+                    try { localStorage.setItem('tkn_profile_photo', JSON.stringify({ url: dataUrl, updated: Date.now() })); } catch(e) {}
+                    setPhotoStatus('Saved locally.', 'success');
+                }
+            })
+            .catch(function() {
+                try { localStorage.setItem('tkn_profile_photo', JSON.stringify({ url: dataUrl, updated: Date.now() })); } catch(e) {}
+                setPhotoStatus('Saved locally.', 'success');
+            });
+        } else {
+            try { localStorage.setItem('tkn_profile_photo', JSON.stringify({ url: dataUrl, updated: Date.now() })); } catch(e) {}
+            setPhotoStatus('Photo saved locally. Connect wallet to sync across devices.', 'success');
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function handleAvatarFileSelect(event) {
+    var file = event.target.files && event.target.files[0];
+    if (file) processAvatarFile(file);
+    event.target.value = '';
+}
+
+function handleAvatarDragOver(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    document.getElementById('avatar-drop-zone').classList.add('drag-over');
+}
+
+function handleAvatarDragLeave(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    document.getElementById('avatar-drop-zone').classList.remove('drag-over');
+}
+
+function handleAvatarDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    document.getElementById('avatar-drop-zone').classList.remove('drag-over');
+    var file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+    if (file) processAvatarFile(file);
 }
 </script>
 
