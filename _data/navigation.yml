@@ -4,6 +4,9 @@
  - text: Courses
    url: "/courses/"
 
+ - text: Communities
+   url: "/communities/"
+
  - text: Experts
    url: "/experts/"
 

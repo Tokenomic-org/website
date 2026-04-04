@@ -37,6 +37,7 @@ headerHtml = headerHtml.replace(/\{\{site\.url\}\}/g, site.url)
 
 var navHtml = '<li><a href="/">Home</a></li>\n' +
   '                                    <li><a href="/courses/">Courses</a></li>\n' +
+  '                                    <li><a href="/communities/">Communities</a></li>\n' +
   '                                    <li><a href="/experts/">Experts</a></li>\n' +
   '                                    <li><a href="/articles/">Articles</a></li>';
 
@@ -260,6 +261,7 @@ Object.keys(pageTitles).forEach(function(f) {
 
 var publicPages = {
   'courses.html': { dir: '_site/courses', title: 'Courses' },
+  'communities.html': { dir: '_site/communities', title: 'Communities' },
   'educators.html': { dir: '_site/experts', title: 'Experts' },
   'articles.html': { dir: '_site/articles', title: 'Articles' }
 };
