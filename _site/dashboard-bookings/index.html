@@ -333,10 +333,10 @@
             <template x-for="c in consultants" :key="c.id">
                 <div class="col-lg-6 col-md-6 col-sm-12" style="margin-bottom:16px;">
                     <div class="dash-card">
-                        <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+                        <a :href="'/expert/' + c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')" style="display:flex;align-items:center;gap:14px;margin-bottom:12px;text-decoration:none;color:inherit;">
                             <div style="width:50px;height:50px;border-radius:50%;background:#ff6000;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.25rem;font-weight:800;" x-text="c.name.charAt(0)"></div>
                             <div><h5 style="margin:0;" x-text="c.name"></h5><small style="color:#ff6000;" x-text="c.specialty"></small></div>
-                        </div>
+                        </a>
                         <p style="color:#5a8299;font-size:0.85rem;margin-bottom:10px;" x-text="c.bio"></p>
                         <div style="display:flex;justify-content:space-between;align-items:center;">
                             <span><strong style="color:#ff8f00;" x-text="c.rating+'/5'"></strong> <small style="color:#5a8299;" x-text="'('+c.sessions+' sessions)'"></small></span>

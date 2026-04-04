@@ -1,0 +1,331 @@
+---
+layout: default
+title: Expert Profile
+permalink: /expert/
+---
+
+{% include header.html %}
+
+<link rel="stylesheet" href="/assets/css/expert-profile.css">
+
+<div id="ep-loading" class="ep-loading">
+    <p>Loading profile...</p>
+</div>
+
+<div id="ep-not-found" class="ep-not-found" style="display:none;">
+    <h2>Expert not found</h2>
+    <p>The profile you're looking for doesn't exist or has been removed.</p>
+    <a href="/experts/" class="ep-btn-book">View All Experts</a>
+</div>
+
+<div id="ep-content" style="display:none;">
+    <section class="ep-hero">
+        <div class="ep-hero-inner">
+            <div class="ep-breadcrumb">
+                <a href="/">Home</a><span>/</span><a href="/experts/">Experts</a><span>/</span><span id="ep-breadcrumb-name" style="color:rgba(255,255,255,0.7);font-size:13px;"></span>
+            </div>
+        </div>
+        <div class="ep-hero-inner">
+            <div class="ep-header-card">
+                <div style="display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap;">
+                    <div style="flex:1;min-width:280px;">
+                        <div class="ep-header-top">
+                            <div class="ep-avatar" id="ep-avatar"></div>
+                            <div>
+                                <h1 class="ep-name" id="ep-name"></h1>
+                                <div class="ep-specialty" id="ep-specialty"></div>
+                            </div>
+                        </div>
+                        <p class="ep-bio" id="ep-bio"></p>
+                        <div class="ep-badges" id="ep-badges"></div>
+                    </div>
+                    <div class="ep-header-actions" id="ep-actions"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="ep-body">
+        <div id="ep-pricing-section" class="ep-section" style="display:none;">
+            <h3 class="ep-section-title">Session Pricing</h3>
+            <div class="ep-pricing-grid" id="ep-pricing-grid"></div>
+            <div class="ep-split-badge">
+                <i class="fas fa-info-circle"></i>
+                Revenue split: <strong>90/5/5</strong> — 90% to expert, 5% platform, 5% community treasury. All payments in USDC on Base.
+            </div>
+        </div>
+
+        <div id="ep-expertise-section" class="ep-section" style="display:none;">
+            <h3 class="ep-section-title">Areas of Expertise</h3>
+            <div class="ep-tags" id="ep-expertise-tags"></div>
+        </div>
+
+        <div id="ep-communities-section" class="ep-section" style="display:none;">
+            <h3 class="ep-section-title">Communities</h3>
+            <div class="ep-communities-grid" id="ep-communities-grid"></div>
+        </div>
+
+        <div id="ep-courses-section" class="ep-section" style="display:none;">
+            <h3 class="ep-section-title">Courses</h3>
+            <div class="ep-courses-grid" id="ep-courses-grid"></div>
+        </div>
+
+        <div id="ep-articles-section" class="ep-section" style="display:none;">
+            <h3 class="ep-section-title">Publications</h3>
+            <div class="ep-articles-list" id="ep-articles-list"></div>
+        </div>
+
+        <div id="ep-reviews-section" class="ep-section" style="display:none;">
+            <h3 class="ep-section-title">Reviews</h3>
+            <div class="ep-reviews-list" id="ep-reviews-list"></div>
+        </div>
+
+        <div id="ep-social-section" class="ep-section" style="display:none;">
+            <h3 class="ep-section-title">Connect</h3>
+            <div class="ep-social-links" id="ep-social-links"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/shared/assets/js/supabase-client.js"></script>
+<script src="/shared/assets/js/profile-photo.js"></script>
+<script>
+(function() {
+    var expertId = null;
+    var pathParts = window.location.pathname.replace(/\/$/, '').split('/');
+    if (pathParts.length >= 3 && pathParts[1] === 'expert') {
+        expertId = decodeURIComponent(pathParts[2]);
+    }
+    if (!expertId) {
+        var params = new URLSearchParams(window.location.search);
+        expertId = params.get('id');
+    }
+
+    if (!expertId) {
+        document.getElementById('ep-loading').style.display = 'none';
+        document.getElementById('ep-not-found').style.display = 'block';
+        return;
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        TokenomicSupabase.init();
+
+        var educators = await TokenomicSupabase.getEducators();
+        var consultants = await TokenomicSupabase.getConsultants();
+        var articles = TokenomicSupabase.demoData('articles');
+
+        var expert = null;
+        var expertType = null;
+        var idNum = parseInt(expertId);
+
+        educators.forEach(function(e) {
+            if (e.id === idNum || slug(e.display_name) === expertId) {
+                expert = e;
+                expertType = 'educator';
+            }
+        });
+        if (!expert) {
+            consultants.forEach(function(c) {
+                if (c.id === idNum || slug(c.display_name) === expertId) {
+                    expert = c;
+                    expertType = 'consultant';
+                }
+            });
+        }
+
+        if (!expert && !isNaN(idNum)) {
+            consultants.forEach(function(c) {
+                if (c.id === idNum) {
+                    expert = c;
+                    expertType = 'consultant';
+                }
+            });
+        }
+
+        document.getElementById('ep-loading').style.display = 'none';
+
+        if (!expert) {
+            document.getElementById('ep-not-found').style.display = 'block';
+            return;
+        }
+
+        document.getElementById('ep-content').style.display = 'block';
+        document.title = expert.display_name + ' — Tokenomic';
+
+        var initials = expert.display_name.split(' ').map(function(n){return n[0]}).join('');
+        var grad = expertType === 'educator'
+            ? 'linear-gradient(135deg,#ff6000,#ff8f00)'
+            : 'linear-gradient(135deg,#3301c6,#01ccdd)';
+        var avatarEl = document.getElementById('ep-avatar');
+        avatarEl.style.background = grad;
+        if (expert.avatar_url) {
+            avatarEl.innerHTML = '<img src="' + expert.avatar_url + '" alt="' + expert.display_name + '">';
+        } else {
+            avatarEl.textContent = initials;
+        }
+
+        document.getElementById('ep-name').textContent = expert.display_name;
+        document.getElementById('ep-breadcrumb-name').textContent = expert.display_name;
+        document.getElementById('ep-specialty').textContent = expert.specialty || (expertType === 'educator' ? 'DeFi Education' : 'DeFi Consulting');
+        document.getElementById('ep-bio').textContent = expert.bio || '';
+
+        var badgesHtml = '';
+        badgesHtml += '<span class="ep-badge ep-badge-xp"><i class="fas fa-bolt"></i> ' + (expert.xp || 0) + ' XP</span>';
+        badgesHtml += '<span class="ep-badge ep-badge-role"><i class="fas fa-' + (expertType === 'educator' ? 'chalkboard-teacher' : 'briefcase') + '"></i> ' + (expertType === 'educator' ? 'Educator' : 'Consultant') + '</span>';
+        if (expert.approved) badgesHtml += '<span class="ep-badge ep-badge-verified"><i class="fas fa-check-circle"></i> Verified</span>';
+        if (expert.sessions) badgesHtml += '<span class="ep-badge ep-badge-sessions"><i class="fas fa-calendar-check"></i> ' + expert.sessions + ' Sessions</span>';
+        if (expert.rating) badgesHtml += '<span class="ep-badge ep-badge-rating"><i class="fas fa-star"></i> ' + expert.rating + '/5</span>';
+        document.getElementById('ep-badges').innerHTML = badgesHtml;
+
+        var actionsHtml = '';
+        if (expertType === 'consultant') {
+            actionsHtml += '<a href="/dashboard-bookings/" class="ep-btn-book"><i class="fas fa-calendar-plus" style="margin-right:6px;"></i>Book Session</a>';
+        }
+        actionsHtml += '<a href="/experts/" class="ep-btn-outline"><i class="fas fa-arrow-left" style="margin-right:6px;"></i>All Experts</a>';
+        document.getElementById('ep-actions').innerHTML = actionsHtml;
+
+        if (expertType === 'consultant' && (expert.rate_30 || expert.rate_60)) {
+            var pricingSection = document.getElementById('ep-pricing-section');
+            pricingSection.style.display = 'block';
+            var pricingGrid = document.getElementById('ep-pricing-grid');
+            var pHtml = '';
+            if (expert.rate_30) {
+                pHtml += '<div class="ep-pricing-card"><div class="ep-pricing-label">30 Minutes</div><div class="ep-pricing-amount">$' + expert.rate_30 + '</div><div class="ep-pricing-note">USDC on Base</div></div>';
+            }
+            if (expert.rate_60) {
+                pHtml += '<div class="ep-pricing-card"><div class="ep-pricing-label">60 Minutes</div><div class="ep-pricing-amount">$' + expert.rate_60 + '</div><div class="ep-pricing-note">USDC on Base</div></div>';
+            }
+            if (expert.rate_90) {
+                pHtml += '<div class="ep-pricing-card"><div class="ep-pricing-label">90 Minutes</div><div class="ep-pricing-amount">$' + expert.rate_90 + '</div><div class="ep-pricing-note">USDC on Base</div></div>';
+            } else if (expert.rate_60) {
+                var rate90 = Math.round(expert.rate_60 * 1.4);
+                pHtml += '<div class="ep-pricing-card"><div class="ep-pricing-label">90 Minutes</div><div class="ep-pricing-amount">$' + rate90 + '</div><div class="ep-pricing-note">USDC on Base</div></div>';
+            }
+            pricingGrid.innerHTML = pHtml;
+        }
+
+        var expertiseTags = getExpertiseTags(expert, expertType);
+        if (expertiseTags.length > 0) {
+            document.getElementById('ep-expertise-section').style.display = 'block';
+            document.getElementById('ep-expertise-tags').innerHTML = expertiseTags.map(function(t) {
+                return '<span class="ep-tag">' + t + '</span>';
+            }).join('');
+        }
+
+        if (expert.communities && expert.communities.length > 0) {
+            document.getElementById('ep-communities-section').style.display = 'block';
+            var comGrid = document.getElementById('ep-communities-grid');
+            comGrid.innerHTML = expert.communities.map(function(c) {
+                return '<a href="/dashboard-communities/" class="ep-community-card">' +
+                    '<div class="ep-community-icon"><i class="fas fa-users"></i></div>' +
+                    '<div><div class="ep-community-name">' + c.name + '</div>' +
+                    '<div class="ep-community-members">' + (c.members_count || 0) + ' members</div></div>' +
+                '</a>';
+            }).join('');
+        }
+
+        if (expertType === 'educator') {
+            var courses = TokenomicSupabase.demoData('courses');
+            if (courses && courses.length > 0) {
+                document.getElementById('ep-courses-section').style.display = 'block';
+                document.getElementById('ep-courses-grid').innerHTML = courses.map(function(c) {
+                    return '<div class="ep-course-card">' +
+                        '<div class="ep-course-title">' + c.title + '</div>' +
+                        '<div class="ep-course-desc">' + (c.description || '') + '</div>' +
+                        '<div class="ep-course-meta">' +
+                            '<span><i class="fas fa-book"></i> ' + (c.modules_count || 0) + ' modules</span>' +
+                            '<span><i class="fas fa-user-graduate"></i> ' + (c.enrolled_count || 0) + ' students</span>' +
+                            '<span><i class="fas fa-tag"></i> $' + (c.price_usdc || 0) + ' USDC</span>' +
+                        '</div>' +
+                    '</div>';
+                }).join('');
+            }
+        }
+
+        var expertArticles = articles.filter(function(a) {
+            return a.profiles && (
+                a.profiles.display_name === expert.display_name ||
+                slug(a.profiles.display_name) === slug(expert.display_name)
+            );
+        });
+        if (expertArticles.length > 0) {
+            document.getElementById('ep-articles-section').style.display = 'block';
+            document.getElementById('ep-articles-list').innerHTML = expertArticles.slice(0, 8).map(function(a) {
+                return '<a href="/learn/' + a.slug + '/" class="ep-article-row">' +
+                    '<span class="ep-article-cat">' + (a.category || 'Article') + '</span>' +
+                    '<span class="ep-article-title">' + a.title + '</span>' +
+                    '<span class="ep-article-date">' + formatDate(a.published_at) + '</span>' +
+                '</a>';
+            }).join('');
+        }
+
+        var reviews = generateReviews(expert);
+        if (reviews.length > 0) {
+            document.getElementById('ep-reviews-section').style.display = 'block';
+            document.getElementById('ep-reviews-list').innerHTML = reviews.map(function(r) {
+                return '<div class="ep-review">' +
+                    '<div class="ep-review-header">' +
+                        '<span class="ep-review-author">' + r.author + '</span>' +
+                        '<span class="ep-review-stars">' + '★'.repeat(r.stars) + '</span>' +
+                    '</div>' +
+                    '<div class="ep-review-text">' + r.text + '</div>' +
+                    '<div class="ep-review-date">' + r.date + '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        if (expert.wallet_address) {
+            document.getElementById('ep-social-section').style.display = 'block';
+            var socialHtml = '<a href="#" class="ep-social-link"><i class="fas fa-wallet"></i> ' + expert.wallet_address + '</a>';
+            document.getElementById('ep-social-links').innerHTML = socialHtml;
+        }
+    });
+
+    function slug(name) {
+        return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        var d = new Date(dateStr);
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function getExpertiseTags(expert, type) {
+        var tags = [];
+        if (expert.specialty) {
+            expert.specialty.split(/[&,]/).forEach(function(t) {
+                if (t.trim()) tags.push(t.trim());
+            });
+        }
+        if (type === 'educator') {
+            tags.push('DeFi Education');
+            tags.push('Curriculum Design');
+        } else {
+            tags.push('1-on-1 Advisory');
+            tags.push('USDC Payments');
+        }
+        return tags;
+    }
+
+    function generateReviews(expert) {
+        var reviewTemplates = [
+            { author: 'DeFi Builder', text: 'Incredibly knowledgeable. The session was worth every penny — actionable insights from start to finish.', stars: 5 },
+            { author: 'Protocol Founder', text: 'Deep expertise and very professional. Helped us identify key risks in our tokenomics model.', stars: 5 },
+            { author: 'DAO Contributor', text: 'Great session. Clear communication and practical advice that we could implement immediately.', stars: 4 },
+        ];
+        if (!expert.sessions || expert.sessions < 10) return [];
+        return reviewTemplates.map(function(r, i) {
+            return {
+                author: r.author,
+                text: r.text,
+                stars: r.stars,
+                date: 'March ' + (10 + i * 5) + ', 2026'
+            };
+        });
+    }
+})();
+</script>
+
+{% include footer.html %}

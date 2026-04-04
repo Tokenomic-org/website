@@ -1187,6 +1187,10 @@ app.get('/profile/:slug', function(req, res) {
     res.sendFile(path.join(__dirname, '_site', 'profile', 'index.html'));
 });
 
+app.get('/expert/:id', function(req, res) {
+    res.sendFile(path.join(__dirname, '_site', 'expert', 'index.html'));
+});
+
 app.use(express.static(path.join(__dirname, '_site'), {
     extensions: ['html'],
     setHeaders: function(res, filePath) {

@@ -229,7 +229,9 @@ function getExpertProfileCard(authorName) {
     ? '<img class="profile-avatar" src="' + profile.avatar + '" alt="' + escapeHtml(authorName) + '">'
     : '<div class="profile-avatar-placeholder">' + initials + '</div>';
 
-  return '        <div class="expert-profile-card">\n' +
+  var profileSlug = authorName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+  return '        <a href="/expert/' + profileSlug + '" class="expert-profile-card" style="text-decoration:none;color:inherit;display:block;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.boxShadow=\'0 4px 20px rgba(102,126,234,0.15)\';this.style.borderColor=\'#667eea\'" onmouseout="this.style.boxShadow=\'none\';this.style.borderColor=\'#e8eef5\'">\n' +
     '            <div class="profile-header">\n' +
     '                ' + avatarHtml + '\n' +
     '                <div class="profile-info">\n' +
@@ -239,8 +241,8 @@ function getExpertProfileCard(authorName) {
     '                </div>\n' +
     '            </div>\n' +
     '            <p class="profile-bio">' + escapeHtml(profile.bio) + '</p>\n' +
-    '            <a href="/experts/" class="profile-link">View All Experts <i class="fas fa-arrow-right"></i></a>\n' +
-    '        </div>\n';
+    '            <span class="profile-link">View Full Profile <i class="fas fa-arrow-right"></i></span>\n' +
+    '        </a>\n';
 }
 
 function getCommentsSection(slug) {
