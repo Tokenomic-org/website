@@ -1,0 +1,308 @@
+---
+layout: default
+title: Community
+permalink: /community/
+---
+
+{% include header.html %}
+
+<link rel="stylesheet" href="/assets/css/community-profile.css">
+
+<div id="cp-loading" class="cp-loading">
+    <div class="cp-spinner"></div>
+    <p>Loading community...</p>
+</div>
+
+<div id="cp-not-found" class="cp-not-found" style="display:none;">
+    <h2>Community not found</h2>
+    <p>The community you&rsquo;re looking for doesn&rsquo;t exist or has been removed.</p>
+    <a href="/communities/" class="cp-btn-join">Browse Communities</a>
+</div>
+
+<div id="cp-content" style="display:none;">
+    <section class="cp-hero">
+        <div class="cp-hero-thumb"><img id="cp-hero-bg" src="" alt=""></div>
+        <div class="cp-hero-container">
+            <div class="cp-breadcrumb">
+                <a href="/">Home</a>
+                <span class="sep">/</span>
+                <a href="/communities/">Communities</a>
+                <span class="sep">/</span>
+                <span class="current" id="cp-breadcrumb-name"></span>
+            </div>
+            <div class="cp-hero-layout">
+                <div class="cp-thumb-wrap" id="cp-thumb">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="cp-hero-info">
+                    <div class="cp-meta-pills" id="cp-meta-pills"></div>
+                    <h1 class="cp-name" id="cp-name"></h1>
+                    <div class="cp-description-hero" id="cp-description-hero"></div>
+                    <div class="cp-stats-bar" id="cp-stats-bar"></div>
+                    <div class="cp-hero-actions" id="cp-hero-actions"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="cp-body">
+        <div class="cp-body-inner">
+            <div class="cp-main-col">
+                <div class="cp-card">
+                    <div class="cp-card-title"><i class="fas fa-info-circle"></i> About this Community</div>
+                    <p class="cp-about-text" id="cp-about-text"></p>
+                    <div class="cp-tags" id="cp-tags"></div>
+                </div>
+
+                <div class="cp-card" id="cp-courses-card" style="display:none;">
+                    <div class="cp-card-title"><i class="fas fa-book"></i> Courses in this Community</div>
+                    <div class="cp-courses-list" id="cp-courses-list"></div>
+                </div>
+
+                <div class="cp-card" id="cp-discussion-card">
+                    <div class="cp-card-title"><i class="fas fa-comments"></i> Discussions</div>
+                    <div id="cp-discussions-content"></div>
+                </div>
+            </div>
+
+            <div class="cp-sidebar-col">
+                <div class="cp-sidebar-sticky">
+                    <div class="cp-join-card">
+                        <div class="cp-join-header">
+                            <div class="cp-join-header-label">Community Access</div>
+                            <div class="cp-join-price" id="cp-join-price"></div>
+                        </div>
+                        <div class="cp-join-body">
+                            <ul class="cp-join-features">
+                                <li><i class="fas fa-check-circle"></i> Access all community courses</li>
+                                <li><i class="fas fa-check-circle"></i> Join live discussions &amp; forums</li>
+                                <li><i class="fas fa-check-circle"></i> Earn on-chain credentials</li>
+                                <li><i class="fas fa-check-circle"></i> Connect with peers &amp; educators</li>
+                            </ul>
+                            <div class="cp-join-cta">
+                                <a href="/dashboard-communities/" class="cp-btn-join-full">
+                                    <i class="fas fa-users"></i> Join Community
+                                </a>
+                            </div>
+                            <div class="cp-join-note" style="margin-top:12px;">
+                                <i class="fas fa-shield-alt"></i>
+                                Payments in <strong>USDC</strong> on Base L2
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cp-info-card">
+                        <div class="cp-info-title">Community Stats</div>
+                        <div class="cp-stat-rows" id="cp-stat-rows"></div>
+                    </div>
+
+                    <div class="cp-educator-card" id="cp-educator-card" style="display:none;">
+                        <div class="cp-educator-header">Educator</div>
+                        <div class="cp-educator-inner" id="cp-educator-inner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/shared/assets/js/supabase-client.js"></script>
+<script>
+(function() {
+    var communitySlug = null;
+    var pathParts = window.location.pathname.replace(/\/$/, '').split('/');
+    if (pathParts.length >= 3 && pathParts[1] === 'community') {
+        communitySlug = decodeURIComponent(pathParts[2]);
+    }
+    if (!communitySlug) {
+        var params = new URLSearchParams(window.location.search);
+        communitySlug = params.get('slug');
+    }
+
+    if (!communitySlug) {
+        document.getElementById('cp-loading').style.display = 'none';
+        document.getElementById('cp-not-found').style.display = 'block';
+        return;
+    }
+
+    function makeSlug(name) {
+        return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
+
+    function getInitials(name) {
+        return (name || '').split(' ').map(function(n) { return n[0]; }).join('').toUpperCase();
+    }
+
+    function esc(s) {
+        var d = document.createElement('div');
+        d.textContent = s || '';
+        return d.innerHTML;
+    }
+
+    function levelClass(level) {
+        var map = { beginner: 'level-beginner', intermediate: 'level-intermediate', advanced: 'level-advanced' };
+        return map[level] || 'level-beginner';
+    }
+
+    function levelLabel(level) {
+        if (!level) return 'Beginner';
+        return level.charAt(0).toUpperCase() + level.slice(1);
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        var d = new Date(dateStr);
+        return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        TokenomicSupabase.init();
+
+        var communities = await TokenomicSupabase.getCommunities();
+        var allCourses = TokenomicSupabase.demoData('courses');
+
+        var community = null;
+        communities.forEach(function(c) {
+            if (makeSlug(c.name) === communitySlug || String(c.id) === communitySlug) {
+                community = c;
+            }
+        });
+
+        document.getElementById('cp-loading').style.display = 'none';
+
+        if (!community) {
+            document.getElementById('cp-not-found').style.display = 'block';
+            return;
+        }
+
+        document.getElementById('cp-content').style.display = 'block';
+        document.title = community.name + ' — Tokenomic';
+
+        /* ── Hero background ────────────────────────────── */
+        if (community.thumbnail_url) {
+            document.getElementById('cp-hero-bg').src = community.thumbnail_url;
+        }
+
+        /* ── Thumb ──────────────────────────────────────── */
+        var thumbEl = document.getElementById('cp-thumb');
+        if (community.thumbnail_url) {
+            thumbEl.innerHTML = '<img src="' + esc(community.thumbnail_url) + '" alt="' + esc(community.name) + '">';
+        }
+
+        /* ── Breadcrumb ─────────────────────────────────── */
+        document.getElementById('cp-breadcrumb-name').textContent = community.name;
+
+        /* ── Name + description ─────────────────────────── */
+        document.getElementById('cp-name').textContent = community.name;
+        document.getElementById('cp-description-hero').textContent = community.description || '';
+
+        /* ── Meta pills ─────────────────────────────────── */
+        var pillsHtml = '';
+        if (community.category) {
+            pillsHtml += '<span class="cp-pill category"><i class="fas fa-tag"></i> ' + esc(community.category) + '</span>';
+        }
+        if (community.level) {
+            pillsHtml += '<span class="cp-pill ' + levelClass(community.level) + '"><i class="fas fa-signal"></i> ' + levelLabel(community.level) + '</span>';
+        }
+        if (community.access_price_usdc === 0) {
+            pillsHtml += '<span class="cp-pill free"><i class="fas fa-unlock"></i> Free</span>';
+        }
+        document.getElementById('cp-meta-pills').innerHTML = pillsHtml;
+
+        /* ── Stats bar ──────────────────────────────────── */
+        var statsHtml = '';
+        statsHtml += '<span class="cp-stat"><i class="fas fa-users"></i> ' + (community.members_count || 0).toLocaleString() + ' members</span>';
+        if (community.courses_count) {
+            statsHtml += '<span class="cp-stat"><i class="fas fa-book"></i> ' + community.courses_count + ' course' + (community.courses_count !== 1 ? 's' : '') + '</span>';
+        }
+        if (community.created_at) {
+            statsHtml += '<span class="cp-stat"><i class="fas fa-calendar"></i> Since ' + formatDate(community.created_at) + '</span>';
+        }
+        document.getElementById('cp-stats-bar').innerHTML = statsHtml;
+
+        /* ── Hero actions ───────────────────────────────── */
+        var actionsHtml = '<a href="/dashboard-communities/" class="cp-btn-join"><i class="fas fa-users"></i> Join Community</a>';
+        actionsHtml += '<a href="/communities/" class="cp-btn-outline"><i class="fas fa-arrow-left"></i> All Communities</a>';
+        document.getElementById('cp-hero-actions').innerHTML = actionsHtml;
+
+        /* ── About card ─────────────────────────────────── */
+        document.getElementById('cp-about-text').textContent = community.description || '';
+        var tagsHtml = '';
+        if (community.category) tagsHtml += '<span class="cp-tag">' + esc(community.category) + '</span>';
+        if (community.level) tagsHtml += '<span class="cp-tag">' + levelLabel(community.level) + '</span>';
+        tagsHtml += '<span class="cp-tag">DeFi</span>';
+        tagsHtml += '<span class="cp-tag">Web3</span>';
+        document.getElementById('cp-tags').innerHTML = tagsHtml;
+
+        /* ── Courses card ───────────────────────────────── */
+        var communityCourses = allCourses.filter(function(c) {
+            return c.community_id === community.id;
+        });
+        if (communityCourses.length > 0) {
+            document.getElementById('cp-courses-card').style.display = 'block';
+            document.getElementById('cp-courses-list').innerHTML = communityCourses.map(function(c) {
+                var priceStr = c.price_usdc > 0 ? '$' + c.price_usdc : 'Free';
+                return '<div class="cp-course-row">' +
+                    '<div class="cp-course-thumb">' +
+                        (c.thumbnail_url ? '<img src="' + esc(c.thumbnail_url) + '" alt="' + esc(c.title) + '">' : '<i class="fas fa-book"></i>') +
+                    '</div>' +
+                    '<div class="cp-course-info">' +
+                        '<div class="cp-course-title">' + esc(c.title) + '</div>' +
+                        '<div class="cp-course-meta">' +
+                            '<span><i class="fas fa-cube"></i> ' + (c.modules_count || 0) + ' modules</span>' +
+                            '<span><i class="fas fa-user-graduate"></i> ' + (c.enrolled_count || 0) + ' enrolled</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="cp-course-price">' + priceStr + '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        /* ── Discussions card ───────────────────────────── */
+        var discHtml = '<div style="text-align:center;padding:32px 20px;">' +
+            '<div style="width:52px;height:52px;border-radius:50%;background:#f0f4ff;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">' +
+                '<i class="fas fa-comments" style="color:#667eea;font-size:1.3rem;"></i>' +
+            '</div>' +
+            '<p style="color:#5a8299;font-size:0.92rem;margin:0 0 16px;">Join this community to participate in discussions, ask questions, and connect with other members.</p>' +
+            '<a href="/dashboard-communities/" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:10px 22px;border-radius:10px;text-decoration:none;font-size:0.88rem;font-weight:700;">' +
+                '<i class="fas fa-sign-in-alt"></i> Join to Access Discussions' +
+            '</a>' +
+        '</div>';
+        document.getElementById('cp-discussions-content').innerHTML = discHtml;
+
+        /* ── Sidebar: Join price ────────────────────────── */
+        var priceHtml = community.access_price_usdc > 0
+            ? '$' + community.access_price_usdc + '<span>USDC</span>'
+            : 'Free<span>to join</span>';
+        document.getElementById('cp-join-price').innerHTML = priceHtml;
+
+        /* ── Sidebar: Stats ─────────────────────────────── */
+        var statRowsHtml = '';
+        statRowsHtml += '<div class="cp-stat-row"><span class="cp-stat-row-label"><i class="fas fa-users"></i> Members</span><span class="cp-stat-row-value">' + (community.members_count || 0).toLocaleString() + '</span></div>';
+        statRowsHtml += '<div class="cp-stat-row"><span class="cp-stat-row-label"><i class="fas fa-book"></i> Courses</span><span class="cp-stat-row-value">' + (community.courses_count || 0) + '</span></div>';
+        statRowsHtml += '<div class="cp-stat-row"><span class="cp-stat-row-label"><i class="fas fa-tag"></i> Category</span><span class="cp-stat-row-value">' + esc(community.category || 'General') + '</span></div>';
+        statRowsHtml += '<div class="cp-stat-row"><span class="cp-stat-row-label"><i class="fas fa-signal"></i> Level</span><span class="cp-stat-row-value">' + levelLabel(community.level) + '</span></div>';
+        if (community.created_at) {
+            statRowsHtml += '<div class="cp-stat-row"><span class="cp-stat-row-label"><i class="fas fa-calendar"></i> Founded</span><span class="cp-stat-row-value">' + formatDate(community.created_at) + '</span></div>';
+        }
+        document.getElementById('cp-stat-rows').innerHTML = statRowsHtml;
+
+        /* ── Sidebar: Educator ──────────────────────────── */
+        if (community.educator_name) {
+            document.getElementById('cp-educator-card').style.display = 'block';
+            var eduSlug = makeSlug(community.educator_name);
+            var eduInitials = getInitials(community.educator_name);
+            document.getElementById('cp-educator-inner').innerHTML =
+                '<div class="cp-educator-avatar">' + esc(eduInitials) + '</div>' +
+                '<div>' +
+                    '<div class="cp-educator-name">' + esc(community.educator_name) + '</div>' +
+                    '<div class="cp-educator-role">Educator</div>' +
+                    '<a href="/expert/' + esc(eduSlug) + '" class="cp-educator-url">tokenomic.org/expert/' + esc(eduSlug) + '</a>' +
+                '</div>';
+        }
+    });
+})();
+</script>
+
+{% include footer.html %}

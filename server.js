@@ -1312,6 +1312,16 @@ app.post('/api/github/publish', function(req, res) {
 
 var SITE_ROOT = path.resolve(path.join(__dirname, '_site'));
 
+app.get('/community/:slug', function(req, res) {
+    res.sendFile(path.join(__dirname, '_site', 'community', 'index.html'), function(err) {
+        if (err) {
+            res.status(404).sendFile(path.join(__dirname, '_site', '404.html'), function(e) {
+                if (e) res.status(404).send('Not Found');
+            });
+        }
+    });
+});
+
 app.get('/expert/:slug', function(req, res) {
     res.sendFile(path.join(__dirname, '_site', 'expert', 'index.html'), function(err) {
         if (err) {
