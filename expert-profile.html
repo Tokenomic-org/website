@@ -9,80 +9,108 @@ permalink: /expert/
 <link rel="stylesheet" href="/assets/css/expert-profile.css">
 
 <div id="ep-loading" class="ep-loading">
+    <div class="ep-spinner"></div>
     <p>Loading profile...</p>
 </div>
 
 <div id="ep-not-found" class="ep-not-found" style="display:none;">
     <h2>Expert not found</h2>
-    <p>The profile you're looking for doesn't exist or has been removed.</p>
+    <p>The profile you&rsquo;re looking for doesn&rsquo;t exist or has been removed.</p>
     <a href="/experts/" class="ep-btn-book">View All Experts</a>
 </div>
 
 <div id="ep-content" style="display:none;">
     <section class="ep-hero">
-        <div class="ep-hero-inner">
+        <div class="ep-hero-container">
             <div class="ep-breadcrumb">
-                <a href="/">Home</a><span>/</span><a href="/experts/">Experts</a><span>/</span><span id="ep-breadcrumb-name" style="color:rgba(255,255,255,0.7);font-size:13px;"></span>
+                <a href="/">Home</a>
+                <span class="sep">/</span>
+                <a href="/experts/">Experts</a>
+                <span class="sep">/</span>
+                <span class="current" id="ep-breadcrumb-name"></span>
             </div>
-        </div>
-        <div class="ep-hero-inner">
-            <div class="ep-header-card">
-                <div style="display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap;">
-                    <div style="flex:1;min-width:280px;">
-                        <div class="ep-header-top">
-                            <div class="ep-avatar" id="ep-avatar"></div>
-                            <div>
-                                <h1 class="ep-name" id="ep-name"></h1>
-                                <div class="ep-specialty" id="ep-specialty"></div>
-                            </div>
-                        </div>
-                        <p class="ep-bio" id="ep-bio"></p>
-                        <div class="ep-badges" id="ep-badges"></div>
-                    </div>
-                    <div class="ep-header-actions" id="ep-actions"></div>
+            <div class="ep-profile-header">
+                <div class="ep-avatar-wrap">
+                    <div class="ep-avatar" id="ep-avatar"></div>
+                    <div class="ep-verified-ring" id="ep-verified-ring" style="display:none;">&#10003;</div>
+                </div>
+                <div class="ep-profile-info">
+                    <div class="ep-role-pills" id="ep-role-pills"></div>
+                    <h1 class="ep-name" id="ep-name"></h1>
+                    <div class="ep-specialty" id="ep-specialty"></div>
+                    <div id="ep-profile-url" style="margin-bottom:16px;"></div>
+                    <div class="ep-stats-bar" id="ep-stats-bar"></div>
+                    <div class="ep-hero-actions" id="ep-actions"></div>
                 </div>
             </div>
         </div>
     </section>
 
     <div class="ep-body">
-        <div id="ep-pricing-section" class="ep-section" style="display:none;">
-            <h3 class="ep-section-title">Session Pricing</h3>
-            <div class="ep-pricing-grid" id="ep-pricing-grid"></div>
-            <div class="ep-split-badge">
-                <i class="fas fa-info-circle"></i>
-                Revenue split: <strong>90/5/5</strong> — 90% to expert, 5% platform, 5% community treasury. All payments in USDC on Base.
+        <div class="ep-body-inner">
+            <div class="ep-main-col">
+                <div class="ep-card" id="ep-bio-card">
+                    <div class="ep-card-title"><i class="fas fa-user"></i> About</div>
+                    <p class="ep-bio" id="ep-bio"></p>
+                    <div class="ep-tags" id="ep-expertise-tags"></div>
+                </div>
+
+                <div class="ep-card" id="ep-communities-card" style="display:none;">
+                    <div class="ep-card-title"><i class="fas fa-users"></i> Communities</div>
+                    <div class="ep-communities-grid" id="ep-communities-grid"></div>
+                </div>
+
+                <div id="ep-tabs-wrapper" style="display:none;">
+                    <div class="ep-tabs">
+                        <button class="ep-tab active" onclick="epSwitchTab('courses', this)" id="ep-tab-courses">Courses</button>
+                        <button class="ep-tab" onclick="epSwitchTab('articles', this)" id="ep-tab-articles">Publications</button>
+                        <button class="ep-tab" onclick="epSwitchTab('reviews', this)" id="ep-tab-reviews">Reviews</button>
+                    </div>
+                    <div class="ep-tab-pane active" id="ep-pane-courses">
+                        <div class="ep-courses-grid" id="ep-courses-grid"></div>
+                    </div>
+                    <div class="ep-tab-pane" id="ep-pane-articles">
+                        <div class="ep-articles-list" id="ep-articles-list"></div>
+                    </div>
+                    <div class="ep-tab-pane" id="ep-pane-reviews">
+                        <div class="ep-reviews-list" id="ep-reviews-list"></div>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div id="ep-expertise-section" class="ep-section" style="display:none;">
-            <h3 class="ep-section-title">Areas of Expertise</h3>
-            <div class="ep-tags" id="ep-expertise-tags"></div>
-        </div>
+            <div class="ep-sidebar-col">
+                <div class="ep-sidebar-sticky">
+                    <div class="ep-booking-card" id="ep-booking-card" style="display:none;">
+                        <div class="ep-booking-header">
+                            <div class="ep-booking-header-title">Book a Session</div>
+                            <div class="ep-booking-header-subtitle">Available for 1-on-1 consulting</div>
+                        </div>
+                        <div class="ep-booking-body">
+                            <div class="ep-pricing-options" id="ep-pricing-options"></div>
+                            <div class="ep-booking-cta">
+                                <a href="/dashboard-bookings/" class="ep-btn-book-full"><i class="fas fa-calendar-plus"></i> Book Session</a>
+                            </div>
+                            <div class="ep-split-note" style="margin-top:12px;">
+                                <i class="fas fa-info-circle"></i>&nbsp;
+                                Revenue split: <strong>90/5/5</strong> &mdash; USDC on Base
+                            </div>
+                        </div>
+                    </div>
 
-        <div id="ep-communities-section" class="ep-section" style="display:none;">
-            <h3 class="ep-section-title">Communities</h3>
-            <div class="ep-communities-grid" id="ep-communities-grid"></div>
-        </div>
+                    <div class="ep-educator-badge" id="ep-educator-badge" style="display:none;">
+                        <div class="ep-educator-badge-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                        <div class="ep-educator-badge-text">
+                            <strong>DeFi Educator</strong>
+                            Teaching on the Tokenomic platform with on-chain credentials.
+                        </div>
+                    </div>
 
-        <div id="ep-courses-section" class="ep-section" style="display:none;">
-            <h3 class="ep-section-title">Courses</h3>
-            <div class="ep-courses-grid" id="ep-courses-grid"></div>
-        </div>
-
-        <div id="ep-articles-section" class="ep-section" style="display:none;">
-            <h3 class="ep-section-title">Publications</h3>
-            <div class="ep-articles-list" id="ep-articles-list"></div>
-        </div>
-
-        <div id="ep-reviews-section" class="ep-section" style="display:none;">
-            <h3 class="ep-section-title">Reviews</h3>
-            <div class="ep-reviews-list" id="ep-reviews-list"></div>
-        </div>
-
-        <div id="ep-social-section" class="ep-section" style="display:none;">
-            <h3 class="ep-section-title">Connect</h3>
-            <div class="ep-social-links" id="ep-social-links"></div>
+                    <div class="ep-info-card" id="ep-info-card" style="display:none;">
+                        <div class="ep-info-card-title">Connect</div>
+                        <div class="ep-social-links" id="ep-social-links"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -91,6 +119,13 @@ permalink: /expert/
 <script src="/shared/assets/js/supabase-client.js"></script>
 <script src="/shared/assets/js/profile-photo.js"></script>
 <script>
+function epSwitchTab(pane, btnEl) {
+    document.querySelectorAll('.ep-tab').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.ep-tab-pane').forEach(function(p) { p.classList.remove('active'); });
+    btnEl.classList.add('active');
+    document.getElementById('ep-pane-' + pane).classList.add('active');
+}
+
 (function() {
     var expertId = null;
     var pathParts = window.location.pathname.replace(/\/$/, '').split('/');
@@ -120,23 +155,14 @@ permalink: /expert/
         var idNum = parseInt(expertId);
 
         educators.forEach(function(e) {
-            if (e.id === idNum || slug(e.display_name) === expertId) {
+            if (e.id === idNum || makeSlug(e.display_name) === expertId) {
                 expert = e;
                 expertType = 'educator';
             }
         });
         if (!expert) {
             consultants.forEach(function(c) {
-                if (c.id === idNum || slug(c.display_name) === expertId) {
-                    expert = c;
-                    expertType = 'consultant';
-                }
-            });
-        }
-
-        if (!expert && !isNaN(idNum)) {
-            consultants.forEach(function(c) {
-                if (c.id === idNum) {
+                if (c.id === idNum || makeSlug(c.display_name) === expertId) {
                     expert = c;
                     expertType = 'consultant';
                 }
@@ -153,7 +179,11 @@ permalink: /expert/
         document.getElementById('ep-content').style.display = 'block';
         document.title = expert.display_name + ' — Tokenomic';
 
-        var initials = expert.display_name.split(' ').map(function(n){return n[0]}).join('');
+        var expertSlug = makeSlug(expert.display_name);
+        var profileUrl = 'https://tokenomic.org/expert/' + expertSlug;
+
+        /* ── Avatar ─────────────────────────────────────── */
+        var initials = expert.display_name.split(' ').map(function(n) { return n[0]; }).join('');
         var grad = expertType === 'educator'
             ? 'linear-gradient(135deg,#ff6000,#ff8f00)'
             : 'linear-gradient(135deg,#3301c6,#01ccdd)';
@@ -165,58 +195,54 @@ permalink: /expert/
             avatarEl.textContent = initials;
         }
 
-        document.getElementById('ep-name').textContent = expert.display_name;
+        /* ── Verified ring ──────────────────────────────── */
+        if (expert.approved) {
+            document.getElementById('ep-verified-ring').style.display = 'flex';
+        }
+
+        /* ── Breadcrumb & Name ──────────────────────────── */
         document.getElementById('ep-breadcrumb-name').textContent = expert.display_name;
-        document.getElementById('ep-specialty').textContent = expert.specialty || (expertType === 'educator' ? 'DeFi Education' : 'DeFi Consulting');
-        document.getElementById('ep-bio').textContent = expert.bio || '';
+        document.getElementById('ep-name').textContent = expert.display_name;
+        document.getElementById('ep-specialty').textContent = expert.specialty || (expertType === 'educator' ? 'DeFi Educator' : 'DeFi Consultant');
 
-        var badgesHtml = '';
-        badgesHtml += '<span class="ep-badge ep-badge-xp"><i class="fas fa-bolt"></i> ' + (expert.xp || 0) + ' XP</span>';
-        badgesHtml += '<span class="ep-badge ep-badge-role"><i class="fas fa-' + (expertType === 'educator' ? 'chalkboard-teacher' : 'briefcase') + '"></i> ' + (expertType === 'educator' ? 'Educator' : 'Consultant') + '</span>';
-        if (expert.approved) badgesHtml += '<span class="ep-badge ep-badge-verified"><i class="fas fa-check-circle"></i> Verified</span>';
-        if (expert.sessions) badgesHtml += '<span class="ep-badge ep-badge-sessions"><i class="fas fa-calendar-check"></i> ' + expert.sessions + ' Sessions</span>';
-        if (expert.rating) badgesHtml += '<span class="ep-badge ep-badge-rating"><i class="fas fa-star"></i> ' + expert.rating + '/5</span>';
-        document.getElementById('ep-badges').innerHTML = badgesHtml;
+        /* ── Profile URL under name ─────────────────────── */
+        document.getElementById('ep-profile-url').innerHTML =
+            '<a href="' + profileUrl + '" style="color:rgba(255,255,255,0.45);font-size:0.82rem;text-decoration:none;letter-spacing:0.2px;transition:color 0.2s;" onmouseover="this.style.color=\'rgba(255,255,255,0.8)\'" onmouseout="this.style.color=\'rgba(255,255,255,0.45)\'">' +
+            '<i class="fas fa-link" style="margin-right:5px;font-size:0.75rem;"></i>' + profileUrl + '</a>';
 
+        /* ── Role pills ─────────────────────────────────── */
+        var pillsHtml = '';
+        pillsHtml += '<span class="ep-role-pill ' + expertType + '"><i class="fas fa-' + (expertType === 'educator' ? 'chalkboard-teacher' : 'briefcase') + '"></i> ' + (expertType === 'educator' ? 'Educator' : 'Consultant') + '</span>';
+        if (expert.approved) pillsHtml += '<span class="ep-role-pill verified"><i class="fas fa-check-circle"></i> Verified</span>';
+        document.getElementById('ep-role-pills').innerHTML = pillsHtml;
+
+        /* ── Stats bar ──────────────────────────────────── */
+        var statsHtml = '<span class="ep-stat"><i class="fas fa-bolt"></i> ' + (expert.xp || 0) + ' XP</span>';
+        if (expert.sessions) statsHtml += '<span class="ep-stat"><i class="fas fa-calendar-check"></i> ' + expert.sessions + ' Sessions</span>';
+        if (expert.rating) statsHtml += '<span class="ep-stat"><i class="fas fa-star"></i> ' + expert.rating + '/5</span>';
+        document.getElementById('ep-stats-bar').innerHTML = statsHtml;
+
+        /* ── Hero actions ───────────────────────────────── */
         var actionsHtml = '';
         if (expertType === 'consultant') {
-            actionsHtml += '<a href="/dashboard-bookings/" class="ep-btn-book"><i class="fas fa-calendar-plus" style="margin-right:6px;"></i>Book Session</a>';
+            actionsHtml += '<a href="/dashboard-bookings/" class="ep-btn-book"><i class="fas fa-calendar-plus"></i> Book Session</a>';
         }
-        actionsHtml += '<a href="/experts/" class="ep-btn-outline"><i class="fas fa-arrow-left" style="margin-right:6px;"></i>All Experts</a>';
+        actionsHtml += '<a href="/experts/" class="ep-btn-outline"><i class="fas fa-arrow-left"></i> All Experts</a>';
         document.getElementById('ep-actions').innerHTML = actionsHtml;
 
-        if (expertType === 'consultant' && (expert.rate_30 || expert.rate_60)) {
-            var pricingSection = document.getElementById('ep-pricing-section');
-            pricingSection.style.display = 'block';
-            var pricingGrid = document.getElementById('ep-pricing-grid');
-            var pHtml = '';
-            if (expert.rate_30) {
-                pHtml += '<div class="ep-pricing-card"><div class="ep-pricing-label">30 Minutes</div><div class="ep-pricing-amount">$' + expert.rate_30 + '</div><div class="ep-pricing-note">USDC on Base</div></div>';
-            }
-            if (expert.rate_60) {
-                pHtml += '<div class="ep-pricing-card"><div class="ep-pricing-label">60 Minutes</div><div class="ep-pricing-amount">$' + expert.rate_60 + '</div><div class="ep-pricing-note">USDC on Base</div></div>';
-            }
-            if (expert.rate_90) {
-                pHtml += '<div class="ep-pricing-card"><div class="ep-pricing-label">90 Minutes</div><div class="ep-pricing-amount">$' + expert.rate_90 + '</div><div class="ep-pricing-note">USDC on Base</div></div>';
-            } else if (expert.rate_60) {
-                var rate90 = Math.round(expert.rate_60 * 1.4);
-                pHtml += '<div class="ep-pricing-card"><div class="ep-pricing-label">90 Minutes</div><div class="ep-pricing-amount">$' + rate90 + '</div><div class="ep-pricing-note">USDC on Base</div></div>';
-            }
-            pricingGrid.innerHTML = pHtml;
-        }
-
-        var expertiseTags = getExpertiseTags(expert, expertType);
-        if (expertiseTags.length > 0) {
-            document.getElementById('ep-expertise-section').style.display = 'block';
-            document.getElementById('ep-expertise-tags').innerHTML = expertiseTags.map(function(t) {
+        /* ── Bio card ───────────────────────────────────── */
+        document.getElementById('ep-bio').textContent = expert.bio || '';
+        var tags = getExpertiseTags(expert, expertType);
+        if (tags.length > 0) {
+            document.getElementById('ep-expertise-tags').innerHTML = tags.map(function(t) {
                 return '<span class="ep-tag">' + t + '</span>';
             }).join('');
         }
 
+        /* ── Communities card ───────────────────────────── */
         if (expert.communities && expert.communities.length > 0) {
-            document.getElementById('ep-communities-section').style.display = 'block';
-            var comGrid = document.getElementById('ep-communities-grid');
-            comGrid.innerHTML = expert.communities.map(function(c) {
+            document.getElementById('ep-communities-card').style.display = 'block';
+            document.getElementById('ep-communities-grid').innerHTML = expert.communities.map(function(c) {
                 return '<a href="/dashboard-communities/" class="ep-community-card">' +
                     '<div class="ep-community-icon"><i class="fas fa-users"></i></div>' +
                     '<div><div class="ep-community-name">' + c.name + '</div>' +
@@ -225,64 +251,122 @@ permalink: /expert/
             }).join('');
         }
 
+        /* ── Tabs ───────────────────────────────────────── */
+        var hasTabContent = false;
+
         if (expertType === 'educator') {
-            var courses = TokenomicSupabase.demoData('courses');
-            if (courses && courses.length > 0) {
-                document.getElementById('ep-courses-section').style.display = 'block';
-                document.getElementById('ep-courses-grid').innerHTML = courses.map(function(c) {
+            var allCourses = TokenomicSupabase.demoData('courses');
+            var expertCourses = allCourses.filter(function(c) {
+                return c.educator_name === expert.display_name;
+            });
+            if (expertCourses.length > 0) {
+                hasTabContent = true;
+                document.getElementById('ep-courses-grid').innerHTML = expertCourses.map(function(c) {
                     return '<div class="ep-course-card">' +
-                        '<div class="ep-course-title">' + c.title + '</div>' +
-                        '<div class="ep-course-desc">' + (c.description || '') + '</div>' +
-                        '<div class="ep-course-meta">' +
-                            '<span><i class="fas fa-book"></i> ' + (c.modules_count || 0) + ' modules</span>' +
-                            '<span><i class="fas fa-user-graduate"></i> ' + (c.enrolled_count || 0) + ' students</span>' +
-                            '<span><i class="fas fa-tag"></i> $' + (c.price_usdc || 0) + ' USDC</span>' +
+                        '<div class="ep-course-thumb">' +
+                            (c.thumbnail_url ? '<img src="' + c.thumbnail_url + '" alt="' + c.title + '">' : '<i class="fas fa-book"></i>') +
                         '</div>' +
+                        '<div class="ep-course-info">' +
+                            '<div class="ep-course-title">' + c.title + '</div>' +
+                            '<div class="ep-course-desc">' + (c.description || '') + '</div>' +
+                            '<div class="ep-course-meta">' +
+                                '<span><i class="fas fa-book"></i> ' + (c.modules_count || 0) + ' modules</span>' +
+                                '<span><i class="fas fa-user-graduate"></i> ' + (c.enrolled_count || 0) + ' students</span>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="ep-course-price">' + (c.price_usdc > 0 ? '$' + c.price_usdc : 'Free') + '</div>' +
                     '</div>';
                 }).join('');
+            } else {
+                document.getElementById('ep-tab-courses').style.display = 'none';
             }
+        } else {
+            document.getElementById('ep-tab-courses').style.display = 'none';
         }
 
         var expertArticles = articles.filter(function(a) {
-            return a.profiles && (
-                a.profiles.display_name === expert.display_name ||
-                slug(a.profiles.display_name) === slug(expert.display_name)
-            );
+            return a.profiles && makeSlug(a.profiles.display_name) === makeSlug(expert.display_name);
         });
         if (expertArticles.length > 0) {
-            document.getElementById('ep-articles-section').style.display = 'block';
+            hasTabContent = true;
             document.getElementById('ep-articles-list').innerHTML = expertArticles.slice(0, 8).map(function(a) {
-                return '<a href="/learn/' + a.slug + '/" class="ep-article-row">' +
+                return '<a href="/articles/' + a.slug + '/" class="ep-article-row">' +
                     '<span class="ep-article-cat">' + (a.category || 'Article') + '</span>' +
                     '<span class="ep-article-title">' + a.title + '</span>' +
                     '<span class="ep-article-date">' + formatDate(a.published_at) + '</span>' +
                 '</a>';
             }).join('');
+        } else {
+            document.getElementById('ep-tab-articles').style.display = 'none';
         }
 
         var reviews = generateReviews(expert);
         if (reviews.length > 0) {
-            document.getElementById('ep-reviews-section').style.display = 'block';
+            hasTabContent = true;
             document.getElementById('ep-reviews-list').innerHTML = reviews.map(function(r) {
                 return '<div class="ep-review">' +
                     '<div class="ep-review-header">' +
-                        '<span class="ep-review-author">' + r.author + '</span>' +
-                        '<span class="ep-review-stars">' + '★'.repeat(r.stars) + '</span>' +
+                        '<div class="ep-review-author-wrap">' +
+                            '<div class="ep-review-avatar">' + r.author.charAt(0) + '</div>' +
+                            '<div><div class="ep-review-author">' + r.author + '</div></div>' +
+                        '</div>' +
+                        '<span class="ep-review-stars">' + '&#9733;'.repeat(r.stars) + '</span>' +
                     '</div>' +
                     '<div class="ep-review-text">' + r.text + '</div>' +
                     '<div class="ep-review-date">' + r.date + '</div>' +
                 '</div>';
             }).join('');
+        } else {
+            document.getElementById('ep-tab-reviews').style.display = 'none';
         }
 
+        if (hasTabContent) {
+            document.getElementById('ep-tabs-wrapper').style.display = 'block';
+            var visibleTabs = document.querySelectorAll('.ep-tab:not([style*="display:none"])');
+            if (visibleTabs.length > 0) visibleTabs[0].click();
+        }
+
+        /* ── Sidebar: booking card for consultants ──────── */
+        if (expertType === 'consultant' && (expert.rate_30 || expert.rate_60)) {
+            document.getElementById('ep-booking-card').style.display = 'block';
+            var optHtml = '';
+            if (expert.rate_30) {
+                optHtml += '<div class="ep-pricing-option">' +
+                    '<div><div class="ep-pricing-option-label">30 Minutes</div><div class="ep-pricing-option-note">Quick advisory session</div></div>' +
+                    '<div class="ep-pricing-option-price">$' + expert.rate_30 + '</div>' +
+                '</div>';
+            }
+            if (expert.rate_60) {
+                optHtml += '<div class="ep-pricing-option">' +
+                    '<div><div class="ep-pricing-option-label">60 Minutes</div><div class="ep-pricing-option-note">Deep-dive consultation</div></div>' +
+                    '<div class="ep-pricing-option-price">$' + expert.rate_60 + '</div>' +
+                '</div>';
+            }
+            if (expert.rate_90 || expert.rate_60) {
+                var r90 = expert.rate_90 || Math.round(expert.rate_60 * 1.4);
+                optHtml += '<div class="ep-pricing-option">' +
+                    '<div><div class="ep-pricing-option-label">90 Minutes</div><div class="ep-pricing-option-note">Full strategy session</div></div>' +
+                    '<div class="ep-pricing-option-price">$' + r90 + '</div>' +
+                '</div>';
+            }
+            document.getElementById('ep-pricing-options').innerHTML = optHtml;
+        }
+
+        /* ── Sidebar: educator badge ────────────────────── */
+        if (expertType === 'educator') {
+            document.getElementById('ep-educator-badge').style.display = 'flex';
+        }
+
+        /* ── Sidebar: wallet connect link ───────────────── */
         if (expert.wallet_address) {
-            document.getElementById('ep-social-section').style.display = 'block';
-            var socialHtml = '<a href="#" class="ep-social-link"><i class="fas fa-wallet"></i> ' + expert.wallet_address + '</a>';
-            document.getElementById('ep-social-links').innerHTML = socialHtml;
+            document.getElementById('ep-info-card').style.display = 'block';
+            document.getElementById('ep-social-links').innerHTML =
+                '<a href="#" class="ep-social-link"><i class="fas fa-wallet"></i> ' + expert.wallet_address + '</a>';
         }
     });
 
-    function slug(name) {
+    /* ── Helpers ────────────────────────────────────────── */
+    function makeSlug(name) {
         return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     }
 
@@ -304,26 +388,18 @@ permalink: /expert/
             tags.push('Curriculum Design');
         } else {
             tags.push('1-on-1 Advisory');
-            tags.push('USDC Payments');
+            tags.push('USDC Payments on Base');
         }
         return tags;
     }
 
     function generateReviews(expert) {
-        var reviewTemplates = [
-            { author: 'DeFi Builder', text: 'Incredibly knowledgeable. The session was worth every penny — actionable insights from start to finish.', stars: 5 },
-            { author: 'Protocol Founder', text: 'Deep expertise and very professional. Helped us identify key risks in our tokenomics model.', stars: 5 },
-            { author: 'DAO Contributor', text: 'Great session. Clear communication and practical advice that we could implement immediately.', stars: 4 },
-        ];
         if (!expert.sessions || expert.sessions < 10) return [];
-        return reviewTemplates.map(function(r, i) {
-            return {
-                author: r.author,
-                text: r.text,
-                stars: r.stars,
-                date: 'March ' + (10 + i * 5) + ', 2026'
-            };
-        });
+        return [
+            { author: 'DeFi Builder', text: 'Incredibly knowledgeable. The session was worth every penny — actionable insights from start to finish.', stars: 5, date: 'March 10, 2026' },
+            { author: 'Protocol Founder', text: 'Deep expertise and very professional. Helped us identify key risks in our tokenomics model.', stars: 5, date: 'March 15, 2026' },
+            { author: 'DAO Contributor', text: 'Great session. Clear communication and practical advice that we could implement immediately.', stars: 4, date: 'March 20, 2026' }
+        ];
     }
 })();
 </script>

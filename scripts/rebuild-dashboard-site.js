@@ -7,6 +7,10 @@ if (fs.existsSync('assets/css/dashboard.css')) {
   fs.copyFileSync('assets/css/dashboard.css', path.join(cssDir, 'dashboard.css'));
   console.log('Copied dashboard.css to _site/assets/css/');
 }
+if (fs.existsSync('assets/css/expert-profile.css')) {
+  fs.copyFileSync('assets/css/expert-profile.css', path.join(cssDir, 'expert-profile.css'));
+  console.log('Copied expert-profile.css to _site/assets/css/');
+}
 
 var sharedJsDir = path.join('_site', 'shared', 'assets', 'js');
 if (!fs.existsSync(sharedJsDir)) fs.mkdirSync(sharedJsDir, { recursive: true });
@@ -264,7 +268,8 @@ var publicPages = {
   'communities.html': { dir: '_site/communities', title: 'Communities' },
   'educators.html': { dir: '_site/experts', title: 'Experts' },
   'learn.html': { dir: '_site/articles', title: 'Articles' },
-  'articles.html': { dir: '_site/articles', title: 'Articles' }
+  'articles.html': { dir: '_site/articles', title: 'Articles' },
+  'expert-profile.html': { dir: '_site/expert', title: 'Expert Profile' }
 };
 
 Object.keys(publicPages).forEach(function(f) {
