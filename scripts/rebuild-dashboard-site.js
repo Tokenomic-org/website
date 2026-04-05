@@ -263,6 +263,7 @@ var publicPages = {
   'courses.html': { dir: '_site/courses', title: 'Courses' },
   'communities.html': { dir: '_site/communities', title: 'Communities' },
   'educators.html': { dir: '_site/experts', title: 'Experts' },
+  'learn.html': { dir: '_site/articles', title: 'Articles' },
   'articles.html': { dir: '_site/articles', title: 'Articles' }
 };
 
