@@ -129,7 +129,7 @@ function epSwitchTab(pane, btnEl) {
 (function() {
     var expertId = null;
     var pathParts = window.location.pathname.replace(/\/$/, '').split('/');
-    if (pathParts.length >= 3 && pathParts[1] === 'expert') {
+    if (pathParts.length >= 3 && (pathParts[1] === 'expert' || pathParts[1] === 'experts')) {
         expertId = decodeURIComponent(pathParts[2]);
     }
     if (!expertId) {

@@ -1346,7 +1346,31 @@ app.post('/api/articles/:slug/comments', function(req, res) {
     }
 });
 
-app.get('/profile/:slug', function(req, res) {
+var dashboardPages = ['revenue', 'bookings', 'chat', 'courses', 'events', 'articles', 'profile', 'social'];
+dashboardPages.forEach(function(page) {
+    app.get('/' + page + '/:wallet', function(req, res) {
+        var filePath = path.join(__dirname, '_site', 'dashboard', page, 'index.html');
+        res.sendFile(filePath, function(err) {
+            if (err) {
+                res.status(404).sendFile(path.join(__dirname, '_site', '404.html'), function(e) {
+                    if (e) res.status(404).send('Not Found');
+                });
+            }
+        });
+    });
+});
+
+app.get('/leaderboard', function(req, res) {
+    res.sendFile(path.join(__dirname, '_site', 'dashboard', 'leaderboard', 'index.html'), function(err) {
+        if (err) {
+            res.status(404).sendFile(path.join(__dirname, '_site', '404.html'), function(e) {
+                if (e) res.status(404).send('Not Found');
+            });
+        }
+    });
+});
+
+app.get('/experts/:slug', function(req, res) {
     res.sendFile(path.join(__dirname, '_site', 'expert', 'index.html'), function(err) {
         if (err) {
             res.status(404).sendFile(path.join(__dirname, '_site', '404.html'), function(e) {
@@ -1354,6 +1378,40 @@ app.get('/profile/:slug', function(req, res) {
             });
         }
     });
+});
+
+app.get('/communities/:slug', function(req, res) {
+    if (/^0x[0-9a-fA-F]{1,}$/.test(req.params.slug)) {
+        res.sendFile(path.join(__dirname, '_site', 'dashboard', 'communities', 'index.html'), function(err) {
+            if (err) {
+                res.status(404).sendFile(path.join(__dirname, '_site', '404.html'), function(e) {
+                    if (e) res.status(404).send('Not Found');
+                });
+            }
+        });
+    } else {
+        res.sendFile(path.join(__dirname, '_site', 'community', 'index.html'), function(err) {
+            if (err) {
+                res.status(404).sendFile(path.join(__dirname, '_site', '404.html'), function(e) {
+                    if (e) res.status(404).send('Not Found');
+                });
+            }
+        });
+    }
+});
+
+app.get('/expert/:slug', function(req, res) {
+    res.redirect(301, '/experts/' + req.params.slug);
+});
+app.get('/community/:slug', function(req, res) {
+    res.redirect(301, '/communities/' + req.params.slug);
+});
+app.get('/profile/:slug', function(req, res) {
+    res.redirect(301, '/experts/' + req.params.slug);
+});
+
+app.get('/dashboard-:page', function(req, res) {
+    res.redirect(301, '/dashboard/');
 });
 
 app.get('/learn/', function(req, res) { res.redirect(301, '/articles/'); });
@@ -1470,26 +1528,6 @@ app.post('/api/github/publish', function(req, res) {
 });
 
 var SITE_ROOT = path.resolve(path.join(__dirname, '_site'));
-
-app.get('/community/:slug', function(req, res) {
-    res.sendFile(path.join(__dirname, '_site', 'community', 'index.html'), function(err) {
-        if (err) {
-            res.status(404).sendFile(path.join(__dirname, '_site', '404.html'), function(e) {
-                if (e) res.status(404).send('Not Found');
-            });
-        }
-    });
-});
-
-app.get('/expert/:slug', function(req, res) {
-    res.sendFile(path.join(__dirname, '_site', 'expert', 'index.html'), function(err) {
-        if (err) {
-            res.status(404).sendFile(path.join(__dirname, '_site', '404.html'), function(e) {
-                if (e) res.status(404).send('Not Found');
-            });
-        }
-    });
-});
 
 app.use(function(req, res) {
     var reqPath = req.path;

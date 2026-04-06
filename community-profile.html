@@ -112,7 +112,7 @@ permalink: /community/
 (function() {
     var communitySlug = null;
     var pathParts = window.location.pathname.replace(/\/$/, '').split('/');
-    if (pathParts.length >= 3 && pathParts[1] === 'community') {
+    if (pathParts.length >= 3 && (pathParts[1] === 'community' || pathParts[1] === 'communities')) {
         communitySlug = decodeURIComponent(pathParts[2]);
     }
     if (!communitySlug) {
@@ -298,7 +298,7 @@ permalink: /community/
                 '<div>' +
                     '<div class="cp-educator-name">' + esc(community.educator_name) + '</div>' +
                     '<div class="cp-educator-role">Educator</div>' +
-                    '<a href="/expert/' + esc(eduSlug) + '" class="cp-educator-url">tokenomic.org/expert/' + esc(eduSlug) + '</a>' +
+                    '<a href="/experts/' + esc(eduSlug) + '" class="cp-educator-url">tokenomic.org/experts/' + esc(eduSlug) + '</a>' +
                 '</div>';
         }
     });

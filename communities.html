@@ -661,7 +661,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             var thumbSrc = esc(c.thumbnail_url || '/assets/images/resource/featured-image-10.jpg');
             var communitySlug = slugify(c.name || '');
 
-            html += '<a href="/community/' + communitySlug + '" class="community-card">';
+            html += '<a href="/communities/' + communitySlug + '" class="community-card">';
             html += '<div class="card-thumb">';
             html += '<img src="' + thumbSrc + '" alt="' + esc(c.name) + '">';
             html += '<span class="level-badge ' + levelClass + '">' + esc(levelLabel) + '</span>';
@@ -671,7 +671,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             html += '<span class="card-category">' + esc(c.category || 'General') + '</span>';
             html += '<div class="card-title">' + esc(c.name) + '</div>';
             html += '<div class="card-desc">' + esc(c.description) + '</div>';
-            html += '<div class="card-educator" onclick="event.preventDefault();event.stopPropagation();window.location.href=\'/expert/' + eduSlug + '\';" style="cursor:pointer;">';
+            html += '<div class="card-educator" onclick="event.preventDefault();event.stopPropagation();window.location.href=\'/experts/' + eduSlug + '\';" style="cursor:pointer;">';
             html += '<div class="edu-avatar">' + esc(eduInitials) + '</div>';
             html += '<div><div class="edu-name">' + esc(c.educator_name || 'Unknown') + '</div><div class="edu-role">Educator</div></div>';
             html += '</div>';

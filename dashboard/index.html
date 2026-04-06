@@ -20,37 +20,37 @@ permalink: /dashboard/
                         <a href="/dashboard/" class="dash-nav-item active">
                             <span class="flaticon-home-1"></span> Dashboard
                         </a>
-                        <a href="/dashboard-communities/" class="dash-nav-item">
+                        <a href="/communities/" data-dash="communities" class="dash-nav-item">
                             <span class="flaticon-user-3"></span> Communities
                         </a>
-                        <a href="/dashboard-courses/" class="dash-nav-item">
+                        <a href="/courses/" data-dash="courses" class="dash-nav-item">
                             <span class="flaticon-notebook"></span> Courses
                         </a>
-                        <a href="/dashboard-events/" class="dash-nav-item">
+                        <a href="/events/" data-dash="events" class="dash-nav-item">
                             <span class="flaticon-calendar"></span> Events
                         </a>
                         <div class="sidebar-section-label">Finance</div>
-                        <a href="/dashboard-revenue/" class="dash-nav-item">
+                        <a href="/revenue/" data-dash="revenue" class="dash-nav-item">
                             <span class="flaticon-money"></span> Revenue
                         </a>
-                        <a href="/dashboard-bookings/" class="dash-nav-item">
+                        <a href="/bookings/" data-dash="bookings" class="dash-nav-item">
                             <span class="flaticon-calendar"></span> Bookings
                         </a>
                         <div class="sidebar-section-label">Content</div>
-                        <a href="/dashboard-chat/" class="dash-nav-item">
+                        <a href="/chat/" data-dash="chat" class="dash-nav-item">
                             <span class="flaticon-speech-bubble"></span> Chat
                         </a>
-                        <a href="/dashboard-articles/" class="dash-nav-item">
+                        <a href="/articles/" data-dash="articles" class="dash-nav-item">
                             <span class="flaticon-edit"></span> Articles
                         </a>
-                        <a href="/dashboard-social/" class="dash-nav-item">
+                        <a href="/social/" data-dash="social" class="dash-nav-item">
                             <span class="flaticon-share"></span> Social
                         </a>
                         <div class="sidebar-section-label">Progress</div>
-                        <a href="/dashboard-leaderboard/" class="dash-nav-item">
+                        <a href="/leaderboard/" data-dash="leaderboard" class="dash-nav-item">
                             <span class="flaticon-trophy"></span> Leaderboard
                         </a>
-                        <a href="/dashboard-profile/" class="dash-nav-item">
+                        <a href="/profile/" data-dash="profile" class="dash-nav-item">
                             <span class="flaticon-user-3"></span> Profile
                         </a>
                     </nav>
@@ -115,7 +115,7 @@ permalink: /dashboard/
     <div class="dash-card" style="margin-top:4px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
             <h4 style="margin-bottom:0 !important;">Recent Transactions</h4>
-            <a href="/dashboard-revenue/" class="dash-btn dash-btn-outline" style="padding:5px 14px;font-size:0.75rem;">View All</a>
+            <a href="/revenue/" data-dash="revenue" class="dash-btn dash-btn-outline" style="padding:5px 14px;font-size:0.75rem;">View All</a>
         </div>
         <div style="overflow-x:auto;">
         <table class="dash-table">
@@ -159,10 +159,10 @@ function dashboardHome() {
                     { label: 'Communities', value: '5', color: '#001f29' }
                 ];
                 this.quickActions = [
-                    { label: 'Manage Courses', desc: 'Create & edit courses', url: '/dashboard-courses/', icon: 'flaticon-notebook', iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
-                    { label: 'Leaderboard', desc: 'Student rankings', url: '/dashboard-leaderboard/', icon: 'flaticon-trophy', iconBg: 'rgba(255,193,7,0.1)', iconColor: '#FFA000' },
-                    { label: 'Communities', desc: 'Manage groups', url: '/dashboard-communities/', icon: 'flaticon-user-3', iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
-                    { label: 'Events', desc: 'Schedule & sync', url: '/dashboard-events/', icon: 'flaticon-calendar', iconBg: 'rgba(0,200,83,0.1)', iconColor: '#00C853' }
+                    { label: 'Manage Courses', desc: 'Create & edit courses', url: '/courses/', icon: 'flaticon-notebook', iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
+                    { label: 'Leaderboard', desc: 'Student rankings', url: '/leaderboard/', icon: 'flaticon-trophy', iconBg: 'rgba(255,193,7,0.1)', iconColor: '#FFA000' },
+                    { label: 'Communities', desc: 'Manage groups', url: '/communities/', icon: 'flaticon-user-3', iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
+                    { label: 'Events', desc: 'Schedule & sync', url: '/events/', icon: 'flaticon-calendar', iconBg: 'rgba(0,200,83,0.1)', iconColor: '#00C853' }
                 ];
             } else if (this.role === 'educator') {
                 this.roleStats = [
@@ -172,10 +172,10 @@ function dashboardHome() {
                     { label: 'Articles Published', value: '24', color: '#2196F3' }
                 ];
                 this.quickActions = [
-                    { label: 'Write Article', desc: 'Publish to learn site', url: '/dashboard-articles/', icon: 'flaticon-edit', iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
-                    { label: 'Social Posts', desc: 'Schedule content', url: '/dashboard-social/', icon: 'flaticon-share', iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
-                    { label: 'Revenue', desc: 'View earnings', url: '/dashboard-revenue/', icon: 'flaticon-money', iconBg: 'rgba(0,200,83,0.1)', iconColor: '#00C853' },
-                    { label: 'Chat', desc: 'Community messages', url: '/dashboard-chat/', icon: 'flaticon-speech-bubble', iconBg: 'rgba(255,143,0,0.1)', iconColor: '#FF8F00' }
+                    { label: 'Write Article', desc: 'Publish to learn site', url: '/articles/', icon: 'flaticon-edit', iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
+                    { label: 'Social Posts', desc: 'Schedule content', url: '/social/', icon: 'flaticon-share', iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
+                    { label: 'Revenue', desc: 'View earnings', url: '/revenue/', icon: 'flaticon-money', iconBg: 'rgba(0,200,83,0.1)', iconColor: '#00C853' },
+                    { label: 'Chat', desc: 'Community messages', url: '/chat/', icon: 'flaticon-speech-bubble', iconBg: 'rgba(255,143,0,0.1)', iconColor: '#FF8F00' }
                 ];
             } else {
                 this.roleStats = [
@@ -185,10 +185,10 @@ function dashboardHome() {
                     { label: 'Client Rating', value: '4.9', color: '#2196F3' }
                 ];
                 this.quickActions = [
-                    { label: 'Bookings', desc: 'Manage sessions', url: '/dashboard-bookings/', icon: 'flaticon-calendar', iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
-                    { label: 'Withdraw', desc: 'Claim funds', url: '/dashboard-revenue/', icon: 'flaticon-money', iconBg: 'rgba(0,200,83,0.1)', iconColor: '#00C853' },
-                    { label: 'Messages', desc: 'Client chat', url: '/dashboard-chat/', icon: 'flaticon-speech-bubble', iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
-                    { label: 'Profile', desc: 'Edit settings', url: '/dashboard-profile/', icon: 'flaticon-user-3', iconBg: 'rgba(156,39,176,0.1)', iconColor: '#9C27B0' }
+                    { label: 'Bookings', desc: 'Manage sessions', url: '/bookings/', icon: 'flaticon-calendar', iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
+                    { label: 'Withdraw', desc: 'Claim funds', url: '/revenue/', icon: 'flaticon-money', iconBg: 'rgba(0,200,83,0.1)', iconColor: '#00C853' },
+                    { label: 'Messages', desc: 'Client chat', url: '/chat/', icon: 'flaticon-speech-bubble', iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
+                    { label: 'Profile', desc: 'Edit settings', url: '/profile/', icon: 'flaticon-user-3', iconBg: 'rgba(156,39,176,0.1)', iconColor: '#9C27B0' }
                 ];
             }
         },

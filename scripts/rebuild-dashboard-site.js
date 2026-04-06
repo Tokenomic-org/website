@@ -92,17 +92,17 @@ footer = footer.replace(/\{\{site\.url\}\}/g, site.url)
 var newsletterScript = '<script>function submitNewsletter(e){e.preventDefault();var f=e.target;var email=f.querySelector("input[name=email]").value;var btn=f.querySelector("button");var msg=f.closest(".newsletter-widget").querySelector(".newsletter-msg")||document.createElement("div");btn.disabled=true;btn.textContent="Subscribing...";fetch("/api/newsletter/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email})}).then(function(r){return r.json()}).then(function(d){if(d.success){btn.textContent="Subscribed!";btn.style.background="#38a169";if(msg.classList){msg.textContent=d.message;msg.style.display="block";msg.style.color="#38a169";}f.querySelector("input[name=email]").value="";}else{throw new Error(d.error)}}).catch(function(err){btn.textContent="Subscribe Now";btn.disabled=false;if(msg.classList){msg.textContent=err.message||"Please try again";msg.style.display="block";msg.style.color="#e53e3e";}});return false;}</script>';
 
 var pageTitles = {
-  'dashboard.html': 'Dashboard',
-  'dashboard-articles.html': 'Articles',
-  'dashboard-bookings.html': 'Bookings',
-  'dashboard-chat.html': 'Chat',
-  'dashboard-communities.html': 'Communities',
-  'dashboard-courses.html': 'Courses',
-  'dashboard-events.html': 'Events',
-  'dashboard-leaderboard.html': 'Leaderboard',
-  'dashboard-profile.html': 'Profile',
-  'dashboard-revenue.html': 'Revenue',
-  'dashboard-social.html': 'Social'
+  'dashboard/index.html': { title: 'Dashboard', out: '_site/dashboard' },
+  'dashboard/articles.html': { title: 'Articles', out: '_site/dashboard/articles' },
+  'dashboard/bookings.html': { title: 'Bookings', out: '_site/dashboard/bookings' },
+  'dashboard/chat.html': { title: 'Chat', out: '_site/dashboard/chat' },
+  'dashboard/communities.html': { title: 'Communities', out: '_site/dashboard/communities' },
+  'dashboard/courses.html': { title: 'Courses', out: '_site/dashboard/courses' },
+  'dashboard/events.html': { title: 'Events', out: '_site/dashboard/events' },
+  'dashboard/leaderboard.html': { title: 'Leaderboard', out: '_site/dashboard/leaderboard' },
+  'dashboard/profile.html': { title: 'Profile', out: '_site/dashboard/profile' },
+  'dashboard/revenue.html': { title: 'Revenue', out: '_site/dashboard/revenue' },
+  'dashboard/social.html': { title: 'Social', out: '_site/dashboard/social' }
 };
 
 Object.keys(pageTitles).forEach(function(f) {
@@ -114,7 +114,7 @@ Object.keys(pageTitles).forEach(function(f) {
   var source = fs.readFileSync(f, 'utf-8');
   var fmEnd = source.indexOf('---', 4);
   var content = source.substring(fmEnd + 3).trim();
-  var title = pageTitles[f];
+  var title = pageTitles[f].title;
 
   var page = '<!DOCTYPE html>\n' +
     '<html lang="en">\n' +
@@ -257,11 +257,29 @@ Object.keys(pageTitles).forEach(function(f) {
     '            }\n' +
     '        })();\n' +
     '        </script>\n' +
+    '        <script>\n' +
+    '        (function() {\n' +
+    '            var parts = window.location.pathname.replace(/\\/$/, "").split("/");\n' +
+    '            var wallet = "";\n' +
+    '            for (var i = 0; i < parts.length; i++) {\n' +
+    '                if (/^0x[0-9a-fA-F]{6,}$/.test(parts[i])) { wallet = parts[i]; break; }\n' +
+    '            }\n' +
+    '            if (!wallet) {\n' +
+    '                try { wallet = sessionStorage.getItem("tkn_wallet") || localStorage.getItem("tkn_wallet_address") || ""; } catch(e) {}\n' +
+    '            }\n' +
+    '            if (wallet) {\n' +
+    '                document.querySelectorAll("[data-dash]").forEach(function(el) {\n' +
+    '                    var page = el.getAttribute("data-dash");\n' +
+    '                    if (page === "leaderboard") return;\n' +
+    '                    el.href = "/" + page + "/" + wallet;\n' +
+    '                });\n' +
+    '            }\n' +
+    '        })();\n' +
+    '        </script>\n' +
     '    </body>\n' +
     '</html>\n';
 
-  var dirName = f.replace(/\.html$/, '');
-  var siteDir = '_site/' + dirName;
+  var siteDir = pageTitles[f].out;
   if (!fs.existsSync(siteDir)) {
     fs.mkdirSync(siteDir, { recursive: true });
   }
@@ -286,6 +304,7 @@ Object.keys(publicPages).forEach(function(f) {
   var fmEnd = source.indexOf('---', 4);
   var content = source.substring(fmEnd + 3).trim();
   content = content.replace(/\{%\s*include\s+header\.html\s*%\}/g, '');
+  content = content.replace(/\{%\s*include\s+footer\.html\s*%\}/g, '');
   content = content.replace(/<script\s+src="\/shared\/assets\/js\/[^"]+"><\/script>\s*/g, '');
 
   var publicPage = '<!DOCTYPE html>\n' +

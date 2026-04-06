@@ -13,6 +13,25 @@ Tokenomic is an institutional DeFi education and intelligence platform. Its prim
 - **Header Inline Styles**: Search button and wallet button alignment are defined in a `<style>` block within header includes and must be present on every page.
 - **Bulk HTML Edits**: For bulk editing of `_site/` HTML pages, I should use `find _site -name "*.html" -exec sed ...` for consistency.
 
+## File Structure
+- **Dashboard source files**: `dashboard/` directory contains all 11 dashboard source templates:
+  - `dashboard/index.html` (main dashboard)
+  - `dashboard/revenue.html`, `dashboard/bookings.html`, `dashboard/chat.html`
+  - `dashboard/courses.html`, `dashboard/events.html`, `dashboard/articles.html`
+  - `dashboard/profile.html`, `dashboard/social.html`, `dashboard/communities.html`
+  - `dashboard/leaderboard.html`
+- **Built output**: `_site/dashboard/[page]/index.html` for each dashboard page.
+- **Public pages**: `courses.html`, `communities.html`, `educators.html`, `learn.html`, `expert-profile.html`, `community-profile.html` in project root.
+- **Static pages**: `about.html`, `contact.html`, `pricing.html`, `privacy.html`, `terms.html` in project root.
+
+## URL Routing (server.js)
+- **Dashboard base**: `/dashboard/` serves `_site/dashboard/index.html`
+- **Wallet-based dashboard pages**: `/{page}/{wallet}` where page is one of: `revenue`, `bookings`, `chat`, `courses`, `events`, `articles`, `profile`, `social` — serves corresponding dashboard template.
+- **Leaderboard**: `/leaderboard` serves dashboard leaderboard template.
+- **Expert profiles**: `/experts/:slug` serves expert profile template. `/expert/:slug` redirects (301) to `/experts/:slug`.
+- **Community profiles**: `/communities/:slug` is dual-purpose — if slug matches `0x[hex]` pattern, serves dashboard communities template; otherwise serves community profile template. `/community/:slug` redirects (301) to `/communities/:slug`.
+- **Sidebar wallet JS**: Dashboard sidebar links use `data-dash="[page]"` attributes. Injected JS reads the wallet address from the URL path (regex `/0x[0-9a-fA-F]+/`) or `localStorage('tkn_wallet_address')` and rewrites sidebar hrefs to `/{page}/{wallet}`.
+
 ## System Architecture
 The platform is built on a static site generation approach using Jekyll, with the site pre-built into the `_site/` directory. An Express server (`server.js`) serves these static files and proxies API requests. The frontend leverages Bootstrap 4, jQuery, custom CSS, Alpine.js for dashboard reactivity, and Chart.js for data visualization. Web3 integration is handled via Ethers.js v5 for the Base L2 network, supporting wallet-native authentication (MetaMask/Rabby).
 
