@@ -694,10 +694,14 @@ async function mintCertAction() {
     }
 }
 
+var _assetsInitCount = 0;
 var _assetsInitInterval = setInterval(function() {
+    _assetsInitCount++;
     if (typeof TokenomicWallet !== 'undefined' && TokenomicWallet.account) {
         clearInterval(_assetsInitInterval);
         setTimeout(initAssetsSection, 500);
+    } else if (_assetsInitCount > 60) {
+        clearInterval(_assetsInitInterval);
     }
 }, 1000);
 

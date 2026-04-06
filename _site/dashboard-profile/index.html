@@ -923,10 +923,14 @@ async function mintCertAction() {
     }
 }
 
+var _assetsInitCount = 0;
 var _assetsInitInterval = setInterval(function() {
+    _assetsInitCount++;
     if (typeof TokenomicWallet !== 'undefined' && TokenomicWallet.account) {
         clearInterval(_assetsInitInterval);
         setTimeout(initAssetsSection, 500);
+    } else if (_assetsInitCount > 60) {
+        clearInterval(_assetsInitInterval);
     }
 }, 1000);
 
@@ -1046,12 +1050,13 @@ if (typeof TokenomicWallet !== 'undefined') {
         <script src="/assets/js/isotope.js"></script>
         <script src="/assets/js/appear.js"></script>
         <script src="/assets/js/wow.js"></script>
+        <script src="/assets/js/simple-jekyll-search.min.js"></script>
         <script src="/assets/js/custom-script.js"></script>
         <script src="/shared/assets/js/supabase-client.js"></script>
         <script src="/shared/assets/js/profile-photo.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
         <script src="/shared/assets/js/web3-wallet.js"></script>
         <script src="/shared/assets/js/web3-assets.js"></script>
-        <script src="/assets/js/simple-jekyll-search.min.js"></script>
         <script src="/shared/assets/js/site-search.js"></script>
         <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>
         <script>

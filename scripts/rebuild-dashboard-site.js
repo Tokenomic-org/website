@@ -166,12 +166,13 @@ Object.keys(pageTitles).forEach(function(f) {
     '        <script src="/assets/js/isotope.js"></script>\n' +
     '        <script src="/assets/js/appear.js"></script>\n' +
     '        <script src="/assets/js/wow.js"></script>\n' +
+    '        <script src="/assets/js/simple-jekyll-search.min.js"></script>\n' +
     '        <script src="/assets/js/custom-script.js"></script>\n' +
     '        <script src="/shared/assets/js/supabase-client.js"></script>\n' +
     '        <script src="/shared/assets/js/profile-photo.js"></script>\n' +
+    '        <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>\n' +
     '        <script src="/shared/assets/js/web3-wallet.js"></script>\n' +
     '        <script src="/shared/assets/js/web3-assets.js"></script>\n' +
-    '        <script src="/assets/js/simple-jekyll-search.min.js"></script>\n' +
     '        <script src="/shared/assets/js/site-search.js"></script>\n' +
     '        <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>\n' +
     '        <script>\n' +
@@ -335,12 +336,13 @@ Object.keys(publicPages).forEach(function(f) {
     '        <script src="/assets/js/isotope.js"></script>\n' +
     '        <script src="/assets/js/appear.js"></script>\n' +
     '        <script src="/assets/js/wow.js"></script>\n' +
+    '        <script src="/assets/js/simple-jekyll-search.min.js"></script>\n' +
     '        <script src="/assets/js/custom-script.js"></script>\n' +
     '        <script src="/shared/assets/js/supabase-client.js"></script>\n' +
     '        <script src="/shared/assets/js/profile-photo.js"></script>\n' +
+    '        <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>\n' +
     '        <script src="/shared/assets/js/web3-wallet.js"></script>\n' +
     '        <script src="/shared/assets/js/web3-assets.js"></script>\n' +
-    '        <script src="/assets/js/simple-jekyll-search.min.js"></script>\n' +
     '        <script src="/shared/assets/js/site-search.js"></script>\n' +
     '    </body>\n' +
     '</html>\n';
@@ -350,6 +352,247 @@ Object.keys(publicPages).forEach(function(f) {
   }
   fs.writeFileSync(conf.dir + '/index.html', publicPage);
   console.log('Built: ' + conf.dir + '/index.html (' + publicPage.length + ' bytes)');
+});
+
+function resolveIncludes(content) {
+  var includeRe = /\{%\s*include\s+(\S+)\s*%\}/g;
+  var match;
+  var result = content;
+  var seen = {};
+  while ((match = includeRe.exec(result)) !== null) {
+    var includeFile = match[1];
+    if (seen[includeFile]) {
+      result = result.replace(match[0], '');
+      includeRe.lastIndex = 0;
+      continue;
+    }
+    seen[includeFile] = true;
+    var inclPath = path.join('_includes', includeFile);
+    if (fs.existsSync(inclPath)) {
+      var inclContent = fs.readFileSync(inclPath, 'utf-8');
+      result = result.replace(match[0], inclContent);
+    } else {
+      result = result.replace(match[0], '');
+    }
+    includeRe.lastIndex = 0;
+  }
+  return result;
+}
+
+function stripJekyll(html) {
+  while (html.indexOf('{%') !== -1) {
+    var tagStart = html.indexOf('{%');
+    var tagEnd = html.indexOf('%}', tagStart);
+    if (tagEnd === -1) break;
+    tagEnd += 2;
+    var lineStart = html.lastIndexOf('\n', tagStart);
+    var lineEnd = html.indexOf('\n', tagEnd);
+    if (lineEnd === -1) lineEnd = tagEnd;
+    if (lineStart === -1) lineStart = tagStart;
+    html = html.substring(0, lineStart) + html.substring(lineEnd);
+  }
+  while (html.indexOf('{{') !== -1) {
+    var ts = html.indexOf('{{');
+    var te = html.indexOf('}}', ts);
+    if (te === -1) break;
+    te += 2;
+    var ls = html.lastIndexOf('\n', ts);
+    var le = html.indexOf('\n', te);
+    if (le === -1) le = te;
+    if (ls === -1) ls = ts;
+    html = html.substring(0, ls) + html.substring(le);
+  }
+  return html;
+}
+
+(function buildHomepage() {
+  if (!fs.existsSync('index.html')) return;
+  var source = fs.readFileSync('index.html', 'utf-8');
+  var fmEnd = source.indexOf('---', 4);
+  var content = fmEnd !== -1 ? source.substring(fmEnd + 3).trim() : source;
+
+  content = resolveIncludes(content);
+
+  content = content.replace(/\{\{site\.url\}\}/g, site.url)
+    .replace(/\{\{site\.title\}\}/g, site.title)
+    .replace(/\{\{site\.logo_url\}\}/g, site.logo_url);
+
+  var navLoopIdx = content.indexOf('{% for navigation');
+  if (navLoopIdx !== -1) {
+    var ef = '{% endfor %}';
+    var fe = content.indexOf(ef, navLoopIdx);
+    var oe = content.indexOf(ef, fe + ef.length);
+    if (oe !== -1) {
+      oe += ef.length;
+      content = content.substring(0, navLoopIdx) + navHtml + content.substring(oe);
+    }
+  }
+
+  content = stripJekyll(content);
+
+  var homePage = '<!DOCTYPE html>\n' +
+    '<html lang="en">\n' +
+    '    <head>\n' +
+    '        <meta charset="utf-8" />\n' +
+    '        <title>Tokenomic - Institutional DeFi Education</title>\n' +
+    '        <link href="/assets/css/bootstrap.css" rel="stylesheet" />\n' +
+    '        <link href="/assets/css/style.css" rel="stylesheet" />\n' +
+    '        <link href="/assets/css/responsive.css" rel="stylesheet" />\n' +
+    '        <link href="/assets/css/home-light.css" rel="stylesheet" />\n' +
+    '        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />\n' +
+    '        <link rel="shortcut icon" href="/assets/images/favicon.png" type="image/x-icon" />\n' +
+    '        <link rel="icon" href="/assets/images/favicon.png" type="image/x-icon" />\n' +
+    '        <meta http-equiv="X-UA-Compatible" content="IE=edge" />\n' +
+    '        <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=2.0,minimum-scale=1.0" />\n' +
+    '        <meta name="description" content="Institutional DeFi education, intelligence, and tools built for funds, banks, DAOs, and corporate teams." />\n' +
+    '        <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MD9B5BB1P"></script>\n' +
+    '        <script>\n' +
+    '          window.dataLayer = window.dataLayer || [];\n' +
+    '          function gtag(){dataLayer.push(arguments);}\n' +
+    '          gtag("js", new Date());\n' +
+    '          gtag("config", "G-1MD9B5BB1P");\n' +
+    '        </script>\n' +
+    '        <style>\n' +
+    '            .header-style-two { top: 0; background: #0A0F1A; }\n' +
+    '            .main-menu .navigation > li { margin-right: 20px; }\n' +
+    '            .main-menu .navigation > li > a { font-size: 15px; }\n' +
+    '        </style>\n' +
+    '        <link rel="alternate" type="application/rss+xml" title="Tokenomic RSS Feed" href="/feed.xml" />\n' +
+    '    </head>\n' +
+    '    <body>\n' +
+    '        <div class="page-wrapper">\n' +
+    content + '\n' +
+    footer + '\n' +
+    newsletterScript + '\n' +
+    '        </div>\n' +
+    '        <div class="scroll-to-top scroll-to-target" data-target="html"><span class="flaticon-up-arrow"></span></div>\n' +
+    '        <script src="/assets/js/jquery.js"></script>\n' +
+    '        <script src="/assets/js/popper.min.js"></script>\n' +
+    '        <script src="/assets/js/bootstrap.min.js"></script>\n' +
+    '        <script src="/assets/js/jquery-ui.js"></script>\n' +
+    '        <script src="/assets/js/jquery.fancybox.js"></script>\n' +
+    '        <script src="/assets/js/owl.js"></script>\n' +
+    '        <script src="/assets/js/scrollbar.js"></script>\n' +
+    '        <script src="/assets/js/knob.js"></script>\n' +
+    '        <script src="/assets/js/paroller.js"></script>\n' +
+    '        <script src="/assets/js/tilt.js"></script>\n' +
+    '        <script src="/assets/js/isotope.js"></script>\n' +
+    '        <script src="/assets/js/appear.js"></script>\n' +
+    '        <script src="/assets/js/wow.js"></script>\n' +
+    '        <script src="/assets/js/simple-jekyll-search.min.js"></script>\n' +
+    '        <script src="/assets/js/custom-script.js"></script>\n' +
+    '        <script src="/shared/assets/js/supabase-client.js"></script>\n' +
+    '        <script src="/shared/assets/js/profile-photo.js"></script>\n' +
+    '        <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>\n' +
+    '        <script src="/shared/assets/js/web3-wallet.js"></script>\n' +
+    '        <script src="/shared/assets/js/web3-assets.js"></script>\n' +
+    '        <script src="/shared/assets/js/site-search.js"></script>\n' +
+    '    </body>\n' +
+    '</html>\n';
+
+  fs.writeFileSync('_site/index.html', homePage);
+  console.log('Built: _site/index.html (' + homePage.length + ' bytes)');
+})();
+
+var staticPages = {
+  'about.html': { dir: '_site/about', title: 'About Us' },
+  'contact.html': { dir: '_site/contact', title: 'Contact' },
+  'pricing.html': { dir: '_site/pricing', title: 'Pricing' },
+  'privacy.html': { dir: '_site/privacy', title: 'Privacy Policy' },
+  'terms.html': { dir: '_site/terms', title: 'Terms of Service' }
+};
+
+Object.keys(staticPages).forEach(function(f) {
+  if (!fs.existsSync(f)) return;
+  var conf = staticPages[f];
+  var source = fs.readFileSync(f, 'utf-8');
+  var fmEnd = source.indexOf('---', 4);
+  var content = fmEnd !== -1 ? source.substring(fmEnd + 3).trim() : source;
+
+  content = resolveIncludes(content);
+
+  content = content.replace(/\{\{site\.url\}\}/g, site.url)
+    .replace(/\{\{site\.title\}\}/g, site.title)
+    .replace(/\{\{site\.logo_url\}\}/g, site.logo_url)
+    .replace(/\{\{page\.title\}\}/g, conf.title);
+
+  var navLoopIdx = content.indexOf('{% for navigation');
+  if (navLoopIdx !== -1) {
+    var ef = '{% endfor %}';
+    var fe = content.indexOf(ef, navLoopIdx);
+    var oe = content.indexOf(ef, fe + ef.length);
+    if (oe !== -1) {
+      oe += ef.length;
+      content = content.substring(0, navLoopIdx) + navHtml + content.substring(oe);
+    }
+  }
+
+  content = stripJekyll(content);
+
+  var page = '<!DOCTYPE html>\n' +
+    '<html lang="en">\n' +
+    '    <head>\n' +
+    '        <meta charset="utf-8" />\n' +
+    '        <title>Tokenomic - ' + conf.title + '</title>\n' +
+    '        <link href="/assets/css/bootstrap.css" rel="stylesheet" />\n' +
+    '        <link href="/assets/css/style.css" rel="stylesheet" />\n' +
+    '        <link href="/assets/css/responsive.css" rel="stylesheet" />\n' +
+    '        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />\n' +
+    '        <link rel="shortcut icon" href="/assets/images/favicon.png" type="image/x-icon" />\n' +
+    '        <link rel="icon" href="/assets/images/favicon.png" type="image/x-icon" />\n' +
+    '        <meta http-equiv="X-UA-Compatible" content="IE=edge" />\n' +
+    '        <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=2.0,minimum-scale=1.0" />\n' +
+    '        <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MD9B5BB1P"></script>\n' +
+    '        <script>\n' +
+    '          window.dataLayer = window.dataLayer || [];\n' +
+    '          function gtag(){dataLayer.push(arguments);}\n' +
+    '          gtag("js", new Date());\n' +
+    '          gtag("config", "G-1MD9B5BB1P");\n' +
+    '        </script>\n' +
+    '        <style>\n' +
+    '            .header-style-two { top: 0; background: #0A0F1A; }\n' +
+    '            .main-menu .navigation > li { margin-right: 20px; }\n' +
+    '            .main-menu .navigation > li > a { font-size: 15px; }\n' +
+    '        </style>\n' +
+    '        <link rel="alternate" type="application/rss+xml" title="Tokenomic RSS Feed" href="/feed.xml" />\n' +
+    '    </head>\n' +
+    '    <body>\n' +
+    '        <div class="page-wrapper">\n' +
+    headerHtml + '\n' +
+    content + '\n' +
+    footer + '\n' +
+    newsletterScript + '\n' +
+    '        </div>\n' +
+    '        <div class="scroll-to-top scroll-to-target" data-target="html"><span class="flaticon-up-arrow"></span></div>\n' +
+    '        <script src="/assets/js/jquery.js"></script>\n' +
+    '        <script src="/assets/js/popper.min.js"></script>\n' +
+    '        <script src="/assets/js/bootstrap.min.js"></script>\n' +
+    '        <script src="/assets/js/jquery-ui.js"></script>\n' +
+    '        <script src="/assets/js/jquery.fancybox.js"></script>\n' +
+    '        <script src="/assets/js/owl.js"></script>\n' +
+    '        <script src="/assets/js/scrollbar.js"></script>\n' +
+    '        <script src="/assets/js/knob.js"></script>\n' +
+    '        <script src="/assets/js/paroller.js"></script>\n' +
+    '        <script src="/assets/js/tilt.js"></script>\n' +
+    '        <script src="/assets/js/isotope.js"></script>\n' +
+    '        <script src="/assets/js/appear.js"></script>\n' +
+    '        <script src="/assets/js/wow.js"></script>\n' +
+    '        <script src="/assets/js/simple-jekyll-search.min.js"></script>\n' +
+    '        <script src="/assets/js/custom-script.js"></script>\n' +
+    '        <script src="/shared/assets/js/supabase-client.js"></script>\n' +
+    '        <script src="/shared/assets/js/profile-photo.js"></script>\n' +
+    '        <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>\n' +
+    '        <script src="/shared/assets/js/web3-wallet.js"></script>\n' +
+    '        <script src="/shared/assets/js/web3-assets.js"></script>\n' +
+    '        <script src="/shared/assets/js/site-search.js"></script>\n' +
+    '    </body>\n' +
+    '</html>\n';
+
+  if (!fs.existsSync(conf.dir)) {
+    fs.mkdirSync(conf.dir, { recursive: true });
+  }
+  fs.writeFileSync(conf.dir + '/index.html', page);
+  console.log('Built: ' + conf.dir + '/index.html (' + page.length + ' bytes)');
 });
 
 (function buildFeed() {

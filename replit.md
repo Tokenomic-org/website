@@ -5,7 +5,7 @@ Tokenomic is an institutional DeFi education and intelligence platform. Its prim
 
 ## User Preferences
 - **Dual-File Architecture Adherence**: It's critical to maintain the dual-file architecture. All visible changes in Replit must be made in `_site/` files directly. Source files (`assets/`, `shared/`, `_includes/`, `_layouts/`) are for Jekyll builds (GitHub Pages). When changing CSS, JS, HTML includes, or templates, I need to edit **BOTH** the `_site/` version (for Replit) and the source `.html` file (for GitHub Pages).
-- **Sync Script Usage**: After editing any source CSS/JS file, I should run `bash scripts/sync-assets.sh` to synchronize changes to `_site/`.
+- **Rebuild Script**: After editing source files, run `node scripts/rebuild-dashboard-site.js` to regenerate all `_site/` pages. This builds dashboard pages, public pages (courses, communities, experts, articles, expert/community profiles), homepage (from Jekyll includes), and static pages (about, contact, pricing, privacy, terms) with consistent nav, footer, and script includes.
 - **Linking Conventions**: I must use root-relative paths like `/contact/`, `/services/`, `/training/` instead of `.html` extensions in links.
 - **Header Styling**: I should avoid adding top offsets to CSS, as headers use `position: fixed; top: 0;`.
 - **Search Popup**: The search popup is dynamically injected by `site-search.js` on all pages; no manual HTML is needed.

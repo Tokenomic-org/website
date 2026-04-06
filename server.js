@@ -1347,11 +1347,13 @@ app.post('/api/articles/:slug/comments', function(req, res) {
 });
 
 app.get('/profile/:slug', function(req, res) {
-    res.sendFile(path.join(__dirname, '_site', 'profile', 'index.html'));
-});
-
-app.get('/expert/:id', function(req, res) {
-    res.sendFile(path.join(__dirname, '_site', 'expert', 'index.html'));
+    res.sendFile(path.join(__dirname, '_site', 'expert', 'index.html'), function(err) {
+        if (err) {
+            res.status(404).sendFile(path.join(__dirname, '_site', '404.html'), function(e) {
+                if (e) res.status(404).send('Not Found');
+            });
+        }
+    });
 });
 
 app.get('/learn/', function(req, res) { res.redirect(301, '/articles/'); });
