@@ -214,6 +214,82 @@ permalink: /dashboard-profile/
                 </div>
                 <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 24px;" @click="alert('Pay 50 USDC to register. Deploy PaymentSplitter for live registration.')">Register & Pay 50 USDC</button>
             </div>
+
+            <div class="dash-card" style="margin-top:16px;" id="onchain-assets-section">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                    <h4 style="margin:0;"><i class="fas fa-link" style="color:#ff6000;margin-right:8px;"></i>On-Chain Assets</h4>
+                    <span id="chain-badge" style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,200,83,0.1);color:#00C853;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;">
+                        <span style="width:6px;height:6px;border-radius:50%;background:#00C853;display:inline-block;"></span> Base Chain
+                    </span>
+                </div>
+                <p style="color:#5a8299;font-size:0.82rem;margin-bottom:16px;">Your wallet-linked assets on Base L2. Courses, certifications, and revenue are tied to your connected wallet.</p>
+
+                <div id="wallet-balances" style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+                    <div style="flex:1;min-width:140px;background:#f8fafc;border:1px solid #e8eef5;border-radius:10px;padding:14px 16px;">
+                        <div style="color:#5a8299;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">USDC Balance</div>
+                        <div id="usdc-balance-display" style="font-size:1.2rem;font-weight:700;color:#001f29;">--</div>
+                    </div>
+                    <div style="flex:1;min-width:140px;background:#f8fafc;border:1px solid #e8eef5;border-radius:10px;padding:14px 16px;">
+                        <div style="color:#5a8299;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">ETH Balance</div>
+                        <div id="eth-balance-display" style="font-size:1.2rem;font-weight:700;color:#001f29;">--</div>
+                    </div>
+                    <div style="flex:1;min-width:140px;background:#f8fafc;border:1px solid #e8eef5;border-radius:10px;padding:14px 16px;">
+                        <div style="color:#5a8299;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Owned Assets</div>
+                        <div id="total-assets-display" style="font-size:1.2rem;font-weight:700;color:#001f29;">0</div>
+                    </div>
+                </div>
+
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <h5 style="margin:0;font-size:0.95rem;">Ownership Verification</h5>
+                    <span id="verification-status" style="font-size:0.78rem;color:#5a8299;">Not verified</span>
+                </div>
+                <div style="background:#f8fafc;border:1px solid #e8eef5;border-radius:10px;padding:16px;margin-bottom:20px;">
+                    <p style="color:#5a8299;font-size:0.82rem;margin-bottom:12px;">Sign a message with your wallet to prove ownership. This links your wallet to your Tokenomic account securely.</p>
+                    <button class="theme-btn btn-style-one" style="border-radius:8px;padding:8px 20px;font-size:0.85rem;" onclick="proveOwnership()">
+                        <i class="fas fa-signature" style="margin-right:6px;"></i>Sign Ownership Proof
+                    </button>
+                    <a id="basescan-link" href="#" target="_blank" rel="noopener" style="display:none;margin-left:12px;color:#ff6000;font-size:0.82rem;text-decoration:none;">
+                        <i class="fas fa-external-link-alt"></i> View on BaseScan
+                    </a>
+                </div>
+
+                <div id="creator-actions" style="display:none;">
+                    <h5 style="margin-bottom:12px;font-size:0.95rem;"><i class="fas fa-coins" style="color:#00C853;margin-right:6px;"></i>Creator Actions</h5>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+                        <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 20px;font-size:0.85rem;background:#00C853;border-color:#00C853;" onclick="tokenizeAssetAction()">
+                            <i class="fas fa-cube" style="margin-right:6px;"></i>Tokenize Course
+                        </button>
+                        <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 20px;font-size:0.85rem;background:#ff6000;border-color:#ff6000;" onclick="claimRevenueAction()">
+                            <i class="fas fa-hand-holding-usd" style="margin-right:6px;"></i>Claim Revenue
+                        </button>
+                        <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 20px;font-size:0.85rem;background:#667eea;border-color:#667eea;" onclick="registerArticleAction()">
+                            <i class="fas fa-file-alt" style="margin-right:6px;"></i>Register Article
+                        </button>
+                    </div>
+                </div>
+
+                <div id="learner-actions" style="display:none;">
+                    <h5 style="margin-bottom:12px;font-size:0.95rem;"><i class="fas fa-award" style="color:#00C853;margin-right:6px;"></i>Learner Actions</h5>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+                        <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 20px;font-size:0.85rem;background:#00C853;border-color:#00C853;" onclick="mintCertAction()">
+                            <i class="fas fa-certificate" style="margin-right:6px;"></i>Mint Certification NFT
+                        </button>
+                    </div>
+                </div>
+
+                <h5 style="margin-bottom:12px;font-size:0.95rem;">Your Assets</h5>
+                <div id="assets-list" style="min-height:60px;">
+                    <div style="color:#5a8299;font-size:0.85rem;text-align:center;padding:20px;">Connect your wallet to view your on-chain assets.</div>
+                </div>
+            </div>
+
+            <div class="dash-card" style="margin-top:16px;" id="contract-status-section">
+                <h4><i class="fas fa-file-contract" style="color:#667eea;margin-right:8px;"></i>Smart Contract Status</h4>
+                <p style="color:#5a8299;font-size:0.82rem;margin-bottom:16px;">Status of deployed contracts on Base chain (Chain ID 8453).</p>
+                <div id="contract-status-list">
+                    <div style="display:flex;flex-direction:column;gap:8px;" id="contracts-display"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -364,6 +440,276 @@ function handleAvatarDrop(event) {
     document.getElementById('avatar-drop-zone').classList.remove('drag-over');
     var file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
     if (file) processAvatarFile(file);
+}
+
+function initAssetsSection() {
+    if (typeof TokenomicAssets === 'undefined' || typeof TokenomicWallet === 'undefined') return;
+    if (!TokenomicWallet.account) return;
+
+    var role = TokenomicAssets.getRole();
+    if (TokenomicAssets.isCreator()) {
+        var el = document.getElementById('creator-actions');
+        if (el) el.style.display = 'block';
+    }
+    if (TokenomicAssets.isLearner()) {
+        var el2 = document.getElementById('learner-actions');
+        if (el2) el2.style.display = 'block';
+    }
+
+    if (TokenomicAssets.isOwnershipVerified()) {
+        var vs = document.getElementById('verification-status');
+        if (vs) {
+            vs.innerHTML = '<span style="color:#00C853;"><i class="fas fa-check-circle"></i> Verified</span>';
+        }
+    }
+
+    var basescanLink = document.getElementById('basescan-link');
+    if (basescanLink && TokenomicWallet.account) {
+        basescanLink.href = TokenomicAssets.getAddressUrl(TokenomicWallet.account);
+        basescanLink.style.display = 'inline';
+    }
+
+    loadBalances();
+    loadAssetsList();
+    renderContractStatus();
+}
+
+async function loadBalances() {
+    if (typeof TokenomicAssets === 'undefined') return;
+    try {
+        var usdcEl = document.getElementById('usdc-balance-display');
+        var ethEl = document.getElementById('eth-balance-display');
+
+        if (typeof ethers !== 'undefined' && TokenomicWallet.account) {
+            var usdc = await TokenomicAssets.getUSDCBalance();
+            if (usdcEl) usdcEl.textContent = '$' + parseFloat(usdc).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            var eth = await TokenomicAssets.getETHBalance();
+            if (ethEl) ethEl.textContent = eth + ' ETH';
+        } else {
+            if (usdcEl) usdcEl.textContent = '$0.00';
+            if (ethEl) ethEl.textContent = '0.0000 ETH';
+        }
+    } catch (e) {
+        console.warn('Balance load error:', e);
+    }
+}
+
+async function loadAssetsList() {
+    if (typeof TokenomicAssets === 'undefined') return;
+    var container = document.getElementById('assets-list');
+    if (!container) return;
+
+    try {
+    var assets = await TokenomicAssets.loadAssets();
+    var totalEl = document.getElementById('total-assets-display');
+    var summary = TokenomicAssets.getSummary();
+    if (totalEl) totalEl.textContent = summary.totalAssets;
+
+    if (summary.totalAssets === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:24px;color:#5a8299;font-size:0.85rem;">' +
+            '<i class="fas fa-box-open" style="font-size:2rem;margin-bottom:10px;display:block;opacity:0.4;"></i>' +
+            'No assets registered yet. ' +
+            (TokenomicAssets.isCreator() ? 'Tokenize a course or register an article to start.' : 'Complete a course to earn a certification NFT.') +
+            '</div>';
+        return;
+    }
+
+    var html = '';
+
+    function renderAssetRow(asset, icon, color) {
+        var statusBadge = '';
+        if (asset.status === 'on_chain') {
+            statusBadge = '<span style="background:rgba(0,200,83,0.1);color:#00C853;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:600;">On-Chain</span>';
+        } else if (asset.status === 'tokenized') {
+            statusBadge = '<span style="background:rgba(102,126,234,0.1);color:#667eea;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:600;">Tokenized</span>';
+        } else if (asset.status === 'pending_contract') {
+            statusBadge = '<span style="background:rgba(255,152,0,0.1);color:#FF9800;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:600;">Pending Contract</span>';
+        } else {
+            statusBadge = '<span style="background:rgba(90,130,153,0.1);color:#5a8299;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:600;">Registered</span>';
+        }
+
+        var txLink = '';
+        if (asset.tx_hash) {
+            txLink = ' <a href="' + TokenomicAssets.getExplorerUrl(asset.tx_hash) + '" target="_blank" rel="noopener" style="color:#ff6000;font-size:0.75rem;text-decoration:none;"><i class="fas fa-external-link-alt"></i> Tx</a>';
+        }
+
+        return '<div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #e8eef5;border-radius:10px;margin-bottom:8px;">' +
+            '<div style="width:36px;height:36px;border-radius:8px;background:' + color + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+            '<i class="fas ' + icon + '" style="color:#fff;font-size:0.85rem;"></i></div>' +
+            '<div style="flex:1;min-width:0;">' +
+            '<div style="font-weight:600;font-size:0.88rem;color:#001f29;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (asset.title || 'Untitled') + '</div>' +
+            '<div style="font-size:0.75rem;color:#5a8299;">' + new Date(asset.created_at).toLocaleDateString() + txLink + '</div>' +
+            '</div>' +
+            '<div>' + statusBadge + '</div>' +
+            '</div>';
+    }
+
+    if (assets.courses && assets.courses.length > 0) {
+        html += '<div style="font-size:0.78rem;color:#5a8299;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;margin-top:8px;">Courses (' + assets.courses.length + ')</div>';
+        assets.courses.forEach(function(a) { html += renderAssetRow(a, 'fa-book', '#ff6000'); });
+    }
+    if (assets.certifications && assets.certifications.length > 0) {
+        html += '<div style="font-size:0.78rem;color:#5a8299;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;margin-top:8px;">Certifications (' + assets.certifications.length + ')</div>';
+        assets.certifications.forEach(function(a) { html += renderAssetRow(a, 'fa-certificate', '#00C853'); });
+    }
+    if (assets.articles && assets.articles.length > 0) {
+        html += '<div style="font-size:0.78rem;color:#5a8299;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;margin-top:8px;">Articles (' + assets.articles.length + ')</div>';
+        assets.articles.forEach(function(a) { html += renderAssetRow(a, 'fa-file-alt', '#667eea'); });
+    }
+
+    container.innerHTML = html;
+    } catch (e) {
+        console.warn('Asset list load error:', e);
+        container.innerHTML = '<div style="text-align:center;padding:24px;color:#e57373;font-size:0.85rem;">' +
+            '<i class="fas fa-exclamation-triangle" style="font-size:1.5rem;margin-bottom:8px;display:block;opacity:0.6;"></i>' +
+            'Could not load assets. Please try again later.</div>';
+    }
+}
+
+function renderContractStatus() {
+    if (typeof TokenomicAssets === 'undefined') return;
+    var container = document.getElementById('contracts-display');
+    if (!container) return;
+
+    var status = TokenomicAssets.getContractStatus();
+    var contracts = [
+        { key: 'certNFT', label: 'Certification NFT (ERC-721)', data: status.certNFT },
+        { key: 'courseNFT', label: 'Course Ownership (ERC-1155)', data: status.courseNFT },
+        { key: 'revenueSplitter', label: 'Revenue Splitter', data: status.revenueSplitter },
+        { key: 'usdc', label: 'USDC on Base', data: status.usdc }
+    ];
+
+    var html = '';
+    contracts.forEach(function(c) {
+        var statusDot = c.data.deployed
+            ? '<span style="width:8px;height:8px;border-radius:50%;background:#00C853;display:inline-block;"></span>'
+            : '<span style="width:8px;height:8px;border-radius:50%;background:#FF9800;display:inline-block;"></span>';
+        var statusText = c.data.deployed ? 'Deployed' : 'Not Deployed';
+        var addrText = c.data.address
+            ? '<span style="font-family:monospace;font-size:0.72rem;color:#5a8299;">' + c.data.address.slice(0,6) + '...' + c.data.address.slice(-4) + '</span>'
+            : '';
+        html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e8eef5;border-radius:8px;">' +
+            statusDot +
+            '<div style="flex:1;"><div style="font-size:0.85rem;font-weight:500;color:#001f29;">' + c.label + '</div>' +
+            '<div style="font-size:0.75rem;color:#5a8299;">' + statusText + ' ' + addrText + '</div></div></div>';
+    });
+    container.innerHTML = html;
+}
+
+async function proveOwnership() {
+    if (typeof TokenomicAssets === 'undefined') return;
+    if (!TokenomicWallet || !TokenomicWallet.account) {
+        alert('Please connect your wallet first.');
+        return;
+    }
+    try {
+        var result = await TokenomicAssets.signOwnershipProof();
+        if (result.verified) {
+            var vs = document.getElementById('verification-status');
+            if (vs) vs.innerHTML = '<span style="color:#00C853;"><i class="fas fa-check-circle"></i> Verified</span>';
+            alert('Ownership verified! Your wallet is now linked to your Tokenomic account.');
+        } else {
+            alert('Verification failed: ' + (result.error || 'Unknown error'));
+        }
+    } catch (e) {
+        if (e.code === 4001) {
+            alert('Signature request was rejected.');
+        } else {
+            alert('Error: ' + e.message);
+        }
+    }
+}
+
+async function tokenizeAssetAction() {
+    if (typeof TokenomicAssets === 'undefined') return;
+    if (!TokenomicWallet || !TokenomicWallet.account) {
+        alert('Please connect your wallet first.');
+        return;
+    }
+    var title = prompt('Enter course title to tokenize:');
+    if (!title) return;
+    try {
+        var result = await TokenomicAssets.tokenizeCourse({ title: title, description: '' });
+        if (result.success) {
+            alert('Course "' + title + '" registered as an owned asset.' + (result.note ? '\n\n' + result.note : '') + (result.txHash ? '\n\nTx: ' + result.txHash : ''));
+            loadAssetsList();
+        }
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+async function claimRevenueAction() {
+    if (typeof TokenomicAssets === 'undefined') return;
+    if (!TokenomicWallet || !TokenomicWallet.account) {
+        alert('Please connect your wallet first.');
+        return;
+    }
+    try {
+        var result = await TokenomicAssets.claimRevenue();
+        if (result.success) {
+            alert('Revenue claimed!' + (result.txHash ? '\n\nTx: ' + result.txHash : ''));
+        } else {
+            alert(result.note || 'Could not claim revenue.');
+        }
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+async function registerArticleAction() {
+    if (typeof TokenomicAssets === 'undefined') return;
+    if (!TokenomicWallet || !TokenomicWallet.account) {
+        alert('Please connect your wallet first.');
+        return;
+    }
+    var title = prompt('Enter article title to register:');
+    if (!title) return;
+    try {
+        var result = await TokenomicAssets.registerAsset({ type: 'article', title: title });
+        alert('Article "' + title + '" registered as an owned asset.');
+        loadAssetsList();
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+async function mintCertAction() {
+    if (typeof TokenomicAssets === 'undefined') return;
+    if (!TokenomicWallet || !TokenomicWallet.account) {
+        alert('Please connect your wallet first.');
+        return;
+    }
+    var courseTitle = prompt('Enter course title for certification:');
+    if (!courseTitle) return;
+    try {
+        var result = await TokenomicAssets.mintCertification({ courseTitle: courseTitle });
+        if (result.success) {
+            alert('Certification for "' + courseTitle + '" created!' + (result.note ? '\n\n' + result.note : '') + (result.txHash ? '\n\nTx: ' + result.txHash : ''));
+            loadAssetsList();
+        }
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+var _assetsInitInterval = setInterval(function() {
+    if (typeof TokenomicWallet !== 'undefined' && TokenomicWallet.account) {
+        clearInterval(_assetsInitInterval);
+        setTimeout(initAssetsSection, 500);
+    }
+}, 1000);
+
+var _origUpdateUI = (typeof TokenomicWallet !== 'undefined') ? TokenomicWallet.updateUI : null;
+if (typeof TokenomicWallet !== 'undefined') {
+    var _boundOriginal = TokenomicWallet.updateUI.bind(TokenomicWallet);
+    TokenomicWallet.updateUI = function() {
+        _boundOriginal();
+        if (TokenomicWallet.account) {
+            setTimeout(initAssetsSection, 300);
+        }
+    };
 }
 </script>
 

@@ -22,6 +22,7 @@ The platform is built on a static site generation approach using Jekyll, with th
 - **Community System**: Similar to courses, communities are managed via GitHub repositories, enabling discussions through GitHub Issues and member management. A public `/communities/` page lists all communities with filters (level, educator, search, sort) and links to educator profiles.
 - **Dashboard**: Provides various dashboards for analytics, revenue tracking, events, bookings, chat, and leaderboards.
 - **User Profiles**: Extensive user profile management, including public profiles for educators and consultants, application processes for roles, and social links.
+- **Web3 Asset Ownership**: On-chain asset management via `shared/assets/js/web3-assets.js` — SIWE-style ownership proofs, USDC/ETH balance reads, asset registration (courses, articles, certifications), course tokenization, cert NFT minting, and revenue claiming on Base chain. Server APIs at `/api/verify-signature` (with cryptographic EIP-191 recovery), `/api/assets/:wallet`, `/api/assets/register`, `/api/assets/certify`, `/api/assets/summary/:wallet`. File-based persistence in `data/assets/` and `data/proofs/`. Dashboard profile page has "On-Chain Assets" section with balances, verification, role-specific actions, asset list, and contract status panel.
 - **SEO & Feeds**: Includes RSS feed, XML sitemap, and `robots.txt` for discoverability, with dynamic Open Graph meta tags for social sharing of articles.
 - **Branding**: Utilizes a specific color palette (`#F7931A`, `#0A0F1A`), Inter font for dashboards, and a defined logo. Dashboard styling is managed via `dashboard.css`, incorporating a design system with consistent UI elements.
 - **Mobile Responsiveness**: The dashboard sidebar collapses into a slide-out drawer on smaller screens, managed by CSS and JavaScript.
@@ -32,7 +33,7 @@ The platform is built on a static site generation approach using Jekyll, with th
 - **0xSplits**: Facilitates revenue distribution, specifically a 90/5/5 split.
 - **Luma**: Calendar and event management, with events synced via the `/api/luma-events` proxy.
 - **GitHub API**: Utilized for course and community management (creating/updating repositories, managing files, issues) and article publishing workflows, requiring a `GITHUB_PERSONAL_ACCESS_TOKEN`.
-- **Ethers.js v5**: Web3 library for blockchain interaction on the Base L2 network.
+- **Ethers.js v5**: Web3 library for blockchain interaction on the Base L2 network (also installed server-side for signature verification via `ethers.utils.verifyMessage`).
 - **Chart.js**: JavaScript charting library for data visualization in dashboards.
 - **Alpine.js**: Lightweight JavaScript framework for reactive UI components in dashboards.
 - **Bootstrap 4**: Frontend framework for responsive design.

@@ -3,6 +3,7 @@ var path = require('path');
 var https = require('https');
 var crypto = require('crypto');
 var { Pool } = require('pg');
+var ethers = require('ethers');
 
 var app = express();
 var PORT = process.env.PORT || 5000;
@@ -1115,6 +1116,162 @@ app.post('/api/profile/upload-photo', function(req, res) {
     fs.writeFileSync(path.join(uploadsDir, filename), buffer);
     var photoUrl = '/uploads/profiles/' + filename + '?t=' + Date.now();
     res.json({ success: true, url: photoUrl });
+});
+
+var ASSETS_DIR = path.join(__dirname, 'data', 'assets');
+if (!fs.existsSync(ASSETS_DIR)) {
+    fs.mkdirSync(ASSETS_DIR, { recursive: true });
+}
+
+function getAssetsFile(wallet) {
+    var safeWallet = wallet.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    return path.join(ASSETS_DIR, safeWallet + '.json');
+}
+
+function loadWalletAssets(wallet) {
+    var filePath = getAssetsFile(wallet);
+    if (fs.existsSync(filePath)) {
+        try { return JSON.parse(fs.readFileSync(filePath, 'utf-8')); }
+        catch (e) { return { courses: [], certifications: [], revenue: [], articles: [] }; }
+    }
+    return { courses: [], certifications: [], revenue: [], articles: [] };
+}
+
+function saveWalletAssets(wallet, assets) {
+    var filePath = getAssetsFile(wallet);
+    fs.writeFileSync(filePath, JSON.stringify(assets, null, 2));
+}
+
+app.post('/api/verify-signature', function(req, res) {
+    var wallet = (req.body.wallet || '').trim().toLowerCase();
+    var message = req.body.message || '';
+    var signature = req.body.signature || '';
+    var timestamp = req.body.timestamp || 0;
+
+    if (!wallet || !message || !signature) {
+        return res.status(400).json({ error: 'wallet, message, and signature are required' });
+    }
+
+    if (Date.now() - timestamp > 5 * 60 * 1000) {
+        return res.status(400).json({ error: 'Signature expired. Please sign again.', verified: false });
+    }
+
+    if (message.indexOf(wallet) === -1 && message.toLowerCase().indexOf(wallet) === -1) {
+        return res.status(400).json({ error: 'Message does not contain the claimed wallet address.', verified: false });
+    }
+
+    try {
+        var recoveredAddress = ethers.utils.verifyMessage(message, signature).toLowerCase();
+        if (recoveredAddress !== wallet) {
+            return res.status(403).json({ error: 'Signature does not match the claimed wallet address.', verified: false });
+        }
+    } catch (e) {
+        return res.status(400).json({ error: 'Invalid signature format.', verified: false });
+    }
+
+    var proofDir = path.join(__dirname, 'data', 'proofs');
+    if (!fs.existsSync(proofDir)) fs.mkdirSync(proofDir, { recursive: true });
+
+    var proofFile = path.join(proofDir, wallet.replace(/[^a-z0-9]/g, '') + '.json');
+    var proof = {
+        wallet: wallet,
+        signature: signature,
+        message: message,
+        timestamp: timestamp,
+        verified_at: new Date().toISOString()
+    };
+    fs.writeFileSync(proofFile, JSON.stringify(proof, null, 2));
+
+    res.json({ verified: true, wallet: wallet, expires_in: '24h' });
+});
+
+app.get('/api/assets/:wallet', function(req, res) {
+    var wallet = (req.params.wallet || '').trim();
+    if (!wallet || wallet.length < 10) {
+        return res.status(400).json({ error: 'Invalid wallet address' });
+    }
+    var assets = loadWalletAssets(wallet);
+    res.json(assets);
+});
+
+app.post('/api/assets/register', function(req, res) {
+    var asset = req.body;
+    var wallet = (asset.owner_wallet || '').trim();
+
+    if (!wallet || !asset.type || !asset.title) {
+        return res.status(400).json({ error: 'owner_wallet, type, and title are required' });
+    }
+
+    var allowedTypes = ['course', 'certification', 'article', 'revenue_claim'];
+    if (allowedTypes.indexOf(asset.type) === -1) {
+        return res.status(400).json({ error: 'Invalid asset type. Must be: ' + allowedTypes.join(', ') });
+    }
+
+    var assets = loadWalletAssets(wallet);
+    var key = asset.type === 'course' ? 'courses' :
+              asset.type === 'certification' ? 'certifications' :
+              asset.type === 'article' ? 'articles' : 'revenue';
+
+    if (!asset.id) {
+        asset.id = 'asset_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+    }
+    if (!asset.created_at) {
+        asset.created_at = new Date().toISOString();
+    }
+
+    var existingIdx = assets[key].findIndex(function(a) { return a.id === asset.id; });
+    if (existingIdx >= 0) {
+        assets[key][existingIdx] = asset;
+    } else {
+        assets[key].push(asset);
+    }
+
+    saveWalletAssets(wallet, assets);
+    res.json({ success: true, asset: asset });
+});
+
+app.post('/api/assets/certify', function(req, res) {
+    var wallet = (req.body.wallet || '').trim();
+    var courseTitle = req.body.courseTitle || 'Course Certification';
+    var txHash = req.body.txHash || null;
+    var tokenId = req.body.tokenId || null;
+
+    if (!wallet) {
+        return res.status(400).json({ error: 'Wallet address required' });
+    }
+
+    var assets = loadWalletAssets(wallet);
+    var cert = {
+        id: 'cert_' + Date.now(),
+        owner_wallet: wallet,
+        type: 'certification',
+        title: courseTitle,
+        description: 'Certification for completing ' + courseTitle,
+        tx_hash: txHash,
+        token_id: tokenId,
+        chain_id: 8453,
+        created_at: new Date().toISOString(),
+        status: txHash ? 'on_chain' : 'pending_contract'
+    };
+
+    assets.certifications.push(cert);
+    saveWalletAssets(wallet, assets);
+    res.json({ success: true, certification: cert });
+});
+
+app.get('/api/assets/summary/:wallet', function(req, res) {
+    var wallet = (req.params.wallet || '').trim();
+    if (!wallet || wallet.length < 10) {
+        return res.status(400).json({ error: 'Invalid wallet address' });
+    }
+    var assets = loadWalletAssets(wallet);
+    res.json({
+        totalAssets: assets.courses.length + assets.certifications.length + assets.articles.length,
+        courses: assets.courses.length,
+        certifications: assets.certifications.length,
+        articles: assets.articles.length,
+        revenueClaims: assets.revenue.length
+    });
 });
 
 var ARTICLE_COMMENTS_DIR = path.join(__dirname, 'article-comments');

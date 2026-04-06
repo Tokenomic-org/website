@@ -18,7 +18,7 @@ if (fs.existsSync('assets/css/community-profile.css')) {
 
 var sharedJsDir = path.join('_site', 'shared', 'assets', 'js');
 if (!fs.existsSync(sharedJsDir)) fs.mkdirSync(sharedJsDir, { recursive: true });
-['supabase-client.js', 'web3-wallet.js', 'profile-photo.js', 'site-search.js'].forEach(function(jsFile) {
+['supabase-client.js', 'web3-wallet.js', 'web3-assets.js', 'profile-photo.js', 'site-search.js'].forEach(function(jsFile) {
   var src = path.join('shared', 'assets', 'js', jsFile);
   if (fs.existsSync(src)) {
     fs.copyFileSync(src, path.join(sharedJsDir, jsFile));
@@ -170,6 +170,7 @@ Object.keys(pageTitles).forEach(function(f) {
     '        <script src="/shared/assets/js/supabase-client.js"></script>\n' +
     '        <script src="/shared/assets/js/profile-photo.js"></script>\n' +
     '        <script src="/shared/assets/js/web3-wallet.js"></script>\n' +
+    '        <script src="/shared/assets/js/web3-assets.js"></script>\n' +
     '        <script src="/assets/js/simple-jekyll-search.min.js"></script>\n' +
     '        <script src="/shared/assets/js/site-search.js"></script>\n' +
     '        <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>\n' +
@@ -338,6 +339,7 @@ Object.keys(publicPages).forEach(function(f) {
     '        <script src="/shared/assets/js/supabase-client.js"></script>\n' +
     '        <script src="/shared/assets/js/profile-photo.js"></script>\n' +
     '        <script src="/shared/assets/js/web3-wallet.js"></script>\n' +
+    '        <script src="/shared/assets/js/web3-assets.js"></script>\n' +
     '        <script src="/assets/js/simple-jekyll-search.min.js"></script>\n' +
     '        <script src="/shared/assets/js/site-search.js"></script>\n' +
     '    </body>\n' +
