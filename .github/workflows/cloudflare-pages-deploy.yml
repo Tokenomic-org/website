@@ -93,3 +93,45 @@ jobs:
               repo: context.repo.repo,
               body: `Cloudflare Pages preview deployed: ${url}`
             });
+
+  deploy-api-worker:
+    name: Deploy api-worker
+    needs: build-and-deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install api-worker deps
+        run: npm install --prefix workers/api-worker
+      - name: Deploy api-worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --env api-worker
+          workingDirectory: .
+
+  deploy-web3-worker:
+    name: Deploy web3-worker
+    needs: build-and-deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install web3-worker deps
+        run: npm install --prefix workers/web3-worker
+      - name: Deploy web3-worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --env web3-worker
+          workingDirectory: .

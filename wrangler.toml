@@ -1,0 +1,71 @@
+################################################################
+# Cloudflare Workers configuration for Tokenomic
+#
+# Two workers are defined as [env.<name>] blocks:
+#   - api-worker   (comments + dashboard, KV-backed)
+#   - web3-worker  (read-only on-chain proxy, ethers v6)
+#
+# Deploy each one explicitly:
+#   wrangler deploy --env api-worker
+#   wrangler deploy --env web3-worker
+#
+# The legacy Workers Static Assets site (`tokenomic`) defined in
+# wrangler.jsonc is unaffected. Pages routing for /api/* should be
+# bound separately in the Pages dashboard (see CLOUDFLARE-WORKERS-SETUP.md).
+################################################################
+
+name = "tokenomic-workers-root"
+compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ---------- api-worker ----------
+[env.api-worker]
+name = "tokenomic-api"
+main = "workers/api-worker/index.js"
+compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+[env.api-worker.vars]
+ALLOWED_ORIGINS = "https://tokenomic.org,https://*.tokenomic.org,https://*.cf-ipfs.com,https://*.pages.dev"
+MAX_COMMENT_LEN = "4000"
+REQUIRE_WALLET = "false"
+
+# Replace the placeholder ids after creating the namespaces (see setup MD).
+[[env.api-worker.kv_namespaces]]
+binding = "COMMENTS_KV"
+id = "REPLACE_WITH_COMMENTS_KV_ID"
+preview_id = "REPLACE_WITH_COMMENTS_KV_PREVIEW_ID"
+
+[[env.api-worker.kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "REPLACE_WITH_RATE_LIMIT_KV_ID"
+preview_id = "REPLACE_WITH_RATE_LIMIT_KV_PREVIEW_ID"
+
+# Optional: route the Worker on your zone (uncomment after the Pages
+# project's /api/* rule is configured, otherwise Pages takes precedence).
+# [[env.api-worker.routes]]
+# pattern = "tokenomic.org/api/comments/*"
+# zone_name = "tokenomic.org"
+#
+# [[env.api-worker.routes]]
+# pattern = "tokenomic.org/api/dashboard/*"
+# zone_name = "tokenomic.org"
+
+# ---------- web3-worker ----------
+[env.web3-worker]
+name = "tokenomic-web3"
+main = "workers/web3-worker/index.js"
+compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+[env.web3-worker.vars]
+ALLOWED_ORIGINS = "https://tokenomic.org,https://*.tokenomic.org,https://*.cf-ipfs.com,https://*.pages.dev"
+BASE_RPC_URL = "https://mainnet.base.org"
+CLOUDFLARE_ETH_GATEWAY = ""
+
+# Optional: route the Worker on your zone.
+# [[env.web3-worker.routes]]
+# pattern = "tokenomic.org/api/web3/*"
+# zone_name = "tokenomic.org"
