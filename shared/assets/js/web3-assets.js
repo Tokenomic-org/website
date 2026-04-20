@@ -439,6 +439,95 @@ var TokenomicAssets = {
     };
   },
 
+  hasCourseAccess: function(courseId) {
+    if (!this._assets) return false;
+    var owned = (this._assets.courses || []).concat(this._assets.certifications || []);
+    var idStr = String(courseId);
+    return owned.some(function(a) {
+      return String(a.course_id || a.courseId || '') === idStr ||
+             (a.metadata && String(a.metadata.course_id || '') === idStr);
+    });
+  },
+
+  async buyCourse(courseId, priceInUSDC, opts) {
+    opts = opts || {};
+    var wallet = this.getWallet();
+    if (!wallet) {
+      if (typeof TokenomicWallet !== 'undefined') await TokenomicWallet.connect();
+      wallet = this.getWallet();
+      if (!wallet) throw new Error('Wallet not connected');
+    }
+
+    var priceNum = Number(priceInUSDC);
+    if (!isFinite(priceNum) || priceNum < 0) {
+      throw new Error('Invalid price: ' + priceInUSDC);
+    }
+
+    if (priceNum === 0) {
+      var freeAsset = await this.registerAsset({
+        type: 'course',
+        title: opts.title || 'Free Course',
+        description: 'Enrolled in free course',
+        status: 'enrolled'
+      });
+      freeAsset.course_id = courseId;
+      return { success: true, asset: freeAsset, free: true };
+    }
+
+    await this.ensureBaseChain();
+
+    var recipient = opts.recipient || this.REVENUE_SPLITTER_ADDRESS;
+    if (!recipient) {
+      throw new Error('No payment recipient configured. Set REVENUE_SPLITTER_ADDRESS or pass opts.recipient.');
+    }
+
+    if (typeof ethers === 'undefined') throw new Error('ethers library not loaded');
+
+    var eth = (typeof TokenomicWallet !== 'undefined' && TokenomicWallet._activeProvider) || window.ethereum;
+    var provider = new ethers.providers.Web3Provider(eth);
+    var signer = provider.getSigner();
+    var usdc = new ethers.Contract(this.USDC_ADDRESS, this.USDC_ABI, signer);
+    var amount = ethers.utils.parseUnits(priceNum.toFixed(6), 6);
+
+    var tx = await usdc.transfer(recipient, amount);
+    var receipt = await tx.wait();
+
+    var asset = await this.registerAsset({
+      type: 'course',
+      title: opts.title || ('Course #' + courseId),
+      description: 'Purchased for ' + priceInUSDC + ' USDC',
+      tx_hash: receipt.transactionHash,
+      contract_address: this.USDC_ADDRESS,
+      status: 'purchased'
+    });
+    asset.course_id = courseId;
+
+    return {
+      success: true,
+      asset: asset,
+      txHash: receipt.transactionHash,
+      explorerUrl: 'https://basescan.org/tx/' + receipt.transactionHash
+    };
+  },
+
+  async claimCertificate(courseId, opts) {
+    opts = opts || {};
+    var wallet = this.getWallet();
+    if (!wallet) {
+      if (typeof TokenomicWallet !== 'undefined') await TokenomicWallet.connect();
+      wallet = this.getWallet();
+      if (!wallet) throw new Error('Wallet not connected');
+    }
+    var result = await this.mintCertification({
+      courseTitle: opts.title || ('Course #' + courseId),
+      metadata_uri: opts.metadata_uri || ('ipfs://cert/' + courseId)
+    });
+    if (result && result.asset) {
+      result.asset.course_id = courseId;
+    }
+    return result;
+  },
+
   getContractStatus: function() {
     return {
       certNFT: this.CERT_NFT_ADDRESS ? { deployed: true, address: this.CERT_NFT_ADDRESS } : { deployed: false },

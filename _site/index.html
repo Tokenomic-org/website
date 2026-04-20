@@ -2,34 +2,32 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>Tokenomic - Institutional DeFi Education</title>
+        <title>Tokenomic - Advance Your Decentralized Finance Expertise</title>
+        
         <link href="/assets/css/bootstrap.css" rel="stylesheet" />
         <link href="/assets/css/style.css" rel="stylesheet" />
         <link href="/assets/css/responsive.css" rel="stylesheet" />
-        <link href="/assets/css/home-light.css" rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
         <link rel="shortcut icon" href="/assets/images/favicon.png" type="image/x-icon" />
         <link rel="icon" href="/assets/images/favicon.png" type="image/x-icon" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=2.0,minimum-scale=1.0" />
-        <meta name="description" content="Institutional DeFi education, intelligence, and tools built for funds, banks, DAOs, and corporate teams." />
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MD9B5BB1P"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag("js", new Date());
-          gtag("config", "G-1MD9B5BB1P");
-        </script>
-        <style>
-            .header-style-two { top: 0; background: #0A0F1A; }
-            .main-menu .navigation > li { margin-right: 20px; }
-            .main-menu .navigation > li > a { font-size: 15px; }
-        </style>
-        <link rel="alternate" type="application/rss+xml" title="Tokenomic RSS Feed" href="/feed.xml" />
+        <!--[if lt IE 9]><script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script><![endif]-->
+        <!--[if lt IE 9]><script src="/assets/js/respond.js"></script><![endif]-->
+        <!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1MD9B5BB1P"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-1MD9B5BB1P');
+</script>
+
     </head>
     <body>
         <div class="page-wrapper">
-<link href="/assets/css/home-light.css" rel="stylesheet"/>
+            
+            <link href="/assets/css/home-light.css" rel="stylesheet"/>
 <style>
 .header-upper .inner {
     display:flex !important;
@@ -153,11 +151,27 @@
                         <nav class="main-menu navbar-expand-md navbar-light">
                             <div class="collapse navbar-collapse show clearfix">
                                 <ul class="navigation clearfix">
+                                    
+                                    
                                     <li><a href="/">Home</a></li>
+                                    
+                                    
+                                    
                                     <li><a href="/courses/">Courses</a></li>
+                                    
+                                    
+                                    
                                     <li><a href="/communities/">Communities</a></li>
+                                    
+                                    
+                                    
                                     <li><a href="/experts/">Experts</a></li>
+                                    
+                                    
+                                    
                                     <li><a href="/articles/">Articles</a></li>
+                                    
+                                    
                                 </ul>
                             </div>
                         </nav>
@@ -744,18 +758,13 @@
            </div>
         </div>
         <div class="row clearfix">
-            <div class="news-block col-lg-4 col-md-6 col-sm-12 wow fadeInUp" data-wow-delay="0ms">
-                <div class="inner">
-                    </figure>
-                    <div class="lower-box">
-                    </div>
-                </div>
-            </div>
+            
         </div>
     </div>
 </section>
 
-<footer class="main-footer alternate">
+
+            <footer class="main-footer alternate">
     <div class="auto-container">
         <!--Widgets Section-->
         <div class="widgets-section">
@@ -838,7 +847,6 @@
     </div>
 </footer>
 
-<script>function submitNewsletter(e){e.preventDefault();var f=e.target;var email=f.querySelector("input[name=email]").value;var btn=f.querySelector("button");var msg=f.closest(".newsletter-widget").querySelector(".newsletter-msg")||document.createElement("div");btn.disabled=true;btn.textContent="Subscribing...";fetch("/api/newsletter/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email})}).then(function(r){return r.json()}).then(function(d){if(d.success){btn.textContent="Subscribed!";btn.style.background="#38a169";if(msg.classList){msg.textContent=d.message;msg.style.display="block";msg.style.color="#38a169";}f.querySelector("input[name=email]").value="";}else{throw new Error(d.error)}}).catch(function(err){btn.textContent="Subscribe Now";btn.disabled=false;if(msg.classList){msg.textContent=err.message||"Please try again";msg.style.display="block";msg.style.color="#e53e3e";}});return false;}</script>
         </div>
         <div class="scroll-to-top scroll-to-target" data-target="html"><span class="flaticon-up-arrow"></span></div>
         <script src="/assets/js/jquery.js"></script>
@@ -855,12 +863,16 @@
         <script src="/assets/js/appear.js"></script>
         <script src="/assets/js/wow.js"></script>
         <script src="/assets/js/simple-jekyll-search.min.js"></script>
+        <script src="/assets/js/element-in-view.js"></script>
         <script src="/assets/js/custom-script.js"></script>
-        <script src="/shared/assets/js/supabase-client.js"></script>
-        <script src="/shared/assets/js/profile-photo.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
         <script src="/shared/assets/js/web3-wallet.js"></script>
         <script src="/shared/assets/js/web3-assets.js"></script>
+        <script type="module" src="/shared/assets/js/web3-bundle.js"></script>
+        <script src="/shared/assets/js/web3-ui.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script src="/shared/assets/js/supabase-client.js"></script>
+        <script src="/shared/assets/js/profile-photo.js"></script>
         <script src="/shared/assets/js/site-search.js"></script>
     </body>
 </html>

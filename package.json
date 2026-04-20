@@ -5,18 +5,22 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "bundle exec jekyll build",
+    "build:web3": "esbuild shared/assets/js/web3-bundle-src.js --bundle --minify --format=esm --target=es2020 --outfile=shared/assets/js/web3-bundle.js",
+    "build": "npm run build:web3 && bundle exec jekyll build",
     "deploy": "wrangler deploy",
-    "deploy:full": "bundle exec jekyll build && wrangler deploy"
+    "deploy:full": "npm run build && wrangler deploy"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@wagmi/core": "^3.4.4",
+    "esbuild": "^0.28.0",
     "ethers": "^5.8.0",
     "express": "^5.2.1",
     "pg": "^8.20.0",
     "serve": "^14.2.6",
+    "viem": "^2.48.1",
     "wrangler": "^4.84.0"
   }
 }

@@ -208,6 +208,10 @@ const TokenomicWallet = {
     }
   },
 
+  async connectWallet() { return await this.connect(); },
+  getAddress() { return this.account || sessionStorage.getItem('tkn_wallet') || null; },
+  async getBalance() { return await this.getUSDCBalance(); },
+
   truncateAddress(address) {
     if (!address) return '';
     return address.slice(0, 6) + '...' + address.slice(-4);

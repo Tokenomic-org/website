@@ -12,24 +12,26 @@
         <link rel="icon" href="/assets/images/favicon.png" type="image/x-icon" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=2.0,minimum-scale=1.0" />
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MD9B5BB1P"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag("js", new Date());
-          gtag("config", "G-1MD9B5BB1P");
-        </script>
+        <!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1MD9B5BB1P"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-1MD9B5BB1P');
+</script>
+
         <style>
             .header-style-two { top: 0; background: #0A0F1A; }
             .dashboard-section { padding-top: 100px !important; }
             .main-menu .navigation > li { margin-right: 20px; }
             .main-menu .navigation > li > a { font-size: 15px; }
         </style>
-        <link rel="alternate" type="application/rss+xml" title="Tokenomic RSS Feed" href="/feed.xml" />
     </head>
     <body>
         <div class="page-wrapper">
-<style>
+            <style>
 .header-upper .inner {
     display:flex !important;
     align-items:center;
@@ -152,11 +154,27 @@
                         <nav class="main-menu navbar-expand-md navbar-light">
                             <div class="collapse navbar-collapse show clearfix">
                                 <ul class="navigation clearfix">
+                                    
+                                    
                                     <li><a href="/">Home</a></li>
+                                    
+                                    
+                                    
                                     <li><a href="/courses/">Courses</a></li>
+                                    
+                                    
+                                    
                                     <li><a href="/communities/">Communities</a></li>
+                                    
+                                    
+                                    
                                     <li><a href="/experts/">Experts</a></li>
+                                    
+                                    
+                                    
                                     <li><a href="/articles/">Articles</a></li>
+                                    
+                                    
                                 </ul>
                             </div>
                         </nav>
@@ -232,7 +250,7 @@
     </div>
 </div>
 
-<section class="dashboard-section" >
+            <section class="dashboard-section" >
     <div class="auto-container">
         <div class="row">
             <div class="col-lg-3 col-md-4 col-sm-12">
@@ -455,7 +473,8 @@ function dashboardHome() {
         </div>
     </div>
 </section>
-<footer class="main-footer alternate">
+
+            <footer class="main-footer alternate">
     <div class="auto-container">
         <!--Widgets Section-->
         <div class="widgets-section">
@@ -538,7 +557,6 @@ function dashboardHome() {
     </div>
 </footer>
 
-<script>function submitNewsletter(e){e.preventDefault();var f=e.target;var email=f.querySelector("input[name=email]").value;var btn=f.querySelector("button");var msg=f.closest(".newsletter-widget").querySelector(".newsletter-msg")||document.createElement("div");btn.disabled=true;btn.textContent="Subscribing...";fetch("/api/newsletter/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email})}).then(function(r){return r.json()}).then(function(d){if(d.success){btn.textContent="Subscribed!";btn.style.background="#38a169";if(msg.classList){msg.textContent=d.message;msg.style.display="block";msg.style.color="#38a169";}f.querySelector("input[name=email]").value="";}else{throw new Error(d.error)}}).catch(function(err){btn.textContent="Subscribe Now";btn.disabled=false;if(msg.classList){msg.textContent=err.message||"Please try again";msg.style.display="block";msg.style.color="#e53e3e";}});return false;}</script>
         </div>
         <div class="scroll-to-top scroll-to-target" data-target="html"><span class="flaticon-up-arrow"></span></div>
         <script src="/assets/js/jquery.js"></script>
@@ -561,6 +579,8 @@ function dashboardHome() {
         <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
         <script src="/shared/assets/js/web3-wallet.js"></script>
         <script src="/shared/assets/js/web3-assets.js"></script>
+        <script type="module" src="/shared/assets/js/web3-bundle.js"></script>
+        <script src="/shared/assets/js/web3-ui.js"></script>
         <script src="/shared/assets/js/site-search.js"></script>
         <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>
         <script>
@@ -568,99 +588,80 @@ function dashboardHome() {
             var flatIconMap = {"flaticon-home-1":"fas fa-home","flaticon-user-3":"fas fa-users","flaticon-notebook":"fas fa-book","flaticon-calendar":"fas fa-calendar","flaticon-money":"fas fa-chart-line","flaticon-speech-bubble":"fas fa-comments","flaticon-edit":"fas fa-pen-to-square","flaticon-share":"fas fa-share-nodes","flaticon-trophy":"fas fa-trophy","flaticon-suitcase":"fas fa-calendar-check","flaticon-user":"fas fa-user"};
             function initMobileDashNav() {
                 if (window.innerWidth > 991) return;
-                var sidebar = document.querySelector(".dashboard-sidebar");
+                var sidebar = document.querySelector('.dashboard-sidebar');
                 if (!sidebar) return;
                 var sidebarCol = sidebar.parentElement;
                 var contentCol = sidebarCol ? sidebarCol.nextElementSibling : null;
-                if (sidebarCol) sidebarCol.classList.add("dashboard-sidebar-col");
-                if (contentCol) contentCol.classList.add("dashboard-content-col");
-                function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+                if (sidebarCol) sidebarCol.classList.add('dashboard-sidebar-col');
+                if (contentCol) contentCol.classList.add('dashboard-content-col');
+                function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
                 var profileData = {};
-                try { profileData = JSON.parse(localStorage.getItem("tkn_profile_data") || "{}"); } catch(e) {}
-                var userName = esc(profileData.displayName || profileData.name || "Tokenomic");
-                var photo = esc(localStorage.getItem("tkn_profile_photo") || "");
-                var initials = (userName || "T").trim().charAt(0).toUpperCase();
+                try { profileData = JSON.parse(localStorage.getItem('tkn_profile_data') || '{}'); } catch(e) {}
+                var userName = esc(profileData.displayName || profileData.name || 'Tokenomic');
+                var photo = esc(localStorage.getItem('tkn_profile_photo') || '');
+                var initials = (userName || 'T').trim().charAt(0).toUpperCase();
                 var avatarHtml = photo
                     ? '<img src="' + photo + '" alt="' + userName + '" />'
                     : initials;
-                var navItemsHtml = "";
-                var children = sidebar.querySelectorAll(".sidebar-section-label, .dash-nav-item");
+                var navItemsHtml = '';
+                var children = sidebar.querySelectorAll('.sidebar-section-label, .dash-nav-item');
                 for (var i = 0; i < children.length; i++) {
                     var el = children[i];
-                    if (el.classList.contains("sidebar-section-label")) {
-                        navItemsHtml += '<div class="mob-section-label">' + el.textContent.trim() + "</div>";
+                    if (el.classList.contains('sidebar-section-label')) {
+                        navItemsHtml += '<div class="mob-section-label">' + el.textContent.trim() + '</div>';
                     } else {
-                        var href = el.getAttribute("href") || "#";
-                        var iconEl = el.querySelector("i");
-                        var iconHtml = "";
+                        var href = el.getAttribute('href') || '#';
+                        var iconEl = el.querySelector('i');
+                        var iconHtml = '';
                         if (iconEl) { iconHtml = iconEl.outerHTML; }
                         else {
-                            var spanIcon = el.querySelector("span[class*=flaticon]");
+                            var spanIcon = el.querySelector('span[class*=flaticon]');
                             if (spanIcon) {
-                                var cls = spanIcon.className.split(" ").filter(function(c){return c.indexOf("flaticon")===0;})[0] || "";
-                                var faClass = flatIconMap[cls] || "fas fa-circle";
+                                var cls = spanIcon.className.split(' ').filter(function(c){return c.indexOf('flaticon')===0;})[0] || '';
+                                var faClass = flatIconMap[cls] || 'fas fa-circle';
                                 iconHtml = '<i class="' + faClass + '"></i>';
                             }
                         }
                         var label = el.textContent.trim();
-                        var isActive = el.classList.contains("active") ? " active" : "";
-                        navItemsHtml += '<a href="' + href + '" class="mob-nav-item' + isActive + '">' + iconHtml + " " + label + "</a>";
+                        var isActive = el.classList.contains('active') ? ' active' : '';
+                        navItemsHtml += '<a href="' + href + '" class="mob-nav-item' + isActive + '">' + iconHtml + ' ' + label + '</a>';
                     }
                 }
                 var barHtml = '<div class="mobile-dash-bar" id="mobileDashBar">' +
                     '<div class="mobile-dash-bar-user">' +
-                    '<div class="mobile-dash-bar-avatar">' + avatarHtml + "</div>" +
+                    '<div class="mobile-dash-bar-avatar">' + avatarHtml + '</div>' +
                     '<div class="mobile-dash-bar-info">' +
-                    '<span class="mobile-dash-bar-name">' + userName + "</span>" +
+                    '<span class="mobile-dash-bar-name">' + userName + '</span>' +
                     '<span class="mobile-dash-bar-label">Dashboard</span>' +
-                    "</div></div>" +
+                    '</div></div>' +
                     '<button class="mobile-dash-bar-toggle" aria-label="Toggle navigation">' +
                     'Menu <i class="fas fa-chevron-down mob-chevron"></i>' +
-                    "</button></div>";
-                var dropdownHtml = '<div class="mobile-dash-dropdown" id="mobileDashDropdown">' + navItemsHtml + "</div>";
+                    '</button></div>';
+                var dropdownHtml = '<div class="mobile-dash-dropdown" id="mobileDashDropdown">' + navItemsHtml + '</div>';
                 if (contentCol) {
-                    contentCol.insertAdjacentHTML("afterbegin", dropdownHtml);
-                    contentCol.insertAdjacentHTML("afterbegin", barHtml);
+                    contentCol.insertAdjacentHTML('afterbegin', dropdownHtml);
+                    contentCol.insertAdjacentHTML('afterbegin', barHtml);
                 }
-                var bar = document.getElementById("mobileDashBar");
-                var dropdown = document.getElementById("mobileDashDropdown");
+                var bar = document.getElementById('mobileDashBar');
+                var dropdown = document.getElementById('mobileDashDropdown');
                 if (bar && dropdown) {
-                    bar.addEventListener("click", function() {
-                        bar.classList.toggle("open");
-                        dropdown.classList.toggle("open");
+                    bar.addEventListener('click', function() {
+                        bar.classList.toggle('open');
+                        dropdown.classList.toggle('open');
                     });
-                    var links = dropdown.querySelectorAll(".mob-nav-item");
+                    var links = dropdown.querySelectorAll('.mob-nav-item');
                     for (var j = 0; j < links.length; j++) {
-                        links[j].addEventListener("click", function() {
-                            bar.classList.remove("open");
-                            dropdown.classList.remove("open");
+                        links[j].addEventListener('click', function() {
+                            bar.classList.remove('open');
+                            dropdown.classList.remove('open');
                         });
                     }
                 }
             }
-            if (document.readyState === "loading") {
-                document.addEventListener("DOMContentLoaded", initMobileDashNav);
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initMobileDashNav);
             } else {
                 initMobileDashNav();
-            }
-        })();
-        </script>
-        <script>
-        (function() {
-            var parts = window.location.pathname.replace(/\/$/, "").split("/");
-            var wallet = "";
-            for (var i = 0; i < parts.length; i++) {
-                if (/^0x[0-9a-fA-F]{6,}$/.test(parts[i])) { wallet = parts[i]; break; }
-            }
-            if (!wallet) {
-                try { wallet = sessionStorage.getItem("tkn_wallet") || localStorage.getItem("tkn_wallet_address") || ""; } catch(e) {}
-            }
-            if (wallet) {
-                document.querySelectorAll("[data-dash]").forEach(function(el) {
-                    var page = el.getAttribute("data-dash");
-                    if (page === "leaderboard") return;
-                    el.href = "/" + page + "/" + wallet;
-                });
             }
         })();
         </script>

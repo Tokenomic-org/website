@@ -215,6 +215,25 @@ permalink: /profile/
                 <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 24px;" @click="alert('Pay 50 USDC to register. Deploy PaymentSplitter for live registration.')">Register & Pay 50 USDC</button>
             </div>
 
+            <div class="dash-card" style="margin-top:16px;" id="wallet-summary-card">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                    <h4 style="margin:0;"><i class="fas fa-wallet" style="color:#ff6000;margin-right:8px;"></i>Wallet</h4>
+                    <span style="font-size:0.78rem;color:#5a8299;">Connected via Web3 (Base L2)</span>
+                </div>
+                <div id="tkn-wallet-summary"></div>
+            </div>
+
+            <div class="dash-card" style="margin-top:16px;" id="my-certificates-card">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                    <h4 style="margin:0;"><i class="fas fa-certificate" style="color:#00C853;margin-right:8px;"></i>My Certificates</h4>
+                    <button type="button" class="theme-btn" style="background:transparent;border:1px solid #e8eef5;color:#5a8299;border-radius:8px;padding:6px 14px;font-size:0.78rem;" onclick="if(window.TokenomicUI)TokenomicUI.refresh();">
+                        <i class="fas fa-sync-alt" style="margin-right:4px;"></i>Refresh
+                    </button>
+                </div>
+                <p style="color:#5a8299;font-size:0.82rem;margin-bottom:14px;">NFT certificates minted to your wallet on Base L2. Mint a new one from any course you have completed.</p>
+                <div id="tkn-my-certificates"></div>
+            </div>
+
             <div class="dash-card" style="margin-top:16px;" id="onchain-assets-section">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
                     <h4 style="margin:0;"><i class="fas fa-link" style="color:#ff6000;margin-right:8px;"></i>On-Chain Assets</h4>
