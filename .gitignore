@@ -9,4 +9,4 @@ vendor/
 node_modules/
 website/.sass-cache/
 attached_assets/
-.local/
+.local/.last-ipfs-cid.json
