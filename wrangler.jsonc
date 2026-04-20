@@ -8,8 +8,5 @@
   },
   "assets": {
     "directory": "_site"
-  },
-  "build": {
-    "command": "bundle exec jekyll build"
   }
 }
