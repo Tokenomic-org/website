@@ -1,0 +1,95 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PROJECT_NAME: tokenomic
+  RUBY_VERSION: "3.2"
+  NODE_VERSION: "20"
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy (Cloudflare Pages)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Ruby ${{ env.RUBY_VERSION }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Cache Jekyll site (incremental builds)
+        uses: actions/cache@v4
+        with:
+          path: .jekyll-cache
+          key: jekyll-cache-${{ runner.os }}-${{ hashFiles('_config.yml', 'Gemfile.lock') }}
+          restore-keys: |
+            jekyll-cache-${{ runner.os }}-
+
+      - name: Install npm dependencies
+        run: npm ci || npm install
+
+      - name: Build Web3 bundle (esbuild)
+        run: npm run build:web3
+
+      - name: Build Jekyll site
+        env:
+          JEKYLL_ENV: production
+        run: bundle exec jekyll build --destination _site
+
+      - name: Verify build output
+        run: |
+          test -d _site || (echo "::error::_site directory missing" && exit 1)
+          test -f _site/index.html || (echo "::error::_site/index.html missing" && exit 1)
+          echo "Built $(find _site -type f | wc -l) files"
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy _site --project-name=${{ env.PROJECT_NAME }} --branch=${{ github.head_ref || github.ref_name }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment deployment URL on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const url = '${{ steps.deploy.outputs.deployment-url }}';
+            if (!url) return;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Cloudflare Pages preview deployed: ${url}`
+            });
