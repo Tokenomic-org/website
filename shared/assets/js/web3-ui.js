@@ -196,8 +196,42 @@
     var slot = document.getElementById('tkn-my-certificates');
     if (!slot) return;
     var assets = ensureAssets();
+    var wallet = ensureWallet();
     if (!assets) return;
     slot.innerHTML = '<div class="tkn-cert-loading">Loading certificates…</div>';
+
+    var addr = wallet && wallet.getAddress && wallet.getAddress();
+
+    // Prefer on-chain reads when the certificate contract is wired.
+    if (addr && assets.CERT_NFT_ADDRESS && typeof assets.getOwnedCertificates === 'function') {
+      assets.getOwnedCertificates(addr).then(function (certs) {
+        if (!certs || certs.length === 0) {
+          slot.innerHTML = '<div class="tkn-cert-empty"><i class="fas fa-certificate"></i><div>No certificates yet</div><small>Buy a course to receive your first on-chain certificate.</small></div>';
+          return;
+        }
+        var html = '<div class="tkn-cert-grid">';
+        certs.forEach(function (c) {
+          html += '<div class="tkn-cert-card">' +
+            '<div class="tkn-cert-icon"><i class="fas fa-certificate"></i></div>' +
+            '<div class="tkn-cert-body">' +
+              '<div class="tkn-cert-title">Certificate #' + escapeHtml(c.tokenId) + '</div>' +
+              '<div class="tkn-cert-meta">Course ' + escapeHtml(c.courseId || '?') + (c.tokenURI ? ' · <a href="' + c.ipfsUrl + '" target="_blank" rel="noopener">metadata</a>' : '') + '</div>' +
+              '<a href="' + c.explorerUrl + '" target="_blank" rel="noopener" class="tkn-cert-link">View on BaseScan <i class="fas fa-external-link-alt"></i></a>' +
+            '</div></div>';
+        });
+        html += '</div>';
+        slot.innerHTML = html;
+      }).catch(function (err) {
+        console.warn('On-chain cert load failed, falling back to legacy:', err);
+        renderMyCertificatesLegacy(slot, assets);
+      });
+      return;
+    }
+
+    renderMyCertificatesLegacy(slot, assets);
+  }
+
+  function renderMyCertificatesLegacy(slot, assets) {
     assets.loadAssets().then(function (data) {
       var certs = (data && data.certifications) || [];
       if (certs.length === 0) {

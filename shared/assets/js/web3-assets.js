@@ -1,18 +1,37 @@
-var TokenomicAssets = {
-  BASE_CHAIN_ID: 8453,
-  BASE_CHAIN_HEX: '0x2105',
-  BASE_RPC: 'https://mainnet.base.org',
-  USDC_ADDRESS: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+var __TKN_ENV = (typeof window !== 'undefined' && window.__TKN_ENV) || {};
 
-  CERT_NFT_ADDRESS: null,
+var TokenomicAssets = {
+  BASE_CHAIN_ID: Number(__TKN_ENV.BASE_CHAIN_ID || 8453),
+  BASE_CHAIN_HEX: '0x' + Number(__TKN_ENV.BASE_CHAIN_ID || 8453).toString(16),
+  BASE_RPC: __TKN_ENV.BASE_RPC_URL || 'https://mainnet.base.org',
+  ETH_GATEWAY: __TKN_ENV.ETH_GATEWAY_URL || '',
+  BASESCAN_BASE: __TKN_ENV.BASESCAN_BASE || 'https://basescan.org',
+  USDC_ADDRESS: __TKN_ENV.USDC_CONTRACT || '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+
+  // New contracts from Prompt 5 (TokenomicMarket / TokenomicCertificate).
+  // Set via window.__TKN_ENV.MARKET_CONTRACT and CERTIFICATE_CONTRACT.
+  MARKET_ADDRESS: __TKN_ENV.MARKET_CONTRACT || null,
+  CERT_NFT_ADDRESS: __TKN_ENV.CERTIFICATE_CONTRACT || null,
+
+  // Legacy slots (kept for backward compatibility)
   REVENUE_SPLITTER_ADDRESS: null,
   COURSE_NFT_ADDRESS: null,
 
+  // TokenomicMarket ABI (subset used by the frontend)
+  MARKET_ABI: [
+    'function purchase(uint256 courseId, string ipfsMetadataURI) returns (uint256)',
+    'function getCourse(uint256 courseId) view returns (tuple(address educator, address consultant, uint256 price, bool active))',
+    'function hasPurchased(uint256 courseId, address user) view returns (bool)',
+    'function quoteSplit(uint256 price, bool hasConsultant) pure returns (uint256, uint256, uint256)',
+    'event CoursePurchased(uint256 indexed courseId, address indexed buyer, uint256 totalPaid, uint256 educatorAmount, uint256 consultantAmount, uint256 platformAmount, uint256 certificateTokenId)'
+  ],
+  // TokenomicCertificate ABI (subset for reads + legacy fallback mint)
   CERT_NFT_ABI: [
-    'function safeMint(address to, string memory tokenURI) public returns (uint256)',
     'function balanceOf(address owner) view returns (uint256)',
-    'function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)',
-    'function tokenURI(uint256 tokenId) view returns (string)'
+    'function tokenURI(uint256 tokenId) view returns (string)',
+    'function tokenIdToCourseId(uint256 tokenId) view returns (uint256)',
+    'function ownerOf(uint256 tokenId) view returns (address)',
+    'function safeMint(address to, string memory tokenURI) public returns (uint256)'
   ],
   REVENUE_SPLITTER_ABI: [
     'function claim() external',
@@ -27,7 +46,9 @@ var TokenomicAssets = {
   USDC_ABI: [
     'function balanceOf(address owner) view returns (uint256)',
     'function transfer(address to, uint256 amount) returns (bool)',
-    'function approve(address spender, uint256 amount) returns (bool)'
+    'function approve(address spender, uint256 amount) returns (bool)',
+    'function allowance(address owner, address spender) view returns (uint256)',
+    'function decimals() view returns (uint8)'
   ],
 
   _assets: null,
@@ -476,11 +497,6 @@ var TokenomicAssets = {
 
     await this.ensureBaseChain();
 
-    var recipient = opts.recipient || this.REVENUE_SPLITTER_ADDRESS;
-    if (!recipient) {
-      throw new Error('No payment recipient configured. Set REVENUE_SPLITTER_ADDRESS or pass opts.recipient.');
-    }
-
     if (typeof ethers === 'undefined') throw new Error('ethers library not loaded');
 
     var eth = (typeof TokenomicWallet !== 'undefined' && TokenomicWallet._activeProvider) || window.ethereum;
@@ -489,25 +505,90 @@ var TokenomicAssets = {
     var usdc = new ethers.Contract(this.USDC_ADDRESS, this.USDC_ABI, signer);
     var amount = ethers.utils.parseUnits(priceNum.toFixed(6), 6);
 
-    var tx = await usdc.transfer(recipient, amount);
-    var receipt = await tx.wait();
+    // ---- Path A: TokenomicMarket configured -> approve + purchase (mints cert atomically) ----
+    if (this.MARKET_ADDRESS) {
+      var market = new ethers.Contract(this.MARKET_ADDRESS, this.MARKET_ABI, signer);
 
-    var asset = await this.registerAsset({
+      var allowance;
+      try { allowance = await usdc.allowance(wallet, this.MARKET_ADDRESS); }
+      catch (e) { allowance = ethers.BigNumber.from(0); }
+
+      if (allowance.lt(amount)) {
+        var approveTx = await usdc.approve(this.MARKET_ADDRESS, amount);
+        await approveTx.wait();
+      }
+
+      var ipfsURI = this._buildCertificateMetadataURI(courseId, opts.title || ('Course #' + courseId), wallet);
+      var purchaseTx = await market.purchase(courseId, ipfsURI);
+      var receipt = await purchaseTx.wait();
+
+      // Extract minted tokenId from CoursePurchased event when available
+      var tokenId = null;
+      try {
+        var iface = new ethers.utils.Interface(this.MARKET_ABI);
+        for (var i = 0; i < (receipt.logs || []).length; i++) {
+          try {
+            var parsed = iface.parseLog(receipt.logs[i]);
+            if (parsed && parsed.name === 'CoursePurchased') {
+              tokenId = parsed.args.certificateTokenId.toString();
+              break;
+            }
+          } catch (_) { /* not our log */ }
+        }
+      } catch (_) { /* ignore */ }
+
+      var asset = await this.registerAsset({
+        type: 'course',
+        title: opts.title || ('Course #' + courseId),
+        description: 'Purchased for ' + priceInUSDC + ' USDC (on-chain)',
+        tx_hash: receipt.transactionHash,
+        contract_address: this.MARKET_ADDRESS,
+        token_id: tokenId,
+        metadata_uri: ipfsURI,
+        status: 'purchased'
+      });
+      asset.course_id = courseId;
+
+      return {
+        success: true,
+        asset: asset,
+        txHash: receipt.transactionHash,
+        certificateTokenId: tokenId,
+        explorerUrl: this.BASESCAN_BASE + '/tx/' + receipt.transactionHash,
+        certificateMinted: true
+      };
+    }
+
+    // ---- Path B: legacy USDC transfer to splitter (until contracts deployed) ----
+    var recipient = opts.recipient || this.REVENUE_SPLITTER_ADDRESS;
+    if (!recipient) {
+      throw new Error('No payment recipient configured. Set MARKET_CONTRACT (preferred) or REVENUE_SPLITTER_ADDRESS in window.__TKN_ENV.');
+    }
+    var tx = await usdc.transfer(recipient, amount);
+    var receipt2 = await tx.wait();
+    var asset2 = await this.registerAsset({
       type: 'course',
       title: opts.title || ('Course #' + courseId),
       description: 'Purchased for ' + priceInUSDC + ' USDC',
-      tx_hash: receipt.transactionHash,
+      tx_hash: receipt2.transactionHash,
       contract_address: this.USDC_ADDRESS,
       status: 'purchased'
     });
-    asset.course_id = courseId;
-
+    asset2.course_id = courseId;
     return {
       success: true,
-      asset: asset,
-      txHash: receipt.transactionHash,
-      explorerUrl: 'https://basescan.org/tx/' + receipt.transactionHash
+      asset: asset2,
+      txHash: receipt2.transactionHash,
+      explorerUrl: this.BASESCAN_BASE + '/tx/' + receipt2.transactionHash
     };
+  },
+
+  _buildCertificateMetadataURI: function(courseId, title, wallet) {
+    // Deterministic placeholder URI. Replace with real pinning (Worker -> nft.storage)
+    // for production. The on-chain mint stores whatever string we pass here.
+    var base = (typeof __TKN_ENV !== 'undefined' && __TKN_ENV.CERT_METADATA_BASE) || 'ipfs://tokenomic/certificates';
+    var safe = String(title || '').replace(/[^a-zA-Z0-9]+/g, '-').slice(0, 64).toLowerCase() || 'cert';
+    return base + '/' + safe + '-' + courseId + '-' + (wallet ? wallet.slice(2, 10).toLowerCase() : 'anon') + '.json';
   },
 
   async claimCertificate(courseId, opts) {
@@ -518,14 +599,76 @@ var TokenomicAssets = {
       wallet = this.getWallet();
       if (!wallet) throw new Error('Wallet not connected');
     }
+    // When the market is wired, the certificate is already minted by purchase().
+    // Treat claim as a refresh + acknowledgement.
+    if (this.MARKET_ADDRESS && this.CERT_NFT_ADDRESS) {
+      try {
+        var owned = await this.getOwnedCertificates(wallet);
+        return {
+          success: true,
+          alreadyMinted: true,
+          certificates: owned,
+          note: 'Certificate already minted at purchase time.'
+        };
+      } catch (e) {
+        return { success: true, alreadyMinted: true, note: 'Certificate already minted at purchase time.' };
+      }
+    }
     var result = await this.mintCertification({
       courseTitle: opts.title || ('Course #' + courseId),
-      metadata_uri: opts.metadata_uri || ('ipfs://cert/' + courseId)
+      metadata_uri: opts.metadata_uri || this._buildCertificateMetadataURI(courseId, opts.title, wallet)
     });
-    if (result && result.asset) {
-      result.asset.course_id = courseId;
-    }
+    if (result && result.asset) result.asset.course_id = courseId;
     return result;
+  },
+
+  /**
+   * Fetch every certificate NFT owned by `address` from TokenomicCertificate.
+   * Walks tokenIds 1..nextTokenId-1 and filters by ownerOf, since the
+   * production contract intentionally omits ERC721Enumerable to save gas.
+   */
+  async getOwnedCertificates(address) {
+    if (!this.CERT_NFT_ADDRESS) return [];
+    if (typeof ethers === 'undefined') throw new Error('ethers library not loaded');
+    var rpcUrl = this.ETH_GATEWAY || this.BASE_RPC;
+    var provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    var cert = new ethers.Contract(this.CERT_NFT_ADDRESS, this.CERT_NFT_ABI.concat(['function nextTokenId() view returns (uint256)']), provider);
+
+    var balance;
+    try { balance = await cert.balanceOf(address); }
+    catch (e) { return []; }
+    var bal = balance && balance.toNumber ? balance.toNumber() : Number(balance || 0);
+    if (bal === 0) return [];
+
+    var maxId;
+    try { maxId = (await cert.nextTokenId()).toNumber(); }
+    catch (e) { maxId = 200; /* defensive cap */ }
+    var owned = [];
+    var checked = 0;
+    var maxScan = Math.min(maxId, 1000);
+    for (var id = 1; id < maxScan && owned.length < bal && checked < maxScan; id++) {
+      checked++;
+      try {
+        var owner = await cert.ownerOf(id);
+        if (owner.toLowerCase() === address.toLowerCase()) {
+          var uri = '';
+          var courseId = null;
+          try { uri = await cert.tokenURI(id); } catch (_) {}
+          try { courseId = (await cert.tokenIdToCourseId(id)).toString(); } catch (_) {}
+          owned.push({
+            tokenId: String(id),
+            courseId: courseId,
+            tokenURI: uri,
+            ipfsUrl: uri && uri.indexOf('ipfs://') === 0
+              ? 'https://cloudflare-ipfs.com/ipfs/' + uri.slice('ipfs://'.length)
+              : uri,
+            contract: this.CERT_NFT_ADDRESS,
+            explorerUrl: this.BASESCAN_BASE + '/token/' + this.CERT_NFT_ADDRESS + '?a=' + id
+          });
+        }
+      } catch (_) { /* token may not exist; keep scanning */ }
+    }
+    return owned;
   },
 
   getContractStatus: function() {
