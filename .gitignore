@@ -10,3 +10,9 @@ node_modules/
 website/.sass-cache/
 attached_assets/
 .local/.last-ipfs-cid.json
+
+# Hardhat
+.env
+cache/
+artifacts/
+!artifacts/abis/
