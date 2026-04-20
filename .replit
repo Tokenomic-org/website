@@ -6,6 +6,10 @@ expertMode = true
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 8545
+externalPort = 3001
+
 [nix]
 channel = "stable-25_05"
 

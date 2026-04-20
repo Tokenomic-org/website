@@ -1,7 +1,7 @@
 ---
 layout: dashboard
-title: "Courses"
-permalink: /courses/
+title: "My Courses"
+permalink: /my-courses/
 ---
 <section class="dashboard-section" >
     <div class="auto-container">
@@ -19,7 +19,7 @@ permalink: /courses/
                         <div class="sidebar-section-label">Main</div>
                         <a href="/dashboard/" class="dash-nav-item"><span class="flaticon-home-1"></span> Dashboard</a>
                         <a href="/communities/" data-dash="communities" class="dash-nav-item"><span class="flaticon-user-3"></span> Communities</a>
-                        <a href="/courses/" data-dash="courses" class="dash-nav-item active"><span class="flaticon-notebook"></span> Courses</a>
+                        <a href="/my-courses/" data-dash="courses" class="dash-nav-item active"><span class="flaticon-notebook"></span> Courses</a>
                         <a href="/events/" data-dash="events" class="dash-nav-item"><span class="flaticon-calendar"></span> Events</a>
                         <div class="sidebar-section-label">Finance</div>
                         <a href="/revenue/" data-dash="revenue" class="dash-nav-item"><span class="flaticon-money"></span> Revenue</a>
@@ -822,6 +822,54 @@ function handleMediaDrop(event) {
     handleMediaSelect({ target: { files: event.dataTransfer.files, value: '' } });
 }
 </script>
+
+                <div class="dash-card" style="margin-top:24px;" id="educator-upload-card">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                        <h4 style="margin:0;"><i class="fas fa-cloud-upload-alt" style="color:#ff6000;margin-right:8px;"></i>Publish a Course On-Chain</h4>
+                        <span style="font-size:0.78rem;color:#5a8299;">IPFS + Base L2</span>
+                    </div>
+                    <p style="color:#5a8299;font-size:0.85rem;margin-bottom:16px;">
+                        Pin your course content to IPFS, then register it on-chain. Buyers pay USDC and the contract auto-mints them a certificate NFT — you can withdraw your share any time from the Revenue tab.
+                    </p>
+                    <form id="tkn-educator-upload" autocomplete="off">
+                        <div class="row">
+                            <div class="col-md-8" style="margin-bottom:12px;">
+                                <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Course title <span style="color:#e53e3e;">*</span></label>
+                                <input name="title" required class="dash-input" placeholder="e.g. Onchain Treasury Management 101" />
+                            </div>
+                            <div class="col-md-4" style="margin-bottom:12px;">
+                                <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Price (USDC) <span style="color:#e53e3e;">*</span></label>
+                                <input name="priceInUSDC" type="number" step="0.01" min="0.01" required class="dash-input" placeholder="49.99" />
+                            </div>
+                            <div class="col-md-12" style="margin-bottom:12px;">
+                                <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Description</label>
+                                <textarea name="description" class="dash-input" rows="3" placeholder="What will students learn?"></textarea>
+                            </div>
+                            <div class="col-md-8" style="margin-bottom:12px;">
+                                <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Consultant address (optional, splits 5%)</label>
+                                <input name="consultant" class="dash-input" placeholder="0x… (leave empty for none)" />
+                            </div>
+                            <div class="col-md-12" style="margin-bottom:12px;">
+                                <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Course files (videos, PDFs, slides)</label>
+                                <input type="file" name="files" multiple class="dash-input" />
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:8px;">
+                            <button type="submit" data-tkn-upload-submit class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 24px;">
+                                <i class="fas fa-rocket" style="margin-right:6px;"></i>Publish to IPFS + Base
+                            </button>
+                            <span data-tkn-upload-progress style="color:#5a8299;font-size:0.85rem;"></span>
+                            <span data-tkn-upload-status style="font-size:0.85rem;"></span>
+                        </div>
+                        <div data-tkn-upload-result style="margin-top:14px;"></div>
+                    </form>
+                    <script>
+                      document.addEventListener('DOMContentLoaded', function () {
+                        var f = document.getElementById('tkn-educator-upload');
+                        if (f && window.TokenomicUpload) window.TokenomicUpload.bindForm(f);
+                      });
+                    </script>
+                </div>
 
                 </div>
             </div>

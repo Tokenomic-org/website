@@ -229,6 +229,86 @@ app.get('/api/dashboard/activity', async (c) => {
   }
 });
 
+/**
+ * POST /ipfs/upload            multipart/form-data  field "file"
+ * POST /ipfs/upload-json       application/json     body = metadata
+ *
+ * Both proxy to nft.storage using the NFT_STORAGE_TOKEN env var so the
+ * write-capable token never leaves the server. Rate limited per IP.
+ *
+ * Response: { cid, ipfsURI, gatewayURL }
+ */
+async function pinToNftStorage(env, payload, contentType) {
+  if (!env.NFT_STORAGE_TOKEN) {
+    return { ok: false, status: 503, error: 'IPFS pinning not configured' };
+  }
+  const resp = await fetch('https://api.nft.storage/upload', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.NFT_STORAGE_TOKEN}`,
+      'Content-Type': contentType
+    },
+    body: payload
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok || !data || !data.ok) {
+    return { ok: false, status: resp.status || 502, error: (data && data.error && data.error.message) || 'pin failed' };
+  }
+  const cid = data.value && data.value.cid;
+  return {
+    ok: true,
+    cid,
+    ipfsURI: `ipfs://${cid}`,
+    gatewayURL: `https://${cid}.ipfs.nftstorage.link`
+  };
+}
+
+app.post('/ipfs/upload', async (c) => {
+  const ip = clientIp(c);
+  const rl = await rateLimit(c, `${ip}:ipfs`, 30, 60);
+  c.header('X-RateLimit-Remaining', String(rl.remaining));
+  if (!rl.ok) return c.json({ error: 'Rate limit exceeded' }, 429);
+
+  const ct = c.req.header('content-type') || '';
+  if (!ct.toLowerCase().startsWith('multipart/form-data')) {
+    return c.json({ error: 'Expected multipart/form-data with a "file" field' }, 400);
+  }
+  try {
+    const form = await c.req.formData();
+    const file = form.get('file');
+    if (!file || typeof file === 'string') return c.json({ error: 'Missing file' }, 400);
+    const maxBytes = parseInt(c.env.MAX_UPLOAD_BYTES || String(25 * 1024 * 1024), 10);
+    if (file.size > maxBytes) return c.json({ error: `File exceeds ${maxBytes} bytes` }, 413);
+    const r = await pinToNftStorage(c.env, file.stream(), file.type || 'application/octet-stream');
+    if (!r.ok) return c.json({ error: r.error }, r.status);
+    return c.json({ ok: true, cid: r.cid, ipfsURI: r.ipfsURI, gatewayURL: r.gatewayURL });
+  } catch (e) {
+    console.error('ipfs upload failed:', e);
+    return c.json({ error: 'Upload failed' }, 500);
+  }
+});
+
+app.post('/ipfs/upload-json', async (c) => {
+  const ip = clientIp(c);
+  const rl = await rateLimit(c, `${ip}:ipfs`, 60, 60);
+  c.header('X-RateLimit-Remaining', String(rl.remaining));
+  if (!rl.ok) return c.json({ error: 'Rate limit exceeded' }, 429);
+
+  let body;
+  try { body = await c.req.json(); }
+  catch { return c.json({ error: 'Invalid JSON body' }, 400); }
+  if (!body || typeof body !== 'object') return c.json({ error: 'Body must be a JSON object' }, 400);
+  try {
+    const payload = JSON.stringify(body);
+    const r = await pinToNftStorage(c.env, payload, 'application/json');
+    if (!r.ok) return c.json({ error: r.error }, r.status);
+    return c.json({ ok: true, cid: r.cid, ipfsURI: r.ipfsURI, gatewayURL: r.gatewayURL });
+  } catch (e) {
+    console.error('ipfs json upload failed:', e);
+    return c.json({ error: 'Upload failed' }, 500);
+  }
+});
+
 app.notFound((c) => c.json({ error: 'Not found', path: c.req.path }, 404));
 app.onError((err, c) => {
   console.error('Unhandled error:', err);

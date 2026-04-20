@@ -23,7 +23,7 @@ permalink: /revenue/
                         <a href="/communities/" data-dash="communities" class="dash-nav-item">
                             <span class="flaticon-user-3"></span> Communities
                         </a>
-                        <a href="/courses/" data-dash="courses" class="dash-nav-item">
+                        <a href="/my-courses/" data-dash="courses" class="dash-nav-item">
                             <span class="flaticon-notebook"></span> Courses
                         </a>
                         <a href="/events/" data-dash="events" class="dash-nav-item">
@@ -247,6 +247,109 @@ function revenuePage() {
     };
 }
 </script>
+
+                <div class="dash-card" style="margin-top:24px;" id="onchain-earnings-card">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                        <h4 style="margin:0;"><i class="fas fa-coins" style="color:#ff6000;margin-right:8px;"></i>On-Chain Earnings (USDC)</h4>
+                        <button type="button" id="tkn-earnings-refresh" class="theme-btn" style="background:transparent;border:1px solid #e8eef5;color:#5a8299;border-radius:8px;padding:6px 14px;font-size:0.78rem;">
+                            <i class="fas fa-sync-alt" style="margin-right:4px;"></i>Refresh
+                        </button>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div style="background:#f7faff;border-radius:10px;padding:14px;">
+                                <div style="font-size:0.78rem;color:#5a8299;text-transform:uppercase;letter-spacing:0.05em;">Pending</div>
+                                <div id="tkn-earnings-pending" style="font-size:1.6rem;font-weight:700;color:#0c2230;">— USDC</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div style="background:#f7faff;border-radius:10px;padding:14px;">
+                                <div style="font-size:0.78rem;color:#5a8299;text-transform:uppercase;letter-spacing:0.05em;">Lifetime earned</div>
+                                <div id="tkn-earnings-lifetime" style="font-size:1.6rem;font-weight:700;color:#0c2230;">— USDC</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4" style="display:flex;align-items:center;">
+                            <button type="button" id="tkn-withdraw-btn" class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 24px;width:100%;">
+                                <i class="fas fa-download" style="margin-right:6px;"></i>Withdraw to wallet
+                            </button>
+                        </div>
+                    </div>
+                    <div id="tkn-withdraw-status" style="margin-top:12px;font-size:0.85rem;"></div>
+                </div>
+
+                <div class="dash-card" style="margin-top:16px;" id="onchain-mycourses-card">
+                    <h4 style="margin:0 0 14px;"><i class="fas fa-folder-open" style="color:#ff6000;margin-right:8px;"></i>My Registered Courses</h4>
+                    <div id="tkn-my-courses" style="font-size:0.9rem;color:#5a8299;">Connect a wallet to view.</div>
+                </div>
+
+                <div class="dash-card" style="margin-top:16px;" id="onchain-sales-card">
+                    <h4 style="margin:0 0 14px;"><i class="fas fa-receipt" style="color:#ff6000;margin-right:8px;"></i>Recent Sales</h4>
+                    <div id="tkn-my-sales" style="font-size:0.9rem;color:#5a8299;">Connect a wallet to view.</div>
+                </div>
+
+                <script>
+                (function(){
+                  function fmt(n){ var x=Number(n||0); return (Math.round(x*100)/100).toFixed(2); }
+                  function ready(fn){ if(document.readyState!='loading')fn(); else document.addEventListener('DOMContentLoaded',fn); }
+                  function addr(){ try{return window.TokenomicWallet && window.TokenomicWallet.getAddress();}catch(e){return null;} }
+
+                  async function loadEarnings(){
+                    if (!window.TokenomicAssets) return;
+                    var a = addr();
+                    if (!a) { document.getElementById('tkn-earnings-pending').textContent='— USDC'; return; }
+                    try {
+                      var e = await window.TokenomicAssets.getEducatorEarnings(a);
+                      document.getElementById('tkn-earnings-pending').textContent = fmt(e.pendingFormatted) + ' USDC';
+                      document.getElementById('tkn-earnings-lifetime').textContent = fmt(e.totalEarnedFormatted) + ' USDC';
+                    } catch(err){ console.warn(err); }
+                  }
+                  async function loadCourses(){
+                    var slot = document.getElementById('tkn-my-courses');
+                    var a = addr(); if (!a || !window.TokenomicAssets) return;
+                    slot.textContent = 'Loading…';
+                    var list = await window.TokenomicAssets.getEducatorCourses(a);
+                    if (!list.length){ slot.innerHTML='<em>No courses registered yet. Publish one from the Courses tab.</em>'; return; }
+                    var html = '<table style="width:100%;border-collapse:collapse;font-size:0.88rem;"><thead><tr style="text-align:left;color:#5a8299;border-bottom:1px solid #e8eef5;"><th style="padding:6px 4px;">#</th><th>Price</th><th>Active</th><th>Metadata</th></tr></thead><tbody>';
+                    list.forEach(function(c){
+                      html += '<tr style="border-bottom:1px solid #f0f4fa;"><td style="padding:8px 4px;">'+c.courseId+'</td><td>'+c.priceFormatted+' USDC</td><td>'+(c.active?'<span style="color:#00C853;">●</span> live':'<span style="color:#999;">○</span> off')+'</td><td><a href="'+c.ipfsUrl+'" target="_blank" rel="noopener">IPFS</a></td></tr>';
+                    });
+                    slot.innerHTML = html + '</tbody></table>';
+                  }
+                  async function loadSales(){
+                    var slot = document.getElementById('tkn-my-sales');
+                    var a = addr(); if (!a || !window.TokenomicAssets) return;
+                    slot.textContent = 'Loading…';
+                    var sales = await window.TokenomicAssets.getEducatorSales(a);
+                    if (!sales.length){ slot.innerHTML='<em>No sales yet.</em>'; return; }
+                    var html = '<table style="width:100%;border-collapse:collapse;font-size:0.86rem;"><thead><tr style="text-align:left;color:#5a8299;border-bottom:1px solid #e8eef5;"><th style="padding:6px 4px;">Course</th><th>Buyer</th><th>You earned</th><th>Cert</th><th>Tx</th></tr></thead><tbody>';
+                    sales.slice(0,25).forEach(function(s){
+                      var b = s.buyer.slice(0,6)+'…'+s.buyer.slice(-4);
+                      html += '<tr style="border-bottom:1px solid #f0f4fa;"><td style="padding:8px 4px;">#'+s.courseId+'</td><td><code style="font-size:0.78rem;">'+b+'</code></td><td>'+s.educatorAmount+' USDC</td><td>#'+s.certificateTokenId+'</td><td><a href="'+s.explorerUrl+'" target="_blank" rel="noopener">view</a></td></tr>';
+                    });
+                    slot.innerHTML = html + '</tbody></table>';
+                  }
+                  async function withdraw(){
+                    var btn = document.getElementById('tkn-withdraw-btn');
+                    var status = document.getElementById('tkn-withdraw-status');
+                    if (!window.TokenomicAssets){ status.innerHTML='<span style="color:#e53e3e;">Web3 not loaded</span>'; return; }
+                    btn.disabled = true; status.innerHTML='Submitting transaction…';
+                    try {
+                      var r = await window.TokenomicAssets.withdrawEarnings();
+                      status.innerHTML = '<span style="color:#00C853;">✓ Withdrew '+r.amount+' USDC.</span> <a href="'+r.explorerUrl+'" target="_blank" rel="noopener">View on BaseScan →</a>';
+                      loadEarnings();
+                    } catch(err){
+                      status.innerHTML = '<span style="color:#e53e3e;">'+(err && err.message || err)+'</span>';
+                    } finally { btn.disabled = false; }
+                  }
+                  function refreshAll(){ loadEarnings(); loadCourses(); loadSales(); }
+                  ready(function(){
+                    document.getElementById('tkn-withdraw-btn').addEventListener('click', withdraw);
+                    document.getElementById('tkn-earnings-refresh').addEventListener('click', refreshAll);
+                    window.addEventListener('tokenomic:wallet-connected', refreshAll);
+                    setTimeout(refreshAll, 1500);
+                  });
+                })();
+                </script>
 
                 </div>
             </div>

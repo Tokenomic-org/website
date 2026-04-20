@@ -20,10 +20,22 @@ var TokenomicAssets = {
   // TokenomicMarket ABI (subset used by the frontend)
   MARKET_ABI: [
     'function purchase(uint256 courseId, string ipfsMetadataURI) returns (uint256)',
+    'function registerCourse(string ipfsMetadataURI, uint256 priceInUSDC, address consultant) returns (uint256)',
+    'function withdrawUSDC() returns (uint256)',
+    'function withdrawPlatformFees(address to) returns (uint256)',
     'function getCourse(uint256 courseId) view returns (tuple(address educator, address consultant, uint256 price, bool active))',
+    'function getCourseMetadataURI(uint256 courseId) view returns (string)',
+    'function getCoursesByEducator(address educator) view returns (uint256[])',
+    'function getRegisteredCourseIds() view returns (uint256[])',
+    'function pendingWithdrawals(address) view returns (uint256)',
+    'function totalEarned(address) view returns (uint256)',
+    'function platformBalance() view returns (uint256)',
     'function hasPurchased(uint256 courseId, address user) view returns (bool)',
     'function quoteSplit(uint256 price, bool hasConsultant) pure returns (uint256, uint256, uint256)',
-    'event CoursePurchased(uint256 indexed courseId, address indexed buyer, uint256 totalPaid, uint256 educatorAmount, uint256 consultantAmount, uint256 platformAmount, uint256 certificateTokenId)'
+    'event CoursePurchased(uint256 indexed courseId, address indexed buyer, uint256 totalPaid, uint256 educatorAmount, uint256 consultantAmount, uint256 platformAmount, uint256 certificateTokenId)',
+    'event CourseRegistered(uint256 indexed courseId, address indexed educator, address consultant, uint256 price, string ipfsMetadataURI)',
+    'event PurchaseSettled(uint256 indexed courseId, address indexed buyer, address indexed educator, address consultant, uint256 educatorAmount, uint256 consultantAmount, uint256 platformAmount, uint256 certificateTokenId, string ipfsMetadataURI)',
+    'event Withdrawn(address indexed account, uint256 amount)'
   ],
   // TokenomicCertificate ABI (subset for reads + legacy fallback mint)
   CERT_NFT_ABI: [
@@ -669,6 +681,211 @@ var TokenomicAssets = {
       } catch (_) { /* token may not exist; keep scanning */ }
     }
     return owned;
+  },
+
+  // ===================================================================
+  // Educator / consultant on-chain helpers
+  // ===================================================================
+
+  _getReadProvider: function() {
+    if (typeof ethers === 'undefined') throw new Error('ethers library not loaded');
+    return new ethers.providers.JsonRpcProvider(this.ETH_GATEWAY || this.BASE_RPC);
+  },
+
+  _getMarketSigner: async function() {
+    if (typeof ethers === 'undefined') throw new Error('ethers library not loaded');
+    if (!this.MARKET_ADDRESS) throw new Error('MARKET_CONTRACT not configured');
+    var eth = (typeof TokenomicWallet !== 'undefined' && TokenomicWallet._activeProvider) || window.ethereum;
+    if (!eth) throw new Error('No injected wallet');
+    var provider = new ethers.providers.Web3Provider(eth);
+    var signer = provider.getSigner();
+    return new ethers.Contract(this.MARKET_ADDRESS, this.MARKET_ABI, signer);
+  },
+
+  _getMarketReadOnly: function() {
+    if (!this.MARKET_ADDRESS) return null;
+    return new ethers.Contract(this.MARKET_ADDRESS, this.MARKET_ABI, this._getReadProvider());
+  },
+
+  /** Returns { pending, totalEarned } in USDC base units (BigNumber). */
+  async getEducatorEarnings(address) {
+    var market = this._getMarketReadOnly();
+    if (!market) return { pending: '0', totalEarned: '0' };
+    var pending = await market.pendingWithdrawals(address);
+    var earned  = await market.totalEarned(address);
+    return {
+      pending: pending.toString(),
+      totalEarned: earned.toString(),
+      pendingFormatted: ethers.utils.formatUnits(pending, 6),
+      totalEarnedFormatted: ethers.utils.formatUnits(earned, 6)
+    };
+  },
+
+  /** Returns array of {courseId, price, active, consultant, metadataURI}. */
+  async getEducatorCourses(address) {
+    var market = this._getMarketReadOnly();
+    if (!market) return [];
+    var ids;
+    try { ids = await market.getCoursesByEducator(address); }
+    catch (e) { return []; }
+    var out = [];
+    for (var i = 0; i < ids.length; i++) {
+      var id = ids[i];
+      try {
+        var c = await market.getCourse(id);
+        var uri = '';
+        try { uri = await market.getCourseMetadataURI(id); } catch (_) {}
+        out.push({
+          courseId: id.toString(),
+          educator: c.educator,
+          consultant: c.consultant,
+          price: c.price.toString(),
+          priceFormatted: ethers.utils.formatUnits(c.price, 6),
+          active: c.active,
+          metadataURI: uri,
+          ipfsUrl: uri && uri.indexOf('ipfs://') === 0
+            ? 'https://cloudflare-ipfs.com/ipfs/' + uri.slice('ipfs://'.length)
+            : uri
+        });
+      } catch (_) {}
+    }
+    return out;
+  },
+
+  /**
+   * Query PurchaseSettled events filtered by educator address.
+   * Returns array of normalized sale records (newest first).
+   */
+  async getEducatorSales(address, opts) {
+    opts = opts || {};
+    var market = this._getMarketReadOnly();
+    if (!market) return [];
+    var fromBlock = opts.fromBlock || 0;
+    try {
+      var filter = market.filters.PurchaseSettled(null, null, address);
+      var events = await market.queryFilter(filter, fromBlock, 'latest');
+      return events.map(function(ev) {
+        var a = ev.args;
+        return {
+          courseId: a.courseId.toString(),
+          buyer: a.buyer,
+          consultant: a.consultant,
+          educatorAmount: ethers.utils.formatUnits(a.educatorAmount, 6),
+          consultantAmount: ethers.utils.formatUnits(a.consultantAmount, 6),
+          platformAmount: ethers.utils.formatUnits(a.platformAmount, 6),
+          certificateTokenId: a.certificateTokenId.toString(),
+          ipfsMetadataURI: a.ipfsMetadataURI,
+          txHash: ev.transactionHash,
+          blockNumber: ev.blockNumber,
+          explorerUrl: this.BASESCAN_BASE + '/tx/' + ev.transactionHash
+        };
+      }.bind(this)).reverse();
+    } catch (e) {
+      console.warn('getEducatorSales failed:', e);
+      return [];
+    }
+  },
+
+  /** Withdraw the connected wallet's pending USDC. Returns receipt + amount. */
+  async withdrawEarnings() {
+    await this.ensureBaseChain();
+    var market = await this._getMarketSigner();
+    var tx = await market.withdrawUSDC();
+    var receipt = await tx.wait();
+    var amount = '0';
+    try {
+      var iface = new ethers.utils.Interface(this.MARKET_ABI);
+      for (var i = 0; i < (receipt.logs || []).length; i++) {
+        try {
+          var p = iface.parseLog(receipt.logs[i]);
+          if (p && p.name === 'Withdrawn') { amount = ethers.utils.formatUnits(p.args.amount, 6); break; }
+        } catch (_) {}
+      }
+    } catch (_) {}
+    return { txHash: receipt.transactionHash, amount: amount, explorerUrl: this.BASESCAN_BASE + '/tx/' + receipt.transactionHash };
+  },
+
+  /**
+   * Register a course on-chain. Caller becomes the educator.
+   * @param {string} ipfsMetadataURI - ipfs://Qm...
+   * @param {string|number} priceInUSDC - Human-readable USDC (e.g. "49.99").
+   * @param {string} consultant - Optional address (use ethers.constants.AddressZero for none).
+   */
+  async registerCourseOnChain(ipfsMetadataURI, priceInUSDC, consultant) {
+    await this.ensureBaseChain();
+    var market = await this._getMarketSigner();
+    if (!ipfsMetadataURI || ipfsMetadataURI.indexOf('ipfs://') !== 0) {
+      throw new Error('ipfsMetadataURI must start with ipfs://');
+    }
+    var priceWei = ethers.utils.parseUnits(String(priceInUSDC), 6);
+    var addr = consultant && /^0x[0-9a-fA-F]{40}$/.test(consultant)
+      ? consultant
+      : '0x0000000000000000000000000000000000000000';
+    var tx = await market.registerCourse(ipfsMetadataURI, priceWei, addr);
+    var receipt = await tx.wait();
+    var courseId = null;
+    try {
+      var iface = new ethers.utils.Interface(this.MARKET_ABI);
+      for (var i = 0; i < (receipt.logs || []).length; i++) {
+        try {
+          var p = iface.parseLog(receipt.logs[i]);
+          if (p && p.name === 'CourseRegistered') { courseId = p.args.courseId.toString(); break; }
+        } catch (_) {}
+      }
+    } catch (_) {}
+    return {
+      courseId: courseId,
+      txHash: receipt.transactionHash,
+      explorerUrl: this.BASESCAN_BASE + '/tx/' + receipt.transactionHash
+    };
+  },
+
+  /**
+   * Compute a simple Tokenomic Score for an address from on-chain signals:
+   *   score = ownedCertificates * 10
+   *         + lifetimePurchases * 5
+   *         + min(50, log10(totalEarnedUSDC + 1) * 20)
+   * Returns { score, breakdown }. Pure read; safe to call without a wallet connection.
+   */
+  async getTokenomicScore(address) {
+    var breakdown = {
+      ownedCertificates: 0,
+      lifetimePurchases: 0,
+      totalEarnedUSDC: 0,
+      coursesRegistered: 0
+    };
+    if (!address) return { score: 0, breakdown: breakdown };
+
+    try {
+      var owned = await this.getOwnedCertificates(address);
+      breakdown.ownedCertificates = owned.length;
+    } catch (_) {}
+
+    var market = this._getMarketReadOnly();
+    if (market) {
+      try {
+        var earned = await market.totalEarned(address);
+        breakdown.totalEarnedUSDC = parseFloat(ethers.utils.formatUnits(earned, 6));
+      } catch (_) {}
+      try {
+        var courses = await market.getCoursesByEducator(address);
+        breakdown.coursesRegistered = courses.length;
+      } catch (_) {}
+      try {
+        var f = market.filters.CoursePurchased(null, address);
+        var evs = await market.queryFilter(f, 0, 'latest');
+        breakdown.lifetimePurchases = evs.length;
+      } catch (_) {}
+    }
+
+    var earnings = Math.min(50, Math.log10(breakdown.totalEarnedUSDC + 1) * 20);
+    var score = Math.round(
+      breakdown.ownedCertificates * 10 +
+      breakdown.lifetimePurchases * 5 +
+      breakdown.coursesRegistered * 8 +
+      earnings
+    );
+    return { score: score, breakdown: breakdown };
   },
 
   getContractStatus: function() {

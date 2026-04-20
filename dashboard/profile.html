@@ -23,7 +23,7 @@ permalink: /profile/
                         <a href="/communities/" data-dash="communities" class="dash-nav-item">
                             <span class="flaticon-user-3"></span> Communities
                         </a>
-                        <a href="/courses/" data-dash="courses" class="dash-nav-item">
+                        <a href="/my-courses/" data-dash="courses" class="dash-nav-item">
                             <span class="flaticon-notebook"></span> Courses
                         </a>
                         <a href="/events/" data-dash="events" class="dash-nav-item">
@@ -221,6 +221,38 @@ permalink: /profile/
                     <span style="font-size:0.78rem;color:#5a8299;">Connected via Web3 (Base L2)</span>
                 </div>
                 <div id="tkn-wallet-summary"></div>
+            </div>
+
+            <div class="dash-card" style="margin-top:16px;" id="tokenomic-score-card">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <h4 style="margin:0;"><i class="fas fa-chart-line" style="color:#ff6000;margin-right:8px;"></i>Tokenomic Score</h4>
+                    <span style="font-size:0.78rem;color:#5a8299;">on-chain reputation</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+                    <div style="font-size:2.4rem;font-weight:800;color:#0c2230;line-height:1;" id="tkn-score-value">—</div>
+                    <div id="tkn-score-breakdown" style="font-size:0.85rem;color:#5a8299;">Connect a wallet to compute score.</div>
+                </div>
+                <script>
+                (function(){
+                  async function compute(){
+                    if (!window.TokenomicAssets || !window.TokenomicWallet) return;
+                    var a = window.TokenomicWallet.getAddress && window.TokenomicWallet.getAddress();
+                    if (!a) return;
+                    try {
+                      var r = await window.TokenomicAssets.getTokenomicScore(a);
+                      document.getElementById('tkn-score-value').textContent = r.score;
+                      var b = r.breakdown;
+                      document.getElementById('tkn-score-breakdown').innerHTML =
+                        '<div>Certificates owned: <strong>'+b.ownedCertificates+'</strong></div>' +
+                        '<div>Lifetime purchases: <strong>'+b.lifetimePurchases+'</strong></div>' +
+                        '<div>Courses published: <strong>'+b.coursesRegistered+'</strong></div>' +
+                        '<div>Lifetime earnings: <strong>'+b.totalEarnedUSDC.toFixed(2)+' USDC</strong></div>';
+                    } catch(e){ console.warn(e); }
+                  }
+                  document.addEventListener('DOMContentLoaded', function(){ setTimeout(compute, 1500); });
+                  window.addEventListener('tokenomic:wallet-connected', compute);
+                })();
+                </script>
             </div>
 
             <div class="dash-card" style="margin-top:16px;" id="my-certificates-card">

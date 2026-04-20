@@ -38,10 +38,38 @@ contract TokenomicMarket is Ownable, ReentrancyGuard {
     /// @notice Course registry.
     mapping(uint256 => Course) public courses;
 
+    /// @notice Course metadata (IPFS URI) for educator-registered courses.
+    mapping(uint256 => string) public courseMetadataURI;
+
+    /// @notice Auto-incrementing id used by `registerCourse` (starts at 1).
+    uint256 public nextCourseId = 1;
+
+    /// @notice All course ids registered through `registerCourse` (for indexing).
+    uint256[] public registeredCourseIds;
+
+    /// @notice Courses registered by a given educator address.
+    mapping(address => uint256[]) public coursesByEducator;
+
     /// @notice Has a wallet already purchased a given course? (Prevents duplicate certs.)
     mapping(uint256 => mapping(address => bool)) public hasPurchased;
 
+    /// @notice USDC credited to each address from purchases, claimable via `withdrawUSDC`.
+    mapping(address => uint256) public pendingWithdrawals;
+
+    /// @notice Aggregate USDC earned per address (lifetime, including already-withdrawn).
+    mapping(address => uint256) public totalEarned;
+
+    /// @notice Platform fee balance (only owner can withdraw via `withdrawPlatformFees`).
+    uint256 public platformBalance;
+
     event CourseAdded(uint256 indexed courseId, address indexed educator, address consultant, uint256 price);
+    event CourseRegistered(
+        uint256 indexed courseId,
+        address indexed educator,
+        address consultant,
+        uint256 price,
+        string ipfsMetadataURI
+    );
     event CourseUpdated(uint256 indexed courseId, address educator, address consultant, uint256 price, bool active);
     event CertificateContractUpdated(address indexed previous, address indexed current);
     event CoursePurchased(
@@ -53,6 +81,20 @@ contract TokenomicMarket is Ownable, ReentrancyGuard {
         uint256 platformAmount,
         uint256 certificateTokenId
     );
+    /// @notice Detailed purchase event for dashboard queries (includes participants + URI).
+    event PurchaseSettled(
+        uint256 indexed courseId,
+        address indexed buyer,
+        address indexed educator,
+        address consultant,
+        uint256 educatorAmount,
+        uint256 consultantAmount,
+        uint256 platformAmount,
+        uint256 certificateTokenId,
+        string ipfsMetadataURI
+    );
+    event Withdrawn(address indexed account, uint256 amount);
+    event PlatformWithdrawn(address indexed to, uint256 amount);
 
     error CourseInactive();
     error CourseNotFound();
@@ -61,6 +103,7 @@ contract TokenomicMarket is Ownable, ReentrancyGuard {
     error InvalidPrice();
     error InvalidShares();
     error CertificateNotSet();
+    error NothingToWithdraw();
 
     constructor(address initialOwner, address usdcAddress, address certificateAddress) Ownable(initialOwner) {
         if (usdcAddress == address(0)) revert InvalidAddress();
@@ -95,6 +138,9 @@ contract TokenomicMarket is Ownable, ReentrancyGuard {
             price: price,
             active: true
         });
+        // Keep the self-service counter past any admin-inserted id so the two
+        // paths can never collide.
+        if (courseId >= nextCourseId) nextCourseId = courseId + 1;
         emit CourseAdded(courseId, educator, consultant, price);
     }
 
@@ -111,6 +157,35 @@ contract TokenomicMarket is Ownable, ReentrancyGuard {
         c.price = price;
         c.active = active;
         emit CourseUpdated(courseId, educator, consultant, price, active);
+    }
+
+    // ---------- Educator self-service ----------
+
+    /// @notice Permissionless course registration. Caller becomes the educator.
+    /// @param ipfsMetadataURI  IPFS URI (ipfs://Qm...) pointing to the course metadata JSON.
+    /// @param priceInUSDC      Price in USDC base units (6 decimals on Base).
+    /// @param consultant       Optional revenue partner (use address(0) for none).
+    /// @return courseId        Newly minted course id.
+    function registerCourse(string calldata ipfsMetadataURI, uint256 priceInUSDC, address consultant)
+        external
+        returns (uint256 courseId)
+    {
+        if (priceInUSDC == 0) revert InvalidPrice();
+        if (bytes(ipfsMetadataURI).length == 0) revert InvalidAddress();
+        courseId = nextCourseId++;
+        // Defense-in-depth: never overwrite an existing course slot.
+        if (courses[courseId].educator != address(0)) revert("Course exists");
+        courses[courseId] = Course({
+            educator: msg.sender,
+            consultant: consultant,
+            price: priceInUSDC,
+            active: true
+        });
+        courseMetadataURI[courseId] = ipfsMetadataURI;
+        registeredCourseIds.push(courseId);
+        coursesByEducator[msg.sender].push(courseId);
+        emit CourseAdded(courseId, msg.sender, consultant, priceInUSDC);
+        emit CourseRegistered(courseId, msg.sender, consultant, priceInUSDC, ipfsMetadataURI);
     }
 
     // ---------- Purchase ----------
@@ -139,19 +214,23 @@ contract TokenomicMarket is Ownable, ReentrancyGuard {
         uint256 consultantAmount = c.price - educatorAmount - platformAmount; // remainder == 5% (or 0)
 
         // If no consultant, fold their share into the platform cut.
-        address platformReceiver = owner();
         if (c.consultant == address(0)) {
             platformAmount += consultantAmount;
             consultantAmount = 0;
         }
 
-        usdc.safeTransfer(c.educator, educatorAmount);
+        // Credit balances rather than transferring inline. Educators / consultants
+        // pull funds via `withdrawUSDC()`; the platform fee is retained on-contract
+        // and only the owner may sweep it via `withdrawPlatformFees`.
+        if (educatorAmount > 0) {
+            pendingWithdrawals[c.educator] += educatorAmount;
+            totalEarned[c.educator]      += educatorAmount;
+        }
         if (consultantAmount > 0) {
-            usdc.safeTransfer(c.consultant, consultantAmount);
+            pendingWithdrawals[c.consultant] += consultantAmount;
+            totalEarned[c.consultant]        += consultantAmount;
         }
-        if (platformAmount > 0) {
-            usdc.safeTransfer(platformReceiver, platformAmount);
-        }
+        platformBalance += platformAmount;
 
         certificateTokenId = certificate.mint(msg.sender, courseId, ipfsMetadataURI);
 
@@ -164,12 +243,60 @@ contract TokenomicMarket is Ownable, ReentrancyGuard {
             platformAmount,
             certificateTokenId
         );
+        emit PurchaseSettled(
+            courseId,
+            msg.sender,
+            c.educator,
+            c.consultant,
+            educatorAmount,
+            consultantAmount,
+            platformAmount,
+            certificateTokenId,
+            ipfsMetadataURI
+        );
+    }
+
+    // ---------- Withdrawals ----------
+
+    /// @notice Pull all USDC credited to the caller from prior purchases.
+    function withdrawUSDC() external nonReentrant returns (uint256 amount) {
+        amount = pendingWithdrawals[msg.sender];
+        if (amount == 0) revert NothingToWithdraw();
+        pendingWithdrawals[msg.sender] = 0;
+        usdc.safeTransfer(msg.sender, amount);
+        emit Withdrawn(msg.sender, amount);
+    }
+
+    /// @notice Owner-only sweep of accumulated platform fees.
+    function withdrawPlatformFees(address to) external onlyOwner nonReentrant returns (uint256 amount) {
+        if (to == address(0)) revert InvalidAddress();
+        amount = platformBalance;
+        if (amount == 0) revert NothingToWithdraw();
+        platformBalance = 0;
+        usdc.safeTransfer(to, amount);
+        emit PlatformWithdrawn(to, amount);
     }
 
     // ---------- Views ----------
 
     function getCourse(uint256 courseId) external view returns (Course memory) {
         return courses[courseId];
+    }
+
+    function getCourseMetadataURI(uint256 courseId) external view returns (string memory) {
+        return courseMetadataURI[courseId];
+    }
+
+    function getCoursesByEducator(address educator) external view returns (uint256[] memory) {
+        return coursesByEducator[educator];
+    }
+
+    function getRegisteredCourseIds() external view returns (uint256[] memory) {
+        return registeredCourseIds;
+    }
+
+    function registeredCoursesLength() external view returns (uint256) {
+        return registeredCourseIds.length;
     }
 
     /// @notice Quote the split for a given price without mutating state.
