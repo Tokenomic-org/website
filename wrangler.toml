@@ -1,17 +1,13 @@
 ################################################################
 # Cloudflare Workers configuration for Tokenomic
 #
-# Two workers are defined as [env.<name>] blocks:
-#   - api-worker   (comments + dashboard, KV-backed)
-#   - web3-worker  (read-only on-chain proxy, ethers v6)
+# Two Workers deployed as separate [env.<name>] environments:
+#   - api-worker   (comments + dashboard + IPFS pinning, KV-backed)
+#   - web3-worker  (read-only on-chain proxy)
 #
-# Deploy each one explicitly:
+# Deploy:
 #   wrangler deploy --env api-worker
 #   wrangler deploy --env web3-worker
-#
-# The legacy Workers Static Assets site (`tokenomic`) defined in
-# wrangler.jsonc is unaffected. Pages routing for /api/* should be
-# bound separately in the Pages dashboard (see CLOUDFLARE-WORKERS-SETUP.md).
 ################################################################
 
 name = "tokenomic-workers-root"
@@ -26,30 +22,35 @@ compatibility_date = "2026-01-01"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 
+[env.api-worker.observability]
+enabled = true
+head_sampling_rate = 1
+
 [env.api-worker.vars]
-ALLOWED_ORIGINS = "https://tokenomic.org,https://*.tokenomic.org,https://*.cf-ipfs.com,https://*.pages.dev"
-MAX_COMMENT_LEN = "4000"
-REQUIRE_WALLET = "false"
-
-# Replace the placeholder ids after creating the namespaces (see setup MD).
-[[env.api-worker.kv_namespaces]]
-binding = "COMMENTS_KV"
-id = "REPLACE_WITH_COMMENTS_KV_ID"
-preview_id = "REPLACE_WITH_COMMENTS_KV_PREVIEW_ID"
+ALLOWED_ORIGINS  = "https://tokenomic.org,https://*.tokenomic.org,https://*.cf-ipfs.com,https://*.pages.dev,https://tokenomic.guillaumelauzier.workers.dev"
+MAX_COMMENT_LEN  = "4000"
+REQUIRE_WALLET   = "false"
+MAX_UPLOAD_BYTES = "26214400"
 
 [[env.api-worker.kv_namespaces]]
-binding = "RATE_LIMIT_KV"
-id = "REPLACE_WITH_RATE_LIMIT_KV_ID"
-preview_id = "REPLACE_WITH_RATE_LIMIT_KV_PREVIEW_ID"
+binding    = "COMMENTS_KV"
+id         = "bfaa55ab69d14b60b25dfe84d02ae53e"
+preview_id = "99ded23b6b954c6e84115b4991ef1345"
 
-# Optional: route the Worker on your zone (uncomment after the Pages
-# project's /api/* rule is configured, otherwise Pages takes precedence).
+[[env.api-worker.kv_namespaces]]
+binding    = "RATE_LIMIT_KV"
+id         = "0e9898f0ec2146f1bf3a8cfa9e3d57ed"
+preview_id = "bc47b5da405d4de786536b763d9c4d76"
+
+# Route bindings (active once the Pages /api/* rule is removed):
 # [[env.api-worker.routes]]
-# pattern = "tokenomic.org/api/comments/*"
+# pattern   = "tokenomic.org/api/comments/*"
 # zone_name = "tokenomic.org"
-#
 # [[env.api-worker.routes]]
-# pattern = "tokenomic.org/api/dashboard/*"
+# pattern   = "tokenomic.org/api/dashboard/*"
+# zone_name = "tokenomic.org"
+# [[env.api-worker.routes]]
+# pattern   = "tokenomic.org/ipfs/*"
 # zone_name = "tokenomic.org"
 
 # ---------- web3-worker ----------
@@ -60,12 +61,29 @@ compatibility_date = "2026-01-01"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 
-[env.web3-worker.vars]
-ALLOWED_ORIGINS = "https://tokenomic.org,https://*.tokenomic.org,https://*.cf-ipfs.com,https://*.pages.dev"
-BASE_RPC_URL = "https://mainnet.base.org"
-CLOUDFLARE_ETH_GATEWAY = ""
+[env.web3-worker.observability]
+enabled = true
+head_sampling_rate = 1
 
-# Optional: route the Worker on your zone.
+[env.web3-worker.vars]
+ALLOWED_ORIGINS         = "https://tokenomic.org,https://*.tokenomic.org,https://*.cf-ipfs.com,https://*.pages.dev,https://tokenomic.guillaumelauzier.workers.dev"
+BASE_RPC_URL            = "https://mainnet.base.org"
+BASE_CHAIN_ID           = "8453"
+CLOUDFLARE_ETH_GATEWAY  = "https://cloudflare-eth.com"
+IPFS_GATEWAY            = "https://cloudflare-ipfs.com"
+
 # [[env.web3-worker.routes]]
-# pattern = "tokenomic.org/api/web3/*"
+# pattern   = "tokenomic.org/api/web3/*"
 # zone_name = "tokenomic.org"
+
+# ---------- site Worker -----------------------------------------------
+# The `tokenomic` Worker (which serves the static Jekyll build + a tiny
+# script handler for /__health and /__config) lives in its own config
+# at workers/site-worker/wrangler.toml so wrangler can correctly
+# resolve `main` and the assets directory:
+#
+#   cd workers/site-worker && wrangler deploy --config ./wrangler.toml
+#
+# That's required because wrangler v4 walks up to the nearest parent
+# wrangler.toml when invoked without --config, which would re-read this
+# file instead of the per-Worker one.

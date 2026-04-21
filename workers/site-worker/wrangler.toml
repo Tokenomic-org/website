@@ -1,0 +1,29 @@
+name                = "tokenomic"
+main                = "index.js"
+compatibility_date  = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev         = true
+keep_vars           = true
+
+[observability]
+enabled            = true
+head_sampling_rate = 1
+
+[assets]
+directory          = "../../_site"
+binding            = "ASSETS"
+not_found_handling = "none"
+run_worker_first   = true
+
+[vars]
+BASE_CHAIN_ID        = "8453"
+BASE_RPC_URL         = "https://mainnet.base.org"
+USDC_CONTRACT        = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+MARKET_CONTRACT      = ""
+CERTIFICATE_CONTRACT = ""
+IPFS_UPLOAD_BASE     = "https://tokenomic-api.guillaumelauzier.workers.dev"
+IPFS_GATEWAY         = "https://cloudflare-ipfs.com"
+ETH_GATEWAY_URL      = "https://cloudflare-eth.com"
+BASESCAN_BASE        = "https://basescan.org"
+API_BASE             = "https://tokenomic-api.guillaumelauzier.workers.dev"
+WEB3_BASE            = "https://tokenomic-web3.guillaumelauzier.workers.dev"
