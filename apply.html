@@ -1,0 +1,266 @@
+---
+layout: dashboard
+title: "Apply"
+permalink: /apply/
+---
+<section class="dashboard-section">
+    <div class="auto-container">
+        <div class="row">
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <div class="dashboard-sidebar">
+                    <div class="sidebar-brand">
+                        <div class="brand-icon">T</div>
+                        <div>
+                            <div class="brand-text">Tokenomic</div>
+                            <div class="brand-sub">Dashboard</div>
+                        </div>
+                    </div>
+                    <nav class="dashboard-nav">
+                        <div class="sidebar-section-label">Main</div>
+                        <a href="/dashboard/" class="dash-nav-item"><span class="flaticon-home-1"></span> Dashboard</a>
+                        <a href="/communities/" data-dash="communities" class="dash-nav-item"><span class="flaticon-user-3"></span> Communities</a>
+                        <a href="/my-courses/" data-dash="courses" class="dash-nav-item"><span class="flaticon-notebook"></span> Courses</a>
+                        <a href="/events/" data-dash="events" class="dash-nav-item"><span class="flaticon-calendar"></span> Events</a>
+                        <div class="sidebar-section-label">Finance</div>
+                        <a href="/revenue/" data-dash="revenue" class="dash-nav-item"><span class="flaticon-money"></span> Revenue</a>
+                        <a href="/bookings/" data-dash="bookings" class="dash-nav-item"><span class="flaticon-calendar"></span> Bookings</a>
+                        <div class="sidebar-section-label">Content</div>
+                        <a href="/chat/" data-dash="chat" class="dash-nav-item"><span class="flaticon-speech-bubble"></span> Chat</a>
+                        <a href="/articles/" data-dash="articles" class="dash-nav-item"><span class="flaticon-edit"></span> Articles</a>
+                        <a href="/social/" data-dash="social" class="dash-nav-item"><span class="flaticon-share"></span> Social</a>
+                        <div class="sidebar-section-label">Progress</div>
+                        <a href="/leaderboard/" data-dash="leaderboard" class="dash-nav-item"><span class="flaticon-trophy"></span> Leaderboard</a>
+                        <a href="/apply/" class="dash-nav-item active"><span class="flaticon-suitcase"></span> Apply</a>
+                        <a href="/profile/" data-dash="profile" class="dash-nav-item"><span class="flaticon-user-3"></span> Profile</a>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-lg-9 col-md-8 col-sm-12">
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#0A0F1A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                        <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
+                    </div>
+                    <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">Sign in with a Web3 wallet to apply for the Educator or Consultant role on Tokenomic.</p>
+                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+                </div>
+
+                <div class="dashboard-content" style="display:none;">
+                    <div x-data="applyPage()" x-init="init()">
+                        <div style="margin-bottom:18px;">
+                            <h2 style="margin-bottom:4px;">Become an Educator or Consultant</h2>
+                            <p style="color:#5a8299;">Submit your credentials below. An admin reviews each application and grants the role on approval. Learners always have access without an application.</p>
+                        </div>
+
+                        <!-- My applications list -->
+                        <div class="dash-card" x-show="apps.length > 0" style="margin-bottom:20px;">
+                            <h4 style="margin-bottom:12px;">Your applications</h4>
+                            <template x-for="a in apps" :key="a.id">
+                                <div style="border-bottom:1px solid #eef2f6;padding:12px 0;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+                                    <div style="flex:1;min-width:240px;">
+                                        <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
+                                            <strong x-text="a.role_requested === 'consultant' ? 'Consultant' : 'Educator'"></strong>
+                                            <span class="dash-badge"
+                                                  :class="{
+                                                      'dash-badge-warning': a.status==='pending',
+                                                      'dash-badge-success': a.status==='approved',
+                                                      'dash-badge-danger':  a.status==='rejected'
+                                                  }"
+                                                  x-text="a.status"></span>
+                                            <small style="color:#5a8299;" x-text="formatDate(a.created_at)"></small>
+                                        </div>
+                                        <div style="color:#5a8299;font-size:0.9rem;" x-text="(a.bio || '').slice(0, 200) + ((a.bio||'').length > 200 ? '…' : '')"></div>
+                                        <template x-if="a.status === 'rejected' && a.admin_feedback">
+                                            <div style="margin-top:8px;padding:10px 12px;background:#fff5f0;border-left:3px solid #ff6000;font-size:0.9rem;">
+                                                <strong style="color:#0A0F1A;">Admin feedback:</strong>
+                                                <span x-text="a.admin_feedback"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Application form -->
+                        <div class="dash-card">
+                            <h4 style="margin-bottom:14px;">New application</h4>
+                            <template x-if="alreadyHasRole">
+                                <div style="padding:14px 18px;background:#eafff4;border-left:3px solid #00a651;margin-bottom:14px;">
+                                    <strong>You already have the <span x-text="form.role_requested"></span> role.</strong>
+                                    <span style="color:#5a8299;">No need to apply again.</span>
+                                </div>
+                            </template>
+                            <div style="display:flex;flex-direction:column;gap:14px;">
+                                <div>
+                                    <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:6px;">Which role are you applying for?</label>
+                                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                                        <label style="cursor:pointer;padding:10px 18px;border:2px solid #eef2f6;border-radius:8px;flex:1;min-width:200px;"
+                                               :style="form.role_requested==='educator' ? 'border-color:#ff6000;background:#fff5f0;' : ''">
+                                            <input type="radio" x-model="form.role_requested" value="educator" style="margin-right:8px;" />
+                                            <strong>Educator</strong>
+                                            <div style="color:#5a8299;font-size:0.85rem;">Publish courses &amp; articles, run a community.</div>
+                                        </label>
+                                        <label style="cursor:pointer;padding:10px 18px;border:2px solid #eef2f6;border-radius:8px;flex:1;min-width:200px;"
+                                               :style="form.role_requested==='consultant' ? 'border-color:#ff6000;background:#fff5f0;' : ''">
+                                            <input type="radio" x-model="form.role_requested" value="consultant" style="margin-right:8px;" />
+                                            <strong>Consultant</strong>
+                                            <div style="color:#5a8299;font-size:0.85rem;">Take 1:1 bookings paid in USDC.</div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">
+                                        Bio &amp; rationale <span style="color:#ff6000;">*</span>
+                                        <span style="float:right;" :style="form.bio.length < 200 ? 'color:#ff6000;' : 'color:#00a651;'">
+                                            <span x-text="form.bio.length"></span> / 200+ chars
+                                        </span>
+                                    </label>
+                                    <textarea x-model="form.bio" class="dash-input" rows="6"
+                                              placeholder="Tell us who you are, what you teach or advise on, and what makes you credible. Minimum 200 characters."></textarea>
+                                </div>
+
+                                <div>
+                                    <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Areas of expertise (up to 8)</label>
+                                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+                                        <template x-for="(tag, i) in form.expertise" :key="i">
+                                            <span style="background:#fff5f0;color:#ff6000;padding:4px 10px;border-radius:14px;font-size:0.85rem;display:inline-flex;gap:6px;align-items:center;">
+                                                <span x-text="tag"></span>
+                                                <button @click="form.expertise.splice(i,1)" style="background:none;border:0;color:#ff6000;cursor:pointer;font-weight:700;">×</button>
+                                            </span>
+                                        </template>
+                                    </div>
+                                    <input x-model="newTag" @keydown.enter.prevent="addTag()" class="dash-input"
+                                           placeholder="Type a tag and press Enter (e.g. Tokenomics)" />
+                                </div>
+
+                                <div class="row clearfix">
+                                    <div class="col-md-6">
+                                        <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Sample work URL</label>
+                                        <input x-model="form.sample_url" class="dash-input" placeholder="Article, course, repo, talk…" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Portfolio / website</label>
+                                        <input x-model="form.portfolio_url" class="dash-input" placeholder="https://…" />
+                                    </div>
+                                </div>
+
+                                <div class="row clearfix" x-show="form.role_requested === 'consultant'">
+                                    <div class="col-md-6">
+                                        <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Hourly rate (USDC)</label>
+                                        <input x-model.number="form.hourly_rate_usdc" type="number" min="0" class="dash-input" placeholder="150" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Availability</label>
+                                        <input x-model="form.availability" class="dash-input" placeholder="e.g. Weekday evenings UTC" />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Credentials (optional)</label>
+                                    <input x-model="form.credentials" class="dash-input" placeholder="Degrees, prior employers, certifications…" />
+                                </div>
+
+                                <div x-show="error" style="padding:10px 14px;background:#fff0f0;border-left:3px solid #d33;color:#900;font-size:0.9rem;" x-text="error"></div>
+                                <div x-show="success" style="padding:10px 14px;background:#eafff4;border-left:3px solid #00a651;color:#00703a;font-size:0.9rem;" x-text="success"></div>
+
+                                <div>
+                                    <button class="theme-btn btn-style-one" style="border-radius:8px;padding:12px 28px;"
+                                            :disabled="submitting || form.bio.length < 200 || alreadyHasRole || hasPending"
+                                            @click="submit()">
+                                        <span x-show="!submitting">Submit application</span>
+                                        <span x-show="submitting">Submitting…</span>
+                                    </button>
+                                    <small style="color:#5a8299;margin-left:14px;">Reviewed by an admin within ~48h.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function applyPage() {
+    return {
+        apps: [],
+        myRoles: ['learner'],
+        newTag: '',
+        submitting: false,
+        error: '',
+        success: '',
+        form: {
+            role_requested: 'educator',
+            bio: '',
+            expertise: [],
+            sample_url: '',
+            portfolio_url: '',
+            hourly_rate_usdc: null,
+            availability: '',
+            credentials: ''
+        },
+        get alreadyHasRole() {
+            return this.myRoles.indexOf(this.form.role_requested) !== -1;
+        },
+        get hasPending() {
+            return this.apps.some(a => a.role_requested === this.form.role_requested && a.status === 'pending');
+        },
+        async init() {
+            const w = (window.TokenomicWallet && window.TokenomicWallet.getAddress) ? window.TokenomicWallet.getAddress() : null;
+            if (!w) return;
+            try {
+                if (window.TokenomicAPI && !window.TokenomicAPI.isSignedIn(w)) {
+                    await window.TokenomicAPI.signIn(w);
+                }
+                const me = await window.TokenomicAPI.getMe();
+                if (me && Array.isArray(me.roles)) this.myRoles = me.roles;
+                this.apps = await window.TokenomicAPI.getMyApplications();
+            } catch (e) {
+                console.warn('apply init failed:', e.message);
+            }
+        },
+        addTag() {
+            const t = (this.newTag || '').trim();
+            if (!t) return;
+            if (this.form.expertise.length >= 8) { this.newTag = ''; return; }
+            if (this.form.expertise.indexOf(t) === -1) this.form.expertise.push(t);
+            this.newTag = '';
+        },
+        formatDate(s) {
+            if (!s) return '';
+            const d = new Date(s.replace(' ', 'T') + (s.endsWith('Z') ? '' : 'Z'));
+            return isNaN(d) ? s : d.toLocaleDateString();
+        },
+        async submit() {
+            this.error = ''; this.success = '';
+            if (this.form.bio.length < 200) { this.error = 'Bio must be at least 200 characters.'; return; }
+            this.submitting = true;
+            try {
+                const w = window.TokenomicWallet.getAddress();
+                if (!window.TokenomicAPI.isSignedIn(w)) await window.TokenomicAPI.signIn(w);
+                const payload = Object.assign({}, this.form);
+                if (payload.role_requested !== 'consultant') {
+                    delete payload.hourly_rate_usdc;
+                    delete payload.availability;
+                }
+                await window.TokenomicAPI.submitApplication(payload);
+                this.success = 'Application submitted! It will appear in your list above.';
+                this.form.bio = '';
+                this.form.expertise = [];
+                this.form.sample_url = '';
+                this.form.portfolio_url = '';
+                this.form.hourly_rate_usdc = null;
+                this.form.availability = '';
+                this.form.credentials = '';
+                this.apps = await window.TokenomicAPI.getMyApplications();
+            } catch (e) {
+                this.error = e.message || 'Submission failed';
+            } finally {
+                this.submitting = false;
+            }
+        }
+    };
+}
+</script>

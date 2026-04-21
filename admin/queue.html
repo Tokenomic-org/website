@@ -1,0 +1,250 @@
+---
+layout: dashboard
+title: "Admin Queue"
+permalink: /admin/queue/
+---
+<section class="dashboard-section">
+    <div class="auto-container">
+        <div class="row">
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <div class="dashboard-sidebar">
+                    <div class="sidebar-brand">
+                        <div class="brand-icon">T</div>
+                        <div>
+                            <div class="brand-text">Tokenomic</div>
+                            <div class="brand-sub">Admin</div>
+                        </div>
+                    </div>
+                    <nav class="dashboard-nav">
+                        <div class="sidebar-section-label">Main</div>
+                        <a href="/dashboard/" class="dash-nav-item"><span class="flaticon-home-1"></span> Dashboard</a>
+                        <div class="sidebar-section-label">Admin</div>
+                        <a href="/admin/queue/" class="dash-nav-item active"><span class="flaticon-suitcase"></span> Review queue</a>
+                        <a href="/profile/" data-dash="profile" class="dash-nav-item"><span class="flaticon-user-3"></span> Profile</a>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-lg-9 col-md-8 col-sm-12">
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#0A0F1A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                        <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
+                    </div>
+                    <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">Sign in with the admin wallet to access the review queue.</p>
+                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+                </div>
+
+                <div class="dashboard-content" style="display:none;">
+                    <div x-data="adminQueue()" x-init="init()">
+
+                        <div x-show="!loaded" style="text-align:center;padding:40px;color:#5a8299;">Loading queue…</div>
+
+                        <div x-show="loaded && !isAdmin" class="dash-card" style="text-align:center;padding:40px;">
+                            <h3>Admin only</h3>
+                            <p style="color:#5a8299;">This wallet does not have admin access.</p>
+                        </div>
+
+                        <div x-show="loaded && isAdmin">
+                            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:18px;">
+                                <h2 style="margin:0;">Review queue</h2>
+                                <button class="dash-btn dash-btn-outline" @click="refresh()">Refresh</button>
+                            </div>
+
+                            <!-- Tabs -->
+                            <div style="display:flex;gap:6px;border-bottom:1px solid #eef2f6;margin-bottom:18px;flex-wrap:wrap;">
+                                <template x-for="t in tabs" :key="t.key">
+                                    <button @click="active = t.key"
+                                            :style="active === t.key
+                                                ? 'border:0;background:none;padding:10px 16px;border-bottom:3px solid #ff6000;color:#0A0F1A;font-weight:700;'
+                                                : 'border:0;background:none;padding:10px 16px;border-bottom:3px solid transparent;color:#5a8299;'">
+                                        <span x-text="t.label"></span>
+                                        <span style="margin-left:6px;background:#fff5f0;color:#ff6000;border-radius:10px;padding:2px 8px;font-size:0.75rem;font-weight:700;"
+                                              x-text="counts[t.key] || 0"></span>
+                                    </button>
+                                </template>
+                            </div>
+
+                            <!-- Applications -->
+                            <div x-show="active === 'applications'">
+                                <div x-show="!items.applications || !items.applications.length" class="dash-card" style="text-align:center;color:#5a8299;padding:30px;">No pending applications.</div>
+                                <template x-for="a in items.applications" :key="a.id">
+                                    <div class="dash-card" style="margin-bottom:14px;">
+                                        <div style="display:flex;gap:14px;justify-content:space-between;flex-wrap:wrap;">
+                                            <div style="flex:1;min-width:280px;">
+                                                <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+                                                    <strong x-text="a.role_requested === 'consultant' ? 'Consultant' : 'Educator'"></strong>
+                                                    <code style="background:#f5f7fa;padding:2px 6px;border-radius:4px;font-size:0.8rem;" x-text="shortAddr(a.applicant_wallet)"></code>
+                                                    <small style="color:#5a8299;" x-text="formatDate(a.created_at)"></small>
+                                                </div>
+                                                <p style="color:#5a8299;white-space:pre-wrap;" x-text="a.bio"></p>
+                                                <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:0.85rem;color:#5a8299;margin-top:6px;">
+                                                    <span x-show="a.expertise"><strong>Expertise:</strong> <span x-text="prettyJson(a.expertise)"></span></span>
+                                                    <span x-show="safeUrl(a.sample_url)"><strong>Sample:</strong> <a :href="safeUrl(a.sample_url)" target="_blank" rel="noopener noreferrer" x-text="a.sample_url"></a></span>
+                                                    <span x-show="safeUrl(a.portfolio_url)"><strong>Portfolio:</strong> <a :href="safeUrl(a.portfolio_url)" target="_blank" rel="noopener noreferrer" x-text="a.portfolio_url"></a></span>
+                                                    <span x-show="a.hourly_rate_usdc"><strong>Rate:</strong> $<span x-text="a.hourly_rate_usdc"></span>/h</span>
+                                                    <span x-show="a.availability"><strong>Availability:</strong> <span x-text="a.availability"></span></span>
+                                                    <span x-show="a.credentials"><strong>Credentials:</strong> <span x-text="a.credentials"></span></span>
+                                                </div>
+                                            </div>
+                                            <div style="display:flex;gap:8px;align-items:flex-start;">
+                                                <button class="dash-btn dash-btn-primary" @click="approve('application', a.id)">Approve</button>
+                                                <button class="dash-btn dash-btn-outline" @click="openReject('application', a.id)">Reject</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Content tabs (courses / communities / articles) share a layout -->
+                            <template x-for="kind in ['courses','communities','articles']" :key="kind">
+                                <div x-show="active === kind">
+                                    <div x-show="!items[kind] || !items[kind].length" class="dash-card" style="text-align:center;color:#5a8299;padding:30px;">No pending <span x-text="kind"></span>.</div>
+                                    <template x-for="row in items[kind]" :key="row.id">
+                                        <div class="dash-card" style="margin-bottom:14px;display:flex;gap:14px;justify-content:space-between;flex-wrap:wrap;">
+                                            <div style="flex:1;min-width:280px;">
+                                                <strong x-text="row.title || row.name"></strong>
+                                                <div style="color:#5a8299;font-size:0.85rem;margin-top:4px;">
+                                                    <code style="background:#f5f7fa;padding:2px 6px;border-radius:4px;" x-text="shortAddr(row.educator_wallet || row.author_wallet)"></code>
+                                                    · slug <code x-text="row.slug"></code>
+                                                    · submitted <span x-text="formatDate(row.submitted_at || row.created_at)"></span>
+                                                </div>
+                                            </div>
+                                            <div style="display:flex;gap:8px;align-items:flex-start;">
+                                                <button class="dash-btn dash-btn-primary" @click="approveContent(kind, row.id)">Approve</button>
+                                                <button class="dash-btn dash-btn-outline" @click="openRejectContent(kind, row.id)">Reject</button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Reject modal -->
+                        <div x-show="rejecting.open" x-transition.opacity
+                             style="position:fixed;inset:0;background:rgba(10,15,26,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
+                            <div style="background:#fff;border-radius:12px;padding:28px;max-width:520px;width:100%;">
+                                <h4 style="margin-bottom:8px;">Reject this <span x-text="rejecting.kind"></span></h4>
+                                <p style="color:#5a8299;font-size:0.9rem;">The applicant will see this feedback. Be specific so they can improve and resubmit.</p>
+                                <textarea x-model="rejecting.feedback" class="dash-input" rows="5" placeholder="Reason (≥10 characters)…" style="margin-top:10px;"></textarea>
+                                <div x-show="rejecting.error" style="color:#900;margin-top:8px;font-size:0.9rem;" x-text="rejecting.error"></div>
+                                <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+                                    <button class="dash-btn dash-btn-outline" @click="closeReject()">Cancel</button>
+                                    <button class="dash-btn dash-btn-primary" @click="confirmReject()" :disabled="rejecting.busy">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function adminQueue() {
+    return {
+        loaded: false,
+        isAdmin: false,
+        active: 'applications',
+        tabs: [
+            { key: 'applications', label: 'Applications' },
+            { key: 'courses',      label: 'Courses' },
+            { key: 'communities',  label: 'Communities' },
+            { key: 'articles',     label: 'Articles' }
+        ],
+        items: { applications: [], courses: [], communities: [], articles: [] },
+        counts: {},
+        rejecting: { open: false, kind: '', id: null, feedback: '', busy: false, error: '' },
+
+        async init() {
+            const w = (window.TokenomicWallet && window.TokenomicWallet.getAddress) ? window.TokenomicWallet.getAddress() : null;
+            if (!w) { this.loaded = true; return; }
+            try {
+                if (window.TokenomicAPI && !window.TokenomicAPI.isSignedIn(w)) {
+                    await window.TokenomicAPI.signIn(w);
+                }
+                const me = await window.TokenomicAPI.getMe();
+                this.isAdmin = !!(me && Array.isArray(me.roles) && me.roles.indexOf('admin') !== -1);
+                if (this.isAdmin) await this.refresh();
+            } catch (e) {
+                console.warn('admin queue init:', e.message);
+            } finally {
+                this.loaded = true;
+            }
+        },
+        async refresh() {
+            try {
+                const q = await window.TokenomicAPI.getAdminQueue('all', 'pending_review');
+                this.items = q.items || { applications: [], courses: [], communities: [], articles: [] };
+                this.counts = q.counts || {};
+            } catch (e) {
+                if (e.status === 403) this.isAdmin = false;
+                else console.warn('queue refresh:', e.message);
+            }
+        },
+        shortAddr(a) { if (!a) return ''; return a.slice(0,6) + '…' + a.slice(-4); },
+        // Block javascript:/data:/etc URLs in clickable links — XSS guard.
+        safeUrl(u) {
+            if (!u || typeof u !== 'string') return '';
+            try { var p = new URL(u, window.location.origin); return (p.protocol === 'http:' || p.protocol === 'https:') ? p.href : ''; }
+            catch { return ''; }
+        },
+        prettyJson(s) {
+            try { const v = JSON.parse(s); return Array.isArray(v) ? v.join(', ') : String(s); }
+            catch { return String(s || ''); }
+        },
+        formatDate(s) {
+            if (!s) return '';
+            const d = new Date(s.replace(' ', 'T') + (s.endsWith('Z') ? '' : 'Z'));
+            return isNaN(d) ? s : d.toLocaleDateString();
+        },
+
+        async approve(kind, id) {
+            try {
+                if (kind === 'application') {
+                    const r = await window.TokenomicAPI.approveApplication(id);
+                    this.items.applications = this.items.applications.filter(x => x.id !== id);
+                    this.counts.applications = (this.counts.applications || 1) - 1;
+                    alert('Approved. Granted role: ' + (r.granted_role || ''));
+                }
+            } catch (e) { alert('Approve failed: ' + e.message); }
+        },
+        async approveContent(kind, id) {
+            try {
+                await window.TokenomicAPI.approveContent(kind, id);
+                this.items[kind] = this.items[kind].filter(x => x.id !== id);
+                this.counts[kind] = (this.counts[kind] || 1) - 1;
+            } catch (e) { alert('Approve failed: ' + e.message); }
+        },
+        openReject(kind, id) {
+            this.rejecting = { open: true, kind: kind, id: id, feedback: '', busy: false, error: '' };
+        },
+        openRejectContent(kind, id) {
+            this.rejecting = { open: true, kind: kind, id: id, feedback: '', busy: false, error: '' };
+        },
+        closeReject() { this.rejecting.open = false; },
+        async confirmReject() {
+            const fb = (this.rejecting.feedback || '').trim();
+            if (fb.length < 10) { this.rejecting.error = 'Feedback must be ≥ 10 characters.'; return; }
+            this.rejecting.busy = true; this.rejecting.error = '';
+            try {
+                if (this.rejecting.kind === 'application') {
+                    await window.TokenomicAPI.rejectApplication(this.rejecting.id, fb);
+                    this.items.applications = this.items.applications.filter(x => x.id !== this.rejecting.id);
+                    this.counts.applications = (this.counts.applications || 1) - 1;
+                } else {
+                    await window.TokenomicAPI.rejectContent(this.rejecting.kind, this.rejecting.id, fb);
+                    const k = this.rejecting.kind;
+                    this.items[k] = this.items[k].filter(x => x.id !== this.rejecting.id);
+                    this.counts[k] = (this.counts[k] || 1) - 1;
+                }
+                this.rejecting.open = false;
+            } catch (e) {
+                this.rejecting.error = e.message;
+            } finally {
+                this.rejecting.busy = false;
+            }
+        }
+    };
+}
+</script>

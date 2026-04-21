@@ -137,6 +137,28 @@
       return await api('GET', '/api/admin/queue' + (qs.length ? '?' + qs.join('&') : ''), null, true);
     },
 
+    // Admin approve/reject mutations. All require admin JWT — server enforces.
+    async approveApplication(id) {
+      return await api('POST', '/api/admin/applications/' + encodeURIComponent(id) + '/approve', {}, true);
+    },
+    async rejectApplication(id, feedback) {
+      return await api('POST', '/api/admin/applications/' + encodeURIComponent(id) + '/reject',
+                       { admin_feedback: feedback }, true);
+    },
+    async approveContent(type, id) {
+      // type ∈ {'courses','communities','articles'}
+      return await api('POST', '/api/admin/' + type + '/' + encodeURIComponent(id) + '/approve', {}, true);
+    },
+    async rejectContent(type, id, feedback) {
+      return await api('POST', '/api/admin/' + type + '/' + encodeURIComponent(id) + '/reject',
+                       { admin_feedback: feedback }, true);
+    },
+
+    // Creator submits a draft for admin review (status -> pending_review).
+    async submitForReview(type, id) {
+      return await api('POST', '/api/' + type + '/' + encodeURIComponent(id) + '/submit', {}, true);
+    },
+
     // ---------- communities ----------
 
     async getCommunities(educatorWallet) {
@@ -188,8 +210,14 @@
     // ---------- bookings ----------
 
     async getBookings(consultantWallet) {
-      var d = await api('GET', '/api/bookings/' + encodeURIComponent(lc(consultantWallet)), null, false);
+      // Consultant view: requires auth + caller must equal :wallet.
+      var d = await api('GET', '/api/bookings/' + encodeURIComponent(lc(consultantWallet)), null, true);
       return d.items || [];
+    },
+    async getMyClientBookings() {
+      // Client view: bookings I (the buyer) made. Auth-required.
+      try { var d = await api('GET', '/api/bookings/me/as-client', null, true); return d.items || []; }
+      catch (e) { if (e.status === 401) return []; throw e; }
     },
     async createBooking(bookingData) {
       var d = await api('POST', '/api/bookings', bookingData, true);

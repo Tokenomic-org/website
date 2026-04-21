@@ -3,7 +3,7 @@ layout: dashboard
 title: "Bookings"
 permalink: /bookings/
 ---
-<section class="dashboard-section" >
+<section class="dashboard-section">
     <div class="auto-container">
         <div class="row">
             <div class="col-lg-3 col-md-4 col-sm-12">
@@ -17,171 +17,316 @@ permalink: /bookings/
                     </div>
                     <nav class="dashboard-nav">
                         <div class="sidebar-section-label">Main</div>
-                        <a href="/dashboard/" class="dash-nav-item">
-                            <span class="flaticon-home-1"></span> Dashboard
-                        </a>
-                        <a href="/communities/" data-dash="communities" class="dash-nav-item">
-                            <span class="flaticon-user-3"></span> Communities
-                        </a>
-                        <a href="/my-courses/" data-dash="courses" class="dash-nav-item">
-                            <span class="flaticon-notebook"></span> Courses
-                        </a>
-                        <a href="/events/" data-dash="events" class="dash-nav-item">
-                            <span class="flaticon-calendar"></span> Events
-                        </a>
+                        <a href="/dashboard/" class="dash-nav-item"><span class="flaticon-home-1"></span> Dashboard</a>
+                        <a href="/communities/" data-dash="communities" class="dash-nav-item"><span class="flaticon-user-3"></span> Communities</a>
+                        <a href="/my-courses/" data-dash="courses" class="dash-nav-item"><span class="flaticon-notebook"></span> Courses</a>
+                        <a href="/events/" data-dash="events" class="dash-nav-item"><span class="flaticon-calendar"></span> Events</a>
                         <div class="sidebar-section-label">Finance</div>
-                        <a href="/revenue/" data-dash="revenue" class="dash-nav-item">
-                            <span class="flaticon-money"></span> Revenue
-                        </a>
-                        <a href="/bookings/" data-dash="bookings" class="dash-nav-item active">
-                            <span class="flaticon-calendar"></span> Bookings
-                        </a>
+                        <a href="/revenue/" data-dash="revenue" class="dash-nav-item"><span class="flaticon-money"></span> Revenue</a>
+                        <a href="/bookings/" data-dash="bookings" class="dash-nav-item active"><span class="flaticon-calendar"></span> Bookings</a>
                         <div class="sidebar-section-label">Content</div>
-                        <a href="/chat/" data-dash="chat" class="dash-nav-item">
-                            <span class="flaticon-speech-bubble"></span> Chat
-                        </a>
-                        <a href="/articles/" data-dash="articles" class="dash-nav-item">
-                            <span class="flaticon-edit"></span> Articles
-                        </a>
-                        <a href="/social/" data-dash="social" class="dash-nav-item">
-                            <span class="flaticon-share"></span> Social
-                        </a>
+                        <a href="/chat/" data-dash="chat" class="dash-nav-item"><span class="flaticon-speech-bubble"></span> Chat</a>
+                        <a href="/articles/" data-dash="articles" class="dash-nav-item"><span class="flaticon-edit"></span> Articles</a>
+                        <a href="/social/" data-dash="social" class="dash-nav-item"><span class="flaticon-share"></span> Social</a>
                         <div class="sidebar-section-label">Progress</div>
-                        <a href="/leaderboard/" data-dash="leaderboard" class="dash-nav-item">
-                            <span class="flaticon-trophy"></span> Leaderboard
-                        </a>
-                        <a href="/profile/" data-dash="profile" class="dash-nav-item">
-                            <span class="flaticon-user-3"></span> Profile
-                        </a>
+                        <a href="/leaderboard/" data-dash="leaderboard" class="dash-nav-item"><span class="flaticon-trophy"></span> Leaderboard</a>
+                        <a href="/profile/" data-dash="profile" class="dash-nav-item"><span class="flaticon-user-3"></span> Profile</a>
                     </nav>
                 </div>
             </div>
             <div class="col-lg-9 col-md-8 col-sm-12">
-                                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
                     <div style="width:80px;height:80px;border-radius:50%;background:#0A0F1A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
                         <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
                     </div>
                     <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
-                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access bookings.</p>
                     <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
                 </div>
+
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="bookingsPage()" x-init="init()">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
-        <p style="color:#5a8299;">Book consultants. Pay with USDC on Base.</p>
-        <div style="display:flex;gap:8px;">
-            <button class="dash-btn dash-btn-outline" @click="view='consultants'" :style="view==='consultants'?'border-color:#ff6000;color:#ff6000':''">Find Consultants</button>
-            <button class="dash-btn dash-btn-outline" @click="view='list'" :style="view==='list'?'border-color:#ff6000;color:#ff6000':''">Bookings</button>
-            <button class="dash-btn dash-btn-primary" @click="showForm=!showForm">+ Book Session</button>
-        </div>
-    </div>
-
-    <div x-show="showForm" x-transition class="dash-card">
-        <h4>Book a Consultation</h4>
-        <div style="display:flex;flex-direction:column;gap:14px;">
-            <div class="row clearfix">
-                <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Consultant</label><select x-model="nb.consultant" class="dash-input" @change="updatePrice()"><option value="">Select...</option><template x-for="c in consultants" :key="c.id"><option :value="c.id" x-text="c.name+' - '+c.specialty"></option></template></select></div>
-                <div class="col-md-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Topic</label><input x-model="nb.topic" class="dash-input" placeholder="Discussion topic" /></div>
-            </div>
-            <div class="row clearfix">
-                <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Date</label><input x-model="nb.date" type="date" class="dash-input" /></div>
-                <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Time</label><select x-model="nb.time" class="dash-input"><option value="09:00">9 AM</option><option value="10:00">10 AM</option><option value="11:00">11 AM</option><option value="13:00">1 PM</option><option value="14:00">2 PM</option><option value="15:00">3 PM</option></select></div>
-                <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Duration</label><select x-model="nb.duration" class="dash-input" @change="updatePrice()"><option value="30">30 min</option><option value="60">60 min</option><option value="90">90 min</option></select></div>
-            </div>
-            <div style="padding:16px;background:#f5f7fa;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
-                <div><strong>Session Fee</strong><br><small style="color:#5a8299;">90% to consultant, 5% Treasury, 5% Rewards (0xSplits)</small></div>
-                <div style="text-align:right;"><span style="font-size:1.5rem;font-weight:800;color:#00a651;" x-text="'$'+nb.price+' USDC'"></span></div>
-            </div>
-            <div style="display:flex;gap:8px;">
-                <button class="dash-btn dash-btn-primary" @click="payAndBook()">Pay with Wallet</button>
-                <button class="dash-btn dash-btn-outline" @click="payHelio()">Pay via Helio</button>
-                <button class="dash-btn dash-btn-outline" @click="showForm=false" style="margin-left:auto;">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <div x-show="view==='consultants'">
-        <div class="row clearfix">
-            <template x-for="c in consultants" :key="c.id">
-                <div class="col-lg-6 col-md-6 col-sm-12" style="margin-bottom:16px;">
-                    <div class="dash-card">
-                        <a :href="'/expert/' + c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')" style="display:flex;align-items:center;gap:14px;margin-bottom:12px;text-decoration:none;color:inherit;">
-                            <div style="width:50px;height:50px;border-radius:50%;background:#ff6000;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.25rem;font-weight:800;" x-text="c.name.charAt(0)"></div>
-                            <div><h5 style="margin:0;" x-text="c.name"></h5><small style="color:#ff6000;" x-text="c.specialty"></small></div>
-                        </a>
-                        <p style="color:#5a8299;font-size:0.85rem;margin-bottom:10px;" x-text="c.bio"></p>
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <span><strong style="color:#ff8f00;" x-text="c.rating+'/5'"></strong> <small style="color:#5a8299;" x-text="'('+c.sessions+' sessions)'"></small></span>
-                            <strong style="color:#00a651;" x-text="'$'+c.rate_30+'/30min'"></strong>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
+                            <div>
+                                <h2 style="margin:0;">Bookings</h2>
+                                <p style="color:#5a8299;margin:0;" x-show="isConsultant">Sessions clients have booked with you. Paid in USDC on Base.</p>
+                                <p style="color:#5a8299;margin:0;" x-show="!isConsultant">Book a 1:1 with a Tokenomic consultant. Paid in USDC on Base.</p>
+                            </div>
+                            <div style="display:flex;gap:8px;">
+                                <button class="dash-btn dash-btn-outline" @click="view='consultants'"
+                                        :style="view==='consultants' ? 'border-color:#ff6000;color:#ff6000' : ''">Find Consultants</button>
+                                <button class="dash-btn dash-btn-outline" @click="view='list'"
+                                        :style="view==='list' ? 'border-color:#ff6000;color:#ff6000' : ''"
+                                        x-text="isConsultant ? 'My calendar' : 'My bookings'"></button>
+                                <button class="dash-btn dash-btn-primary" @click="showForm = !showForm" x-show="!isConsultant">+ Book Session</button>
+                            </div>
                         </div>
-                        <button class="theme-btn btn-style-one" style="width:100%;margin-top:12px;padding:10px;font-size:0.85rem;border-radius:8px;" @click="nb.consultant=c.id;showForm=true;updatePrice();">Book Now</button>
+
+                        <!-- Booking form -->
+                        <div x-show="showForm" x-transition class="dash-card" style="margin-bottom:18px;">
+                            <h4>Book a Consultation</h4>
+                            <div style="display:flex;flex-direction:column;gap:14px;">
+                                <div class="row clearfix">
+                                    <div class="col-md-6">
+                                        <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Consultant</label>
+                                        <select x-model="nb.consultant_wallet" class="dash-input" @change="updatePrice()">
+                                            <option value="">Select…</option>
+                                            <template x-for="c in consultants" :key="c.wallet_address">
+                                                <option :value="c.wallet_address" x-text="(c.display_name || shortAddr(c.wallet_address)) + (c.specialty ? ' — ' + c.specialty : '')"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Topic</label>
+                                        <input x-model="nb.topic" class="dash-input" placeholder="What do you want to discuss?" />
+                                    </div>
+                                </div>
+                                <div class="row clearfix">
+                                    <div class="col-md-4">
+                                        <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Date</label>
+                                        <input x-model="nb.booking_date" type="date" class="dash-input" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Time</label>
+                                        <select x-model="nb.time_slot" class="dash-input">
+                                            <option value="09:00">9 AM</option><option value="10:00">10 AM</option>
+                                            <option value="11:00">11 AM</option><option value="13:00">1 PM</option>
+                                            <option value="14:00">2 PM</option><option value="15:00">3 PM</option>
+                                            <option value="16:00">4 PM</option><option value="17:00">5 PM</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Duration</label>
+                                        <select x-model.number="nb.duration" class="dash-input" @change="updatePrice()">
+                                            <option value="30">30 min</option>
+                                            <option value="60">60 min</option>
+                                            <option value="90">90 min</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div style="padding:16px;background:#f5f7fa;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
+                                    <div>
+                                        <strong>Session Fee</strong><br>
+                                        <small style="color:#5a8299;">Paid in USDC on Base. 90% to consultant, 5% Treasury, 5% Rewards.</small>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <span style="font-size:1.5rem;font-weight:800;color:#00a651;" x-text="'$' + (nb.price || 0) + ' USDC'"></span>
+                                    </div>
+                                </div>
+                                <div x-show="bookErr" style="padding:10px;background:#fff0f0;border-left:3px solid #d33;color:#900;font-size:0.9rem;" x-text="bookErr"></div>
+                                <div style="display:flex;gap:8px;">
+                                    <button class="dash-btn dash-btn-primary" @click="book()" :disabled="busy">Confirm booking</button>
+                                    <button class="dash-btn dash-btn-outline" @click="showForm=false" style="margin-left:auto;">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Consultants directory -->
+                        <div x-show="view === 'consultants'">
+                            <div x-show="loadingConsultants" style="text-align:center;padding:30px;color:#5a8299;">Loading consultants…</div>
+                            <div x-show="!loadingConsultants && !consultants.length" class="dash-card" style="text-align:center;padding:30px;">
+                                <h4 style="margin-bottom:6px;">No approved consultants yet</h4>
+                                <p style="color:#5a8299;">Want to be the first? <a href="/apply/?role=consultant" style="color:#ff6000;">Apply for the Consultant role.</a></p>
+                            </div>
+                            <div class="row clearfix">
+                                <template x-for="c in consultants" :key="c.wallet_address">
+                                    <div class="col-lg-6 col-md-6 col-sm-12" style="margin-bottom:16px;">
+                                        <div class="dash-card">
+                                            <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+                                                <div style="width:50px;height:50px;border-radius:50%;background:#ff6000;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.25rem;font-weight:800;overflow:hidden;">
+                                                    <template x-if="c.avatar_url"><img :src="c.avatar_url" style="width:100%;height:100%;object-fit:cover;" /></template>
+                                                    <template x-if="!c.avatar_url"><span x-text="(c.display_name || 'C').charAt(0).toUpperCase()"></span></template>
+                                                </div>
+                                                <div>
+                                                    <h5 style="margin:0;" x-text="c.display_name || shortAddr(c.wallet_address)"></h5>
+                                                    <small style="color:#ff6000;" x-text="c.specialty || 'Consultant'"></small>
+                                                </div>
+                                            </div>
+                                            <p x-show="c.bio" style="color:#5a8299;font-size:0.85rem;margin-bottom:10px;" x-text="(c.bio || '').slice(0, 160) + ((c.bio||'').length > 160 ? '…' : '')"></p>
+                                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                                <span x-show="c.rate_30 || c.rate_60" style="color:#00a651;font-weight:700;">
+                                                    <span x-show="c.rate_30">$<span x-text="c.rate_30"></span>/30m</span>
+                                                    <span x-show="!c.rate_30 && c.rate_60">$<span x-text="c.rate_60"></span>/60m</span>
+                                                </span>
+                                                <span x-show="!c.rate_30 && !c.rate_60" style="color:#5a8299;font-size:0.85rem;">Rate on request</span>
+                                            </div>
+                                            <button class="theme-btn btn-style-one" style="width:100%;margin-top:12px;padding:10px;font-size:0.85rem;border-radius:8px;"
+                                                    @click="startBooking(c)">Book session</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Bookings list -->
+                        <div x-show="view === 'list'" class="dash-card">
+                            <h4 x-text="isConsultant ? 'Sessions booked with you' : 'Your bookings'"></h4>
+                            <div x-show="loadingBookings" style="text-align:center;padding:20px;color:#5a8299;">Loading…</div>
+                            <div x-show="!loadingBookings && !bookings.length" style="text-align:center;padding:30px;color:#5a8299;">
+                                <p style="margin:0;">No bookings yet.</p>
+                                <p x-show="!isConsultant" style="margin-top:6px;font-size:0.9rem;">Browse consultants on the left and book your first session.</p>
+                            </div>
+                            <table class="dash-table" x-show="bookings.length">
+                                <thead>
+                                    <tr>
+                                        <th x-text="isConsultant ? 'Client' : 'Consultant'"></th>
+                                        <th>Topic</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Duration</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                        <th x-show="isConsultant">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="b in bookings" :key="b.id">
+                                        <tr>
+                                            <td><code style="background:#f5f7fa;padding:2px 6px;border-radius:4px;font-size:0.8rem;" x-text="shortAddr(isConsultant ? b.client_wallet : b.consultant_wallet)"></code> <span x-show="b.client_name" x-text="b.client_name" style="margin-left:6px;"></span></td>
+                                            <td x-text="b.topic"></td>
+                                            <td x-text="b.booking_date || '—'"></td>
+                                            <td x-text="b.time_slot || '—'"></td>
+                                            <td x-text="(b.duration || 60) + ' min'"></td>
+                                            <td><strong style="color:#00a651;" x-text="'$' + (b.price_usdc || 0) + ' USDC'"></strong></td>
+                                            <td>
+                                                <span class="dash-badge"
+                                                      :class="{
+                                                          'dash-badge-success': b.status==='confirmed' || b.status==='accepted',
+                                                          'dash-badge-warning': b.status==='pending',
+                                                          'dash-badge-danger':  b.status==='cancelled' || b.status==='declined'
+                                                      }"
+                                                      x-text="b.status || 'pending'"></span>
+                                            </td>
+                                            <td x-show="isConsultant">
+                                                <button class="dash-btn dash-btn-outline" disabled title="Accept/decline mutations land in S3" style="font-size:0.75rem;padding:4px 8px;opacity:0.6;">Accept</button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
-            </template>
-        </div>
-    </div>
-
-    <div x-show="view==='list'" class="dash-card">
-        <h4>Your Bookings</h4>
-        <table class="dash-table">
-            <thead><tr><th>Consultant</th><th>Topic</th><th>Date</th><th>Duration</th><th>Price</th><th>Status</th></tr></thead>
-            <tbody>
-                <template x-for="b in bookings" :key="b.id">
-                    <tr>
-                        <td><strong x-text="b.consultant_name"></strong></td>
-                        <td x-text="b.topic"></td>
-                        <td x-text="b.booking_date"></td>
-                        <td x-text="b.duration+' min'"></td>
-                        <td><strong style="color:#00a651;" x-text="'$'+b.price_usdc+' USDC'"></strong></td>
-                        <td><span class="dash-badge" :class="b.status==='confirmed'?'dash-badge-success':'dash-badge-warning'" x-text="b.status"></span></td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<script>
-function bookingsPage() {
-    return {
-        bookings:[], view:'consultants', showForm:false,
-        consultants:[
-            {id:1,name:'Dr. Sarah Chen',specialty:'Tokenomics & Economic Design',bio:'PhD in Economics. Advised 20+ DeFi protocols.',rating:4.9,sessions:142,rate_30:75,rate_60:150,rate_90:200,wallet:'0x742d35Cc6634C0532925a3b844Bc9e7595f2bD1e'},
-            {id:2,name:'Marcus Webb',specialty:'Smart Contract Security',bio:'Former Trail of Bits auditor. Solidity security specialist.',rating:4.8,sessions:98,rate_30:100,rate_60:180,rate_90:250,wallet:'0x8Ba1f109551bD432803012645Ac136ddd64DBA72'},
-            {id:3,name:'Aisha Patel',specialty:'DeFi Protocol Strategy',bio:'Ex-Aave contributor. Liquidity and governance expert.',rating:4.7,sessions:76,rate_30:60,rate_60:110,rate_90:150,wallet:'0x2546BcD3c84621e976D8185a91A922aE77ECEc30'},
-            {id:4,name:'James Liu',specialty:'Regulatory & Compliance',bio:'Blockchain attorney. US, EU, APAC jurisdictions.',rating:4.9,sessions:53,rate_30:125,rate_60:225,rate_90:300,wallet:'0xbDA5747bFD65F08deb54cb465eB87D40e51B197E'}
-        ],
-        nb:{consultant:'',topic:'',date:'',time:'10:00',duration:'30',price:0},
-        async init() {
-            this.bookings = await TokenomicSupabase.getBookings();
-            this.bookings = this.bookings.map(b=>({...b,consultant_name:b.consultant_name||'Dr. Sarah Chen'}));
-        },
-        updatePrice(){
-            const c=this.consultants.find(x=>x.id==this.nb.consultant);
-            if(!c){this.nb.price=0;return;}
-            this.nb.price=parseInt(this.nb.duration)===30?c.rate_30:parseInt(this.nb.duration)===60?c.rate_60:c.rate_90;
-        },
-        async payAndBook(){
-            if(!this.nb.consultant||!this.nb.topic||!this.nb.date){alert('Fill in all details.');return;}
-            const c=this.consultants.find(x=>x.id==this.nb.consultant);
-            const receipt=await TokenomicWallet.payWithUSDC(c.wallet,this.nb.price,'Consultation: '+this.nb.topic);
-            this.bookings.unshift({id:Date.now(),consultant_name:c.name,topic:this.nb.topic,booking_date:this.nb.date,duration:parseInt(this.nb.duration),price_usdc:this.nb.price,status:'confirmed'});
-            this.nb={consultant:'',topic:'',date:'',time:'10:00',duration:'30',price:0};this.showForm=false;
-            alert(receipt?'Payment confirmed!':'Booking confirmed (demo mode)');
-        },
-        payHelio(){
-            if(!this.nb.consultant||!this.nb.topic||!this.nb.date){alert('Fill in all details.');return;}
-            alert('Helio checkout ready (demo). Set HELIO_API_KEY for live payments.');
-            const c=this.consultants.find(x=>x.id==this.nb.consultant);
-            this.bookings.unshift({id:Date.now(),consultant_name:c?c.name:'',topic:this.nb.topic,booking_date:this.nb.date,duration:parseInt(this.nb.duration),price_usdc:this.nb.price,status:'pending'});
-            this.nb={consultant:'',topic:'',date:'',time:'10:00',duration:'30',price:0};this.showForm=false;
-        }
-    };
-}
-</script>
-
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+function bookingsPage() {
+    return {
+        wallet: '',
+        roles: ['learner'],
+        view: 'consultants',
+        showForm: false,
+        loadingConsultants: true,
+        loadingBookings: true,
+        busy: false,
+        bookErr: '',
+        consultants: [],
+        bookings: [],
+        nb: { consultant_wallet: '', topic: '', booking_date: '', time_slot: '10:00', duration: 30, price: 0 },
+
+        get isConsultant() { return this.roles.indexOf('consultant') !== -1; },
+
+        async init() {
+            const w = (window.TokenomicWallet && window.TokenomicWallet.getAddress) ? window.TokenomicWallet.getAddress() : null;
+            if (!w) return;
+            this.wallet = w;
+
+            // Pre-select a consultant from ?to=0x... (deep link from /experts/)
+            try {
+                const q = new URLSearchParams(window.location.search);
+                const to = q.get('to');
+                if (to && /^0x[0-9a-fA-F]{40}$/.test(to)) {
+                    this.nb.consultant_wallet = to.toLowerCase();
+                    this.showForm = true;
+                }
+            } catch (_) {}
+
+            try {
+                if (window.TokenomicAPI && !window.TokenomicAPI.isSignedIn(w)) {
+                    await window.TokenomicAPI.signIn(w);
+                }
+                const me = await window.TokenomicAPI.getMe();
+                if (me && Array.isArray(me.roles)) this.roles = me.roles;
+                if (this.isConsultant) this.view = 'list';
+            } catch (e) { console.warn('bookings me:', e.message); }
+
+            // Load consultants & bookings in parallel.
+            try {
+                this.consultants = await window.TokenomicAPI.getConsultants();
+            } catch (e) {
+                console.warn('consultants load:', e.message);
+            } finally {
+                this.loadingConsultants = false;
+            }
+            await this.loadBookings();
+        },
+
+        async loadBookings() {
+            this.loadingBookings = true;
+            try {
+                if (this.isConsultant) {
+                    // Consultant view: bookings made TO me.
+                    this.bookings = await window.TokenomicAPI.getBookings(this.wallet);
+                } else {
+                    // Client view: bookings I made (as the buyer). Server-filtered.
+                    this.bookings = await window.TokenomicAPI.getMyClientBookings();
+                }
+            } catch (e) {
+                console.warn('bookings load:', e.message);
+                this.bookings = [];
+            } finally {
+                this.loadingBookings = false;
+            }
+        },
+
+        startBooking(c) {
+            this.nb.consultant_wallet = c.wallet_address;
+            this.showForm = true;
+            this.updatePrice();
+        },
+
+        updatePrice() {
+            const c = this.consultants.find(x => x.wallet_address === this.nb.consultant_wallet);
+            if (!c) { this.nb.price = 0; return; }
+            const d = parseInt(this.nb.duration, 10);
+            if (d === 30 && c.rate_30) { this.nb.price = c.rate_30; }
+            else if (d === 60 && c.rate_60) { this.nb.price = c.rate_60; }
+            else if (c.rate_60) { this.nb.price = Math.round(c.rate_60 * (d / 60)); }
+            else { this.nb.price = 0; }
+        },
+
+        async book() {
+            this.bookErr = '';
+            if (!this.nb.consultant_wallet) { this.bookErr = 'Pick a consultant.'; return; }
+            if (!this.nb.topic) { this.bookErr = 'Add a topic for the session.'; return; }
+            if (!this.nb.booking_date) { this.bookErr = 'Pick a date.'; return; }
+            this.busy = true;
+            try {
+                if (!window.TokenomicAPI.isSignedIn(this.wallet)) await window.TokenomicAPI.signIn(this.wallet);
+                await window.TokenomicAPI.createBooking({
+                    consultant_wallet: this.nb.consultant_wallet,
+                    topic: this.nb.topic,
+                    booking_date: this.nb.booking_date,
+                    time_slot: this.nb.time_slot,
+                    duration: parseInt(this.nb.duration, 10),
+                    price_usdc: this.nb.price,
+                    status: 'pending'
+                });
+                this.showForm = false;
+                this.nb = { consultant_wallet: '', topic: '', booking_date: '', time_slot: '10:00', duration: 30, price: 0 };
+                this.view = 'list';
+                await this.loadBookings();
+            } catch (e) {
+                this.bookErr = e.message || 'Booking failed';
+            } finally {
+                this.busy = false;
+            }
+        },
+
+        shortAddr(a) { if (!a) return ''; return a.slice(0, 6) + '…' + a.slice(-4); }
+    };
+}
+</script>

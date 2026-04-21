@@ -127,6 +127,34 @@ async function requireAuth(c) {
   return { wallet: lc(payload.wallet), exp: payload.exp };
 }
 
+// Admin gate. Authenticates first, then checks env.ADMIN_WALLETS (bootstrap)
+// or the profile.roles JSON column. Returns { wallet } on success or
+// { error } with a Hono Response on failure.
+async function requireAdmin(c) {
+  const auth = await requireAuth(c);
+  if (auth.error) return auth;
+  const adminEnv = (c.env.ADMIN_WALLETS || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+  let isAdmin = adminEnv.includes(auth.wallet);
+  if (!isAdmin && c.env.DB) {
+    const p = await c.env.DB.prepare('SELECT roles FROM profiles WHERE wallet_address = ?').bind(auth.wallet).first();
+    const parsed = p ? jsonOrNull(p.roles) : null;
+    isAdmin = Array.isArray(parsed) && parsed.includes('admin');
+  }
+  if (!isAdmin) return { error: c.json({ error: 'Admin only' }, 403) };
+  return { wallet: auth.wallet };
+}
+
+// Best-effort audit row writer (never throws).
+async function audit(env, actor, action, target_type, target_id, metadata) {
+  try {
+    await env.DB.prepare(`
+      INSERT INTO audit_log (actor_wallet, action, target_type, target_id, metadata)
+      VALUES (?, ?, ?, ?, ?)
+    `).bind(actor, action, target_type, String(target_id || ''),
+            metadata ? JSON.stringify(metadata) : null).run();
+  } catch (_) { /* swallow */ }
+}
+
 // ---------- nonce store (KV) ----------
 
 async function putNonce(env, wallet, nonce) {
@@ -297,6 +325,18 @@ export function mountD1Routes(app) {
     const stake_tx_hash = (typeof body.stake_tx_hash === 'string' && body.stake_tx_hash.startsWith('0x'))
       ? body.stake_tx_hash : null;
 
+    // Reject if the applicant already holds the requested role.
+    const myProfile = await c.env.DB.prepare('SELECT roles FROM profiles WHERE wallet_address = ?').bind(auth.wallet).first();
+    const myRoles = myProfile ? (jsonOrNull(myProfile.roles) || []) : [];
+    if (Array.isArray(myRoles) && myRoles.includes(role_requested)) {
+      return c.json({ error: 'You already hold the ' + role_requested + ' role' }, 409);
+    }
+    // Also reject if a previous application for the same role is still pending.
+    const dup = await c.env.DB.prepare(
+      "SELECT id FROM applications WHERE applicant_wallet = ? AND role_requested = ? AND status = 'pending' LIMIT 1"
+    ).bind(auth.wallet, role_requested).first();
+    if (dup) return c.json({ error: 'A pending application for this role already exists' }, 409);
+
     const ins = await c.env.DB.prepare(`
       INSERT INTO applications (applicant_wallet, role_requested, bio, expertise, sample_url,
         portfolio_url, hourly_rate_usdc, availability, credentials, stake_tx_hash, status)
@@ -313,18 +353,10 @@ export function mountD1Routes(app) {
     return c.json({ ok: true, id: ins.meta.last_row_id, status: 'pending' }, 201);
   });
 
-  // -------- admin queue (read-only this session; approve/reject lands next session) --------
+  // -------- admin queue (read) --------
   app.get('/api/admin/queue', async (c) => {
     const r = dbReady(c); if (r) return r;
-    const auth = await requireAuth(c); if (auth.error) return auth.error;
-    const adminEnv = (c.env.ADMIN_WALLETS || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
-    let isAdmin = adminEnv.includes(auth.wallet);
-    if (!isAdmin) {
-      const p = await c.env.DB.prepare('SELECT roles FROM profiles WHERE wallet_address = ?').bind(auth.wallet).first();
-      const parsed = p ? jsonOrNull(p.roles) : null;
-      isAdmin = Array.isArray(parsed) && parsed.includes('admin');
-    }
-    if (!isAdmin) return c.json({ error: 'Admin only' }, 403);
+    const adm = await requireAdmin(c); if (adm.error) return adm.error;
 
     const type = c.req.query('type') || 'all';
     const status = c.req.query('status') || 'pending_review';
@@ -364,6 +396,145 @@ export function mountD1Routes(app) {
     counts.total = counts.applications + counts.courses + counts.communities + counts.articles;
     return c.json({ ok: true, counts, items: out });
   });
+
+  // -------- admin mutations: applications --------
+
+  app.post('/api/admin/applications/:id/approve', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const adm = await requireAdmin(c); if (adm.error) return adm.error;
+    const id = Number(c.req.param('id'));
+    if (!Number.isFinite(id) || id <= 0) return c.json({ error: 'Invalid id' }, 400);
+
+    const appRow = await c.env.DB.prepare('SELECT * FROM applications WHERE id = ?').bind(id).first();
+    if (!appRow) return c.json({ error: 'Application not found' }, 404);
+    if (appRow.status !== 'pending') return c.json({ error: 'Application is not pending' }, 409);
+
+    const targetWallet = lc(appRow.applicant_wallet);
+    const newRole = appRow.role_requested === 'consultant' ? 'consultant' : 'educator';
+
+    // Append the granted role to profiles.roles JSON. Create a stub profile
+    // if the applicant has none yet so the grant is never lost.
+    const existing = await c.env.DB.prepare('SELECT * FROM profiles WHERE wallet_address = ?').bind(targetWallet).first();
+    let roles = existing && existing.roles ? jsonOrNull(existing.roles) : null;
+    if (!Array.isArray(roles)) roles = ['learner'];
+    if (!roles.includes(newRole)) roles.push(newRole);
+    const rolesJson = JSON.stringify(roles);
+
+    if (existing) {
+      await c.env.DB.prepare(
+        'UPDATE profiles SET roles = ?, role = ?, approved = 1 WHERE wallet_address = ?'
+      ).bind(rolesJson, newRole, targetWallet).run();
+    } else {
+      await c.env.DB.prepare(
+        'INSERT INTO profiles (wallet_address, role, roles, approved) VALUES (?, ?, ?, 1)'
+      ).bind(targetWallet, newRole, rolesJson).run();
+    }
+
+    await c.env.DB.prepare(`
+      UPDATE applications
+      SET status = 'approved', granted_at = datetime('now'),
+          reviewed_by = ?, reviewed_at = datetime('now'), admin_feedback = NULL
+      WHERE id = ?
+    `).bind(adm.wallet, id).run();
+
+    await audit(c.env, adm.wallet, 'application.approved', 'application', id,
+                { applicant: targetWallet, role: newRole });
+
+    return c.json({ ok: true, id, status: 'approved', granted_role: newRole });
+  });
+
+  app.post('/api/admin/applications/:id/reject', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const adm = await requireAdmin(c); if (adm.error) return adm.error;
+    const id = Number(c.req.param('id'));
+    if (!Number.isFinite(id) || id <= 0) return c.json({ error: 'Invalid id' }, 400);
+    let body = {}; try { body = await c.req.json(); } catch {}
+    const feedback = (body.admin_feedback || '').toString().trim();
+    if (feedback.length < 10) return c.json({ error: 'admin_feedback (≥10 chars) required' }, 400);
+
+    const appRow = await c.env.DB.prepare('SELECT id, status FROM applications WHERE id = ?').bind(id).first();
+    if (!appRow) return c.json({ error: 'Application not found' }, 404);
+    if (appRow.status !== 'pending') return c.json({ error: 'Application is not pending' }, 409);
+
+    await c.env.DB.prepare(`
+      UPDATE applications
+      SET status = 'rejected', admin_feedback = ?,
+          reviewed_by = ?, reviewed_at = datetime('now')
+      WHERE id = ?
+    `).bind(feedback.slice(0, 2000), adm.wallet, id).run();
+
+    await audit(c.env, adm.wallet, 'application.rejected', 'application', id, { feedback: feedback.slice(0, 200) });
+    return c.json({ ok: true, id, status: 'rejected' });
+  });
+
+  // -------- admin mutations: content (courses / communities / articles) --------
+  // Generic helper so we don't repeat ourselves four times.
+  function mountContentReview(table, type, approvedStatus, rejectedStatus) {
+    app.post(`/api/admin/${type}/:id/approve`, async (c) => {
+      const r = dbReady(c); if (r) return r;
+      const adm = await requireAdmin(c); if (adm.error) return adm.error;
+      const id = Number(c.req.param('id'));
+      if (!Number.isFinite(id) || id <= 0) return c.json({ error: 'Invalid id' }, 400);
+      const row = await c.env.DB.prepare(`SELECT id, status FROM ${table} WHERE id = ?`).bind(id).first();
+      if (!row) return c.json({ error: `${type} not found` }, 404);
+      await c.env.DB.prepare(`
+        UPDATE ${table}
+        SET status = ?, reviewed_by = ?, reviewed_at = datetime('now'), admin_feedback = NULL
+        WHERE id = ?
+      `).bind(approvedStatus, adm.wallet, id).run();
+      await audit(c.env, adm.wallet, `${type}.approved`, type, id);
+      return c.json({ ok: true, id, status: approvedStatus });
+    });
+
+    app.post(`/api/admin/${type}/:id/reject`, async (c) => {
+      const r = dbReady(c); if (r) return r;
+      const adm = await requireAdmin(c); if (adm.error) return adm.error;
+      const id = Number(c.req.param('id'));
+      if (!Number.isFinite(id) || id <= 0) return c.json({ error: 'Invalid id' }, 400);
+      let body = {}; try { body = await c.req.json(); } catch {}
+      const feedback = (body.admin_feedback || '').toString().trim();
+      if (feedback.length < 10) return c.json({ error: 'admin_feedback (≥10 chars) required' }, 400);
+      const row = await c.env.DB.prepare(`SELECT id FROM ${table} WHERE id = ?`).bind(id).first();
+      if (!row) return c.json({ error: `${type} not found` }, 404);
+      await c.env.DB.prepare(`
+        UPDATE ${table}
+        SET status = ?, admin_feedback = ?,
+            reviewed_by = ?, reviewed_at = datetime('now')
+        WHERE id = ?
+      `).bind(rejectedStatus, feedback.slice(0, 2000), adm.wallet, id).run();
+      await audit(c.env, adm.wallet, `${type}.rejected`, type, id, { feedback: feedback.slice(0, 200) });
+      return c.json({ ok: true, id, status: rejectedStatus });
+    });
+  }
+  // Articles use 'published' as their live state; courses/communities use 'active'.
+  mountContentReview('courses',     'courses',     'active',    'needs_changes');
+  mountContentReview('communities', 'communities', 'active',    'needs_changes');
+  mountContentReview('articles',    'articles',    'published', 'needs_changes');
+
+  // -------- submit-for-review (creator -> admin queue) --------
+  // Owner-gated: only the creator can submit their own draft.
+  function mountSubmitForReview(table, type, ownerCol) {
+    app.post(`/api/${type}/:id/submit`, async (c) => {
+      const r = dbReady(c); if (r) return r;
+      const auth = await requireAuth(c); if (auth.error) return auth.error;
+      const id = Number(c.req.param('id'));
+      if (!Number.isFinite(id) || id <= 0) return c.json({ error: 'Invalid id' }, 400);
+      const row = await c.env.DB.prepare(`SELECT id, ${ownerCol} AS owner, status FROM ${table} WHERE id = ?`).bind(id).first();
+      if (!row) return c.json({ error: `${type} not found` }, 404);
+      if (lc(row.owner) !== auth.wallet) return c.json({ error: 'Not your draft' }, 403);
+      if (row.status === 'pending_review') return c.json({ ok: true, id, status: 'pending_review', noop: true });
+      await c.env.DB.prepare(`
+        UPDATE ${table}
+        SET status = 'pending_review', submitted_at = datetime('now')
+        WHERE id = ?
+      `).bind(id).run();
+      await audit(c.env, auth.wallet, `${type}.submitted`, type, id);
+      return c.json({ ok: true, id, status: 'pending_review' });
+    });
+  }
+  mountSubmitForReview('courses',     'courses',     'educator_wallet');
+  mountSubmitForReview('communities', 'communities', 'educator_wallet');
+  mountSubmitForReview('articles',    'articles',    'author_wallet');
 
   app.get('/api/experts', async (c) => {
     const r = dbReady(c); if (r) return r;
@@ -593,14 +764,29 @@ export function mountD1Routes(app) {
   });
 
   // -------- bookings --------
+  // Privacy: bookings carry client_wallet + topic. Both consultant and client
+  // sides require auth and only ever see rows where THEY are a party.
 
+  // Consultant view: bookings made TO me.
   app.get('/api/bookings/:wallet', async (c) => {
     const r = dbReady(c); if (r) return r;
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
     const wallet = lc(c.req.param('wallet'));
     if (!isHexAddress(wallet)) return c.json({ error: 'Invalid wallet' }, 400);
+    if (wallet !== auth.wallet) return c.json({ error: 'You can only read your own bookings' }, 403);
     const { results } = await c.env.DB.prepare(
       'SELECT * FROM bookings WHERE consultant_wallet = ? ORDER BY booking_date ASC LIMIT 200'
     ).bind(wallet).all();
+    return c.json({ items: results || [], count: (results || []).length });
+  });
+
+  // Client view: bookings I made (as the buyer).
+  app.get('/api/bookings/me/as-client', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    const { results } = await c.env.DB.prepare(
+      'SELECT * FROM bookings WHERE client_wallet = ? ORDER BY booking_date ASC LIMIT 200'
+    ).bind(auth.wallet).all();
     return c.json({ items: results || [], count: (results || []).length });
   });
 

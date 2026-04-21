@@ -205,14 +205,14 @@ permalink: /profile/
                 </div>
             </div>
             <div class="dash-card" style="margin-top:16px;">
-                <h4>Consultant Registration</h4>
-                <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;">Register as a consultant. 50 USDC one-time fee via PaymentSplitter contract.</p>
+                <h4>Apply to be a Consultant</h4>
+                <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;">Submit a quick application. An admin reviews each one and grants the Consultant role on approval — no upfront fee.</p>
                 <div class="row clearfix" style="margin-bottom:14px;">
                     <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Specialty</label><input x-model="consultantForm.specialty" class="dash-input" placeholder="e.g. Tokenomics" /></div>
                     <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Rate (30 min)</label><input x-model="consultantForm.rate" type="number" class="dash-input" placeholder="75" /></div>
                     <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Experience</label><select x-model="consultantForm.experience" class="dash-input"><option value="1-3">1-3 years</option><option value="3-5">3-5 years</option><option value="5+">5+ years</option></select></div>
                 </div>
-                <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 24px;" @click="alert('Pay 50 USDC to register. Deploy PaymentSplitter for live registration.')">Register & Pay 50 USDC</button>
+                <a href="/apply/?role=consultant" class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 24px;display:inline-block;">Open consultant application →</a>
             </div>
 
             <div class="dash-card" style="margin-top:16px;" id="wallet-summary-card">
