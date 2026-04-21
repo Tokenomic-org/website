@@ -664,7 +664,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             html += '<span class="card-category">' + (c.category || 'General') + '</span>';
             html += '<div class="card-title">' + (c.title || '') + '</div>';
             html += '<div class="card-desc">' + (c.description || '') + '</div>';
-            html += '<a href="/experts/' + eduSlug + '" class="card-educator" onclick="event.stopPropagation();" style="text-decoration:none;color:inherit;">';
+            html += '<a href="/expert-profile.html?slug=' + eduSlug + '" class="card-educator" onclick="event.stopPropagation();" style="text-decoration:none;color:inherit;">';
             html += '<div class="edu-avatar">' + eduInitials + '</div>';
             html += '<div><div class="edu-name">' + (c.educator_name || 'Unknown') + '</div><div class="edu-role">Educator</div></div>';
             html += '</a>';

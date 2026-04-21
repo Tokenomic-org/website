@@ -660,7 +660,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             var thumbSrc = esc(c.thumbnail_url || '/assets/images/resource/featured-image-10.jpg');
             var communitySlug = slugify(c.name || '');
 
-            html += '<a href="/communities/' + communitySlug + '" class="community-card">';
+            html += '<a href="/community-profile.html?slug=' + communitySlug + '" class="community-card">';
             html += '<div class="card-thumb">';
             html += '<img src="' + thumbSrc + '" alt="' + esc(c.name) + '">';
             html += '<span class="level-badge ' + levelClass + '">' + esc(levelLabel) + '</span>';
