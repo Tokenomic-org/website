@@ -162,7 +162,7 @@ permalink: /profile/
                 <div class="photo-status" id="photo-status"></div>
                 <h4 x-text="profile.name" style="margin-top:4px;"></h4>
                 <p style="color:#ff6000;font-size:0.85rem;margin-bottom:4px;" x-text="profile.role"></p>
-                <p style="font-family:monospace;font-size:0.8rem;color:#5a8299;" x-text="profile.wallet||'No wallet connected'"></p>
+                <p style="font-family:monospace;font-size:0.8rem;color:#5a8299;" x-text="profile.wallet ? (profile.wallet.slice(0,6)+'\u2026'+profile.wallet.slice(-4)) : 'No wallet connected'"></p>
                 <hr style="margin:16px 0;">
                 <div style="display:flex;justify-content:center;gap:20px;">
                     <div><strong x-text="profile.xp"></strong><br><small style="color:#5a8299;">XP</small></div>
@@ -358,28 +358,73 @@ function profilePage() {
             { label:'Leaderboard Changes', description:'Rank changes and achievements.', enabled:false }
         ],
         consultantForm: { specialty:'', rate:'', experience:'3-5' },
-        init() {
-            var saved = JSON.parse(localStorage.getItem('tkn_profile_data') || '{}');
-            if (saved.name) this.profile.name = saved.name;
+        async init() {
+            // Wallet is the source of truth for identity; D1 is the source of
+            // truth for everything else. localStorage is a one-way fallback for
+            // the optimistic UI before the network call completes.
+            var w = (typeof TokenomicWallet !== 'undefined' && TokenomicWallet.getAddress)
+                      ? TokenomicWallet.getAddress() : (TokenomicWallet && TokenomicWallet.account);
+            if (w) this.profile.wallet = w;
+
+            var saved = {};
+            try { saved = JSON.parse(localStorage.getItem('tkn_profile_data') || '{}'); } catch(e) {}
+            if (saved.name)  this.profile.name  = saved.name;
             if (saved.email) this.profile.email = saved.email;
-            if (saved.role) this.profile.role = saved.role;
-            if (saved.bio) this.profile.bio = saved.bio;
-            if (typeof TokenomicWallet !== 'undefined' && TokenomicWallet.account) {
-                this.profile.wallet = TokenomicWallet.account;
-            }
+            if (saved.role)  this.profile.role  = saved.role;
+            if (saved.bio)   this.profile.bio   = saved.bio;
             applyStoredAvatar();
+
+            if (w && window.TokenomicAPI) {
+                try {
+                    var d1Profile = await window.TokenomicAPI.getProfile(w);
+                    if (d1Profile) {
+                        this.profile.name  = d1Profile.display_name || this.profile.name;
+                        this.profile.email = d1Profile.email        || this.profile.email;
+                        this.profile.bio   = d1Profile.bio          || this.profile.bio;
+                        // Capitalize legacy 'student'/'educator' -> 'Student'/'Educator' for the select
+                        var r = (d1Profile.role || 'student');
+                        this.profile.role = r.charAt(0).toUpperCase() + r.slice(1);
+                        if (d1Profile.avatar_url) setAvatarPhoto(d1Profile.avatar_url);
+                    }
+                } catch (e) { console.warn('Failed to load profile from D1:', e.message); }
+            }
         },
-        saveProfile() {
-            localStorage.setItem('tkn_profile_data', JSON.stringify({
-                name: this.profile.name,
-                email: this.profile.email,
-                role: this.profile.role,
-                bio: this.profile.bio
-            }));
+        async saveProfile() {
             var statusEl = document.getElementById('photo-status');
-            statusEl.textContent = 'Profile saved!';
-            statusEl.className = 'photo-status success';
-            setTimeout(function() { statusEl.textContent = ''; statusEl.className = 'photo-status'; }, 3000);
+            var w = (typeof TokenomicWallet !== 'undefined' && TokenomicWallet.getAddress)
+                      ? TokenomicWallet.getAddress() : null;
+            if (!w) {
+                statusEl.textContent = 'Connect your wallet first.';
+                statusEl.className = 'photo-status error';
+                return;
+            }
+            // Optimistic local cache so the sidebar avatar updates instantly.
+            localStorage.setItem('tkn_profile_data', JSON.stringify({
+                name: this.profile.name, email: this.profile.email,
+                role: this.profile.role, bio:   this.profile.bio
+            }));
+            statusEl.textContent = 'Saving…';
+            statusEl.className = 'photo-status loading';
+
+            // Auth: ensure we have a JWT (sign-in is a no-op if cached).
+            try {
+                if (window.TokenomicAPI && !window.TokenomicAPI.isSignedIn(w)) {
+                    await window.TokenomicAPI.signIn(w);
+                }
+                var saved = await window.TokenomicAPI.upsertProfile({
+                    display_name: this.profile.name,
+                    email:        this.profile.email,
+                    bio:          this.profile.bio,
+                    role:         (this.profile.role || 'student').toLowerCase()
+                });
+                statusEl.textContent = 'Profile saved.';
+                statusEl.className   = 'photo-status success';
+                window.dispatchEvent(new CustomEvent('tokenomic:profile-updated', { detail: saved }));
+                setTimeout(function() { statusEl.textContent = ''; statusEl.className = 'photo-status'; }, 3000);
+            } catch (e) {
+                statusEl.textContent = 'Save failed: ' + (e.message || 'unknown error');
+                statusEl.className = 'photo-status error';
+            }
         }
     };
 }

@@ -200,32 +200,169 @@ export function mountD1Routes(app) {
     let body = {};
     try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
     const wallet = auth.wallet;
-    const fields = {
-      display_name: body.display_name || null,
-      role: ['student', 'educator', 'consultant'].includes(body.role) ? body.role : 'student',
-      bio: body.bio || null,
-      specialty: body.specialty || null,
-      avatar_url: body.avatar_url || null,
-      rate_30: body.rate_30 != null ? Number(body.rate_30) : null,
-      rate_60: body.rate_60 != null ? Number(body.rate_60) : null,
-      approved: body.approved === false ? 0 : 1
-    };
+
+    // Read existing row so a partial update doesn't blow away other fields.
+    const existing = await c.env.DB.prepare('SELECT * FROM profiles WHERE wallet_address = ?').bind(wallet).first();
+
+    const pick = (next, prev) => (next !== undefined ? next : prev);
+    const display_name = pick(body.display_name, existing && existing.display_name) || null;
+    // Legacy single-role column: only allow non-privileged values from the
+    // client. 'admin' must never be self-assigned via /api/profile.
+    const SELF_ASSIGNABLE_ROLES = ['student', 'learner', 'educator', 'consultant'];
+    const legacyRole = SELF_ASSIGNABLE_ROLES.includes(body.role)
+                          ? body.role : (existing && existing.role) || 'learner';
+    const bio          = pick(body.bio, existing && existing.bio) || null;
+    const specialty    = pick(body.specialty, existing && existing.specialty) || null;
+    const avatar_url   = pick(body.avatar_url, existing && existing.avatar_url) || null;
+    const email        = pick(body.email, existing && existing.email) || null;
+    const rate_30      = body.rate_30 != null ? Number(body.rate_30) : (existing && existing.rate_30) || null;
+    const rate_60      = body.rate_60 != null ? Number(body.rate_60) : (existing && existing.rate_60) || null;
+    // SECURITY: roles[] mutations are NEVER accepted from /api/profile —
+    // promotions happen only through admin-approved /api/applications and
+    // (next session) /api/admin/applications/:id/approve. We always re-derive
+    // roles from the existing row, NOT from the request body.
+    let roles = (existing && existing.roles) || '["learner"]';
+    // Ditto for `approved` — a user can't self-approve themselves; preserve
+    // whatever the existing row had (defaults to 1 for fresh signups so the
+    // current public profile flow keeps working).
+    const approved = existing ? existing.approved : 1;
+
     await c.env.DB.prepare(`
-      INSERT INTO profiles (wallet_address, display_name, role, bio, specialty, avatar_url, rate_30, rate_60, approved)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO profiles (wallet_address, display_name, role, roles, bio, specialty, email, avatar_url, rate_30, rate_60, approved, last_active_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
       ON CONFLICT(wallet_address) DO UPDATE SET
-        display_name = excluded.display_name,
-        role = excluded.role,
-        bio = excluded.bio,
-        specialty = excluded.specialty,
-        avatar_url = excluded.avatar_url,
-        rate_30 = excluded.rate_30,
-        rate_60 = excluded.rate_60,
-        approved = excluded.approved
-    `).bind(wallet, fields.display_name, fields.role, fields.bio, fields.specialty,
-            fields.avatar_url, fields.rate_30, fields.rate_60, fields.approved).run();
+        display_name   = excluded.display_name,
+        role           = excluded.role,
+        roles          = excluded.roles,
+        bio            = excluded.bio,
+        specialty      = excluded.specialty,
+        email          = excluded.email,
+        avatar_url     = excluded.avatar_url,
+        rate_30        = excluded.rate_30,
+        rate_60        = excluded.rate_60,
+        approved       = excluded.approved,
+        last_active_at = excluded.last_active_at
+    `).bind(wallet, display_name, legacyRole, roles, bio, specialty, email, avatar_url, rate_30, rate_60, approved).run();
+
     const row = await c.env.DB.prepare('SELECT * FROM profiles WHERE wallet_address = ?').bind(wallet).first();
     return c.json({ ok: true, profile: row });
+  });
+
+  // -------- session: who am I + my computed roles --------
+  // Returns the profile row PLUS a normalized roles[] array so the dashboard
+  // can render role-aware UI without parsing JSON twice.
+  app.get('/api/auth/me', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    const wallet = auth.wallet;
+    const profile = await c.env.DB.prepare('SELECT * FROM profiles WHERE wallet_address = ?').bind(wallet).first();
+    let roles = ['learner'];
+    if (profile && profile.roles) {
+      const parsed = jsonOrNull(profile.roles);
+      if (Array.isArray(parsed) && parsed.length) roles = parsed;
+    }
+    // Bootstrap admin: any wallet listed in env.ADMIN_WALLETS (comma sep) is
+    // treated as admin even if their D1 row hasn't been promoted yet.
+    const adminEnv = (c.env.ADMIN_WALLETS || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+    if (adminEnv.includes(wallet) && !roles.includes('admin')) roles = roles.concat(['admin']);
+    return c.json({ wallet, roles, profile: profile || null });
+  });
+
+  // -------- applications (educator / consultant) --------
+
+  app.get('/api/applications/me', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    const { results } = await c.env.DB.prepare(
+      'SELECT * FROM applications WHERE applicant_wallet = ? ORDER BY created_at DESC LIMIT 20'
+    ).bind(auth.wallet).all();
+    return c.json({ items: results || [] });
+  });
+
+  app.post('/api/applications', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    let body = {};
+    try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+    const role_requested = body.role_requested === 'consultant' ? 'consultant' : 'educator';
+    const bio = (body.bio || '').toString().slice(0, 4000);
+    if (bio.length < 200) return c.json({ error: 'Bio must be at least 200 characters' }, 400);
+    const expertise = Array.isArray(body.expertise) ? JSON.stringify(body.expertise.slice(0, 8)) : null;
+    const sample_url = body.sample_url || null;
+    const portfolio_url = body.portfolio_url || null;
+    const hourly_rate_usdc = role_requested === 'consultant' && body.hourly_rate_usdc
+      ? Number(body.hourly_rate_usdc) : null;
+    const availability = body.availability || null;
+    const credentials  = body.credentials  || null;
+    const stake_tx_hash = (typeof body.stake_tx_hash === 'string' && body.stake_tx_hash.startsWith('0x'))
+      ? body.stake_tx_hash : null;
+
+    const ins = await c.env.DB.prepare(`
+      INSERT INTO applications (applicant_wallet, role_requested, bio, expertise, sample_url,
+        portfolio_url, hourly_rate_usdc, availability, credentials, stake_tx_hash, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+    `).bind(auth.wallet, role_requested, bio, expertise, sample_url, portfolio_url,
+            hourly_rate_usdc, availability, credentials, stake_tx_hash).run();
+
+    await c.env.DB.prepare(`
+      INSERT INTO audit_log (actor_wallet, action, target_type, target_id, metadata)
+      VALUES (?, 'application.submitted', 'application', ?, ?)
+    `).bind(auth.wallet, String(ins.meta.last_row_id || ''),
+            JSON.stringify({ role_requested })).run().catch(() => {});
+
+    return c.json({ ok: true, id: ins.meta.last_row_id, status: 'pending' }, 201);
+  });
+
+  // -------- admin queue (read-only this session; approve/reject lands next session) --------
+  app.get('/api/admin/queue', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    const adminEnv = (c.env.ADMIN_WALLETS || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+    let isAdmin = adminEnv.includes(auth.wallet);
+    if (!isAdmin) {
+      const p = await c.env.DB.prepare('SELECT roles FROM profiles WHERE wallet_address = ?').bind(auth.wallet).first();
+      const parsed = p ? jsonOrNull(p.roles) : null;
+      isAdmin = Array.isArray(parsed) && parsed.includes('admin');
+    }
+    if (!isAdmin) return c.json({ error: 'Admin only' }, 403);
+
+    const type = c.req.query('type') || 'all';
+    const status = c.req.query('status') || 'pending_review';
+    const out = {};
+    const want = (t) => type === 'all' || type === t;
+
+    if (want('applications')) {
+      const { results } = await c.env.DB.prepare(
+        "SELECT * FROM applications WHERE status = 'pending' ORDER BY created_at DESC LIMIT 100"
+      ).all();
+      out.applications = results || [];
+    }
+    if (want('courses')) {
+      const { results } = await c.env.DB.prepare(
+        'SELECT id, slug, title, educator_wallet, status, submitted_at, created_at FROM courses WHERE status = ? ORDER BY submitted_at DESC LIMIT 100'
+      ).bind(status).all();
+      out.courses = results || [];
+    }
+    if (want('communities')) {
+      const { results } = await c.env.DB.prepare(
+        'SELECT id, slug, name, educator_wallet, status, submitted_at, created_at FROM communities WHERE status = ? ORDER BY submitted_at DESC LIMIT 100'
+      ).bind(status).all();
+      out.communities = results || [];
+    }
+    if (want('articles')) {
+      const { results } = await c.env.DB.prepare(
+        'SELECT id, slug, title, author_wallet, status, submitted_at, created_at FROM articles WHERE status = ? ORDER BY submitted_at DESC LIMIT 100'
+      ).bind(status).all();
+      out.articles = results || [];
+    }
+    const counts = {
+      applications: (out.applications || []).length,
+      courses:      (out.courses      || []).length,
+      communities:  (out.communities  || []).length,
+      articles:     (out.articles     || []).length
+    };
+    counts.total = counts.applications + counts.courses + counts.communities + counts.articles;
+    return c.json({ ok: true, counts, items: out });
   });
 
   app.get('/api/experts', async (c) => {

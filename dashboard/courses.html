@@ -203,8 +203,8 @@ permalink: /my-courses/
         <span x-show="createError" x-text="createError" style="color:#e53e3e;font-size:0.85rem;margin-left:8px;"></span>
     </div>
     <div x-show="nc.slug" style="margin-top:12px;padding:10px 14px;background:#f8fafb;border-radius:6px;font-size:0.8rem;color:#5a8299;">
-        GitHub repo: <strong style="color:#0A0F1A;">tokenomic-course-<span x-text="nc.slug"></span></strong>
-        &nbsp;&bull;&nbsp; Public URL: <strong style="color:#f97316;">tokenomic.org/courses/<span x-text="nc.slug"></span></strong>
+        Public URL: <strong style="color:#f97316;">tokenomic.org/courses/<span x-text="nc.slug"></span></strong>
+        &nbsp;&bull;&nbsp; Status: <strong style="color:#0A0F1A;">Draft &mdash; review required before publish</strong>
     </div>
 </div>
 
@@ -219,7 +219,7 @@ permalink: /my-courses/
 
 <div x-show="loading" style="text-align:center;padding:60px 40px;">
     <div style="width:48px;height:48px;border:3px solid #f0f2f5;border-top-color:#f97316;border-radius:50%;animation:crspin 0.8s linear infinite;margin:0 auto 16px;"></div>
-    <p style="color:#5a8299;">Loading courses from GitHub...</p>
+    <p style="color:#5a8299;">Loading your courses…</p>
 </div>
 
 <div x-show="!loading && filtered.length === 0 && courses.length === 0" style="text-align:center;padding:60px 40px;">
@@ -227,7 +227,7 @@ permalink: /my-courses/
         <svg width="48" height="48" fill="none" stroke="#f97316" stroke-width="2" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
     </div>
     <h4 style="color:#0A0F1A;margin-bottom:8px;">Create your first course</h4>
-    <p style="color:#5a8299;max-width:400px;margin:0 auto 20px;">Build courses backed by GitHub repos. Each course gets modules, images, and GitHub Pages deployment.</p>
+    <p style="color:#5a8299;max-width:400px;margin:0 auto 20px;">Create your first course on Tokenomic. Each course can hold modules, video, slides, and on-chain certificate minting after admin review.</p>
     <button class="dash-btn dash-btn-primary" @click="showCreate=true">+ New Course</button>
 </div>
 <div x-show="!loading && filtered.length === 0 && courses.length > 0" style="text-align:center;padding:40px;"><p style="color:#5a8299;">No courses match your search.</p></div>
@@ -270,7 +270,7 @@ permalink: /my-courses/
                         <button class="dash-btn" :class="course.status==='published' ? 'dash-btn-outline' : 'dash-btn-primary'" style="padding:5px 10px;font-size:0.78rem;flex:1;" @click="togglePublish(course)">
                             <span x-text="course.status==='published' ? 'Unpublish' : 'Publish'"></span>
                         </button>
-                        <a :href="course.html_url" target="_blank" class="dash-btn dash-btn-outline" style="padding:5px 8px;font-size:0.78rem;" title="GitHub Repo">
+                        <a :href="course.html_url" target="_blank" class="dash-btn dash-btn-outline" style="padding:5px 8px;font-size:0.78rem;" title="Open course source">
                             <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="vertical-align:middle;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                         </a>
                     </div>
@@ -487,7 +487,7 @@ permalink: /my-courses/
                     </template>
                     <div x-show="editModules.length > 0" style="margin-top:12px;padding:10px 12px;background:#f0f4ff;border-radius:6px;font-size:0.8rem;color:#5a8299;">
                         <i class="fas fa-info-circle" style="color:#667eea;margin-right:4px;"></i>
-                        Module content is stored as Markdown in the GitHub repo. Click <strong>Edit</strong> to write lesson content, add quiz questions, and embed media.
+                        Module content is written in Markdown. Click <strong>Edit</strong> to write lesson content, add quiz questions, and embed media.
                     </div>
                 </div>
             </div>
@@ -652,7 +652,7 @@ function coursesPage() {
                 self.showCreate = false;
                 self.showToast('Course created! Repo: '+(data.course.repo_name||''),'success');
             })
-            .catch(function() { self.creating=false; self.createError='Failed to create course. Check GitHub token.'; });
+            .catch(function() { self.creating=false; self.createError='Failed to create course. Please try again.'; });
         },
         togglePublish(course) {
             var self = this, newState = course.status !== 'published';
@@ -826,10 +826,10 @@ function handleMediaDrop(event) {
                 <div class="dash-card" style="margin-top:24px;" id="educator-upload-card">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
                         <h4 style="margin:0;"><i class="fas fa-cloud-upload-alt" style="color:#ff6000;margin-right:8px;"></i>Publish a Course On-Chain</h4>
-                        <span style="font-size:0.78rem;color:#5a8299;">IPFS + Base L2</span>
+                        <span style="font-size:0.78rem;color:#5a8299;">Cloudflare + Base L2</span>
                     </div>
                     <p style="color:#5a8299;font-size:0.85rem;margin-bottom:16px;">
-                        Pin your course content to IPFS, then register it on-chain. Buyers pay USDC and the contract auto-mints them a certificate NFT — you can withdraw your share any time from the Revenue tab.
+                        Upload your course assets to Cloudflare and register the course on-chain. Learners pay in USDC; once they finish the course they can claim a certificate NFT. Withdraw your share any time from the Revenue tab.
                     </p>
                     <form id="tkn-educator-upload" autocomplete="off">
                         <div class="row">
@@ -856,7 +856,7 @@ function handleMediaDrop(event) {
                         </div>
                         <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:8px;">
                             <button type="submit" data-tkn-upload-submit class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 24px;">
-                                <i class="fas fa-rocket" style="margin-right:6px;"></i>Publish to IPFS + Base
+                                <i class="fas fa-rocket" style="margin-right:6px;"></i>Submit course for review
                             </button>
                             <span data-tkn-upload-progress style="color:#5a8299;font-size:0.85rem;"></span>
                             <span data-tkn-upload-status style="font-size:0.85rem;"></span>

@@ -67,13 +67,22 @@ permalink: /dashboard/
                 </div>
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="dashboardHome()" x-init="init()">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
-        <span style="color:#8899A6;font-size:0.82rem;font-weight:500;">View as:</span>
-        <button class="dash-btn dash-btn-outline" @click="setRole('institution')" :style="role === 'institution' ? 'border-color:#F7931A;color:#F7931A;background:rgba(247,147,26,0.05)' : ''">Institution</button>
-        <button class="dash-btn dash-btn-outline" @click="setRole('educator')" :style="role === 'educator' ? 'border-color:#00C853;color:#00C853;background:rgba(0,200,83,0.05)' : ''">Educator</button>
-        <button class="dash-btn dash-btn-outline" @click="setRole('consultant')" :style="role === 'consultant' ? 'border-color:#2196F3;color:#2196F3;background:rgba(33,150,243,0.05)' : ''">Consultant</button>
+
+    <!-- Greeting + role pill (real, not "view-as") -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px;">
+        <div>
+            <h3 style="margin:0;color:#0A0F1A;">Welcome back<span x-show="displayName">, <span x-text="displayName"></span></span></h3>
+            <p style="margin:4px 0 0;color:#5a8299;font-size:0.9rem;">
+                <template x-for="r in roles" :key="r"><span class="dash-badge" :class="roleBadge(r)" style="margin-right:6px;text-transform:capitalize;" x-text="r"></span></template>
+                <span x-show="walletShort" style="font-family:monospace;font-size:0.78rem;color:#8899A6;margin-left:6px;" x-text="walletShort"></span>
+            </p>
+        </div>
+        <div x-show="!hasRole('educator') && !hasRole('admin')" style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="/profile/#consultant-registration" class="dash-btn dash-btn-outline" style="padding:8px 14px;font-size:0.82rem;">Become an Educator</a>
+        </div>
     </div>
 
+    <!-- Stat cards: real data, role-aware -->
     <div class="row clearfix" style="margin-bottom:24px;">
         <template x-for="stat in roleStats" :key="stat.label">
             <div class="col-lg-3 col-md-6 col-sm-12" style="margin-bottom:16px;">
@@ -85,37 +94,99 @@ permalink: /dashboard/
         </template>
     </div>
 
-    <div class="dash-card" style="margin-bottom:20px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-            <div>
-                <h4 style="margin:0;"><i class="fas fa-link" style="color:#ff6000;margin-right:8px;"></i>On-Chain Ownership</h4>
-                <p style="margin:4px 0 0;color:#5a8299;font-size:0.85rem;">Publish courses, mint certificates, and withdraw USDC — all on Base L2.</p>
-            </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <a href="/my-courses/" class="theme-btn btn-style-one" style="border-radius:8px;padding:8px 16px;font-size:0.85rem;"><i class="fas fa-cloud-upload-alt" style="margin-right:6px;"></i>Publish course</a>
-                <a href="/revenue/#onchain-earnings-card" class="theme-btn" style="background:transparent;border:1px solid #e8eef5;color:#0c2230;border-radius:8px;padding:8px 16px;font-size:0.85rem;"><i class="fas fa-coins" style="margin-right:6px;"></i>Earnings & withdraw</a>
-                <a href="/profile/#tokenomic-score-card" class="theme-btn" style="background:transparent;border:1px solid #e8eef5;color:#0c2230;border-radius:8px;padding:8px 16px;font-size:0.85rem;"><i class="fas fa-chart-line" style="margin-right:6px;"></i>Tokenomic Score</a>
-                <a href="/profile/#my-certificates-card" class="theme-btn" style="background:transparent;border:1px solid #e8eef5;color:#0c2230;border-radius:8px;padding:8px 16px;font-size:0.85rem;"><i class="fas fa-certificate" style="margin-right:6px;"></i>My certificates</a>
-            </div>
+    <!-- Admin only: review queue summary (S1 read-only) -->
+    <div class="dash-card" style="margin-bottom:20px;" x-show="hasRole('admin') && adminLoaded">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <h4 style="margin:0;"><i class="fas fa-shield-halved" style="color:#ff6000;margin-right:8px;"></i>Review Queue</h4>
+            <span style="font-size:0.78rem;color:#5a8299;">read-only this session</span>
         </div>
+        <div class="row clearfix" x-show="adminCounts.total > 0">
+            <template x-for="(v, k) in adminCountsView" :key="k">
+                <div class="col-md-3 col-sm-6" style="margin-bottom:12px;">
+                    <div style="background:#f8fafc;border:1px solid #e8eef5;border-radius:10px;padding:14px;">
+                        <div style="font-size:1.6rem;font-weight:700;color:#0c2230;" x-text="v"></div>
+                        <div style="font-size:0.78rem;color:#5a8299;text-transform:capitalize;" x-text="k + ' awaiting review'"></div>
+                    </div>
+                </div>
+            </template>
+        </div>
+        <div x-show="adminCounts.total === 0" style="color:#5a8299;font-size:0.9rem;padding:8px 0;">Inbox zero — nothing waiting for review.</div>
     </div>
 
-    <div class="row clearfix">
+    <!-- Learner-first row: continue learning + suggested next step -->
+    <div class="row clearfix" x-show="hasRole('learner') && !hasRole('educator') && !hasRole('admin')">
         <div class="col-lg-8 col-md-7 col-sm-12" style="margin-bottom:20px;">
             <div class="dash-card">
-                <h4 x-text="role === 'institution' ? 'Student Enrollment Trend' : role === 'educator' ? 'Revenue Overview' : 'Booking Revenue'"></h4>
-                <canvas id="mainChart" height="200"></canvas>
+                <h4 style="margin-bottom:14px;">Continue learning</h4>
+                <div x-show="enrollments.length === 0" style="padding:24px;text-align:center;border:1px dashed #e8eef5;border-radius:10px;">
+                    <p style="color:#5a8299;margin-bottom:12px;">You haven't enrolled in a course yet.</p>
+                    <a href="/courses/" class="dash-btn dash-btn-primary" style="padding:8px 18px;">Browse the catalogue</a>
+                </div>
+                <template x-for="e in enrollments.slice(0,4)" :key="e.id || e.course_id">
+                    <a :href="e.url || ('/courses/' + (e.slug || ''))" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0f2f5;text-decoration:none;color:inherit;">
+                        <div style="flex:1;">
+                            <div style="font-weight:600;color:#0A0F1A;" x-text="e.title || e.course_title || 'Untitled course'"></div>
+                            <div style="font-size:0.78rem;color:#5a8299;">Progress <span x-text="(e.progress || 0) + '%'"></span></div>
+                        </div>
+                        <div style="width:120px;height:6px;background:#f0f2f5;border-radius:3px;overflow:hidden;">
+                            <div :style="'width:' + (e.progress || 0) + '%;height:100%;background:#ff6000;'"></div>
+                        </div>
+                    </a>
+                </template>
             </div>
         </div>
         <div class="col-lg-4 col-md-5 col-sm-12" style="margin-bottom:20px;">
             <div class="dash-card">
-                <h4>Quick Actions</h4>
+                <h4 style="margin-bottom:14px;">Your stats</h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                    <div><div style="font-size:1.4rem;font-weight:700;color:#0A0F1A;" x-text="learnerStats.xp"></div><div style="font-size:0.75rem;color:#5a8299;">XP</div></div>
+                    <div><div style="font-size:1.4rem;font-weight:700;color:#0A0F1A;" x-text="learnerStats.streak + 'd'"></div><div style="font-size:0.75rem;color:#5a8299;">Streak</div></div>
+                    <div><div style="font-size:1.4rem;font-weight:700;color:#0A0F1A;" x-text="learnerStats.certs"></div><div style="font-size:0.75rem;color:#5a8299;">Certificates</div></div>
+                    <div><div style="font-size:1.4rem;font-weight:700;color:#0A0F1A;" x-text="learnerStats.enrolled"></div><div style="font-size:0.75rem;color:#5a8299;">Enrolled</div></div>
+                </div>
+                <hr style="margin:16px 0;">
+                <p style="font-size:0.82rem;color:#5a8299;margin-bottom:10px;">Ready to teach?</p>
+                <a href="/profile/#consultant-registration" class="dash-btn dash-btn-primary" style="padding:8px 14px;font-size:0.82rem;width:100%;text-align:center;">Apply to become an Educator</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Educator-first row: needs attention + revenue -->
+    <div class="row clearfix" x-show="hasRole('educator') || hasRole('admin')">
+        <div class="col-lg-8 col-md-7 col-sm-12" style="margin-bottom:20px;">
+            <div class="dash-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                    <h4 style="margin:0;">Recent revenue</h4>
+                    <a href="/revenue/" data-dash="revenue" class="dash-btn dash-btn-outline" style="padding:5px 14px;font-size:0.75rem;">View all</a>
+                </div>
+                <div x-show="recentTx.length === 0" style="padding:24px;text-align:center;border:1px dashed #e8eef5;border-radius:10px;">
+                    <p style="color:#5a8299;margin:0;">No transactions yet. Revenue will appear here once a learner buys one of your courses or books a consultation.</p>
+                </div>
+                <div x-show="recentTx.length > 0" style="overflow-x:auto;">
+                    <table class="dash-table">
+                        <thead><tr><th>Description</th><th>Amount</th><th>From</th><th>Status</th><th>Date</th></tr></thead>
+                        <tbody>
+                            <template x-for="tx in recentTx" :key="tx.id">
+                                <tr>
+                                    <td style="font-weight:500;" x-text="tx.description || '—'"></td>
+                                    <td><strong style="color:#0D7C3E;" x-text="'$' + (tx.amount_usdc || 0) + ' USDC'"></strong></td>
+                                    <td><span class="wallet-pill" style="padding:3px 8px;font-size:0.72rem;" x-text="shortAddr(tx.sender_wallet)"></span></td>
+                                    <td><span class="dash-badge" :class="tx.status==='confirmed'?'dash-badge-success':'dash-badge-warning'" x-text="tx.status || 'pending'"></span></td>
+                                    <td style="font-size:0.82rem;color:#5A6B7B;" x-text="tx.created_at ? new Date(tx.created_at).toLocaleDateString() : ''"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-5 col-sm-12" style="margin-bottom:20px;">
+            <div class="dash-card">
+                <h4 style="margin-bottom:14px;">Quick actions</h4>
                 <div class="quick-action-grid">
                     <template x-for="action in quickActions" :key="action.label">
                         <a :href="action.url" class="quick-action-card">
-                            <div class="qa-icon" :style="'background:' + action.iconBg + ';color:' + action.iconColor">
-                                <span :class="action.icon"></span>
-                            </div>
+                            <div class="qa-icon" :style="'background:' + action.iconBg + ';color:' + action.iconColor"><span :class="action.icon"></span></div>
                             <div>
                                 <div class="qa-label" x-text="action.label"></div>
                                 <div class="qa-desc" x-text="action.desc"></div>
@@ -127,110 +198,144 @@ permalink: /dashboard/
         </div>
     </div>
 
-    <div class="dash-card" style="margin-top:4px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h4 style="margin-bottom:0 !important;">Recent Transactions</h4>
-            <a href="/revenue/" data-dash="revenue" class="dash-btn dash-btn-outline" style="padding:5px 14px;font-size:0.75rem;">View All</a>
-        </div>
-        <div style="overflow-x:auto;">
-        <table class="dash-table">
-            <thead><tr><th>Type</th><th>Description</th><th>Amount</th><th>From</th><th>Split</th><th>Status</th><th>Date</th></tr></thead>
-            <tbody>
-                <template x-for="tx in recentTx" :key="tx.id">
-                    <tr>
-                        <td><span class="dash-badge dash-badge-info" x-text="tx.type || 'Helio'"></span></td>
-                        <td style="font-weight:500;" x-text="tx.description"></td>
-                        <td><strong style="color:#0D7C3E;" x-text="'$' + tx.amount_usdc + ' USDC'"></strong></td>
-                        <td><span class="wallet-pill" style="padding:3px 8px;font-size:0.72rem;" x-text="tx.sender_wallet"></span></td>
-                        <td style="font-size:0.78rem;color:#8899A6;" x-text="tx.split || '90/5/5'"></td>
-                        <td><span class="dash-badge" :class="tx.status==='confirmed'?'dash-badge-success':'dash-badge-warning'" x-text="tx.status"></span></td>
-                        <td style="font-size:0.82rem;color:#5A6B7B;" x-text="new Date(tx.created_at).toLocaleDateString()"></td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
-        </div>
-    </div>
 </div>
 
 <script>
 function dashboardHome() {
     return {
-        role: 'educator',
+        roles: ['learner'],
+        wallet: '',
+        walletShort: '',
+        displayName: '',
         roleStats: [],
-        recentTx: [],
         quickActions: [],
-        setRole(r) {
-            this.role = r;
-            this.updateRoleStats();
-            this.$nextTick(() => this.renderChart());
+        recentTx: [],
+        enrollments: [],
+        learnerStats: { xp: 0, streak: 0, certs: 0, enrolled: 0 },
+        adminCounts: { applications: 0, courses: 0, communities: 0, articles: 0, total: 0 },
+        adminLoaded: false,
+        hasRole(r) { return this.roles.indexOf(r) !== -1; },
+        roleBadge(r) {
+            return r === 'admin'      ? 'dash-badge-warning'
+                 : r === 'educator'   ? 'dash-badge-success'
+                 : r === 'consultant' ? 'dash-badge-info'
+                 : 'dash-badge-info';
         },
-        updateRoleStats() {
-            if (this.role === 'institution') {
-                this.roleStats = [
-                    { label: 'Active Students', value: '247', color: '#ff6000' },
-                    { label: 'Courses Live', value: '12', color: '#00a651' },
-                    { label: 'Completion Rate', value: '78%', color: '#1976d2' },
-                    { label: 'Communities', value: '5', color: '#001f29' }
-                ];
-                this.quickActions = [
-                    { label: 'Manage Courses', desc: 'Create & edit courses', url: '/courses/', icon: 'flaticon-notebook', iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
-                    { label: 'Leaderboard', desc: 'Student rankings', url: '/leaderboard/', icon: 'flaticon-trophy', iconBg: 'rgba(255,193,7,0.1)', iconColor: '#FFA000' },
-                    { label: 'Communities', desc: 'Manage groups', url: '/communities/', icon: 'flaticon-user-3', iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
-                    { label: 'Events', desc: 'Schedule & sync', url: '/events/', icon: 'flaticon-calendar', iconBg: 'rgba(0,200,83,0.1)', iconColor: '#00C853' }
-                ];
-            } else if (this.role === 'educator') {
-                this.roleStats = [
-                    { label: 'Communities', value: '5', color: '#0A0F1A' },
-                    { label: 'Total Students', value: '247', color: '#F7931A' },
-                    { label: 'Revenue (USDC)', value: '$2,450', color: '#00C853' },
-                    { label: 'Articles Published', value: '24', color: '#2196F3' }
-                ];
-                this.quickActions = [
-                    { label: 'Write Article', desc: 'Publish to learn site', url: '/articles/', icon: 'flaticon-edit', iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
-                    { label: 'Social Posts', desc: 'Schedule content', url: '/social/', icon: 'flaticon-share', iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
-                    { label: 'Revenue', desc: 'View earnings', url: '/revenue/', icon: 'flaticon-money', iconBg: 'rgba(0,200,83,0.1)', iconColor: '#00C853' },
-                    { label: 'Chat', desc: 'Community messages', url: '/chat/', icon: 'flaticon-speech-bubble', iconBg: 'rgba(255,143,0,0.1)', iconColor: '#FF8F00' }
-                ];
-            } else {
-                this.roleStats = [
-                    { label: 'Upcoming Bookings', value: '3', color: '#F7931A' },
-                    { label: 'Total Earned', value: '$1,875', color: '#00C853' },
-                    { label: 'Sessions', value: '18', color: '#0A0F1A' },
-                    { label: 'Client Rating', value: '4.9', color: '#2196F3' }
-                ];
-                this.quickActions = [
-                    { label: 'Bookings', desc: 'Manage sessions', url: '/bookings/', icon: 'flaticon-calendar', iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
-                    { label: 'Withdraw', desc: 'Claim funds', url: '/revenue/', icon: 'flaticon-money', iconBg: 'rgba(0,200,83,0.1)', iconColor: '#00C853' },
-                    { label: 'Messages', desc: 'Client chat', url: '/chat/', icon: 'flaticon-speech-bubble', iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
-                    { label: 'Profile', desc: 'Edit settings', url: '/profile/', icon: 'flaticon-user-3', iconBg: 'rgba(156,39,176,0.1)', iconColor: '#9C27B0' }
-                ];
-            }
+        shortAddr(a) { if (!a) return '—'; return a.slice(0,6) + '…' + a.slice(-4); },
+        get adminCountsView() {
+            // Strip the .total field for display.
+            var c = this.adminCounts; return { applications: c.applications, courses: c.courses, communities: c.communities, articles: c.articles };
         },
         async init() {
-            const revenue = await TokenomicSupabase.getRevenue();
-            this.recentTx = Array.isArray(revenue) ? revenue.slice(0, 5) : [];
-            this.setRole('educator');
+            // 1. Identity + roles
+            var w = (window.TokenomicWallet && window.TokenomicWallet.getAddress) ? window.TokenomicWallet.getAddress() : null;
+            if (!w) return; // login gate keeps the page hidden anyway
+            this.wallet = w;
+            this.walletShort = this.shortAddr(w);
+
+            try {
+                if (window.TokenomicAPI && !window.TokenomicAPI.isSignedIn(w)) {
+                    await window.TokenomicAPI.signIn(w);
+                }
+                var me = window.TokenomicAPI ? await window.TokenomicAPI.getMe() : null;
+                if (me) {
+                    if (Array.isArray(me.roles) && me.roles.length) this.roles = me.roles;
+                    if (me.profile && me.profile.display_name) this.displayName = me.profile.display_name;
+                }
+            } catch (e) { console.warn('getMe failed:', e.message); }
+
+            // 2. Role-driven stats + quick actions
+            this.computeRoleSurface();
+
+            // 3. Real data fetches (in parallel)
+            await Promise.all([
+                this.loadRevenue(),
+                this.loadEnrollments(),
+                this.hasRole('admin') ? this.loadAdminQueue() : Promise.resolve()
+            ]);
+
+            // 4. Recompute headline stats with the data we just loaded
+            this.computeRoleSurface();
         },
-        renderChart() {
-            const existing = Chart.getChart('mainChart');
-            if (existing) existing.destroy();
-            const ctx = document.getElementById('mainChart');
-            if (!ctx) return;
-            const labels = ['Jan','Feb','Mar','Apr','May','Jun'];
-            let config;
-            if (this.role === 'institution') {
-                config = { type:'line', data:{ labels, datasets:[{ label:'New Students', data:[18,32,45,52,68,87], borderColor:'#ff6000', backgroundColor:'rgba(255,96,0,0.1)', fill:true, tension:0.4 }] } };
-            } else if (this.role === 'educator') {
-                config = { type:'bar', data:{ labels, datasets:[{ label:'Revenue (USDC)', data:[320,480,560,720,890,1240], backgroundColor:'rgba(255,96,0,0.2)', borderColor:'#ff6000', borderWidth:2, borderRadius:6 }] } };
+        async loadRevenue() {
+            if (!this.hasRole('educator') && !this.hasRole('consultant') && !this.hasRole('admin')) return;
+            try {
+                var rows = window.TokenomicAPI ? await window.TokenomicAPI.getRevenue(this.wallet) : [];
+                this.recentTx = (rows || []).slice(0, 6);
+            } catch (e) { /* keep empty state */ }
+        },
+        async loadEnrollments() {
+            try {
+                var rows = window.TokenomicAPI ? await window.TokenomicAPI.getMyEnrollments(this.wallet) : [];
+                this.enrollments = rows || [];
+                this.learnerStats.enrolled = this.enrollments.length;
+                this.learnerStats.certs = this.enrollments.filter(function(e){ return (e.progress||0) >= 100; }).length;
+                this.learnerStats.xp = this.enrollments.reduce(function(s,e){ return s + (e.progress||0) * 5; }, 0);
+            } catch (e) { /* keep zeros */ }
+        },
+        async loadAdminQueue() {
+            try {
+                var d = window.TokenomicAPI ? await window.TokenomicAPI.getAdminQueue('all', 'pending_review') : null;
+                if (d && d.counts) this.adminCounts = d.counts;
+                this.adminLoaded = true;
+            } catch (e) { this.adminLoaded = true; }
+        },
+        computeRoleSurface() {
+            var totalRevenue = this.recentTx.reduce(function(s, t){ return s + (Number(t.amount_usdc) || 0); }, 0);
+
+            if (this.hasRole('admin')) {
+                this.roleStats = [
+                    { label: 'Pending applications', value: this.adminCounts.applications || 0, color: '#ff6000' },
+                    { label: 'Courses to review',    value: this.adminCounts.courses      || 0, color: '#00C853' },
+                    { label: 'Communities to review',value: this.adminCounts.communities  || 0, color: '#2196F3' },
+                    { label: 'Articles to review',   value: this.adminCounts.articles     || 0, color: '#0A0F1A' }
+                ];
+            } else if (this.hasRole('educator')) {
+                this.roleStats = [
+                    { label: 'Recent revenue',  value: '$' + totalRevenue.toFixed(2), color: '#00C853' },
+                    { label: 'Enrolled courses',value: this.learnerStats.enrolled,    color: '#0A0F1A' },
+                    { label: 'Certificates',    value: this.learnerStats.certs,        color: '#2196F3' },
+                    { label: 'Streak',          value: this.learnerStats.streak + 'd', color: '#ff6000' }
+                ];
+            } else if (this.hasRole('consultant')) {
+                this.roleStats = [
+                    { label: 'Recent revenue',  value: '$' + totalRevenue.toFixed(2), color: '#00C853' },
+                    { label: 'Sessions booked', value: '0',                            color: '#F7931A' },
+                    { label: 'Certificates',    value: this.learnerStats.certs,        color: '#2196F3' },
+                    { label: 'Streak',          value: this.learnerStats.streak + 'd', color: '#ff6000' }
+                ];
             } else {
-                config = { type:'doughnut', data:{ labels:['Token Strategy','Audit Review','Tokenomics Model','General'], datasets:[{ data:[450,300,375,225], backgroundColor:['#ff6000','#00a651','#1976d2','#ff8f00'], borderWidth:0 }] } };
+                this.roleStats = [
+                    { label: 'XP',              value: this.learnerStats.xp,           color: '#ff6000' },
+                    { label: 'Enrolled courses',value: this.learnerStats.enrolled,    color: '#0A0F1A' },
+                    { label: 'Certificates',    value: this.learnerStats.certs,        color: '#00C853' },
+                    { label: 'Streak',          value: this.learnerStats.streak + 'd', color: '#2196F3' }
+                ];
             }
-            config.options = { responsive:true, plugins:{ legend:{ labels:{ color:'#5a8299' } } } };
-            if (config.type !== 'doughnut') {
-                config.options.scales = { y:{ ticks:{color:'#5a8299'}, grid:{color:'rgba(0,0,0,0.05)'} }, x:{ ticks:{color:'#5a8299'}, grid:{display:false} } };
+
+            // Role-specific quick actions (educator/admin sidebar)
+            if (this.hasRole('admin')) {
+                this.quickActions = [
+                    { label: 'Review queue',  desc: 'Approve content',     url: '/dashboard/admin-queue/', icon: 'flaticon-user-3', iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
+                    { label: 'Revenue',       desc: 'Platform totals',     url: '/revenue/',                icon: 'flaticon-money',  iconBg: 'rgba(0,200,83,0.1)',   iconColor: '#00C853' },
+                    { label: 'Communities',   desc: 'Moderate groups',     url: '/dashboard-communities/',  icon: 'flaticon-user-3', iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
+                    { label: 'Articles',      desc: 'Editorial review',    url: '/articles/',               icon: 'flaticon-edit',   iconBg: 'rgba(156,39,176,0.1)', iconColor: '#9C27B0' }
+                ];
+            } else if (this.hasRole('educator')) {
+                this.quickActions = [
+                    { label: 'New course',    desc: 'Submit for review',   url: '/my-courses/',             icon: 'flaticon-notebook', iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
+                    { label: 'Write article', desc: 'Publish to learn',    url: '/articles/',               icon: 'flaticon-edit',     iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
+                    { label: 'Revenue',       desc: 'View earnings',       url: '/revenue/',                icon: 'flaticon-money',    iconBg: 'rgba(0,200,83,0.1)',   iconColor: '#00C853' },
+                    { label: 'Chat',          desc: 'Community messages',  url: '/chat/',                   icon: 'flaticon-speech-bubble', iconBg: 'rgba(255,143,0,0.1)', iconColor: '#FF8F00' }
+                ];
+            } else if (this.hasRole('consultant')) {
+                this.quickActions = [
+                    { label: 'Bookings',      desc: 'Manage sessions',     url: '/bookings/', icon: 'flaticon-calendar',      iconBg: 'rgba(247,147,26,0.1)', iconColor: '#F7931A' },
+                    { label: 'Withdraw',      desc: 'Claim funds',         url: '/revenue/',  icon: 'flaticon-money',         iconBg: 'rgba(0,200,83,0.1)',   iconColor: '#00C853' },
+                    { label: 'Messages',      desc: 'Client chat',         url: '/chat/',     icon: 'flaticon-speech-bubble', iconBg: 'rgba(33,150,243,0.1)', iconColor: '#2196F3' },
+                    { label: 'Profile',       desc: 'Edit settings',       url: '/profile/',  icon: 'flaticon-user-3',        iconBg: 'rgba(156,39,176,0.1)', iconColor: '#9C27B0' }
+                ];
             }
-            new Chart(ctx, config);
         }
     };
 }

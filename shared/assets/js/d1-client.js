@@ -109,6 +109,34 @@
       return d.profile;
     },
 
+    // Returns { wallet, roles[], profile } for the currently signed-in user.
+    // Powers role-aware sidebar + role-specific dashboard homepage.
+    async getMe() {
+      try { return await api('GET', '/api/auth/me', null, true); }
+      catch (e) { if (e.status === 401) return null; throw e; }
+    },
+
+    // ---------- applications (role progression) ----------
+
+    async getMyApplications() {
+      try { var d = await api('GET', '/api/applications/me', null, true); return d.items || []; }
+      catch (e) { if (e.status === 401) return []; throw e; }
+    },
+    async submitApplication(payload) {
+      // payload: { role_requested, bio, expertise[], sample_url?, portfolio_url?,
+      //            hourly_rate_usdc?, availability?, credentials?, stake_tx_hash? }
+      return await api('POST', '/api/applications', payload, true);
+    },
+
+    // ---------- admin (queue read; mutating endpoints land next session) ----------
+
+    async getAdminQueue(type, status) {
+      var qs = [];
+      if (type)   qs.push('type=' + encodeURIComponent(type));
+      if (status) qs.push('status=' + encodeURIComponent(status));
+      return await api('GET', '/api/admin/queue' + (qs.length ? '?' + qs.join('&') : ''), null, true);
+    },
+
     // ---------- communities ----------
 
     async getCommunities(educatorWallet) {
