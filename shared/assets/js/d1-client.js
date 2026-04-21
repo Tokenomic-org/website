@@ -275,6 +275,53 @@
       return { unsubscribe: function () { stopped = true; } };
     },
 
+    /**
+     * Open a real-time WebSocket to a community chat (Durable Object backed).
+     * Two-step handshake: POST /api/chat/ticket (auth) → ticket; then open
+     * wss://…/api/chat/:cid/ws?ticket=… (browser cannot set Authorization on WS).
+     *
+     * Returns { send(text), close(), isOpen() }.
+     * Callbacks: { onOpen, onMessage(payload), onClose(code,reason), onError(err) }
+     */
+    async openChatSocket(communityId, handlers) {
+      handlers = handlers || {};
+      var t = await api('POST', '/api/chat/ticket', {}, true);
+      if (!t || !t.ticket) throw new Error('Failed to obtain chat ticket');
+      var wsBase = API_BASE.replace(/^http/, 'ws');
+      var url = wsBase + '/api/chat/' + encodeURIComponent(communityId) + '/ws?ticket=' + encodeURIComponent(t.ticket);
+      var ws = new WebSocket(url);
+      ws.addEventListener('open',  function ()  { if (handlers.onOpen)  handlers.onOpen(); });
+      ws.addEventListener('error', function (e) { if (handlers.onError) handlers.onError(e); });
+      ws.addEventListener('close', function (e) { if (handlers.onClose) handlers.onClose(e.code, e.reason); });
+      ws.addEventListener('message', function (ev) {
+        var payload = null;
+        try { payload = JSON.parse(ev.data); } catch { return; }
+        if (handlers.onMessage) handlers.onMessage(payload);
+      });
+      return {
+        isOpen: function () { return ws.readyState === 1; },
+        send: function (text) {
+          var s = (text || '').toString().trim();
+          if (!s) return false;
+          if (ws.readyState !== 1) return false;
+          ws.send(JSON.stringify({ body: s }));
+          return true;
+        },
+        close: function () { try { ws.close(1000, 'client'); } catch {} }
+      };
+    },
+
+    // ---------- bookings (consultant mutations) ----------
+
+    async acceptBooking(id) {
+      var d = await api('POST', '/api/bookings/' + encodeURIComponent(id) + '/accept', {}, true);
+      return d.booking;
+    },
+    async declineBooking(id, reason) {
+      var d = await api('POST', '/api/bookings/' + encodeURIComponent(id) + '/decline', { reason: reason }, true);
+      return d.booking;
+    },
+
     // ---------- experts ----------
 
     async getEducators() {

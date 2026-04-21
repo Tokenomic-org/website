@@ -810,6 +810,56 @@ export function mountD1Routes(app) {
     return c.json({ ok: true, booking: row });
   });
 
+  // Consultant-only: accept a booking → status='confirmed'.
+  app.post('/api/bookings/:id/accept', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    const id = Number(c.req.param('id'));
+    if (!Number.isFinite(id) || id <= 0) return c.json({ error: 'Invalid id' }, 400);
+    const row = await c.env.DB.prepare('SELECT * FROM bookings WHERE id = ?').bind(id).first();
+    if (!row) return c.json({ error: 'Booking not found' }, 404);
+    if (lc(row.consultant_wallet) !== auth.wallet) return c.json({ error: 'Only the consultant can accept this booking' }, 403);
+    if (row.status === 'confirmed') return c.json({ ok: true, booking: row });
+    if (row.status === 'declined' || row.status === 'cancelled') return c.json({ error: `Cannot accept a ${row.status} booking` }, 409);
+    // Conditional update guards against concurrent accept/decline races.
+    const upd = await c.env.DB.prepare(
+      "UPDATE bookings SET status = 'confirmed' WHERE id = ? AND status = 'pending'"
+    ).bind(id).run();
+    if (!upd.meta || upd.meta.changes !== 1) {
+      const fresh = await c.env.DB.prepare('SELECT * FROM bookings WHERE id = ?').bind(id).first();
+      return c.json({ error: 'Booking state changed; refresh and retry', booking: fresh }, 409);
+    }
+    const updated = await c.env.DB.prepare('SELECT * FROM bookings WHERE id = ?').bind(id).first();
+    await audit(c.env, auth.wallet, 'booking.accepted', 'booking', id);
+    return c.json({ ok: true, booking: updated });
+  });
+
+  // Consultant-only: decline a booking with a short reason → status='declined'.
+  app.post('/api/bookings/:id/decline', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    const id = Number(c.req.param('id'));
+    if (!Number.isFinite(id) || id <= 0) return c.json({ error: 'Invalid id' }, 400);
+    let body = {}; try { body = await c.req.json(); } catch {}
+    const reason = ((body && body.reason) || '').toString().trim();
+    if (reason.length < 5) return c.json({ error: 'A reason of at least 5 characters is required' }, 400);
+    const row = await c.env.DB.prepare('SELECT * FROM bookings WHERE id = ?').bind(id).first();
+    if (!row) return c.json({ error: 'Booking not found' }, 404);
+    if (lc(row.consultant_wallet) !== auth.wallet) return c.json({ error: 'Only the consultant can decline this booking' }, 403);
+    if (row.status === 'declined') return c.json({ ok: true, booking: row });
+    if (row.status === 'confirmed' || row.status === 'cancelled') return c.json({ error: `Cannot decline a ${row.status} booking` }, 409);
+    const upd = await c.env.DB.prepare(
+      "UPDATE bookings SET status = 'declined' WHERE id = ? AND status = 'pending'"
+    ).bind(id).run();
+    if (!upd.meta || upd.meta.changes !== 1) {
+      const fresh = await c.env.DB.prepare('SELECT * FROM bookings WHERE id = ?').bind(id).first();
+      return c.json({ error: 'Booking state changed; refresh and retry', booking: fresh }, 409);
+    }
+    const updated = await c.env.DB.prepare('SELECT * FROM bookings WHERE id = ?').bind(id).first();
+    await audit(c.env, auth.wallet, 'booking.declined', 'booking', id, { reason: reason.slice(0, 200) });
+    return c.json({ ok: true, booking: updated });
+  });
+
   // -------- enrollments --------
 
   app.get('/api/enrollments/:wallet', async (c) => {

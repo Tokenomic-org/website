@@ -33,3 +33,12 @@ binding       = "DB"
 database_name = "tokenomic-db"
 database_id   = "6c1e01cf-1e87-4419-b705-f8eec1935fe4"
 # JWT_SECRET injected via: wrangler secret put JWT_SECRET
+
+# Durable Objects — one ChatRoom instance per community
+[[durable_objects.bindings]]
+name       = "CHAT_ROOMS"
+class_name = "ChatRoom"
+
+[[migrations]]
+tag                = "v1-chatroom"
+new_sqlite_classes = ["ChatRoom"]

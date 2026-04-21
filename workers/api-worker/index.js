@@ -25,6 +25,9 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { mountD1Routes } from './d1-routes.js';
+import { ChatRoom, mountChatRoutes } from './chat-room.js';
+
+export { ChatRoom };
 
 const app = new Hono();
 
@@ -103,6 +106,9 @@ app.get('/api/health', (c) => c.json({ ok: true, worker: 'api-worker', ts: Date.
 
 // D1-backed routes (profiles, courses, communities, articles, experts, revenue, bookings, enrollments, messages, auth)
 mountD1Routes(app);
+
+// Real-time chat over WebSocket Durable Objects
+mountChatRoutes(app);
 
 app.get('/api/comments/:slug', async (c) => {
   const slug = c.req.param('slug');

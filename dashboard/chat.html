@@ -3,7 +3,7 @@ layout: dashboard
 title: "Chat"
 permalink: /chat/
 ---
-<section class="dashboard-section" >
+<section class="dashboard-section">
     <div class="auto-container">
         <div class="row">
             <div class="col-lg-3 col-md-4 col-sm-12">
@@ -17,131 +17,220 @@ permalink: /chat/
                     </div>
                     <nav class="dashboard-nav">
                         <div class="sidebar-section-label">Main</div>
-                        <a href="/dashboard/" class="dash-nav-item">
-                            <span class="flaticon-home-1"></span> Dashboard
-                        </a>
-                        <a href="/communities/" data-dash="communities" class="dash-nav-item">
-                            <span class="flaticon-user-3"></span> Communities
-                        </a>
-                        <a href="/my-courses/" data-dash="courses" class="dash-nav-item">
-                            <span class="flaticon-notebook"></span> Courses
-                        </a>
-                        <a href="/events/" data-dash="events" class="dash-nav-item">
-                            <span class="flaticon-calendar"></span> Events
-                        </a>
+                        <a href="/dashboard/" class="dash-nav-item"><span class="flaticon-home-1"></span> Dashboard</a>
+                        <a href="/communities/" data-dash="communities" class="dash-nav-item"><span class="flaticon-user-3"></span> Communities</a>
+                        <a href="/my-courses/" data-dash="courses" class="dash-nav-item"><span class="flaticon-notebook"></span> Courses</a>
+                        <a href="/events/" data-dash="events" class="dash-nav-item"><span class="flaticon-calendar"></span> Events</a>
                         <div class="sidebar-section-label">Finance</div>
-                        <a href="/revenue/" data-dash="revenue" class="dash-nav-item">
-                            <span class="flaticon-money"></span> Revenue
-                        </a>
-                        <a href="/bookings/" data-dash="bookings" class="dash-nav-item">
-                            <span class="flaticon-calendar"></span> Bookings
-                        </a>
+                        <a href="/revenue/" data-dash="revenue" class="dash-nav-item"><span class="flaticon-money"></span> Revenue</a>
+                        <a href="/bookings/" data-dash="bookings" class="dash-nav-item"><span class="flaticon-calendar"></span> Bookings</a>
                         <div class="sidebar-section-label">Content</div>
-                        <a href="/chat/" data-dash="chat" class="dash-nav-item active">
-                            <span class="flaticon-speech-bubble"></span> Chat
-                        </a>
-                        <a href="/articles/" data-dash="articles" class="dash-nav-item">
-                            <span class="flaticon-edit"></span> Articles
-                        </a>
-                        <a href="/social/" data-dash="social" class="dash-nav-item">
-                            <span class="flaticon-share"></span> Social
-                        </a>
+                        <a href="/chat/" data-dash="chat" class="dash-nav-item active"><span class="flaticon-speech-bubble"></span> Chat</a>
+                        <a href="/articles/" data-dash="articles" class="dash-nav-item"><span class="flaticon-edit"></span> Articles</a>
+                        <a href="/social/" data-dash="social" class="dash-nav-item"><span class="flaticon-share"></span> Social</a>
                         <div class="sidebar-section-label">Progress</div>
-                        <a href="/leaderboard/" data-dash="leaderboard" class="dash-nav-item">
-                            <span class="flaticon-trophy"></span> Leaderboard
-                        </a>
-                        <a href="/profile/" data-dash="profile" class="dash-nav-item">
-                            <span class="flaticon-user-3"></span> Profile
-                        </a>
+                        <a href="/leaderboard/" data-dash="leaderboard" class="dash-nav-item"><span class="flaticon-trophy"></span> Leaderboard</a>
+                        <a href="/profile/" data-dash="profile" class="dash-nav-item"><span class="flaticon-user-3"></span> Profile</a>
                     </nav>
                 </div>
             </div>
+
             <div class="col-lg-9 col-md-8 col-sm-12">
-                                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
                     <div style="width:80px;height:80px;border-radius:50%;background:#0A0F1A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
                         <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
                     </div>
                     <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
-                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access community chat.</p>
                     <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
                 </div>
+
                 <div class="dashboard-content" style="display:none;">
-                    <div x-data="chatPage()">
-    <div class="row clearfix">
-        <div class="col-lg-4 col-md-4 col-sm-12">
-            <div class="dash-card" style="height:calc(100vh - 340px);display:flex;flex-direction:column;">
-                <h4>Channels</h4>
-                <div style="margin-bottom:12px;"><input x-model="search" class="dash-input" placeholder="Search channels..." /></div>
-                <div style="overflow-y:auto;flex:1;">
-                    <template x-for="ch in filteredChannels" :key="ch.id">
-                        <div @click="activeChannel=ch" style="padding:10px 14px;border-radius:8px;cursor:pointer;margin-bottom:4px;" :style="activeChannel.id===ch.id?'background:rgba(255,96,0,0.06);border-left:3px solid #ff6000':'border-left:3px solid transparent'">
-                            <div style="display:flex;justify-content:space-between;align-items:center;">
-                                <strong style="font-size:0.9rem;" x-text="ch.name"></strong>
-                                <span x-show="ch.unread>0" class="dash-badge dash-badge-danger" x-text="ch.unread" style="font-size:0.7rem;"></span>
-                            </div>
-                            <small style="color:#5a8299;" x-text="ch.last_message"></small>
-                        </div>
-                    </template>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-8 col-md-8 col-sm-12">
-            <div class="dash-card" style="height:calc(100vh - 340px);display:flex;flex-direction:column;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #f0f2f5;">
-                    <div><h5 style="margin:0;" x-text="'#'+activeChannel.name"></h5><small style="color:#5a8299;" x-text="activeChannel.members+' members'"></small></div>
-                    <span class="dash-badge dash-badge-info" x-text="activeChannel.type"></span>
-                </div>
-                <div style="flex:1;overflow-y:auto;padding:8px 0;" id="chatMessages">
-                    <template x-for="msg in activeChannel.messages" :key="msg.id">
-                        <div style="margin-bottom:14px;">
-                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
-                                <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:#fff;" :style="'background:'+msg.avatar_color" x-text="msg.user.charAt(0)"></div>
-                                <strong style="font-size:0.85rem;" x-text="msg.user"></strong>
-                                <small style="color:#5a8299;" x-text="msg.time"></small>
-                            </div>
-                            <p style="margin:0 0 0 36px;color:#0A0F1A;font-size:0.9rem;" x-text="msg.text"></p>
-                        </div>
-                    </template>
-                </div>
-                <div style="padding-top:10px;border-top:1px solid #f0f2f5;display:flex;gap:8px;">
-                    <input x-model="message" class="dash-input" placeholder="Type a message..." @keyup.enter="sendMessage()" />
-                    <button class="dash-btn dash-btn-primary" @click="sendMessage()">Send</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                    <div x-data="chatPage()" x-init="init()">
 
-<script>
-function chatPage() {
-    const msgs = [
-        {id:1,user:'CryptoScholar',text:'Has anyone tried the new Aave v4 pools?',time:'10:32 AM',avatar_color:'#ff6000'},
-        {id:2,user:'TokenExplorer',text:'Yes! The interest rates are very competitive.',time:'10:35 AM',avatar_color:'#00a651'},
-        {id:3,user:'Dr. Sarah Chen',text:'Be careful with leverage positions. Risk management first.',time:'10:42 AM',avatar_color:'#1976d2'},
-        {id:4,user:'DeFiNinja',text:'Good point Sarah. I wrote a risk assessment framework.',time:'10:50 AM',avatar_color:'#ff8f00'},
-    ];
-    return {
-        channels:[
-            {id:1,name:'general',type:'community',members:156,unread:3,last_message:'DeFiNinja: Good point Sarah...',messages:[...msgs]},
-            {id:2,name:'tokenomics',type:'study',members:42,unread:0,last_message:'Latest token model shared',messages:[{id:1,user:'Marcus Webb',text:'Check out this new bonding curve design.',time:'9:15 AM',avatar_color:'#ff6000'},{id:2,user:'Aisha Patel',text:'Interesting. How does it handle low liquidity?',time:'9:20 AM',avatar_color:'#00a651'}]},
-            {id:3,name:'security-guild',type:'study',members:67,unread:1,last_message:'New audit report posted',messages:[{id:1,user:'BlockBuilder',text:'Found a reentrancy pattern in the latest audit.',time:'Yesterday',avatar_color:'#1976d2'}]},
-            {id:4,name:'announcements',type:'official',members:247,unread:0,last_message:'New course launching Monday!',messages:[{id:1,user:'Tokenomic Team',text:'Excited to announce our Governance & DAOs course!',time:'Yesterday',avatar_color:'#ff6000'}]},
-        ],
-        activeChannel:{id:1,name:'general',type:'community',members:156,unread:3,last_message:'',messages:[...msgs]},
-        search:'', message:'',
-        get filteredChannels(){ return this.search ? this.channels.filter(c=>c.name.includes(this.search.toLowerCase())) : this.channels; },
-        sendMessage(){
-            if(!this.message.trim())return;
-            this.activeChannel.messages.push({id:Date.now(),user:'You',text:this.message,time:'Just now',avatar_color:'#ff6000'});
-            this.message='';
-            this.$nextTick(()=>{const el=document.getElementById('chatMessages');if(el)el.scrollTop=el.scrollHeight;});
-        }
-    };
-}
-</script>
+                        <div x-show="loading" style="background:#fff;border-radius:12px;padding:60px;text-align:center;color:#5a8299;">Loading channels…</div>
 
+                        <div x-show="!loading && channels.length === 0" style="background:#fff;border-radius:12px;padding:60px;text-align:center;">
+                            <h4 style="color:#0A0F1A;margin-bottom:8px;">No communities yet</h4>
+                            <p style="color:#5a8299;margin-bottom:18px;">There are no public communities to chat in. Browse the directory or create one.</p>
+                            <a href="/communities/" class="theme-btn btn-style-one" style="border-radius:8px;padding:12px 28px;">Browse communities</a>
+                        </div>
+
+                        <div x-show="!loading && channels.length > 0" class="row clearfix">
+                            <div class="col-lg-4 col-md-4 col-sm-12">
+                                <div class="dash-card" style="height:calc(100vh - 340px);display:flex;flex-direction:column;">
+                                    <h4>Channels</h4>
+                                    <div style="margin-bottom:12px;"><input x-model="search" class="dash-input" placeholder="Search channels..." /></div>
+                                    <div style="overflow-y:auto;flex:1;">
+                                        <template x-for="ch in filteredChannels" :key="ch.id">
+                                            <div @click="selectChannel(ch)" style="padding:10px 14px;border-radius:8px;cursor:pointer;margin-bottom:4px;"
+                                                 :style="(activeChannel && activeChannel.id===ch.id) ? 'background:rgba(255,96,0,0.06);border-left:3px solid #ff6000' : 'border-left:3px solid transparent'">
+                                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                                    <strong style="font-size:0.9rem;" x-text="'#' + ch.name"></strong>
+                                                </div>
+                                                <small style="color:#5a8299;" x-text="ch.description ? ch.description.slice(0,60) : ''"></small>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-8 col-md-8 col-sm-12">
+                                <div class="dash-card" style="height:calc(100vh - 340px);display:flex;flex-direction:column;">
+                                    <div x-show="activeChannel" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #f0f2f5;">
+                                        <div>
+                                            <h5 style="margin:0;" x-text="activeChannel ? '#' + activeChannel.name : ''"></h5>
+                                            <small style="color:#5a8299;" x-text="activeChannel && activeChannel.description ? activeChannel.description : ''"></small>
+                                        </div>
+                                        <span :class="connState === 'open' ? 'dash-badge dash-badge-success' : 'dash-badge dash-badge-warning'"
+                                              x-text="connStateLabel"></span>
+                                    </div>
+
+                                    <div style="flex:1;overflow-y:auto;padding:8px 0;" id="chatMessages">
+                                        <div x-show="loadingHistory" style="text-align:center;color:#5a8299;padding:20px;">Loading history…</div>
+                                        <div x-show="!loadingHistory && messages.length === 0" style="text-align:center;color:#5a8299;padding:30px;">No messages yet — say hello.</div>
+                                        <template x-for="msg in messages" :key="msg.id">
+                                            <div style="margin-bottom:14px;">
+                                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+                                                    <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:#fff;background:#ff6000;"
+                                                         x-text="(msg.display_name || msg.author_wallet || '?').charAt(msg.display_name ? 0 : 2).toUpperCase()"></div>
+                                                    <strong style="font-size:0.85rem;" x-text="msg.display_name || shortAddr(msg.author_wallet)"></strong>
+                                                    <small style="color:#5a8299;" x-text="formatTime(msg.created_at)"></small>
+                                                </div>
+                                                <p style="margin:0 0 0 36px;color:#0A0F1A;font-size:0.9rem;white-space:pre-wrap;word-break:break-word;" x-text="msg.body"></p>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <div style="padding-top:10px;border-top:1px solid #f0f2f5;display:flex;gap:8px;">
+                                        <input x-model="message" class="dash-input" placeholder="Type a message…" @keyup.enter="sendMessage()" :disabled="connState !== 'open'" />
+                                        <button class="dash-btn dash-btn-primary" @click="sendMessage()" :disabled="connState !== 'open' || !message.trim()">Send</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+function chatPage() {
+    return {
+        loading: true,
+        loadingHistory: false,
+        channels: [],
+        activeChannel: null,
+        messages: [],
+        socket: null,
+        connState: 'idle', // idle | connecting | open | closed | error
+        message: '',
+        search: '',
+        selectionToken: 0, // monotonic — guards against rapid channel switching
+
+        get filteredChannels() {
+            if (!this.search) return this.channels;
+            const q = this.search.toLowerCase();
+            return this.channels.filter(c => (c.name || '').toLowerCase().includes(q));
+        },
+        get connStateLabel() {
+            return ({ idle:'Idle', connecting:'Connecting…', open:'Live', closed:'Disconnected', error:'Connection error' })[this.connState] || this.connState;
+        },
+
+        async init() {
+            try {
+                this.channels = await window.TokenomicAPI.getCommunities();
+            } catch (e) {
+                console.warn('communities load:', e.message);
+                this.channels = [];
+            }
+            this.loading = false;
+            if (this.channels.length > 0) this.selectChannel(this.channels[0]);
+
+            // Tear down on navigation away.
+            window.addEventListener('beforeunload', () => { if (this.socket) this.socket.close(); });
+        },
+
+        async selectChannel(ch) {
+            if (this.activeChannel && this.activeChannel.id === ch.id) return;
+            const myToken = ++this.selectionToken;
+            if (this.socket) { try { this.socket.close(); } catch {} this.socket = null; }
+            this.activeChannel = ch;
+            this.messages = [];
+            this.loadingHistory = true;
+            this.connState = 'connecting';
+
+            // 1. Backfill history from D1.
+            try {
+                const items = await window.TokenomicAPI.getMessages(ch.id);
+                if (myToken !== this.selectionToken) return; // stale — newer channel selected
+                this.messages = items;
+            } catch (e) {
+                console.warn('history load:', e.message);
+            } finally {
+                if (myToken === this.selectionToken) {
+                    this.loadingHistory = false;
+                    this.scrollToBottom();
+                }
+            }
+
+            // 2. Open the live WebSocket.
+            let sock = null;
+            try {
+                sock = await window.TokenomicAPI.openChatSocket(ch.id, {
+                    onOpen:    () => { if (myToken === this.selectionToken) this.connState = 'open'; },
+                    onClose:   () => { if (myToken === this.selectionToken) this.connState = 'closed'; },
+                    onError:   () => { if (myToken === this.selectionToken) this.connState = 'error'; },
+                    onMessage: (payload) => {
+                        if (myToken !== this.selectionToken) return; // ignore stale-channel messages
+                        if (!payload) return;
+                        if (payload.type === 'error') {
+                            console.warn('chat error:', payload.error);
+                            return;
+                        }
+                        if (payload.type === 'message' && payload.message) {
+                            const m = payload.message;
+                            // Dedupe by id (history backfill + live can overlap on first message).
+                            if (!this.messages.some(x => x.id === m.id)) {
+                                this.messages.push(m);
+                                this.scrollToBottom();
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.warn('socket open:', e.message);
+                if (myToken === this.selectionToken) this.connState = 'error';
+                return;
+            }
+            // If user clicked away during the await, drop the freshly-opened socket.
+            if (myToken !== this.selectionToken) { try { sock.close(); } catch {}; return; }
+            this.socket = sock;
+        },
+
+        sendMessage() {
+            const text = this.message.trim();
+            if (!text || !this.socket) return;
+            if (!this.socket.send(text)) return;
+            this.message = '';
+        },
+
+        scrollToBottom() {
+            this.$nextTick(() => {
+                const el = document.getElementById('chatMessages');
+                if (el) el.scrollTop = el.scrollHeight;
+            });
+        },
+
+        shortAddr(a) { if (!a) return 'anon'; return a.slice(0,6) + '…' + a.slice(-4); },
+        formatTime(ts) {
+            if (!ts) return '';
+            try { const d = new Date(ts.toString().includes('T') ? ts : ts + 'Z'); return d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
+            catch { return ''; }
+        }
+    };
+}
+</script>

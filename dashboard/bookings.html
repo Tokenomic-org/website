@@ -198,7 +198,13 @@ permalink: /bookings/
                                                       x-text="b.status || 'pending'"></span>
                                             </td>
                                             <td x-show="isConsultant">
-                                                <button class="dash-btn dash-btn-outline" disabled title="Accept/decline mutations land in S3" style="font-size:0.75rem;padding:4px 8px;opacity:0.6;">Accept</button>
+                                                <template x-if="b.status === 'pending'">
+                                                    <span style="display:inline-flex;gap:6px;">
+                                                        <button class="dash-btn dash-btn-primary" @click="acceptBooking(b)" :disabled="busyId===b.id" style="font-size:0.75rem;padding:4px 10px;">Accept</button>
+                                                        <button class="dash-btn dash-btn-outline" @click="declineBooking(b)" :disabled="busyId===b.id" style="font-size:0.75rem;padding:4px 10px;">Decline</button>
+                                                    </span>
+                                                </template>
+                                                <small x-show="b.status !== 'pending'" style="color:#5a8299;">—</small>
                                             </td>
                                         </tr>
                                     </template>
@@ -225,6 +231,7 @@ function bookingsPage() {
         bookErr: '',
         consultants: [],
         bookings: [],
+        busyId: null,
         nb: { consultant_wallet: '', topic: '', booking_date: '', time_slot: '10:00', duration: 30, price: 0 },
 
         get isConsultant() { return this.roles.indexOf('consultant') !== -1; },
@@ -280,6 +287,30 @@ function bookingsPage() {
             } finally {
                 this.loadingBookings = false;
             }
+        },
+
+        async acceptBooking(b) {
+            if (this.busyId) return;
+            this.busyId = b.id;
+            try {
+                const updated = await window.TokenomicAPI.acceptBooking(b.id);
+                if (updated) Object.assign(b, updated);
+            } catch (e) {
+                alert('Could not accept: ' + e.message);
+            } finally { this.busyId = null; }
+        },
+
+        async declineBooking(b) {
+            if (this.busyId) return;
+            const reason = window.prompt('Reason for declining (min 5 chars, shared in audit log):');
+            if (!reason || reason.trim().length < 5) return;
+            this.busyId = b.id;
+            try {
+                const updated = await window.TokenomicAPI.declineBooking(b.id, reason.trim());
+                if (updated) Object.assign(b, updated);
+            } catch (e) {
+                alert('Could not decline: ' + e.message);
+            } finally { this.busyId = null; }
         },
 
         startBooking(c) {
