@@ -63,9 +63,19 @@ Course videos are uploaded **directly from the browser to Cloudflare Stream** us
 
 The on-chain content URI stored in `TokenomicMarket.registerCourse` is `stream:<uid>` (replacing the old `ipfs://...` scheme). Frontend flow lives in `shared/assets/js/web3-upload.js`. Cloudflare Stream subscription must be active on the account (`$5/mo + per-minute storage/viewing fees`).
 
+## Application Database — Cloudflare D1
+**Supabase has been removed.** All app data (profiles, courses, communities, articles, experts, enrollments, bookings, revenue, messages) lives in a Cloudflare D1 SQLite database `tokenomic-db` (uuid `6c1e01cf-1e87-4419-b705-f8eec1935fe4`), bound as `DB` on the `tokenomic-api` worker.
+
+- Schema: `workers/api-worker/migrations/0001_init.sql` (8 tables; apply with `wrangler d1 execute tokenomic-db --file=./migrations/0001_init.sql --remote`).
+- Worker routes: `workers/api-worker/d1-routes.js` (mounted from `index.js`). Read endpoints are public; write endpoints require `Authorization: Bearer <jwt>`.
+- Auth: nonce-challenge wallet sign-in. `POST /api/auth/nonce` → `POST /api/auth/login {wallet, signature}` → 24h HS256 JWT (verified via Web Crypto, signature checked via `viem`'s `verifyMessage`). `JWT_SECRET` is a wrangler secret on `tokenomic-api`.
+- Frontend client: `shared/assets/js/d1-client.js` exports `window.TokenomicSupabase` (legacy name kept for drop-in compatibility) plus `window.TokenomicAPI`. New methods: `signIn(wallet)`, `signOut()`, `isSignedIn()`. The old `demoData()` fallback is gone — pages render true empty state when D1 is empty.
+- Out of scope this round (deferred): R2 thumbnail/PDF uploads (needs R2-permission API token), realtime chat (D1 has no pub/sub — currently polled every 5s), rich course editor with drag-and-drop modules, analytics dashboards, killing legacy `server.js`.
+
 ## External Dependencies
+- **Cloudflare D1**: Primary application database (SQLite at the edge). Replaces Supabase.
 - **Cloudflare Stream**: Hosts and transcodes course videos (managed encoding, adaptive HLS/DASH, embed players). Replaces the previous IPFS/nft.storage pipeline.
-- **Supabase**: Backend-as-a-Service for database and authentication, client integrated via `/shared/assets/js/supabase-client.js`.
+- **viem**: Wallet signature verification inside the `tokenomic-api` worker (EIP-191 `verifyMessage`).
 - **Helio**: Used for USDC payments on the Base L2 network.
 - **0xSplits**: Facilitates revenue distribution, specifically a 90/5/5 split.
 - **Luma**: Calendar and event management, with events synced via the `/api/luma-events` proxy.

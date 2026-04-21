@@ -10,7 +10,7 @@ enabled            = true
 head_sampling_rate = 1
 
 [vars]
-ALLOWED_ORIGINS              = "https://tokenomic.org,https://*.tokenomic.org,https://*.pages.dev,https://tokenomic.guillaumelauzier.workers.dev"
+ALLOWED_ORIGINS              = "https://tokenomic.org,https://*.tokenomic.org,https://*.pages.dev,https://tokenomic.guillaumelauzier.workers.dev,https://*.replit.dev,https://*.repl.co,http://localhost:5000"
 MAX_COMMENT_LEN              = "4000"
 REQUIRE_WALLET               = "false"
 STREAM_CUSTOMER_SUBDOMAIN    = ""
@@ -27,3 +27,9 @@ preview_id = "99ded23b6b954c6e84115b4991ef1345"
 binding    = "RATE_LIMIT_KV"
 id         = "0e9898f0ec2146f1bf3a8cfa9e3d57ed"
 preview_id = "bc47b5da405d4de786536b763d9c4d76"
+
+[[d1_databases]]
+binding       = "DB"
+database_name = "tokenomic-db"
+database_id   = "6c1e01cf-1e87-4419-b705-f8eec1935fe4"
+# JWT_SECRET injected via: wrangler secret put JWT_SECRET

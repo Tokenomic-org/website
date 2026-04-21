@@ -1,0 +1,279 @@
+/**
+ * d1-client.js — Tokenomic D1 backend client.
+ *
+ * Replaces the old Supabase client. Exposes the same surface
+ * (window.TokenomicSupabase) so existing pages keep working without changes.
+ *
+ * Reads are unauthenticated. Writes require an EIP-191 wallet signature
+ * exchanged once via /api/auth/login for a 24h JWT (stored in localStorage).
+ */
+
+(function () {
+  var API_BASE = (window.TOKENOMIC_API_BASE || 'https://tokenomic-api.guillaumelauzier.workers.dev').replace(/\/+$/, '');
+  var TOKEN_KEY = 'tokenomic_jwt';
+  var WALLET_KEY = 'tokenomic_jwt_wallet';
+  var EXP_KEY = 'tokenomic_jwt_exp';
+
+  function lc(s) { return (s || '').toString().toLowerCase(); }
+  function getToken() {
+    try {
+      var t = localStorage.getItem(TOKEN_KEY);
+      var exp = parseInt(localStorage.getItem(EXP_KEY) || '0', 10);
+      if (!t || !exp) return null;
+      if (Math.floor(Date.now() / 1000) >= exp) { clearToken(); return null; }
+      return t;
+    } catch { return null; }
+  }
+  function getTokenWallet() { try { return localStorage.getItem(WALLET_KEY); } catch { return null; } }
+  function clearToken() {
+    try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(WALLET_KEY); localStorage.removeItem(EXP_KEY); } catch {}
+  }
+
+  async function api(method, path, body, requireAuth) {
+    var headers = { 'Content-Type': 'application/json' };
+    if (requireAuth) {
+      var t = getToken();
+      if (!t) throw new Error('Not signed in. Call TokenomicSupabase.signIn(wallet) first.');
+      headers['Authorization'] = 'Bearer ' + t;
+    }
+    var res = await fetch(API_BASE + path, {
+      method: method,
+      headers: headers,
+      body: body ? JSON.stringify(body) : undefined
+    });
+    var data = null;
+    try { data = await res.json(); } catch {}
+    if (!res.ok) {
+      var msg = (data && data.error) || ('HTTP ' + res.status);
+      var err = new Error(msg);
+      err.status = res.status;
+      err.data = data;
+      throw err;
+    }
+    return data;
+  }
+
+  var TokenomicSupabase = {
+    client: { d1: true, base: API_BASE }, // truthy so legacy `if (!this.client)` checks pass
+
+    init() {
+      // No-op; kept for compatibility with old call sites.
+    },
+
+    /**
+     * Sign in with a wallet. Requires window.ethereum (or any EIP-1193 provider)
+     * and TokenomicWeb3.signMessage to be available.
+     *
+     * Returns { token, wallet, expiresInSec } on success.
+     */
+    async signIn(wallet) {
+      if (!wallet || !/^0x[0-9a-fA-F]{40}$/.test(wallet)) throw new Error('Valid wallet address required');
+      var w = lc(wallet);
+      var nonce = await api('POST', '/api/auth/nonce', { wallet: w }, false);
+      var message = nonce.message;
+
+      // Sign via the page's wallet integration if present, else fall back to window.ethereum.
+      var signature;
+      if (window.TokenomicWeb3 && typeof window.TokenomicWeb3.signMessage === 'function') {
+        signature = await window.TokenomicWeb3.signMessage(message);
+      } else if (window.ethereum && window.ethereum.request) {
+        signature = await window.ethereum.request({ method: 'personal_sign', params: [message, w] });
+      } else {
+        throw new Error('No Web3 wallet available to sign');
+      }
+
+      var login = await api('POST', '/api/auth/login', { wallet: w, signature: signature }, false);
+      try {
+        localStorage.setItem(TOKEN_KEY, login.token);
+        localStorage.setItem(WALLET_KEY, w);
+        localStorage.setItem(EXP_KEY, String(Math.floor(Date.now() / 1000) + (login.expiresInSec || 86400)));
+      } catch {}
+      return login;
+    },
+
+    signOut() { clearToken(); },
+    isSignedIn(wallet) {
+      var t = getToken(); if (!t) return false;
+      if (!wallet) return true;
+      return lc(wallet) === lc(getTokenWallet());
+    },
+
+    // ---------- profiles ----------
+
+    async getProfile(walletAddress) {
+      try { return await api('GET', '/api/profile/' + encodeURIComponent(lc(walletAddress)), null, false); }
+      catch (e) { if (e.status === 404) return null; throw e; }
+    },
+    async upsertProfile(profileData) {
+      var d = await api('POST', '/api/profile', profileData, true);
+      return d.profile;
+    },
+
+    // ---------- communities ----------
+
+    async getCommunities(educatorWallet) {
+      var qs = educatorWallet ? '?educator=' + encodeURIComponent(lc(educatorWallet)) : '';
+      var d = await api('GET', '/api/communities' + qs, null, false);
+      return d.items || [];
+    },
+    async getCommunity(idOrSlug) {
+      try { return await api('GET', '/api/communities/' + encodeURIComponent(idOrSlug), null, false); }
+      catch (e) { if (e.status === 404) return null; throw e; }
+    },
+    async createCommunity(communityData) {
+      var d = await api('POST', '/api/communities', communityData, true);
+      return d.community;
+    },
+
+    // ---------- courses ----------
+
+    async getCourses(communityId) {
+      var qs = communityId ? '?community_id=' + encodeURIComponent(communityId) : '';
+      var d = await api('GET', '/api/courses' + qs, null, false);
+      return d.items || [];
+    },
+    async getCourse(idOrSlug) {
+      try { return await api('GET', '/api/courses/' + encodeURIComponent(idOrSlug), null, false); }
+      catch (e) { if (e.status === 404) return null; throw e; }
+    },
+    async createCourse(courseData) {
+      var d = await api('POST', '/api/courses', courseData, true);
+      return d.course;
+    },
+
+    // ---------- enrollments ----------
+
+    async getEnrollments(courseId) {
+      // Course-level list isn't exposed publicly (privacy); educator dashboard can
+      // filter their own enrollments client-side. Returning [] keeps callers happy.
+      return [];
+    },
+    async getMyEnrollments(walletAddress) {
+      var d = await api('GET', '/api/enrollments/' + encodeURIComponent(lc(walletAddress)), null, false);
+      return d.items || [];
+    },
+    async enroll(courseId, progress) {
+      var d = await api('POST', '/api/enrollments', { course_id: courseId, progress: progress || 0 }, true);
+      return d;
+    },
+
+    // ---------- bookings ----------
+
+    async getBookings(consultantWallet) {
+      var d = await api('GET', '/api/bookings/' + encodeURIComponent(lc(consultantWallet)), null, false);
+      return d.items || [];
+    },
+    async createBooking(bookingData) {
+      var d = await api('POST', '/api/bookings', bookingData, true);
+      return d.booking;
+    },
+
+    // ---------- revenue ----------
+
+    async getRevenue(walletAddress) {
+      var d = await api('GET', '/api/revenue/' + encodeURIComponent(lc(walletAddress)), null, false);
+      return d.items || [];
+    },
+    async recordTransaction(txHash, amountUsdc, senderWallet, recipientWallet, description) {
+      try {
+        await api('POST', '/api/revenue', {
+          tx_hash: txHash,
+          amount_usdc: amountUsdc,
+          sender_wallet: senderWallet,
+          recipient_wallet: recipientWallet,
+          description: description
+        }, true);
+        return true;
+      } catch (e) {
+        console.warn('recordTransaction failed:', e.message);
+        return null;
+      }
+    },
+
+    // ---------- messages ----------
+
+    async getMessages(communityId) {
+      var d = await api('GET', '/api/messages/' + encodeURIComponent(communityId), null, false);
+      return d.items || [];
+    },
+    async sendMessage(messageData) {
+      var d = await api('POST', '/api/messages', messageData, true);
+      return d.message;
+    },
+    subscribeToMessages(communityId, callback) {
+      // D1 has no realtime. Poll every 5s; caller is responsible for unsubscribing.
+      var lastSeen = 0;
+      var stopped = false;
+      var poll = async () => {
+        if (stopped) return;
+        try {
+          var items = await this.getMessages(communityId);
+          for (var i = 0; i < items.length; i++) {
+            var ts = Date.parse(items[i].created_at) || 0;
+            if (ts > lastSeen) { lastSeen = ts; callback(items[i]); }
+          }
+        } catch (e) { /* ignore transient */ }
+        setTimeout(poll, 5000);
+      };
+      poll();
+      return { unsubscribe: function () { stopped = true; } };
+    },
+
+    // ---------- experts ----------
+
+    async getEducators() {
+      var d = await api('GET', '/api/experts?role=educator', null, false);
+      return d.items || [];
+    },
+    async getConsultants() {
+      var d = await api('GET', '/api/experts?role=consultant', null, false);
+      return d.items || [];
+    },
+    async getExpert(walletAddress) {
+      try { return await api('GET', '/api/experts/' + encodeURIComponent(lc(walletAddress)), null, false); }
+      catch (e) { if (e.status === 404) return null; throw e; }
+    },
+
+    // ---------- articles ----------
+
+    async getArticles(category) {
+      var qs = category ? '?category=' + encodeURIComponent(category) : '';
+      var d = await api('GET', '/api/articles' + qs, null, false);
+      // Re-shape to match old Supabase response (legacy code reads .profiles.{display_name,avatar_url})
+      return (d.items || []).map(function (a) {
+        return Object.assign({}, a, {
+          profiles: {
+            display_name: a.author_name,
+            avatar_url: a.author_avatar,
+            wallet_address: a.author_wallet
+          }
+        });
+      });
+    },
+    async getArticle(slug) {
+      try {
+        var a = await api('GET', '/api/articles/' + encodeURIComponent(slug), null, false);
+        a.profiles = { display_name: a.author_name, avatar_url: a.author_avatar, wallet_address: a.author_wallet };
+        return a;
+      } catch (e) { if (e.status === 404) return null; throw e; }
+    },
+    async createArticle(articleData) {
+      var d = await api('POST', '/api/articles', articleData, true);
+      return d.article;
+    },
+    async getAuthors() {
+      var d = await api('GET', '/api/experts', null, false);
+      return (d.items || []).slice(0, 6);
+    },
+
+    /**
+     * Legacy stub: the old Supabase client had a demoData() fallback used by
+     * a few pages (expert-profile, community-profile, site-search). The D1
+     * backend renders true empty state instead, so this just returns [].
+     */
+    demoData(_type) { return []; }
+  };
+
+  window.TokenomicSupabase = TokenomicSupabase;
+  window.TokenomicAPI = TokenomicSupabase; // friendlier alias
+})();
