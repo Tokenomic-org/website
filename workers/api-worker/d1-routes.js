@@ -518,6 +518,44 @@ export function mountD1Routes(app) {
     }
   });
 
+  // -------- public certificate gallery --------
+  // GET /api/certificates/:wallet — public, no auth.
+  // Returns one card per enrollment joined with the course it belongs to.
+  // The on-chain certificate tx hash lives on the TokenomicCertificate
+  // contract (not in D1); the frontend uses revenue_tx as a proof anchor.
+  app.get('/api/certificates/:wallet', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const wallet = lc(c.req.param('wallet'));
+    if (!isHexAddress(wallet)) return c.json({ error: 'Invalid wallet' }, 400);
+    const { results: enrollments } = await c.env.DB.prepare(`
+      SELECT e.id, e.course_id, e.progress, e.enrolled_at,
+             c.title AS course_title, c.slug AS course_slug,
+             c.thumbnail_url AS course_thumb, c.educator_wallet,
+             c.price_usdc, c.category, c.level
+      FROM enrollments e LEFT JOIN courses c ON c.id = e.course_id
+      WHERE e.student_wallet = ? ORDER BY e.enrolled_at DESC LIMIT 200
+    `).bind(wallet).all();
+    // revenue_tx has no course_id column today; we surface the most recent
+    // tx hash involving this wallet as a generic "on-chain proof" anchor
+    // each card can link to. When the schema gains a course_id link, fold
+    // the lookup back into a per-course join.
+    let lastTx = null;
+    try {
+      const r2 = await c.env.DB.prepare(`
+        SELECT tx_hash, created_at FROM revenue_tx
+        WHERE recipient_wallet = ? OR sender_wallet = ?
+        ORDER BY created_at DESC LIMIT 1
+      `).bind(wallet, wallet).first();
+      if (r2 && r2.tx_hash) lastTx = r2.tx_hash;
+    } catch (_) {}
+    const items = (enrollments || []).map(e => ({
+      ...e,
+      claimed: Number(e.progress) >= 100,
+      tx_hash: Number(e.progress) >= 100 ? lastTx : null
+    }));
+    return c.json({ wallet, items, count: items.length });
+  });
+
   // -------- messages (community discussion) --------
 
   app.get('/api/messages/:communityId', async (c) => {

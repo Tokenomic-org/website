@@ -70,10 +70,15 @@
     try {
       var res = await assets.buyCourse(courseId, price, { title: title });
       if (res && res.success) {
-        setBtnState(btn, 'success', price > 0 ? 'Purchased' : 'Enrolled');
+        setBtnState(btn, 'success', price > 0 ? 'Purchased — claim cert' : 'Enrolled — claim cert');
+        // Two-step UX (April 2026 gas refactor): purchase() no longer auto-mints
+        // the certificate. The student must trigger claimCertificate() in a
+        // second tx, so the success toast must point at that step explicitly.
         var msg = price > 0
-          ? 'Purchase complete! ' + explorerLink(res.txHash || '')
-          : 'You are enrolled in <strong>' + escapeHtml(title) + '</strong>.';
+          ? 'Purchase complete! ' + explorerLink(res.txHash || '') +
+              '<br><strong>Next step:</strong> click <em>Claim Certificate</em> to mint your on-chain credential.'
+          : 'You are enrolled in <strong>' + escapeHtml(title) + '</strong>.' +
+              '<br><strong>Next step:</strong> click <em>Claim Certificate</em> to mint your on-chain credential.';
         toast(msg, 'success');
         revealClaimButton(courseId);
       } else {

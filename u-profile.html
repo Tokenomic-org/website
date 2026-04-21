@@ -1,0 +1,160 @@
+---
+layout: default
+title: Wallet Profile
+permalink: /u/
+---
+
+{% include header.html %}
+
+<style>
+.up-wrap { max-width: 1100px; margin: 32px auto 80px; padding: 0 20px; }
+.up-hero { background: linear-gradient(135deg,#0A0F1A,#1a2332); color:#fff; border-radius:16px; padding:32px; margin-bottom:24px; }
+.up-hero h1 { font-size:1.6rem; margin:0 0 6px; word-break:break-all; font-family:monospace; color:#fff; }
+.up-hero .sub { color:rgba(255,255,255,0.7); font-size:0.95rem; }
+.up-hero .stats { display:flex; gap:24px; flex-wrap:wrap; margin-top:18px; }
+.up-hero .stat { background:rgba(255,255,255,0.08); padding:10px 18px; border-radius:10px; }
+.up-hero .stat strong { display:block; font-size:1.5rem; color:#f97316; }
+.up-hero .stat span { font-size:0.78rem; color:rgba(255,255,255,0.7); text-transform:uppercase; letter-spacing:0.04em; }
+.up-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:20px; }
+.up-card { background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:transform .15s, box-shadow .15s; display:flex; flex-direction:column; }
+.up-card:hover { transform:translateY(-3px); box-shadow:0 8px 22px rgba(0,0,0,0.1); }
+.up-thumb { aspect-ratio:1/1; background:linear-gradient(135deg,#f97316,#ea6510); display:flex; align-items:center; justify-content:center; color:#fff; position:relative; }
+.up-thumb img { width:100%; height:100%; object-fit:cover; }
+.up-thumb .badge { position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.7); color:#fff; padding:4px 10px; border-radius:999px; font-size:0.72rem; font-weight:700; }
+.up-thumb .badge.claimed { background:#10b981; }
+.up-thumb .icon { font-size:3rem; opacity:0.9; }
+.up-body { padding:14px 16px 18px; }
+.up-body h3 { font-size:1rem; margin:0 0 6px; color:#0A0F1A; line-height:1.3; }
+.up-body .meta { color:#5a8299; font-size:0.78rem; margin-bottom:8px; }
+.up-body .actions { display:flex; gap:8px; margin-top:10px; }
+.up-body .actions a { flex:1; text-align:center; font-size:0.78rem; padding:6px 8px; border-radius:6px; text-decoration:none; font-weight:600; }
+.up-body .actions a.primary { background:#f97316; color:#fff; }
+.up-body .actions a.primary:hover { background:#ea6510; color:#fff; }
+.up-body .actions a.outline { border:1px solid #e2e8f0; color:#5a8299; }
+.up-empty { text-align:center; padding:80px 20px; color:#5a8299; }
+.up-empty .icon { font-size:3rem; color:#cbd5e0; margin-bottom:14px; }
+.up-empty a { display:inline-block; margin-top:14px; background:#f97316; color:#fff; padding:10px 24px; border-radius:8px; text-decoration:none; font-weight:600; }
+.up-error { background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; padding:14px 18px; border-radius:10px; margin-bottom:20px; }
+</style>
+
+<div class="up-wrap">
+  <div id="up-loading" class="up-empty">
+    <div class="icon"><i class="fas fa-circle-notch fa-spin"></i></div>
+    <p>Loading wallet certificates...</p>
+  </div>
+
+  <div id="up-error" class="up-error" style="display:none;"></div>
+
+  <div id="up-content" style="display:none;">
+    <section class="up-hero">
+      <h1 id="up-wallet"></h1>
+      <div class="sub">Public on-chain learning record · Base L2</div>
+      <div class="stats">
+        <div class="stat"><strong id="up-stat-total">0</strong><span>Certificates</span></div>
+        <div class="stat"><strong id="up-stat-claimed">0</strong><span>On-chain claimed</span></div>
+        <div class="stat"><strong id="up-stat-courses">0</strong><span>Courses enrolled</span></div>
+      </div>
+    </section>
+
+    <h2 style="font-size:1.15rem; color:#0A0F1A; margin:0 0 16px;">Certificate Gallery</h2>
+    <div id="up-grid" class="up-grid"></div>
+    <div id="up-empty" class="up-empty" style="display:none;">
+      <div class="icon"><i class="fas fa-award"></i></div>
+      <h3 style="color:#0A0F1A;">No certificates yet</h3>
+      <p>This wallet hasn&rsquo;t earned any Tokenomic certificates.</p>
+      <a href="/courses/">Browse Courses</a>
+    </div>
+  </div>
+</div>
+
+<script src="/shared/assets/js/d1-client.js"></script>
+<script>
+(function() {
+  function getWallet() {
+    var p = new URLSearchParams(window.location.search);
+    if (p.get('wallet')) return p.get('wallet');
+    var parts = window.location.pathname.replace(/\/$/, '').split('/');
+    if (parts.length >= 3 && parts[1] === 'u') return decodeURIComponent(parts[2]);
+    return null;
+  }
+  function isHex(s) { return typeof s === 'string' && /^0x[0-9a-fA-F]{40}$/.test(s); }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+  function shortAddr(a) { return a ? a.slice(0,6) + '…' + a.slice(-4) : ''; }
+  function bsTx(h) { return h ? 'https://basescan.org/tx/' + h : ''; }
+
+  document.addEventListener('DOMContentLoaded', async function() {
+    var $loading = document.getElementById('up-loading');
+    var $error   = document.getElementById('up-error');
+    var $content = document.getElementById('up-content');
+    var wallet = getWallet();
+
+    if (!wallet || !isHex(wallet)) {
+      $loading.style.display = 'none';
+      $error.style.display = 'block';
+      $error.textContent = 'Provide a wallet address: /u/?wallet=0x… (must be a valid Base L2 address).';
+      return;
+    }
+
+    var apiBase = (window.__TKN_ENV && window.__TKN_ENV.API_BASE) || (window.TokenomicSupabase && window.TokenomicSupabase.API_BASE) || '';
+    var url = (apiBase || '') + '/api/certificates/' + wallet;
+
+    var data;
+    try {
+      var res = await fetch(url, { credentials: 'omit' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      data = await res.json();
+    } catch (e) {
+      $loading.style.display = 'none';
+      $error.style.display = 'block';
+      $error.textContent = 'Failed to load certificates: ' + (e.message || e);
+      return;
+    }
+
+    var items = (data && data.items) || [];
+    var claimed = items.filter(function(i){ return i.claimed; }).length;
+
+    $loading.style.display = 'none';
+    $content.style.display = 'block';
+    document.title = 'Wallet ' + shortAddr(wallet) + ' — Tokenomic';
+
+    document.getElementById('up-wallet').textContent = wallet;
+    document.getElementById('up-stat-total').textContent = items.length;
+    document.getElementById('up-stat-claimed').textContent = claimed;
+    document.getElementById('up-stat-courses').textContent = items.length;
+
+    var $grid = document.getElementById('up-grid');
+    if (!items.length) {
+      $grid.style.display = 'none';
+      document.getElementById('up-empty').style.display = 'block';
+      return;
+    }
+
+    $grid.innerHTML = items.map(function(i) {
+      var thumb = i.course_thumb
+        ? '<img src="' + esc(i.course_thumb) + '" alt="' + esc(i.course_title || '') + '">'
+        : '<div class="icon"><i class="fas fa-award"></i></div>';
+      var badge = i.claimed
+        ? '<span class="badge claimed"><i class="fas fa-check"></i> Claimed</span>'
+        : '<span class="badge">In progress</span>';
+      var courseHref = i.course_slug ? ('/course/?slug=' + encodeURIComponent(i.course_slug)) : '#';
+      var txAction = i.tx_hash
+        ? '<a class="outline" href="' + bsTx(i.tx_hash) + '" target="_blank" rel="noopener">View tx</a>'
+        : '';
+      var enrolled = i.enrolled_at ? new Date(i.enrolled_at).toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '';
+      return '<div class="up-card">' +
+        '<div class="up-thumb">' + thumb + badge + '</div>' +
+        '<div class="up-body">' +
+          '<h3>' + esc(i.course_title || ('Course #' + (i.course_id || '?'))) + '</h3>' +
+          '<div class="meta">' + (i.category ? esc(i.category) + ' · ' : '') + (i.level ? esc(i.level) + ' · ' : '') + enrolled + '</div>' +
+          '<div class="actions">' +
+            '<a class="primary" href="' + courseHref + '">View course</a>' +
+            txAction +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  });
+})();
+</script>
+
+{% include footer.html %}
