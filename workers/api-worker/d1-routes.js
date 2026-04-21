@@ -1172,4 +1172,437 @@ export function mountD1Routes(app) {
     const row = await c.env.DB.prepare('SELECT * FROM messages WHERE id = ?').bind(id).first();
     return c.json({ ok: true, message: row });
   });
+
+  // ========================================================================
+  // events — first-party event hosting (replaces the Luma proxy).
+  // ========================================================================
+
+  // Helpers (scoped to mountD1Routes so they share `c`-bound utilities).
+  function isIsoDateString(s) {
+    if (typeof s !== 'string' || s.length < 10 || s.length > 40) return false;
+    const t = Date.parse(s);
+    return Number.isFinite(t);
+  }
+  function slugify(s) {
+    return String(s || '')
+      .toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 80);
+  }
+  async function uniqueEventSlug(env, base) {
+    const baseSlug = base || ('event-' + Math.random().toString(36).slice(2, 8));
+    let slug = baseSlug;
+    for (let i = 0; i < 6; i++) {
+      const hit = await env.DB.prepare('SELECT 1 FROM events WHERE slug = ?').bind(slug).first();
+      if (!hit) return slug;
+      slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
+    }
+    return `${baseSlug}-${Date.now().toString(36)}`;
+  }
+  async function loadEventAsHost(c, idOrSlug) {
+    const auth = await requireAuth(c); if (auth.error) return { fail: auth.error };
+    const ev = await loadEventByIdOrSlug(c.env, idOrSlug);
+    if (!ev) return { fail: c.json({ error: 'Event not found' }, 404) };
+    if (lc(ev.host_wallet) === auth.wallet) return { auth, event: ev };
+    if (await isAdminWallet(c.env, auth.wallet)) return { auth, event: ev };
+    return { fail: c.json({ error: 'Not your event' }, 403) };
+  }
+  async function loadEventByIdOrSlug(env, idOrSlug) {
+    const idNum = Number(idOrSlug);
+    if (Number.isFinite(idNum) && idNum > 0) {
+      return await env.DB.prepare('SELECT * FROM events WHERE id = ?').bind(idNum).first();
+    }
+    if (!isValidSlug(idOrSlug)) return null;
+    return await env.DB.prepare('SELECT * FROM events WHERE slug = ?').bind(String(idOrSlug)).first();
+  }
+  // Atomic: rsvp_count = number of 'going' rsvps for this event.
+  async function refreshRsvpCount(env, eventId) {
+    await env.DB.prepare(
+      "UPDATE events SET rsvp_count = (SELECT COUNT(*) FROM event_rsvps WHERE event_id = ? AND status = 'going') WHERE id = ?"
+    ).bind(eventId, eventId).run();
+  }
+  // Promote oldest waitlisted RSVPs to 'going' until capacity is filled or
+  // the waitlist is empty. Loops to avoid leaving free seats unfilled when
+  // multiple cancels race with promotions.
+  async function maybePromoteWaitlist(env, eventId) {
+    const promoted = [];
+    for (let i = 0; i < 100; i++) {
+      const ev = await env.DB.prepare('SELECT id, capacity, rsvp_count FROM events WHERE id = ?').bind(eventId).first();
+      if (!ev || ev.capacity == null) break;
+      if ((ev.rsvp_count || 0) >= ev.capacity) break;
+      const next = await env.DB.prepare(
+        "SELECT id FROM event_rsvps WHERE event_id = ? AND status = 'waitlist' ORDER BY created_at ASC, id ASC LIMIT 1"
+      ).bind(eventId).first();
+      if (!next) break;
+      const upd = await env.DB.prepare(
+        "UPDATE event_rsvps SET status = 'going', updated_at = datetime('now') WHERE id = ? AND status = 'waitlist'"
+      ).bind(next.id).run();
+      if (!upd.meta || upd.meta.changes !== 1) {
+        // Lost the race for this waitlister to another concurrent promotion;
+        // skip and try the next one rather than leaving free seats unfilled.
+        continue;
+      }
+      await refreshRsvpCount(env, eventId);
+      promoted.push(next.id);
+    }
+    return promoted;
+  }
+
+  // Check if a wallet has admin role (env ADMIN_WALLETS or profiles.roles JSON).
+  async function isAdminWallet(env, wallet) {
+    if (!wallet) return false;
+    const adminEnv = (env.ADMIN_WALLETS || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+    if (adminEnv.includes(wallet)) return true;
+    const p = await env.DB.prepare('SELECT roles FROM profiles WHERE wallet_address = ?').bind(wallet).first();
+    const parsed = p ? jsonOrNull(p.roles) : null;
+    return Array.isArray(parsed) && parsed.includes('admin');
+  }
+
+  // Public list. Filters: host, community, status, from, to, q, visibility, limit.
+  // Defaults to public + scheduled, sorted by starts_at ASC.
+  app.get('/api/events', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const url = new URL(c.req.url);
+    const where = [];
+    const binds = [];
+    const visibility = url.searchParams.get('visibility') || 'public';
+    if (!['public', 'unlisted', 'private', 'any'].includes(visibility)) {
+      return c.json({ error: 'Bad visibility' }, 400);
+    }
+    const host = url.searchParams.get('host');
+    if (host && !isHexAddress(host)) return c.json({ error: 'Bad host' }, 400);
+
+    // Privacy gate: anything beyond 'public' requires either auth + own scope, or admin.
+    if (visibility !== 'public') {
+      const auth = await requireAuth(c); if (auth.error) return auth.error;
+      const isAdmin = await isAdminWallet(c.env, auth.wallet);
+      if (!isAdmin) {
+        // Non-admins may only request non-public lists scoped to their own wallet.
+        if (!host || lc(host) !== auth.wallet) {
+          return c.json({ error: 'Forbidden: non-public listings must be scoped to host=<your wallet>' }, 403);
+        }
+      }
+    }
+    if (visibility !== 'any') { where.push('visibility = ?'); binds.push(visibility); }
+    if (host) { where.push('host_wallet = ?'); binds.push(lc(host)); }
+    const community = url.searchParams.get('community');
+    if (community) {
+      const cid = Number(community);
+      if (!Number.isFinite(cid) || cid <= 0) return c.json({ error: 'Bad community' }, 400);
+      where.push('community_id = ?'); binds.push(cid);
+    }
+    const status = url.searchParams.get('status');
+    if (status) {
+      if (!['scheduled', 'cancelled'].includes(status)) return c.json({ error: 'Bad status' }, 400);
+      where.push('status = ?'); binds.push(status);
+    } else {
+      where.push("status = 'scheduled'");
+    }
+    const from = url.searchParams.get('from');
+    if (from) {
+      if (!isIsoDateString(from)) return c.json({ error: 'Bad from' }, 400);
+      where.push('starts_at >= ?'); binds.push(from);
+    }
+    const to = url.searchParams.get('to');
+    if (to) {
+      if (!isIsoDateString(to)) return c.json({ error: 'Bad to' }, 400);
+      where.push('starts_at <= ?'); binds.push(to);
+    }
+    const q = (url.searchParams.get('q') || '').trim();
+    if (q) {
+      where.push('(title LIKE ? OR description LIKE ?)');
+      const like = '%' + q.slice(0, 80).replace(/[%_]/g, ' ') + '%';
+      binds.push(like, like);
+    }
+    let limit = Number(url.searchParams.get('limit') || 100);
+    if (!Number.isFinite(limit) || limit <= 0) limit = 100;
+    if (limit > 500) limit = 500;
+    const sql = `SELECT * FROM events ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY starts_at ASC LIMIT ${limit}`;
+    const { results } = await c.env.DB.prepare(sql).bind(...binds).all();
+    return c.json({ items: results || [], count: (results || []).length });
+  });
+
+  // List the caller's own RSVPs. MUST be registered before /api/events/:idOrSlug
+  // so "me" isn't matched as an event slug.
+  app.get('/api/events/me/rsvps', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    const { results } = await c.env.DB.prepare(`
+      SELECT r.id AS rsvp_id, r.status AS rsvp_status, r.created_at AS rsvp_created_at,
+             e.*
+      FROM event_rsvps r
+      JOIN events e ON e.id = r.event_id
+      WHERE r.wallet = ? AND r.status != 'cancelled'
+      ORDER BY e.starts_at ASC
+      LIMIT 200
+    `).bind(auth.wallet).all();
+    return c.json({ items: results || [], count: (results || []).length });
+  });
+
+  // GET single event by id or slug. If a Bearer token is present, also returns my_rsvp.
+  // Visibility rules:
+  //   public   → anyone may read
+  //   unlisted → unguessable by slug; we still serve to anyone with the link
+  //   private  → only host, admin, or an existing (non-cancelled) RSVPer may read
+  app.get('/api/events/:idOrSlug', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const ev = await loadEventByIdOrSlug(c.env, c.req.param('idOrSlug'));
+    if (!ev) return c.json({ error: 'Event not found' }, 404);
+    let my_rsvp = null;
+    let authedWallet = null;
+    const hasAuth = (c.req.header('authorization') || '').startsWith('Bearer ');
+    if (hasAuth) {
+      const auth = await requireAuth(c);
+      if (!auth.error) {
+        authedWallet = auth.wallet;
+        my_rsvp = await c.env.DB.prepare(
+          'SELECT id, status, created_at FROM event_rsvps WHERE event_id = ? AND wallet = ?'
+        ).bind(ev.id, auth.wallet).first();
+      }
+    }
+    if (ev.visibility === 'private' || ev.visibility === 'unlisted') {
+      const isHost = authedWallet && lc(ev.host_wallet) === authedWallet;
+      const isAdmin = authedWallet && await isAdminWallet(c.env, authedWallet);
+      const isInvited = my_rsvp && my_rsvp.status !== 'cancelled';
+      if (ev.visibility === 'private') {
+        if (!isHost && !isAdmin && !isInvited) {
+          // 404 (not 403) so we don't confirm the event exists.
+          return c.json({ error: 'Event not found' }, 404);
+        }
+      } else {
+        // unlisted: link-only. Allow access when fetched by slug; reject
+        // numeric-ID enumeration unless the caller is host/admin/invited.
+        const param = String(c.req.param('idOrSlug'));
+        const fetchedBySlug = !/^\d+$/.test(param) && param === ev.slug;
+        if (!fetchedBySlug && !isHost && !isAdmin && !isInvited) {
+          return c.json({ error: 'Event not found' }, 404);
+        }
+      }
+    }
+    return c.json({ event: ev, my_rsvp });
+  });
+
+  // Create an event. Caller becomes the host.
+  app.post('/api/events', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    let body = {}; try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+    const title = (body.title || '').toString().trim();
+    if (title.length < 2 || title.length > 200) return c.json({ error: 'title 2..200 chars' }, 400);
+    if (!isIsoDateString(body.starts_at)) return c.json({ error: 'starts_at must be ISO datetime' }, 400);
+    if (body.ends_at != null && !isIsoDateString(body.ends_at)) return c.json({ error: 'ends_at must be ISO datetime' }, 400);
+    if (body.ends_at && Date.parse(body.ends_at) <= Date.parse(body.starts_at)) {
+      return c.json({ error: 'ends_at must be after starts_at' }, 400);
+    }
+    const description = (body.description || '').toString().slice(0, 50000);
+    const timezone = (body.timezone || 'UTC').toString().slice(0, 64);
+    const location = (body.location || '').toString().slice(0, 300);
+    const meeting_url = (body.meeting_url || '').toString().slice(0, 500);
+    const cover_url = (body.cover_url || '').toString().slice(0, 500);
+    const visibility = ['public', 'unlisted', 'private'].includes(body.visibility) ? body.visibility : 'public';
+    let capacity = null;
+    if (body.capacity !== undefined && body.capacity !== null && body.capacity !== '') {
+      const n = Number(body.capacity);
+      if (!Number.isFinite(n) || n < 1 || n > 100000) return c.json({ error: 'capacity 1..100000' }, 400);
+      capacity = Math.floor(n);
+    }
+    let community_id = null;
+    if (body.community_id != null && body.community_id !== '') {
+      const cid = Number(body.community_id);
+      if (!Number.isFinite(cid) || cid <= 0) return c.json({ error: 'Bad community_id' }, 400);
+      const exists = await c.env.DB.prepare('SELECT 1 FROM communities WHERE id = ?').bind(cid).first();
+      if (!exists) return c.json({ error: 'community_id not found' }, 400);
+      community_id = cid;
+    }
+    // Resolve host display name from profile (best-effort).
+    const profile = await c.env.DB.prepare('SELECT display_name FROM profiles WHERE wallet_address = ?').bind(auth.wallet).first();
+    const host_name = (body.host_name || (profile && profile.display_name) || '').toString().slice(0, 100);
+    const slug = await uniqueEventSlug(c.env, slugify(body.slug || title));
+    const res = await c.env.DB.prepare(`
+      INSERT INTO events (slug, host_wallet, host_name, title, description, starts_at, ends_at,
+                          timezone, location, meeting_url, cover_url, capacity, status, visibility, community_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'scheduled', ?, ?)
+    `).bind(
+      slug, auth.wallet, host_name, title, description, body.starts_at, body.ends_at || null,
+      timezone, location || null, meeting_url || null, cover_url || null, capacity, visibility, community_id
+    ).run();
+    const id = res.meta && res.meta.last_row_id;
+    const row = await c.env.DB.prepare('SELECT * FROM events WHERE id = ?').bind(id).first();
+    await audit(c.env, auth.wallet, 'event.created', 'event', id, { title });
+    return c.json({ ok: true, event: row });
+  });
+
+  // Update an event (host or admin).
+  app.patch('/api/events/:id', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const gate = await loadEventAsHost(c, c.req.param('id'));
+    if (gate.fail) return gate.fail;
+    const ev = gate.event;
+    let body = {}; try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+    const sets = [], binds = [];
+    function setStr(field, max) {
+      if (typeof body[field] === 'string') {
+        const v = body[field].trim().slice(0, max);
+        sets.push(`${field} = ?`); binds.push(v || null);
+      }
+    }
+    if (typeof body.title === 'string') {
+      const t = body.title.trim();
+      if (t.length < 2 || t.length > 200) return c.json({ error: 'title 2..200 chars' }, 400);
+      sets.push('title = ?'); binds.push(t);
+    }
+    if (typeof body.description === 'string') {
+      sets.push('description = ?'); binds.push(body.description.slice(0, 50000));
+    }
+    if (body.starts_at !== undefined) {
+      if (!isIsoDateString(body.starts_at)) return c.json({ error: 'Bad starts_at' }, 400);
+      sets.push('starts_at = ?'); binds.push(body.starts_at);
+    }
+    if (body.ends_at !== undefined) {
+      if (body.ends_at && !isIsoDateString(body.ends_at)) return c.json({ error: 'Bad ends_at' }, 400);
+      sets.push('ends_at = ?'); binds.push(body.ends_at || null);
+    }
+    setStr('timezone', 64);
+    setStr('location', 300);
+    setStr('meeting_url', 500);
+    setStr('cover_url', 500);
+    setStr('host_name', 100);
+    if (body.visibility !== undefined) {
+      if (!['public', 'unlisted', 'private'].includes(body.visibility)) return c.json({ error: 'Bad visibility' }, 400);
+      sets.push('visibility = ?'); binds.push(body.visibility);
+    }
+    if (body.status !== undefined) {
+      if (!['scheduled', 'cancelled'].includes(body.status)) return c.json({ error: 'Bad status' }, 400);
+      sets.push('status = ?'); binds.push(body.status);
+    }
+    if (body.capacity !== undefined) {
+      if (body.capacity === null || body.capacity === '') {
+        sets.push('capacity = ?'); binds.push(null);
+      } else {
+        const n = Number(body.capacity);
+        if (!Number.isFinite(n) || n < 1 || n > 100000) return c.json({ error: 'capacity 1..100000' }, 400);
+        sets.push('capacity = ?'); binds.push(Math.floor(n));
+      }
+    }
+    if (sets.length === 0) return c.json({ error: 'No fields to update' }, 400);
+    sets.push("updated_at = datetime('now')");
+    binds.push(ev.id);
+    await c.env.DB.prepare(`UPDATE events SET ${sets.join(', ')} WHERE id = ?`).bind(...binds).run();
+    // If capacity grew, promote waitlisted attendees.
+    if (body.capacity !== undefined) await maybePromoteWaitlist(c.env, ev.id);
+    const row = await c.env.DB.prepare('SELECT * FROM events WHERE id = ?').bind(ev.id).first();
+    await audit(c.env, gate.auth.wallet, 'event.updated', 'event', ev.id);
+    return c.json({ ok: true, event: row });
+  });
+
+  // Delete an event (host or admin). Cascades RSVPs.
+  app.delete('/api/events/:id', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const gate = await loadEventAsHost(c, c.req.param('id'));
+    if (gate.fail) return gate.fail;
+    await c.env.DB.prepare('DELETE FROM events WHERE id = ?').bind(gate.event.id).run();
+    await audit(c.env, gate.auth.wallet, 'event.deleted', 'event', gate.event.id);
+    return c.json({ ok: true });
+  });
+
+  // RSVP create/upsert. Honors capacity → waitlist. If caller previously
+  // cancelled, this restores them (back to going/waitlist as appropriate).
+  app.post('/api/events/:id/rsvp', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    const ev = await loadEventByIdOrSlug(c.env, c.req.param('id'));
+    if (!ev) return c.json({ error: 'Event not found' }, 404);
+    if (ev.status === 'cancelled') return c.json({ error: 'Event is cancelled' }, 409);
+    if (ev.visibility === 'private') return c.json({ error: 'Private event' }, 403);
+    let body = {}; try { body = await c.req.json(); } catch {}
+    const name = ((body && body.name) || '').toString().slice(0, 100);
+    const email = ((body && body.email) || '').toString().slice(0, 200);
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return c.json({ error: 'Bad email' }, 400);
+
+    // Race-safe insert: derive status from the LIVE COUNT of going RSVPs at
+    // insert time using a single SQL statement. D1 serializes writes, so two
+    // concurrent INSERTs cannot both pass the capacity check when one seat
+    // remains — the second one's COUNT() includes the first row.
+    try {
+      await c.env.DB.prepare(`
+        INSERT INTO event_rsvps (event_id, wallet, name, email, status)
+        SELECT ?, ?, ?, ?,
+          CASE
+            WHEN e.capacity IS NULL THEN 'going'
+            WHEN (SELECT COUNT(*) FROM event_rsvps WHERE event_id = e.id AND status = 'going') < e.capacity THEN 'going'
+            ELSE 'waitlist'
+          END
+        FROM events e WHERE e.id = ?
+      `).bind(ev.id, auth.wallet, name || null, email || null, ev.id).run();
+    } catch (e) {
+      // UNIQUE(event_id, wallet) → restore/update existing row.
+      const existing = await c.env.DB.prepare('SELECT * FROM event_rsvps WHERE event_id = ? AND wallet = ?').bind(ev.id, auth.wallet).first();
+      if (!existing) return c.json({ error: 'RSVP failed: ' + e.message }, 500);
+      if (existing.status === 'cancelled') {
+        // Revive with same atomic capacity-aware logic.
+        await c.env.DB.prepare(`
+          UPDATE event_rsvps
+          SET status = CASE
+                WHEN (SELECT capacity FROM events WHERE id = ?) IS NULL THEN 'going'
+                WHEN (SELECT COUNT(*) FROM event_rsvps WHERE event_id = ? AND status = 'going') < (SELECT capacity FROM events WHERE id = ?) THEN 'going'
+                ELSE 'waitlist'
+              END,
+              name = COALESCE(NULLIF(?, ''), name),
+              email = COALESCE(NULLIF(?, ''), email),
+              updated_at = datetime('now')
+          WHERE id = ?
+        `).bind(ev.id, ev.id, ev.id, name, email, existing.id).run();
+      } else {
+        // Already going or waitlisted — just update name/email, leave status alone.
+        await c.env.DB.prepare(
+          "UPDATE event_rsvps SET name = COALESCE(NULLIF(?, ''), name), email = COALESCE(NULLIF(?, ''), email), updated_at = datetime('now') WHERE id = ?"
+        ).bind(name, email, existing.id).run();
+      }
+    }
+    await refreshRsvpCount(c.env, ev.id);
+    const fresh = await c.env.DB.prepare('SELECT * FROM event_rsvps WHERE event_id = ? AND wallet = ?').bind(ev.id, auth.wallet).first();
+    const liveEvent = await c.env.DB.prepare('SELECT * FROM events WHERE id = ?').bind(ev.id).first();
+    await audit(c.env, auth.wallet, 'event.rsvp.' + (fresh ? fresh.status : 'unknown'), 'event', ev.id);
+    return c.json({ ok: true, rsvp: fresh, event: liveEvent });
+  });
+
+  // Cancel my RSVP. Promotes the next waitlister if capacity opens up.
+  app.delete('/api/events/:id/rsvp', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    const ev = await loadEventByIdOrSlug(c.env, c.req.param('id'));
+    if (!ev) return c.json({ error: 'Event not found' }, 404);
+    const existing = await c.env.DB.prepare('SELECT * FROM event_rsvps WHERE event_id = ? AND wallet = ?').bind(ev.id, auth.wallet).first();
+    if (!existing) return c.json({ ok: true, rsvp: null });
+    if (existing.status === 'cancelled') return c.json({ ok: true, rsvp: existing });
+    await c.env.DB.prepare(
+      "UPDATE event_rsvps SET status = 'cancelled', updated_at = datetime('now') WHERE id = ?"
+    ).bind(existing.id).run();
+    await refreshRsvpCount(c.env, ev.id);
+    await maybePromoteWaitlist(c.env, ev.id);
+    const fresh = await c.env.DB.prepare('SELECT * FROM event_rsvps WHERE id = ?').bind(existing.id).first();
+    await audit(c.env, auth.wallet, 'event.rsvp.cancel', 'event', ev.id);
+    return c.json({ ok: true, rsvp: fresh });
+  });
+
+  // Host-only: list attendees of an event.
+  app.get('/api/events/:id/rsvps', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const gate = await loadEventAsHost(c, c.req.param('id'));
+    if (gate.fail) return gate.fail;
+    const url = new URL(c.req.url);
+    const status = url.searchParams.get('status');
+    let sql = 'SELECT * FROM event_rsvps WHERE event_id = ?';
+    const binds = [gate.event.id];
+    if (status) {
+      if (!['going', 'waitlist', 'cancelled'].includes(status)) return c.json({ error: 'Bad status' }, 400);
+      sql += ' AND status = ?'; binds.push(status);
+    }
+    sql += ' ORDER BY created_at ASC LIMIT 1000';
+    const { results } = await c.env.DB.prepare(sql).bind(...binds).all();
+    return c.json({ items: results || [], count: (results || []).length });
+  });
+
+  // Caller's own RSVPs (with joined event info).
 }

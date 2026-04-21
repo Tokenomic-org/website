@@ -67,6 +67,10 @@
      * Returns { token, wallet, expiresInSec } on success.
      */
     async signIn(wallet) {
+      // Auto-detect from the page's connected wallet when called without args.
+      if (!wallet && typeof window !== 'undefined' && window.TokenomicWallet && window.TokenomicWallet.account) {
+        wallet = window.TokenomicWallet.account;
+      }
       if (!wallet || !/^0x[0-9a-fA-F]{40}$/.test(wallet)) throw new Error('Valid wallet address required');
       var w = lc(wallet);
       var nonce = await api('POST', '/api/auth/nonce', { wallet: w }, false);
@@ -392,6 +396,55 @@
     async getAuthors() {
       var d = await api('GET', '/api/experts', null, false);
       return (d.items || []).slice(0, 6);
+    },
+
+    // ---------- events ----------
+
+    async listEvents(filters) {
+      var qs = '';
+      if (filters && typeof filters === 'object') {
+        var parts = [];
+        Object.keys(filters).forEach(function (k) {
+          if (filters[k] !== undefined && filters[k] !== null && filters[k] !== '') {
+            parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(filters[k]));
+          }
+        });
+        if (parts.length) qs = '?' + parts.join('&');
+      }
+      var d = await api('GET', '/api/events' + qs, null, false);
+      return d.items || [];
+    },
+    async getEvent(idOrSlug) {
+      // Pass auth so the server can include my_rsvp when the user is signed in.
+      try { return await api('GET', '/api/events/' + encodeURIComponent(idOrSlug), null, this.isSignedIn()); }
+      catch (e) { if (e.status === 404) return null; throw e; }
+    },
+    async createEvent(data) {
+      var d = await api('POST', '/api/events', data, true);
+      return d.event;
+    },
+    async updateEvent(id, patch) {
+      var d = await api('PATCH', '/api/events/' + encodeURIComponent(id), patch, true);
+      return d.event;
+    },
+    async deleteEvent(id) {
+      return await api('DELETE', '/api/events/' + encodeURIComponent(id), null, true);
+    },
+    async rsvpEvent(idOrSlug, info) {
+      var d = await api('POST', '/api/events/' + encodeURIComponent(idOrSlug) + '/rsvp', info || {}, true);
+      return d; // { ok, rsvp, event }
+    },
+    async cancelRsvp(idOrSlug) {
+      return await api('DELETE', '/api/events/' + encodeURIComponent(idOrSlug) + '/rsvp', null, true);
+    },
+    async listEventRsvps(id, status) {
+      var qs = status ? '?status=' + encodeURIComponent(status) : '';
+      var d = await api('GET', '/api/events/' + encodeURIComponent(id) + '/rsvps' + qs, null, true);
+      return d.items || [];
+    },
+    async myRsvps() {
+      var d = await api('GET', '/api/events/me/rsvps', null, true);
+      return d.items || [];
     },
 
     /**

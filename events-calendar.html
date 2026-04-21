@@ -1,0 +1,219 @@
+---
+layout: default
+title: Events
+permalink: /events/calendar/
+---
+
+{% include header.html %}
+
+<style>
+.evcal-hero {
+    background: linear-gradient(135deg, #ff6000 0%, #f97316 60%, #facc15 100%);
+    padding: 120px 0 48px;
+    text-align: center;
+    color: #fff;
+}
+.evcal-hero h1 { color: #fff; font-size: 42px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+.evcal-hero p { color: rgba(255,255,255,0.9); font-size: 16px; max-width: 640px; margin: 0 auto; }
+
+.evcal-wrap { max-width: 1200px; margin: 40px auto 80px; padding: 0 20px; }
+.evcal-toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:24px; }
+.evcal-toolbar input, .evcal-toolbar select {
+    padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.92rem; background:#fff;
+}
+.evcal-toolbar input { min-width: 220px; }
+
+.evcal-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 18px; }
+.evcal-card {
+    background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06);
+    overflow:hidden; display:flex; flex-direction:column; transition: transform 0.15s, box-shadow 0.15s;
+}
+.evcal-card:hover { transform: translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.1); }
+.evcal-cover { width:100%; aspect-ratio: 16/9; background:#f1f5f9; overflow:hidden; }
+.evcal-cover img { width:100%; height:100%; object-fit:cover; }
+.evcal-body { padding:16px 18px 18px; display:flex; flex-direction:column; flex:1; }
+.evcal-date { font-size:0.78rem; color:#ff6000; font-weight:600; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:6px; }
+.evcal-title { font-size:1.1rem; font-weight:700; color:#0A0F1A; margin:0 0 6px; line-height:1.3; }
+.evcal-host { font-size:0.8rem; color:#5a8299; margin-bottom:8px; }
+.evcal-meta { font-size:0.82rem; color:#475569; margin-bottom:6px; }
+.evcal-meta + .evcal-meta { margin-top:0; }
+.evcal-actions { margin-top:auto; display:flex; gap:8px; align-items:center; padding-top:12px; }
+.evcal-btn {
+    display:inline-block; padding:8px 14px; border-radius:8px; font-size:0.85rem; font-weight:600;
+    text-decoration:none; cursor:pointer; border:none; transition:opacity 0.15s;
+}
+.evcal-btn-primary { background:#ff6000; color:#fff; }
+.evcal-btn-primary:hover { color:#fff; opacity:0.9; }
+.evcal-btn-outline { background:#fff; color:#0A0F1A; border:1px solid #e2e8f0; }
+.evcal-btn:disabled { opacity:0.5; cursor:not-allowed; }
+.evcal-pill { display:inline-block; padding:2px 8px; font-size:0.7rem; border-radius:10px; font-weight:600; }
+.evcal-pill-going { background:#dcfce7; color:#15803d; }
+.evcal-pill-wait { background:#fef3c7; color:#a16207; }
+.evcal-pill-full { background:#fee2e2; color:#dc2626; }
+.evcal-empty { text-align:center; padding:60px 20px; background:#fff; border-radius:12px; color:#5a8299; }
+
+#evcal-msg {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:#0A0F1A; color:#fff; padding:12px 20px; border-radius:8px; font-size:0.9rem;
+    box-shadow:0 8px 24px rgba(0,0,0,0.2); z-index:9999; display:none;
+}
+#evcal-msg.error { background:#dc2626; }
+</style>
+
+<section class="evcal-hero">
+    <div class="auto-container">
+        <h1>Live Events</h1>
+        <p>Join AMAs, workshops, and live training sessions hosted by Tokenomic educators and community leaders.</p>
+    </div>
+</section>
+
+<section class="evcal-wrap">
+    <div class="evcal-toolbar">
+        <input id="evcal-q" type="search" placeholder="Search by title or topic…" />
+        <select id="evcal-when">
+            <option value="upcoming">Upcoming</option>
+            <option value="past">Past</option>
+            <option value="all">All</option>
+        </select>
+        <span style="margin-left:auto;color:#5a8299;font-size:0.85rem;" id="evcal-count">Loading…</span>
+    </div>
+
+    <div id="evcal-grid" class="evcal-grid"></div>
+    <div id="evcal-empty" class="evcal-empty" style="display:none;">
+        <p style="margin:0;font-size:1.05rem;">No events scheduled right now.</p>
+        <p style="margin:8px 0 0;font-size:0.88rem;">Check back soon — Tokenomic educators are scheduling new sessions every week.</p>
+    </div>
+</section>
+
+<div id="evcal-msg"></div>
+
+{% include footer.html %}
+
+<script src="/shared/assets/js/d1-client.js"></script>
+<script>
+(function() {
+    var grid = document.getElementById('evcal-grid');
+    var empty = document.getElementById('evcal-empty');
+    var counter = document.getElementById('evcal-count');
+    var qInput = document.getElementById('evcal-q');
+    var whenSel = document.getElementById('evcal-when');
+    var msgEl = document.getElementById('evcal-msg');
+    var allEvents = [];
+
+    function toast(text, isError) {
+        msgEl.textContent = text;
+        msgEl.className = isError ? 'error' : '';
+        msgEl.style.display = 'block';
+        setTimeout(function(){ msgEl.style.display = 'none'; }, 3500);
+    }
+    function fmtDate(s) {
+        if (!s) return '';
+        try {
+            var d = new Date(s);
+            return d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric', year:'numeric' })
+                 + ' · ' + d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+        } catch (e) { return s; }
+    }
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function isHttpUrl(u) {
+        if (typeof u !== 'string') return false;
+        return /^https?:\/\//i.test(u);
+    }
+    function safeUrl(u) { return isHttpUrl(u) ? u : ''; }
+
+    function renderCard(ev) {
+        var isPast = ev.starts_at && Date.parse(ev.starts_at) < Date.now();
+        var capLeft = (ev.capacity != null) ? Math.max(0, ev.capacity - (ev.rsvp_count || 0)) : null;
+        var pill = '';
+        if (ev.capacity != null && capLeft === 0) pill = '<span class="evcal-pill evcal-pill-full">Full · waitlist</span>';
+        else if (ev.capacity != null) pill = '<span class="evcal-pill evcal-pill-going">'+capLeft+' spots left</span>';
+        var cover = safeUrl(ev.cover_url);
+        var coverHtml = cover ? '<div class="evcal-cover"><img src="'+escapeHtml(cover)+'" alt="" loading="lazy"/></div>' : '';
+        var locHtml = ev.location ? '<div class="evcal-meta">📍 '+escapeHtml(ev.location)+'</div>' : '';
+        var hostHtml = ev.host_name
+            ? 'Hosted by <strong>'+escapeHtml(ev.host_name)+'</strong>'
+            : 'Hosted by <code style="font-size:0.75rem;">'+escapeHtml(ev.host_wallet.slice(0,6)+'…'+ev.host_wallet.slice(-4))+'</code>';
+        var detailUrl = '/event/?slug=' + encodeURIComponent(ev.slug || ev.id);
+        var btnLabel = isPast ? 'View' : 'RSVP';
+        return ''+
+            '<article class="evcal-card" data-event-id="'+ev.id+'">'+
+              coverHtml +
+              '<div class="evcal-body">'+
+                '<div class="evcal-date">'+escapeHtml(fmtDate(ev.starts_at))+'</div>'+
+                '<h3 class="evcal-title">'+escapeHtml(ev.title)+'</h3>'+
+                '<div class="evcal-host">'+hostHtml+'</div>'+
+                locHtml +
+                '<div class="evcal-meta"><strong>'+(ev.rsvp_count||0)+'</strong> going'+
+                  (ev.capacity ? ' / '+ev.capacity : '')+' &nbsp;'+pill+'</div>'+
+                '<div class="evcal-actions">'+
+                  '<a class="evcal-btn evcal-btn-primary" href="'+detailUrl+'">'+btnLabel+'</a>'+
+                  '<button class="evcal-btn evcal-btn-outline rsvp-quick" data-id="'+ev.id+'" '+(isPast||ev.status==='cancelled'?'disabled':'')+'>Quick RSVP</button>'+
+                '</div>'+
+              '</div>'+
+            '</article>';
+    }
+
+    function applyFilters() {
+        var q = (qInput.value || '').trim().toLowerCase();
+        var when = whenSel.value;
+        var now = Date.now();
+        var filtered = allEvents.filter(function(ev) {
+            if (when === 'upcoming' && Date.parse(ev.starts_at) < now) return false;
+            if (when === 'past' && Date.parse(ev.starts_at) >= now) return false;
+            if (q && (ev.title || '').toLowerCase().indexOf(q) === -1
+                  && (ev.description || '').toLowerCase().indexOf(q) === -1) return false;
+            return true;
+        });
+        if (when === 'past') filtered.sort(function(a,b){ return Date.parse(b.starts_at) - Date.parse(a.starts_at); });
+        else filtered.sort(function(a,b){ return Date.parse(a.starts_at) - Date.parse(b.starts_at); });
+        grid.innerHTML = filtered.map(renderCard).join('');
+        empty.style.display = filtered.length === 0 ? 'block' : 'none';
+        counter.textContent = filtered.length + ' event' + (filtered.length === 1 ? '' : 's');
+    }
+
+    grid.addEventListener('click', async function(e) {
+        var btn = e.target.closest('.rsvp-quick');
+        if (!btn) return;
+        e.preventDefault();
+        var id = btn.getAttribute('data-id');
+        if (!window.TokenomicSupabase) { toast('Sign-in unavailable', true); return; }
+        if (!TokenomicSupabase.isSignedIn()) {
+            try { await TokenomicSupabase.signIn(); }
+            catch (err) { toast('Please connect your wallet to RSVP', true); return; }
+        }
+        btn.disabled = true; btn.textContent = '…';
+        try {
+            var res = await TokenomicSupabase.rsvpEvent(id, {});
+            var st = res.rsvp && res.rsvp.status;
+            toast(st === 'waitlist' ? 'Added to the waitlist.' : 'You\'re going! 🎉');
+            // Update card count without full reload.
+            if (res.event) {
+                var idx = allEvents.findIndex(function(x){ return x.id === res.event.id; });
+                if (idx >= 0) allEvents[idx] = res.event;
+                applyFilters();
+            }
+        } catch (err) {
+            toast((err.body && err.body.error) || err.message || 'RSVP failed', true);
+            btn.disabled = false; btn.textContent = 'Quick RSVP';
+        }
+    });
+
+    qInput.addEventListener('input', applyFilters);
+    whenSel.addEventListener('change', applyFilters);
+
+    (async function load() {
+        try {
+            // Pull a wide window so client filters cover both upcoming and recent past events.
+            allEvents = await TokenomicSupabase.listEvents({ limit: 500, status: 'scheduled', visibility: 'public' });
+            applyFilters();
+        } catch (e) {
+            counter.textContent = '';
+            empty.style.display = 'block';
+            empty.innerHTML = '<p style="margin:0;color:#dc2626;">Could not load events: '+escapeHtml(e.message || String(e))+'</p>';
+        }
+    })();
+})();
+</script>

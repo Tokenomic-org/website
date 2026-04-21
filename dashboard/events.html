@@ -3,7 +3,7 @@ layout: dashboard
 title: "Events"
 permalink: /events/
 ---
-<section class="dashboard-section" >
+<section class="dashboard-section">
     <div class="auto-container">
         <div class="row">
             <div class="col-lg-3 col-md-4 col-sm-12">
@@ -29,101 +29,233 @@ permalink: /events/
                         <a href="/events/" data-dash="events" class="dash-nav-item active">
                             <span class="flaticon-calendar"></span> Events
                         </a>
-                        <div class="sidebar-section-label">Finance</div>
-                        <a href="/revenue/" data-dash="revenue" class="dash-nav-item">
-                            <span class="flaticon-money"></span> Revenue
+                        <a href="/articles/" data-dash="articles" class="dash-nav-item">
+                            <span class="flaticon-document"></span> Articles
                         </a>
                         <a href="/bookings/" data-dash="bookings" class="dash-nav-item">
                             <span class="flaticon-calendar"></span> Bookings
                         </a>
-                        <div class="sidebar-section-label">Content</div>
                         <a href="/chat/" data-dash="chat" class="dash-nav-item">
-                            <span class="flaticon-speech-bubble"></span> Chat
-                        </a>
-                        <a href="/articles/" data-dash="articles" class="dash-nav-item">
-                            <span class="flaticon-edit"></span> Articles
+                            <span class="flaticon-chat-1"></span> Chat
                         </a>
                         <a href="/social/" data-dash="social" class="dash-nav-item">
                             <span class="flaticon-share"></span> Social
                         </a>
-                        <div class="sidebar-section-label">Progress</div>
-                        <a href="/leaderboard/" data-dash="leaderboard" class="dash-nav-item">
-                            <span class="flaticon-trophy"></span> Leaderboard
+                        <div class="sidebar-section-label" style="margin-top:14px;">Account</div>
+                        <a href="/revenue/" data-dash="revenue" class="dash-nav-item">
+                            <span class="flaticon-money"></span> Revenue
                         </a>
                         <a href="/profile/" data-dash="profile" class="dash-nav-item">
-                            <span class="flaticon-user-3"></span> Profile
+                            <span class="flaticon-user"></span> Profile
+                        </a>
+                        <a href="/leaderboard/" class="dash-nav-item">
+                            <span class="flaticon-star-1"></span> Leaderboard
                         </a>
                     </nav>
                 </div>
             </div>
             <div class="col-lg-9 col-md-8 col-sm-12">
-                                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
                     <div style="width:80px;height:80px;border-radius:50%;background:#0A0F1A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
                         <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
                     </div>
                     <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
-                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
+                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to host or RSVP to events.</p>
                     <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
                 </div>
                 <div class="dashboard-content" style="display:none;">
-                    <div x-data="eventsPage()">
+                    <div x-data="eventsPage()" x-init="init()">
+
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
-        <p style="color:#5a8299;">Events synced from <a href="https://lu.ma/tokenomic" target="_blank" style="color:#ff6000;">Luma calendar</a>.</p>
-        <div style="display:flex;gap:8px;align-items:center;">
-            <span x-show="loading" style="color:#5a8299;font-size:0.85rem;">Syncing...</span>
-            <button class="dash-btn dash-btn-outline" @click="fetchLuma()" :disabled="loading">
-                <span x-show="!loading">Sync Luma</span>
-                <span x-show="loading">Syncing...</span>
+        <div>
+            <h3 style="margin:0;color:#0A0F1A;">My Events</h3>
+            <p style="color:#5a8299;margin:4px 0 0;font-size:0.9rem;">Host live events for your community. Attendees can RSVP from the public events page.</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <button class="dash-btn dash-btn-outline" @click="reload()" :disabled="loading">
+                <span x-show="!loading">Refresh</span><span x-show="loading">Loading…</span>
+            </button>
+            <button class="dash-btn dash-btn-primary" @click="showCreate = !showCreate">
+                <span x-text="showCreate ? 'Close' : '+ New Event'"></span>
             </button>
         </div>
     </div>
 
     <div class="row clearfix" style="margin-bottom:20px;">
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="events.length"></div><div class="stat-lbl">Total Events</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="upcoming"></div><div class="stat-lbl">Upcoming</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#1976d2;" x-text="totalGuests"></div><div class="stat-lbl">Total Guests</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="pastEvents"></div><div class="stat-lbl">Past Events</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="hosted.length"></div><div class="stat-lbl">Hosted</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#10b981;" x-text="upcomingCount"></div><div class="stat-lbl">Upcoming</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#3b82f6;" x-text="totalGoing"></div><div class="stat-lbl">Total RSVPs</div></div></div>
+        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="myRsvps.length"></div><div class="stat-lbl">I'm Attending</div></div></div>
     </div>
 
-    <div x-show="lumaStatus" x-transition class="dash-card" style="border-left:4px solid #1976d2;margin-bottom:20px;">
-        <div style="display:flex;align-items:center;gap:8px;"><strong style="color:#1976d2;" x-text="lumaStatus"></strong><button style="margin-left:auto;background:none;border:none;cursor:pointer;color:#5a8299;" @click="lumaStatus=''">Dismiss</button></div>
-    </div>
-
-    <div x-show="errorMsg" x-transition class="dash-card" style="border-left:4px solid #e53935;margin-bottom:20px;">
+    <div x-show="errorMsg" x-transition class="dash-card" style="border-left:4px solid #e53935;margin-bottom:16px;">
         <div style="display:flex;align-items:center;gap:8px;"><strong style="color:#e53935;" x-text="errorMsg"></strong><button style="margin-left:auto;background:none;border:none;cursor:pointer;color:#5a8299;" @click="errorMsg=''">Dismiss</button></div>
     </div>
-
-    <div x-show="loading && events.length===0" style="text-align:center;padding:60px 20px;">
-        <div style="width:40px;height:40px;border:3px solid #e0e0e0;border-top-color:#ff6000;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
-        <p style="color:#5a8299;">Loading events from Luma...</p>
+    <div x-show="okMsg" x-transition class="dash-card" style="border-left:4px solid #10b981;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:8px;"><strong style="color:#10b981;" x-text="okMsg"></strong><button style="margin-left:auto;background:none;border:none;cursor:pointer;color:#5a8299;" @click="okMsg=''">Dismiss</button></div>
     </div>
-    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+    <!-- Create form -->
+    <div x-show="showCreate" x-transition class="dash-card" style="margin-bottom:20px;">
+        <h5 style="color:#0A0F1A;">Create a new event</h5>
+        <div class="row">
+            <div class="col-md-8" style="margin-bottom:10px;">
+                <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Title *</label>
+                <input type="text" class="form-control" x-model="nf.title" maxlength="200" placeholder="e.g. Live AMA: DeFi Risk Models" />
+            </div>
+            <div class="col-md-4" style="margin-bottom:10px;">
+                <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Capacity (blank = unlimited)</label>
+                <input type="number" min="1" max="100000" class="form-control" x-model="nf.capacity" placeholder="50" />
+            </div>
+            <div class="col-md-6" style="margin-bottom:10px;">
+                <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Starts at *</label>
+                <input type="datetime-local" class="form-control" x-model="nf.starts_at_local" />
+            </div>
+            <div class="col-md-6" style="margin-bottom:10px;">
+                <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Ends at</label>
+                <input type="datetime-local" class="form-control" x-model="nf.ends_at_local" />
+            </div>
+            <div class="col-md-6" style="margin-bottom:10px;">
+                <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Location</label>
+                <input type="text" class="form-control" x-model="nf.location" maxlength="300" placeholder="Online, or city/venue" />
+            </div>
+            <div class="col-md-6" style="margin-bottom:10px;">
+                <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Meeting URL (Zoom / Meet / Stream)</label>
+                <input type="url" class="form-control" x-model="nf.meeting_url" maxlength="500" placeholder="https://…" />
+            </div>
+            <div class="col-md-6" style="margin-bottom:10px;">
+                <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Cover image URL</label>
+                <input type="url" class="form-control" x-model="nf.cover_url" maxlength="500" placeholder="https://…" />
+            </div>
+            <div class="col-md-3" style="margin-bottom:10px;">
+                <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Visibility</label>
+                <select class="form-control" x-model="nf.visibility">
+                    <option value="public">Public</option>
+                    <option value="unlisted">Unlisted</option>
+                    <option value="private">Private</option>
+                </select>
+            </div>
+            <div class="col-md-3" style="margin-bottom:10px;">
+                <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Timezone (IANA)</label>
+                <input type="text" class="form-control" x-model="nf.timezone" maxlength="64" />
+            </div>
+            <div class="col-md-12" style="margin-bottom:10px;">
+                <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Description (markdown)</label>
+                <textarea class="form-control" rows="5" x-model="nf.description" maxlength="50000" placeholder="What attendees will learn / agenda / prerequisites…"></textarea>
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
+            <button class="dash-btn dash-btn-outline" @click="showCreate=false">Cancel</button>
+            <button class="dash-btn dash-btn-primary" @click="submitNew()" :disabled="creating">
+                <span x-show="!creating">Create event</span><span x-show="creating">Creating…</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Hosted events -->
+    <div x-show="hosted.length===0 && !loading" class="dash-card" style="text-align:center;padding:40px 20px;">
+        <p style="color:#5a8299;margin:0;">You haven't hosted any events yet. Click <strong>+ New Event</strong> to create your first one.</p>
+    </div>
 
     <div class="row clearfix">
-        <template x-for="event in events" :key="event.id">
-            <div class="col-lg-6 col-md-6 col-sm-12" style="margin-bottom:16px;">
+        <template x-for="ev in hosted" :key="ev.id">
+            <div class="col-lg-6 col-md-12 col-sm-12" style="margin-bottom:16px;">
                 <div class="dash-card" style="border-top:3px solid #ff6000;overflow:hidden;padding:0;">
-                    <div x-show="event.cover_url" style="width:100%;height:160px;overflow:hidden;">
-                        <img :src="event.cover_url" :alt="event.title" style="width:100%;height:100%;object-fit:cover;" />
+                    <div x-show="ev.cover_url" style="width:100%;height:140px;overflow:hidden;background:#f4f4f6;">
+                        <img :src="ev.cover_url" :alt="ev.title" style="width:100%;height:100%;object-fit:cover;" />
                     </div>
-                    <div style="padding:20px;">
-                        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;flex-wrap:wrap;gap:4px;">
-                            <span class="dash-badge" :class="event.is_past?'dash-badge-muted':'dash-badge-info'" x-text="event.is_past?'Past':'Upcoming'" style="text-transform:uppercase;font-size:0.7rem;letter-spacing:1px;"></span>
-                            <small style="color:#5a8299;" x-text="event.date_display"></small>
+                    <div style="padding:18px;">
+                        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px;flex-wrap:wrap;gap:4px;">
+                            <span class="dash-badge"
+                                  :style="ev.status==='cancelled' ? 'background:#fee2e2;color:#dc2626;' : (isPast(ev) ? 'background:#e5e7eb;color:#374151;' : 'background:#dcfce7;color:#15803d;')"
+                                  x-text="ev.status==='cancelled' ? 'Cancelled' : (isPast(ev) ? 'Past' : 'Upcoming')"
+                                  style="text-transform:uppercase;font-size:0.7rem;letter-spacing:1px;padding:3px 8px;border-radius:4px;"></span>
+                            <small style="color:#5a8299;" x-text="fmtDate(ev.starts_at)"></small>
                         </div>
-                        <h5 style="margin-bottom:6px;color:#0A0F1A;" x-text="event.title"></h5>
-                        <p x-show="event.location" style="color:#5a8299;font-size:0.8rem;margin-bottom:4px;">
-                            <span style="margin-right:4px;">&#128205;</span><span x-text="event.location"></span>
+                        <h5 style="margin:0 0 6px;color:#0A0F1A;" x-text="ev.title"></h5>
+                        <p x-show="ev.location" style="color:#5a8299;font-size:0.8rem;margin:0 0 4px;">
+                            <span style="margin-right:4px;">📍</span><span x-text="ev.location"></span>
                         </p>
-                        <p style="color:#5a8299;font-size:0.85rem;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;" x-text="event.description"></p>
-                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                        <p x-show="ev.meeting_url" style="color:#5a8299;font-size:0.8rem;margin:0 0 8px;word-break:break-all;">
+                            🔗 <a :href="ev.meeting_url" target="_blank" rel="noopener" x-text="ev.meeting_url" style="color:#3b82f6;"></a>
+                        </p>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:6px;">
                             <div>
-                                <span x-show="event.guest_count>0"><strong style="color:#ff6000;" x-text="event.guest_count"></strong> <small style="color:#5a8299;">guests</small></span>
-                                <span x-show="event.guest_count===0" style="color:#5a8299;font-size:0.85rem;">No guests yet</span>
+                                <strong style="color:#ff6000;" x-text="ev.rsvp_count"></strong>
+                                <small style="color:#5a8299;">going<span x-show="ev.capacity"> / <span x-text="ev.capacity"></span></span></small>
                             </div>
-                            <a :href="event.luma_url" target="_blank" class="dash-btn dash-btn-primary" style="padding:6px 16px;font-size:0.8rem;text-decoration:none;">
-                                <span x-text="event.is_past?'View on Luma':'Register on Luma'"></span>
-                            </a>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                <a :href="'/event/?slug=' + encodeURIComponent(ev.slug)" target="_blank" class="dash-btn dash-btn-outline" style="padding:5px 12px;font-size:0.78rem;text-decoration:none;">View</a>
+                                <button class="dash-btn dash-btn-outline" style="padding:5px 12px;font-size:0.78rem;" @click="openAttendees(ev)">Attendees</button>
+                                <button class="dash-btn dash-btn-outline" style="padding:5px 12px;font-size:0.78rem;" @click="openEdit(ev)">Edit</button>
+                                <button class="dash-btn dash-btn-outline" style="padding:5px 12px;font-size:0.78rem;color:#dc2626;border-color:#fecaca;" @click="removeEvent(ev)">Delete</button>
+                            </div>
+                        </div>
+
+                        <!-- Inline edit -->
+                        <div x-show="editId===ev.id" x-transition style="margin-top:14px;border-top:1px solid #e5e7eb;padding-top:12px;">
+                            <div class="row">
+                                <div class="col-md-12" style="margin-bottom:8px;">
+                                    <label style="font-size:0.75rem;color:#5a8299;">Title</label>
+                                    <input type="text" class="form-control" x-model="ef.title" maxlength="200" />
+                                </div>
+                                <div class="col-md-6" style="margin-bottom:8px;">
+                                    <label style="font-size:0.75rem;color:#5a8299;">Starts at</label>
+                                    <input type="datetime-local" class="form-control" x-model="ef.starts_at_local" />
+                                </div>
+                                <div class="col-md-6" style="margin-bottom:8px;">
+                                    <label style="font-size:0.75rem;color:#5a8299;">Capacity</label>
+                                    <input type="number" min="1" max="100000" class="form-control" x-model="ef.capacity" />
+                                </div>
+                                <div class="col-md-6" style="margin-bottom:8px;">
+                                    <label style="font-size:0.75rem;color:#5a8299;">Status</label>
+                                    <select class="form-control" x-model="ef.status">
+                                        <option value="scheduled">Scheduled</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6" style="margin-bottom:8px;">
+                                    <label style="font-size:0.75rem;color:#5a8299;">Visibility</label>
+                                    <select class="form-control" x-model="ef.visibility">
+                                        <option value="public">Public</option>
+                                        <option value="unlisted">Unlisted</option>
+                                        <option value="private">Private</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-12" style="margin-bottom:8px;">
+                                    <label style="font-size:0.75rem;color:#5a8299;">Description</label>
+                                    <textarea class="form-control" rows="4" x-model="ef.description" maxlength="50000"></textarea>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:6px;justify-content:flex-end;">
+                                <button class="dash-btn dash-btn-outline" @click="editId=null" style="padding:5px 14px;font-size:0.8rem;">Cancel</button>
+                                <button class="dash-btn dash-btn-primary" @click="saveEdit(ev)" :disabled="saving" style="padding:5px 14px;font-size:0.8rem;">
+                                    <span x-show="!saving">Save</span><span x-show="saving">Saving…</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Attendees panel -->
+                        <div x-show="attendeesId===ev.id" x-transition style="margin-top:14px;border-top:1px solid #e5e7eb;padding-top:12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                                <strong style="color:#0A0F1A;font-size:0.9rem;">Attendees (<span x-text="attendees.length"></span>)</strong>
+                                <button class="dash-btn dash-btn-outline" @click="attendeesId=null" style="padding:3px 10px;font-size:0.75rem;">Close</button>
+                            </div>
+                            <div x-show="attendees.length===0" style="color:#5a8299;font-size:0.85rem;">No RSVPs yet.</div>
+                            <ul style="list-style:none;padding:0;margin:0;max-height:240px;overflow-y:auto;">
+                                <template x-for="a in attendees" :key="a.id">
+                                    <li style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:0.85rem;">
+                                        <span>
+                                            <strong x-text="a.name || (a.wallet.slice(0,6)+'…'+a.wallet.slice(-4))"></strong>
+                                            <small style="color:#5a8299;display:block;" x-text="a.email || a.wallet"></small>
+                                        </span>
+                                        <span class="dash-badge"
+                                              :style="a.status==='going' ? 'background:#dcfce7;color:#15803d;' : (a.status==='waitlist' ? 'background:#fef3c7;color:#a16207;' : 'background:#e5e7eb;color:#475569;')"
+                                              style="font-size:0.7rem;padding:2px 6px;border-radius:4px;"
+                                              x-text="a.status"></span>
+                                    </li>
+                                </template>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -131,93 +263,217 @@ permalink: /events/
         </template>
     </div>
 
-    <div x-show="!loading && events.length===0" style="text-align:center;padding:60px 20px;background:#fff;border-radius:12px;">
-        <p style="color:#5a8299;font-size:1.1rem;">No events found on the Luma calendar.</p>
-        <a href="https://lu.ma/tokenomic" target="_blank" class="dash-btn dash-btn-outline" style="margin-top:12px;">Visit Luma Calendar</a>
+    <!-- My RSVPs -->
+    <h4 style="color:#0A0F1A;margin:30px 0 14px;">Events I'm attending</h4>
+    <div x-show="myRsvps.length===0" class="dash-card" style="text-align:center;padding:30px 20px;">
+        <p style="color:#5a8299;margin:0;">You haven't RSVP'd to any events. Browse <a href="/events/calendar/">upcoming events</a>.</p>
     </div>
+    <div class="row clearfix">
+        <template x-for="r in myRsvps" :key="r.id">
+            <div class="col-lg-6 col-md-12 col-sm-12" style="margin-bottom:14px;">
+                <div class="dash-card">
+                    <div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:6px;">
+                        <div style="flex:1;min-width:200px;">
+                            <h6 style="margin:0;color:#0A0F1A;" x-text="r.title"></h6>
+                            <small style="color:#5a8299;" x-text="fmtDate(r.starts_at) + (r.location ? ' · ' + r.location : '')"></small>
+                        </div>
+                        <span class="dash-badge"
+                              :style="r.rsvp_status==='going' ? 'background:#dcfce7;color:#15803d;' : 'background:#fef3c7;color:#a16207;'"
+                              style="font-size:0.7rem;padding:3px 8px;border-radius:4px;text-transform:uppercase;"
+                              x-text="r.rsvp_status"></span>
+                    </div>
+                    <div style="margin-top:10px;display:flex;gap:6px;justify-content:flex-end;">
+                        <a :href="'/event/?slug=' + encodeURIComponent(r.slug)" class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.78rem;text-decoration:none;">View</a>
+                        <button class="dash-btn dash-btn-outline" @click="cancelMyRsvp(r)" style="padding:4px 12px;font-size:0.78rem;color:#dc2626;border-color:#fecaca;">Cancel RSVP</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
 </div>
-
-<script>
-var LUMA_CALENDAR_ID = 'cal-on7sN7ID2LgtAB9';
-var LUMA_CALENDAR_SLUG = 'tokenomic';
-
-function eventsPage() {
-    return {
-        events: [],
-        loading: true,
-        lumaStatus: '',
-        errorMsg: '',
-        upcoming: 0,
-        pastEvents: 0,
-        totalGuests: 0,
-        init() {
-            this.fetchLuma();
-        },
-        async fetchLuma() {
-            this.loading = true;
-            this.errorMsg = '';
-            try {
-                var resp = await fetch('/api/luma-events?calendar_id=' + LUMA_CALENDAR_ID);
-                if (!resp.ok) throw new Error('Luma API returned ' + resp.status);
-                var data = await resp.json();
-                var entries = data.entries || [];
-                var now = new Date();
-                this.events = entries
-                    .filter(function(entry) { return entry.event; })
-                    .map(function(entry) {
-                        var ev = entry.event;
-                        var startAt = ev.start_at ? new Date(ev.start_at) : null;
-                        var endAt = ev.end_at ? new Date(ev.end_at) : null;
-                        var isPast = startAt ? startAt < now : false;
-                        var location = '';
-                        if (ev.geo_address_json) {
-                            try {
-                                var geo = typeof ev.geo_address_json === 'string' ? JSON.parse(ev.geo_address_json) : ev.geo_address_json;
-                                location = geo.city ? (geo.city + (geo.country ? ', ' + geo.country : '')) : (geo.address || geo.full_address || '');
-                            } catch(e) { location = ''; }
-                        }
-                        if (ev.meeting_url && !location) location = 'Online';
-                        var dateDisplay = '';
-                        if (startAt) {
-                            dateDisplay = startAt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-                            dateDisplay += ' · ' + startAt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-                        }
-                        var guestCount = entry.event.guest_count || 0;
-                        return {
-                            id: ev.api_id,
-                            title: ev.name || 'Untitled Event',
-                            description: ev.description_short || ev.description || '',
-                            date: ev.start_at,
-                            date_display: dateDisplay,
-                            start_at: startAt,
-                            end_at: endAt,
-                            is_past: isPast,
-                            cover_url: ev.cover_url || '',
-                            luma_url: ev.url || ('https://lu.ma/' + (ev.slug || '')),
-                            location: location,
-                            guest_count: guestCount
-                        };
-                    })
-                    .sort(function(a, b) {
-                        if (a.is_past !== b.is_past) return a.is_past ? 1 : -1;
-                        return (a.start_at || 0) - (b.start_at || 0);
-                    });
-                this.upcoming = this.events.filter(function(e) { return !e.is_past; }).length;
-                this.pastEvents = this.events.filter(function(e) { return e.is_past; }).length;
-                this.totalGuests = this.events.reduce(function(s, e) { return s + e.guest_count; }, 0);
-                this.lumaStatus = 'Synced ' + this.events.length + ' events from Luma';
-            } catch (err) {
-                console.error('Luma sync error:', err);
-                this.errorMsg = 'Could not sync with Luma: ' + err.message;
-            }
-            this.loading = false;
-        }
-    };
-}
-</script>
-
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<script src="/shared/assets/js/d1-client.js"></script>
+<script>
+function eventsPage() {
+    return {
+        loading: true,
+        creating: false,
+        saving: false,
+        hosted: [],
+        myRsvps: [],
+        showCreate: false,
+        editId: null,
+        attendeesId: null,
+        attendees: [],
+        errorMsg: '',
+        okMsg: '',
+        nf: {
+            title: '', description: '', starts_at_local: '', ends_at_local: '',
+            location: '', meeting_url: '', cover_url: '', capacity: '',
+            visibility: 'public', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+        },
+        ef: { title:'', description:'', starts_at_local:'', capacity:'', status:'scheduled', visibility:'public' },
+
+        get upcomingCount() {
+            var now = Date.now();
+            return this.hosted.filter(function(e){ return e.status === 'scheduled' && Date.parse(e.starts_at) >= now; }).length;
+        },
+        get totalGoing() {
+            return this.hosted.reduce(function(s,e){ return s + (e.rsvp_count||0); }, 0);
+        },
+
+        isPast(ev) { return ev.starts_at && Date.parse(ev.starts_at) < Date.now(); },
+
+        fmtDate(s) {
+            if (!s) return '';
+            try {
+                var d = new Date(s);
+                return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' })
+                       + ' · ' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+            } catch (e) { return s; }
+        },
+
+        // Convert ISO string → value compatible with <input type="datetime-local">.
+        isoToLocalInput(iso) {
+            if (!iso) return '';
+            var d = new Date(iso);
+            if (isNaN(d)) return '';
+            var pad = function(n){ return String(n).padStart(2,'0'); };
+            return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
+        },
+        // Convert <input type="datetime-local"> value → ISO string in caller's TZ.
+        localInputToIso(v) {
+            if (!v) return null;
+            var d = new Date(v);
+            return isNaN(d) ? null : d.toISOString();
+        },
+
+        async init() {
+            this.loading = true;
+            try {
+                var walletAddr = (typeof TokenomicWallet !== 'undefined' && TokenomicWallet.account)
+                                 ? String(TokenomicWallet.account).toLowerCase()
+                                 : '';
+                if (walletAddr) {
+                    this.hosted = await TokenomicSupabase.listEvents({ host: walletAddr, status: 'any', visibility: 'any', limit: 200 });
+                }
+                if (TokenomicSupabase.isSignedIn()) {
+                    var my = await TokenomicSupabase.myRsvps();
+                    // myRsvps() may return { items, count } or a plain array depending on helper.
+                    this.myRsvps = Array.isArray(my) ? my : (my && my.items ? my.items : []);
+                }
+            } catch (e) {
+                this.errorMsg = 'Failed to load events: ' + (e.message || e);
+            }
+            this.loading = false;
+        },
+        async reload() { await this.init(); },
+
+        async submitNew() {
+            this.errorMsg = ''; this.okMsg = '';
+            if (!this.nf.title || this.nf.title.trim().length < 2) { this.errorMsg = 'Title is required.'; return; }
+            if (!this.nf.starts_at_local) { this.errorMsg = 'Start date is required.'; return; }
+            if (!TokenomicSupabase.isSignedIn()) {
+                try { await TokenomicSupabase.signIn(); } catch (e) { this.errorMsg = 'Sign in required to create events.'; return; }
+            }
+            this.creating = true;
+            try {
+                var payload = {
+                    title: this.nf.title.trim(),
+                    description: this.nf.description || '',
+                    starts_at: this.localInputToIso(this.nf.starts_at_local),
+                    ends_at: this.nf.ends_at_local ? this.localInputToIso(this.nf.ends_at_local) : null,
+                    timezone: this.nf.timezone || 'UTC',
+                    location: this.nf.location || '',
+                    meeting_url: this.nf.meeting_url || '',
+                    cover_url: this.nf.cover_url || '',
+                    capacity: this.nf.capacity || null,
+                    visibility: this.nf.visibility || 'public'
+                };
+                var ev = await TokenomicSupabase.createEvent(payload);
+                this.hosted.unshift(ev);
+                this.okMsg = 'Event created.';
+                this.showCreate = false;
+                this.nf = { title:'', description:'', starts_at_local:'', ends_at_local:'', location:'', meeting_url:'', cover_url:'', capacity:'', visibility:'public', timezone: this.nf.timezone };
+            } catch (e) {
+                this.errorMsg = e.body && e.body.error ? e.body.error : (e.message || 'Failed to create event');
+            }
+            this.creating = false;
+        },
+
+        openEdit(ev) {
+            this.attendeesId = null;
+            this.editId = ev.id;
+            this.ef = {
+                title: ev.title,
+                description: ev.description || '',
+                starts_at_local: this.isoToLocalInput(ev.starts_at),
+                capacity: ev.capacity || '',
+                status: ev.status,
+                visibility: ev.visibility
+            };
+        },
+        async saveEdit(ev) {
+            this.saving = true; this.errorMsg = '';
+            try {
+                var patch = {
+                    title: this.ef.title,
+                    description: this.ef.description,
+                    starts_at: this.localInputToIso(this.ef.starts_at_local),
+                    capacity: this.ef.capacity === '' ? null : Number(this.ef.capacity),
+                    status: this.ef.status,
+                    visibility: this.ef.visibility
+                };
+                var updated = await TokenomicSupabase.updateEvent(ev.id, patch);
+                var i = this.hosted.findIndex(function(x){ return x.id === ev.id; });
+                if (i >= 0) this.hosted.splice(i, 1, updated);
+                this.editId = null;
+                this.okMsg = 'Event updated.';
+            } catch (e) {
+                this.errorMsg = e.body && e.body.error ? e.body.error : (e.message || 'Failed to save');
+            }
+            this.saving = false;
+        },
+
+        async openAttendees(ev) {
+            this.editId = null;
+            if (this.attendeesId === ev.id) { this.attendeesId = null; return; }
+            this.attendeesId = ev.id;
+            this.attendees = [];
+            try {
+                this.attendees = await TokenomicSupabase.listEventRsvps(ev.id);
+            } catch (e) {
+                this.errorMsg = e.body && e.body.error ? e.body.error : (e.message || 'Failed to load attendees');
+            }
+        },
+
+        async removeEvent(ev) {
+            if (!confirm('Delete event "' + ev.title + '"? This cancels all RSVPs and cannot be undone.')) return;
+            try {
+                await TokenomicSupabase.deleteEvent(ev.id);
+                this.hosted = this.hosted.filter(function(x){ return x.id !== ev.id; });
+                this.okMsg = 'Event deleted.';
+            } catch (e) {
+                this.errorMsg = e.body && e.body.error ? e.body.error : (e.message || 'Failed to delete');
+            }
+        },
+
+        async cancelMyRsvp(r) {
+            if (!confirm('Cancel your RSVP for "' + r.title + '"?')) return;
+            try {
+                await TokenomicSupabase.cancelRsvp(r.id);
+                this.myRsvps = this.myRsvps.filter(function(x){ return x.id !== r.id; });
+                this.okMsg = 'RSVP cancelled.';
+            } catch (e) {
+                this.errorMsg = e.body && e.body.error ? e.body.error : (e.message || 'Failed to cancel RSVP');
+            }
+        }
+    };
+}
+</script>
