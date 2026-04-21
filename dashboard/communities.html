@@ -482,16 +482,10 @@ function communitiesPage() {
         loadCommunities() {
             var self = this;
             self.loading = true;
-            fetch('/api/communities')
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    if (data.error) {
-                        self.communities = [];
-                        self.filtered = [];
-                        self.loading = false;
-                        return;
-                    }
-                    self.communities = data.communities || [];
+            // D1 API returns { items: [...], count: N } — see workers/api-worker/d1-routes.js
+            (window.TokenomicAPI ? window.TokenomicAPI.getCommunities() : Promise.resolve([]))
+                .then(function(items) {
+                    self.communities = items || [];
                     self.filterCommunities();
                     self.loading = false;
                 })
@@ -514,41 +508,45 @@ function communitiesPage() {
             });
         },
 
-        create() {
+        async create() {
             if (!this.nc.name) return;
             var self = this;
             self.creating = true;
             self.createError = '';
-            fetch('/api/communities', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+            try {
+                var wallet = self.getWallet();
+                if (!wallet) throw new Error('Connect your wallet first.');
+
+                // SIWE → JWT: only sign once per 24h (token cached in localStorage).
+                // Skip the wallet prompt entirely when a valid token is already present.
+                var alreadySigned = window.TokenomicAPI && typeof window.TokenomicAPI.isSignedIn === 'function'
+                    ? window.TokenomicAPI.isSignedIn(wallet)
+                    : false;
+                if (!alreadySigned && window.TokenomicAPI && typeof window.TokenomicAPI.signIn === 'function') {
+                    try { await window.TokenomicAPI.signIn(wallet); }
+                    catch (e) { throw new Error('Wallet signature failed: ' + (e.message || e)); }
+                }
+
+                var community = await window.TokenomicAPI.createCommunity({
                     name: self.nc.name,
                     slug: self.nc.slug || self.slugify(self.nc.name),
                     type: self.nc.type,
                     access: self.nc.access,
                     description: self.nc.description,
                     visibility: self.nc.visibility,
-                    wallet: self.getWallet()
-                })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                self.creating = false;
-                if (data.error) {
-                    self.createError = data.error;
-                    return;
-                }
-                self.communities.unshift(data.community);
+                    educator_wallet: wallet
+                });
+
+                self.communities.unshift(community);
                 self.filterCommunities();
                 self.nc = { name: '', slug: '', type: 'general', access: 'open', description: '', visibility: 'public' };
                 self.showCreate = false;
-                self.showToast('Community created! GitHub repo: ' + (data.community.repo_name || ''), 'success');
-            })
-            .catch(function(err) {
+                self.showToast('Community published to D1: ' + community.name, 'success');
+            } catch (err) {
+                self.createError = err.message || 'Failed to create community.';
+            } finally {
                 self.creating = false;
-                self.createError = 'Failed to create community. Check GitHub token.';
-            });
+            }
         },
 
         viewCommunity(c) {

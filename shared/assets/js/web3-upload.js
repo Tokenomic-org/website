@@ -10,6 +10,17 @@
  * No course files ever land in the agent worker — the browser uploads
  * straight to Cloudflare Stream, and the worker only mints the upload
  * ticket using its server-side CF_STREAM_TOKEN secret.
+ *
+ * ─── Storage policy (do not break) ───────────────────────────────────
+ *   • Course videos    → Cloudflare Stream  (NOT IPFS — too large)
+ *   • Course metadata  → Cloudflare KV (stream-meta:<uid>) + D1 mirror
+ *   • Thumbnails / PDFs→ Cloudflare R2 (via api-worker presigned PUT)
+ *   • IPFS is ONLY used for ERC-721 certificate token metadata JSON
+ *     (a few hundred bytes per certificate, minted by the
+ *     TokenomicCertificate contract — see contracts/certificate.sol).
+ *   This file deliberately contains zero IPFS calls; if you find yourself
+ *   adding `ipfs://` here, you're putting course content in the wrong
+ *   place. Route it through the Stream/KV/R2 helpers above instead.
  */
 (function (global) {
   'use strict';

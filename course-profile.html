@@ -1,0 +1,191 @@
+---
+layout: default
+title: Course
+permalink: /course/
+---
+
+{% include header.html %}
+
+<style>
+.cp2-wrap { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+.cp2-loading, .cp2-not-found { text-align: center; padding: 80px 20px; }
+.cp2-spinner { width: 40px; height: 40px; border: 3px solid #f0f2f5; border-top-color: #f97316; border-radius: 50%; animation: cp2spin 0.8s linear infinite; margin: 0 auto 16px; }
+@keyframes cp2spin { to { transform: rotate(360deg); } }
+.cp2-hero { background: linear-gradient(135deg, #0A0F1A, #1a2332); color: #fff; border-radius: 16px; padding: 40px; margin-bottom: 24px; display: grid; grid-template-columns: 1fr 320px; gap: 32px; }
+@media (max-width: 768px) { .cp2-hero { grid-template-columns: 1fr; } }
+.cp2-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.cp2-pill { padding: 4px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; background: rgba(255,255,255,0.12); color: #fff; }
+.cp2-pill.beg { background: #10b981; } .cp2-pill.int { background: #f59e0b; } .cp2-pill.adv { background: #ef4444; }
+.cp2-pill.free { background: #10b981; }
+.cp2-title { font-size: 2.2rem; font-weight: 700; margin: 0 0 12px; line-height: 1.2; }
+.cp2-desc { color: rgba(255,255,255,0.85); font-size: 1.05rem; line-height: 1.6; margin-bottom: 20px; }
+.cp2-meta { display: flex; gap: 24px; flex-wrap: wrap; color: rgba(255,255,255,0.75); font-size: 0.92rem; }
+.cp2-meta i { color: #f97316; margin-right: 6px; }
+.cp2-buy { background: #fff; color: #0A0F1A; border-radius: 12px; padding: 24px; }
+.cp2-price { font-size: 2.4rem; font-weight: 800; color: #f97316; line-height: 1; margin-bottom: 4px; }
+.cp2-price small { font-size: 0.95rem; color: #5a8299; font-weight: 600; margin-left: 6px; }
+.cp2-buy-btn { display: block; width: 100%; background: #f97316; color: #fff; text-align: center; padding: 14px; border-radius: 10px; text-decoration: none; font-weight: 700; margin-top: 16px; border: none; cursor: pointer; font-size: 1rem; }
+.cp2-buy-btn:hover { background: #ea6510; color: #fff; }
+.cp2-buy-note { color: #5a8299; font-size: 0.82rem; margin-top: 10px; text-align: center; }
+.cp2-body { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+@media (max-width: 768px) { .cp2-body { grid-template-columns: 1fr; } }
+.cp2-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 16px; }
+.cp2-card h3 { font-size: 1.15rem; margin: 0 0 14px; color: #0A0F1A; }
+.cp2-learn { list-style: none; padding: 0; margin: 0; }
+.cp2-learn li { padding: 8px 0 8px 26px; position: relative; color: #344155; }
+.cp2-learn li::before { content: "✓"; position: absolute; left: 0; top: 8px; color: #10b981; font-weight: 700; }
+.cp2-edu { display: flex; align-items: center; gap: 12px; }
+.cp2-edu-avatar { width: 48px; height: 48px; border-radius: 50%; background: #f97316; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.cp2-edu-name { font-weight: 700; color: #0A0F1A; }
+.cp2-edu-role { color: #5a8299; font-size: 0.85rem; }
+</style>
+
+<div class="cp2-wrap">
+  <div id="cp2-loading" class="cp2-loading">
+    <div class="cp2-spinner"></div>
+    <p>Loading course...</p>
+  </div>
+
+  <div id="cp2-not-found" class="cp2-not-found" style="display:none;">
+    <h2>Course not found</h2>
+    <p>The course you're looking for doesn't exist or has been removed.</p>
+    <a href="/courses/" class="cp2-buy-btn" style="display:inline-block;width:auto;padding:12px 32px;">Browse Courses</a>
+  </div>
+
+  <div id="cp2-content" style="display:none;">
+    <section class="cp2-hero">
+      <div>
+        <div class="cp2-pills" id="cp2-pills"></div>
+        <h1 class="cp2-title" id="cp2-title"></h1>
+        <p class="cp2-desc" id="cp2-desc"></p>
+        <div class="cp2-meta" id="cp2-meta"></div>
+      </div>
+      <div class="cp2-buy">
+        <div class="cp2-price" id="cp2-price"></div>
+        <button class="cp2-buy-btn" id="cp2-buy-btn" type="button">Enroll in Course</button>
+        <div class="cp2-buy-note">Pay in <strong>USDC</strong> on Base L2 · 90% educator / 5% consultant / 5% platform</div>
+      </div>
+    </section>
+
+    <div class="cp2-body">
+      <div>
+        <div class="cp2-card">
+          <h3><i class="fas fa-info-circle" style="color:#f97316;"></i> About this Course</h3>
+          <p id="cp2-about" style="color:#344155;line-height:1.7;"></p>
+        </div>
+
+        <div class="cp2-card" id="cp2-learn-card" style="display:none;">
+          <h3><i class="fas fa-graduation-cap" style="color:#f97316;"></i> What you'll learn</h3>
+          <ul class="cp2-learn" id="cp2-learn"></ul>
+        </div>
+      </div>
+
+      <div>
+        <div class="cp2-card">
+          <h3>Educator</h3>
+          <div class="cp2-edu" id="cp2-educator"></div>
+        </div>
+        <div class="cp2-card">
+          <h3>Course Stats</h3>
+          <div id="cp2-stats" style="color:#344155;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/shared/assets/js/d1-client.js"></script>
+<script>
+(function() {
+  function getSlug() {
+    var p = new URLSearchParams(window.location.search);
+    if (p.get('slug')) return p.get('slug');
+    if (p.get('id'))   return p.get('id');
+    var parts = window.location.pathname.replace(/\/$/, '').split('/');
+    if (parts.length >= 3 && (parts[1] === 'course' || parts[1] === 'courses')) return decodeURIComponent(parts[2]);
+    return null;
+  }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+  function makeSlug(s) { return (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
+  function getInitials(n) { return (n || '?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2); }
+
+  document.addEventListener('DOMContentLoaded', async function() {
+    var slug = getSlug();
+    var $loading = document.getElementById('cp2-loading');
+    var $notFound = document.getElementById('cp2-not-found');
+    var $content = document.getElementById('cp2-content');
+
+    if (!slug) {
+      $loading.style.display = 'none';
+      $notFound.style.display = 'block';
+      return;
+    }
+
+    var courses = [];
+    try { courses = await TokenomicAPI.getCourses(); } catch (e) { courses = []; }
+
+    var course = null;
+    for (var i = 0; i < courses.length; i++) {
+      var c = courses[i];
+      if (c.slug === slug || String(c.id) === slug || makeSlug(c.title) === slug) { course = c; break; }
+    }
+
+    $loading.style.display = 'none';
+    if (!course) { $notFound.style.display = 'block'; return; }
+    $content.style.display = 'block';
+
+    document.title = course.title + ' — Tokenomic';
+
+    var pillsHtml = '';
+    var lvl = (course.level || 'beginner').toLowerCase();
+    var lvlClass = lvl === 'intermediate' ? 'int' : lvl === 'advanced' ? 'adv' : 'beg';
+    pillsHtml += '<span class="cp2-pill ' + lvlClass + '">' + esc(lvl.charAt(0).toUpperCase() + lvl.slice(1)) + '</span>';
+    if (course.category) pillsHtml += '<span class="cp2-pill">' + esc(course.category) + '</span>';
+    if (Number(course.price_usdc) === 0) pillsHtml += '<span class="cp2-pill free">Free</span>';
+    document.getElementById('cp2-pills').innerHTML = pillsHtml;
+
+    document.getElementById('cp2-title').textContent = course.title || 'Untitled';
+    document.getElementById('cp2-desc').textContent = course.description || '';
+    document.getElementById('cp2-about').textContent = course.description || 'No detailed description available yet.';
+
+    var meta = '';
+    meta += '<span><i class="fas fa-cube"></i>' + (course.modules_count || 0) + ' modules</span>';
+    if (course.estimated_hours) meta += '<span><i class="fas fa-clock"></i>' + course.estimated_hours + 'h</span>';
+    if (course.enrolled_count != null) meta += '<span><i class="fas fa-user-graduate"></i>' + course.enrolled_count + ' enrolled</span>';
+    document.getElementById('cp2-meta').innerHTML = meta;
+
+    var price = Number(course.price_usdc || 0);
+    document.getElementById('cp2-price').innerHTML = price > 0 ? ('$' + price + '<small>USDC</small>') : 'Free<small>to enroll</small>';
+
+    var learn = course.what_you_learn || [];
+    if (Array.isArray(learn) && learn.length) {
+      document.getElementById('cp2-learn-card').style.display = 'block';
+      document.getElementById('cp2-learn').innerHTML = learn.map(function(l){ return '<li>' + esc(l) + '</li>'; }).join('');
+    }
+
+    var eduName = course.educator_name || 'Unknown';
+    var eduSlug = makeSlug(eduName);
+    document.getElementById('cp2-educator').innerHTML =
+      '<div class="cp2-edu-avatar">' + esc(getInitials(eduName)) + '</div>' +
+      '<div><div class="cp2-edu-name"><a href="/expert-profile.html?slug=' + esc(eduSlug) + '" style="color:inherit;text-decoration:none;">' + esc(eduName) + '</a></div>' +
+      '<div class="cp2-edu-role">Educator</div></div>';
+
+    var stats = '';
+    stats += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5;"><span style="color:#5a8299;">Price</span><strong>' + (price > 0 ? '$' + price + ' USDC' : 'Free') + '</strong></div>';
+    stats += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5;"><span style="color:#5a8299;">Modules</span><strong>' + (course.modules_count || 0) + '</strong></div>';
+    stats += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5;"><span style="color:#5a8299;">Hours</span><strong>' + (course.estimated_hours || 0) + 'h</strong></div>';
+    stats += '<div style="display:flex;justify-content:space-between;padding:8px 0;"><span style="color:#5a8299;">Enrolled</span><strong>' + (course.enrolled_count || 0) + '</strong></div>';
+    document.getElementById('cp2-stats').innerHTML = stats;
+
+    document.getElementById('cp2-buy-btn').addEventListener('click', function() {
+      if (window.TokenomicWeb3 && typeof window.TokenomicWeb3.purchaseCourse === 'function') {
+        window.TokenomicWeb3.purchaseCourse(course);
+      } else {
+        alert('Wallet not connected. Please connect your wallet first.');
+      }
+    });
+  });
+})();
+</script>
+
+{% include footer.html %}

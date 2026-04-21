@@ -147,7 +147,9 @@ function epSwitchTab(pane, btnEl) {
 
         var educators = await TokenomicSupabase.getEducators();
         var consultants = await TokenomicSupabase.getConsultants();
-        var articles = TokenomicSupabase.demoData('articles');
+        // Off-chain: pull articles from D1 (api-worker). Empty array → "no articles" state.
+        var articles = [];
+        try { articles = await TokenomicSupabase.getArticles(); } catch (e) { articles = []; }
 
         var expert = null;
         var expertType = null;
@@ -242,7 +244,7 @@ function epSwitchTab(pane, btnEl) {
         if (expert.communities && expert.communities.length > 0) {
             document.getElementById('ep-communities-card').style.display = 'block';
             document.getElementById('ep-communities-grid').innerHTML = expert.communities.map(function(c) {
-                return '<a href="/dashboard-communities/" class="ep-community-card">' +
+                return '<a href="/communities/" class="ep-community-card">' +
                     '<div class="ep-community-icon"><i class="fas fa-users"></i></div>' +
                     '<div><div class="ep-community-name">' + c.name + '</div>' +
                     '<div class="ep-community-members">' + (c.members_count || 0) + ' members</div></div>' +
@@ -254,7 +256,8 @@ function epSwitchTab(pane, btnEl) {
         var hasTabContent = false;
 
         if (expertType === 'educator') {
-            var allCourses = TokenomicSupabase.demoData('courses');
+            var allCourses = [];
+            try { allCourses = await TokenomicSupabase.getCourses(); } catch (e) { allCourses = []; }
             var expertCourses = allCourses.filter(function(c) {
                 return c.educator_name === expert.display_name;
             });

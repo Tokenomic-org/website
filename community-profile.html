@@ -80,7 +80,7 @@ permalink: /community/
                                 <li><i class="fas fa-check-circle"></i> Connect with peers &amp; educators</li>
                             </ul>
                             <div class="cp-join-cta">
-                                <a href="/dashboard-communities/" class="cp-btn-join-full">
+                                <a href="/communities/" class="cp-btn-join-full">
                                     <i class="fas fa-users"></i> Join Community
                                 </a>
                             </div>
@@ -159,7 +159,10 @@ permalink: /community/
         TokenomicSupabase.init();
 
         var communities = await TokenomicSupabase.getCommunities();
-        var allCourses = TokenomicSupabase.demoData('courses');
+        // Off-chain rule: course list comes from D1 via the api-worker
+        // (no demo fallback). Empty arrays render "no courses yet".
+        var allCourses = [];
+        try { allCourses = await TokenomicSupabase.getCourses(); } catch (e) { allCourses = []; }
 
         var community = null;
         communities.forEach(function(c) {
@@ -221,7 +224,7 @@ permalink: /community/
         document.getElementById('cp-stats-bar').innerHTML = statsHtml;
 
         /* ── Hero actions ───────────────────────────────── */
-        var actionsHtml = '<a href="/dashboard-communities/" class="cp-btn-join"><i class="fas fa-users"></i> Join Community</a>';
+        var actionsHtml = '<a href="/communities/" class="cp-btn-join"><i class="fas fa-users"></i> Join Community</a>';
         actionsHtml += '<a href="/communities/" class="cp-btn-outline"><i class="fas fa-arrow-left"></i> All Communities</a>';
         document.getElementById('cp-hero-actions').innerHTML = actionsHtml;
 
@@ -264,7 +267,7 @@ permalink: /community/
                 '<i class="fas fa-comments" style="color:#667eea;font-size:1.3rem;"></i>' +
             '</div>' +
             '<p style="color:#5a8299;font-size:0.92rem;margin:0 0 16px;">Join this community to participate in discussions, ask questions, and connect with other members.</p>' +
-            '<a href="/dashboard-communities/" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:10px 22px;border-radius:10px;text-decoration:none;font-size:0.88rem;font-weight:700;">' +
+            '<a href="/communities/" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:10px 22px;border-radius:10px;text-decoration:none;font-size:0.88rem;font-weight:700;">' +
                 '<i class="fas fa-sign-in-alt"></i> Join to Access Discussions' +
             '</a>' +
         '</div>';

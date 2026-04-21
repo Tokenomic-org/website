@@ -1,0 +1,17 @@
+---
+layout: default
+---
+{% comment %}
+  Expert (educator / consultant) detail layout.
+  Pages using `layout: expert` inherit standard chrome and render
+  inside `<main class="tkn-detail-page tkn-detail-expert">`.
+
+  Off-chain rule: bio, specialty, social links, profile photo → D1.
+  On-chain rule: only the expert's wallet address is referenced from
+  course / community contracts as the revenue recipient. No PII on-chain.
+{% endcomment %}
+{% include header.html %}
+<main class="tkn-detail-page tkn-detail-expert">
+  {{ content }}
+</main>
+{% include footer.html %}

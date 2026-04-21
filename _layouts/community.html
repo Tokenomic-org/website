@@ -1,0 +1,18 @@
+---
+layout: default
+---
+{% comment %}
+  Community detail layout.
+  Pages using `layout: community` inherit the standard chrome (header,
+  footer, web3 wallet bundle) and provide their own dynamic content
+  block, fed by the D1 API at /api/communities/:slug.
+
+  Off-chain rule: full community body, posts, members → Cloudflare D1.
+  On-chain rule: only access price + educator wallet referenced via the
+  TokenomicMarket contract. No discussion text on-chain or IPFS.
+{% endcomment %}
+{% include header.html %}
+<main class="tkn-detail-page tkn-detail-community">
+  {{ content }}
+</main>
+{% include footer.html %}

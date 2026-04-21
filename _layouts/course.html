@@ -1,0 +1,20 @@
+---
+layout: default
+---
+{% comment %}
+  Course detail layout.
+  Pages using `layout: course` inherit standard chrome and render their
+  body inside `<main class="tkn-detail-page tkn-detail-course">`.
+
+  Off-chain rule: course modules, full description, video assets,
+  thumbnails → Cloudflare D1 + Stream + R2.
+  On-chain rule: only minimal course registration (id, educator address,
+  price, optional consultant) lives in TokenomicMarket.sol. Issued
+  certificates mint as TokenomicCertificate ERC-721 tokens whose
+  tokenURI points to IPFS metadata JSON only.
+{% endcomment %}
+{% include header.html %}
+<main class="tkn-detail-page tkn-detail-course">
+  {{ content }}
+</main>
+{% include footer.html %}
