@@ -19,7 +19,8 @@ var TokenomicAssets = {
 
   // TokenomicMarket ABI (subset used by the frontend)
   MARKET_ABI: [
-    'function purchase(uint256 courseId, string ipfsMetadataURI) returns (uint256)',
+    'function purchase(uint256 courseId)',
+    'function claimCertificate(uint256 courseId, string ipfsMetadataURI) returns (uint256)',
     'function registerCourse(string ipfsMetadataURI, uint256 priceInUSDC, address consultant) returns (uint256)',
     'function withdrawUSDC() returns (uint256)',
     'function withdrawPlatformFees(address to) returns (uint256)',
@@ -31,10 +32,12 @@ var TokenomicAssets = {
     'function totalEarned(address) view returns (uint256)',
     'function platformBalance() view returns (uint256)',
     'function hasPurchased(uint256 courseId, address user) view returns (bool)',
+    'function certificateOf(uint256 courseId, address user) view returns (uint256)',
     'function quoteSplit(uint256 price, bool hasConsultant) pure returns (uint256, uint256, uint256)',
     'event CoursePurchased(uint256 indexed courseId, address indexed buyer, uint256 totalPaid, uint256 educatorAmount, uint256 consultantAmount, uint256 platformAmount, uint256 certificateTokenId)',
     'event CourseRegistered(uint256 indexed courseId, address indexed educator, address consultant, uint256 price, string ipfsMetadataURI)',
     'event PurchaseSettled(uint256 indexed courseId, address indexed buyer, address indexed educator, address consultant, uint256 educatorAmount, uint256 consultantAmount, uint256 platformAmount, uint256 certificateTokenId, string ipfsMetadataURI)',
+    'event CertificateClaimed(uint256 indexed courseId, address indexed buyer, uint256 certificateTokenId, string ipfsMetadataURI)',
     'event Withdrawn(address indexed account, uint256 amount)'
   ],
   // TokenomicCertificate ABI (subset for reads + legacy fallback mint)
@@ -531,23 +534,10 @@ var TokenomicAssets = {
       }
 
       var ipfsURI = this._buildCertificateMetadataURI(courseId, opts.title || ('Course #' + courseId), wallet);
-      var purchaseTx = await market.purchase(courseId, ipfsURI);
+      // NOTE: certificate is no longer minted atomically. Buyer pays gas for `claimCertificate`
+      // separately after this purchase confirms. See `claimCertificate(courseId)` below.
+      var purchaseTx = await market.purchase(courseId);
       var receipt = await purchaseTx.wait();
-
-      // Extract minted tokenId from CoursePurchased event when available
-      var tokenId = null;
-      try {
-        var iface = new ethers.utils.Interface(this.MARKET_ABI);
-        for (var i = 0; i < (receipt.logs || []).length; i++) {
-          try {
-            var parsed = iface.parseLog(receipt.logs[i]);
-            if (parsed && parsed.name === 'CoursePurchased') {
-              tokenId = parsed.args.certificateTokenId.toString();
-              break;
-            }
-          } catch (_) { /* not our log */ }
-        }
-      } catch (_) { /* ignore */ }
 
       var asset = await this.registerAsset({
         type: 'course',
@@ -555,7 +545,7 @@ var TokenomicAssets = {
         description: 'Purchased for ' + priceInUSDC + ' USDC (on-chain)',
         tx_hash: receipt.transactionHash,
         contract_address: this.MARKET_ADDRESS,
-        token_id: tokenId,
+        token_id: null,
         metadata_uri: ipfsURI,
         status: 'purchased'
       });
@@ -565,9 +555,12 @@ var TokenomicAssets = {
         success: true,
         asset: asset,
         txHash: receipt.transactionHash,
-        certificateTokenId: tokenId,
+        certificateTokenId: null,
+        certificateMetadataURI: ipfsURI,
         explorerUrl: this.BASESCAN_BASE + '/tx/' + receipt.transactionHash,
-        certificateMinted: true
+        certificateMinted: false,
+        certificateClaimable: true,
+        note: 'Purchase confirmed. Click "Claim Certificate" to mint your NFT (you pay the gas).'
       };
     }
 
@@ -603,6 +596,10 @@ var TokenomicAssets = {
     return base + '/' + safe + '-' + courseId + '-' + (wallet ? wallet.slice(2, 10).toLowerCase() : 'anon') + '.json';
   },
 
+  /**
+   * Mint the certificate NFT for a course the connected wallet has purchased.
+   * Calls TokenomicMarket.claimCertificate(courseId, ipfsMetadataURI) — student pays gas.
+   */
   async claimCertificate(courseId, opts) {
     opts = opts || {};
     var wallet = this.getWallet();
@@ -611,27 +608,110 @@ var TokenomicAssets = {
       wallet = this.getWallet();
       if (!wallet) throw new Error('Wallet not connected');
     }
-    // When the market is wired, the certificate is already minted by purchase().
-    // Treat claim as a refresh + acknowledgement.
-    if (this.MARKET_ADDRESS && this.CERT_NFT_ADDRESS) {
+
+    // Path A: TokenomicMarket configured -> on-chain student-paid mint via market.claimCertificate
+    if (this.MARKET_ADDRESS) {
+      await this.ensureBaseChain();
+      var market = await this._getMarketSigner();
+
+      // Idempotency: if already claimed, surface the existing tokenId without a fresh mint.
       try {
-        var owned = await this.getOwnedCertificates(wallet);
-        return {
-          success: true,
-          alreadyMinted: true,
-          certificates: owned,
-          note: 'Certificate already minted at purchase time.'
-        };
-      } catch (e) {
-        return { success: true, alreadyMinted: true, note: 'Certificate already minted at purchase time.' };
-      }
+        var existing = await market.certificateOf(courseId, wallet);
+        if (existing && existing.toString && existing.toString() !== '0') {
+          return {
+            success: true,
+            alreadyMinted: true,
+            certificateTokenId: existing.toString(),
+            note: 'Certificate already claimed for this course.'
+          };
+        }
+      } catch (_) { /* best-effort read */ }
+
+      var ipfsURI = opts.metadata_uri || this._buildCertificateMetadataURI(courseId, opts.title || ('Course #' + courseId), wallet);
+      var tx = await market.claimCertificate(courseId, ipfsURI);
+      var receipt = await tx.wait();
+
+      var tokenId = null;
+      try {
+        var iface = new ethers.utils.Interface(this.MARKET_ABI);
+        for (var i = 0; i < (receipt.logs || []).length; i++) {
+          try {
+            var parsed = iface.parseLog(receipt.logs[i]);
+            if (parsed && parsed.name === 'CertificateClaimed') {
+              tokenId = parsed.args.certificateTokenId.toString();
+              break;
+            }
+          } catch (_) { /* not our log */ }
+        }
+      } catch (_) {}
+
+      return {
+        success: true,
+        certificateTokenId: tokenId,
+        metadataURI: ipfsURI,
+        txHash: receipt.transactionHash,
+        gasUsed: receipt.gasUsed && receipt.gasUsed.toString ? receipt.gasUsed.toString() : null,
+        explorerUrl: this.BASESCAN_BASE + '/tx/' + receipt.transactionHash,
+        note: 'Certificate minted. You paid the gas for this transaction.'
+      };
     }
+
+    // Path B: legacy fallback — direct cert contract mint (kept for back-compat tests).
     var result = await this.mintCertification({
       courseTitle: opts.title || ('Course #' + courseId),
       metadata_uri: opts.metadata_uri || this._buildCertificateMetadataURI(courseId, opts.title, wallet)
     });
     if (result && result.asset) result.asset.course_id = courseId;
     return result;
+  },
+
+  /**
+   * Estimate gas + ETH cost (in wei + decimal ETH) for an action before the user signs.
+   * Returns { gas, gasPrice, ethCost, ethCostFormatted } or { error } if estimation failed.
+   * action ∈ { 'purchase' | 'claim' | 'register' | 'withdraw' }
+   * params: { courseId?, ipfsMetadataURI?, priceInUSDC?, consultant? }
+   */
+  async estimateActionGas(action, params) {
+    params = params || {};
+    if (typeof ethers === 'undefined') return { error: 'ethers not loaded' };
+    if (!this.MARKET_ADDRESS) return { error: 'Market contract not configured' };
+    try {
+      await this.ensureBaseChain();
+      var market = await this._getMarketSigner();
+      var provider = market.signer ? market.signer.provider : market.provider;
+
+      var gas;
+      if (action === 'purchase') {
+        gas = await market.estimateGas.purchase(params.courseId);
+      } else if (action === 'claim') {
+        var uri = params.ipfsMetadataURI || this._buildCertificateMetadataURI(params.courseId, params.title, this.getWallet());
+        gas = await market.estimateGas.claimCertificate(params.courseId, uri);
+      } else if (action === 'register') {
+        var priceWei = ethers.utils.parseUnits(String(params.priceInUSDC || '0'), 6);
+        var addr = params.consultant && /^0x[0-9a-fA-F]{40}$/.test(params.consultant)
+          ? params.consultant : '0x0000000000000000000000000000000000000000';
+        gas = await market.estimateGas.registerCourse(params.ipfsMetadataURI || '', priceWei, addr);
+      } else if (action === 'withdraw') {
+        gas = await market.estimateGas.withdrawUSDC();
+      } else {
+        return { error: 'unknown action' };
+      }
+
+      var gasPrice;
+      try { gasPrice = await provider.getGasPrice(); }
+      catch (_) { gasPrice = ethers.BigNumber.from('1000000'); /* 0.001 gwei fallback for Base */ }
+
+      var ethCost = gas.mul(gasPrice);
+      return {
+        gas: gas.toString(),
+        gasPrice: gasPrice.toString(),
+        ethCost: ethCost.toString(),
+        ethCostFormatted: ethers.utils.formatEther(ethCost),
+        message: 'You will pay ~' + Number(ethers.utils.formatEther(ethCost)).toFixed(6) + ' ETH on Base for this action.'
+      };
+    } catch (e) {
+      return { error: (e && e.message) || String(e) };
+    }
   },
 
   /**

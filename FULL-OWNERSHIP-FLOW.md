@@ -9,14 +9,33 @@ End-to-end Web3 ownership across Tokenomic: educators upload → students buy
 
 ### `TokenomicMarket.sol` (extended)
 
-| Function | Caller | Purpose |
-|---|---|---|
-| `registerCourse(ipfsMetadataURI, priceInUSDC, consultant)` | **anyone** (caller becomes the educator) | Permissionless self-publish |
-| `purchase(courseId, ipfsMetadataURI)` | student (after `usdc.approve`) | Pulls USDC, credits balances, mints cert |
-| `withdrawUSDC()` | educator / consultant | Pull pending USDC credit |
-| `withdrawPlatformFees(to)` | **owner only** | Sweep accumulated 5 % platform cut |
-| `getCoursesByEducator(addr)` view | dashboard | List courses by educator |
-| `pendingWithdrawals(addr)` / `totalEarned(addr)` view | dashboard | Earnings panel |
+| Function | Caller | Purpose | Pays gas |
+|---|---|---|---|
+| `registerCourse(ipfsMetadataURI, priceInUSDC, consultant)` | **anyone** (caller becomes the educator) | Permissionless self-publish | **educator** |
+| `purchase(courseId)` | student (after `usdc.approve`) | Pulls USDC, credits balances. Does **not** mint cert. | **student** |
+| `claimCertificate(courseId, ipfsMetadataURI)` | student (after a prior `purchase`) | Mints the ERC-721 cert with the supplied IPFS URI | **student** |
+| `mintCertificatesForBuyers(courseId, buyers[], uris[])` | educator (optional, sponsored mode) | Educator-paid batch mint for buyers who haven't claimed yet | **educator** |
+| `withdrawUSDC()` | educator / consultant | Pull pending USDC credit | **educator / consultant** |
+| `withdrawPlatformFees(to)` | **owner only** | Sweep accumulated 5 % platform cut | **owner** |
+| `getCoursesByEducator(addr)` view | dashboard | List courses by educator | — |
+| `pendingWithdrawals(addr)` / `totalEarned(addr)` view | dashboard | Earnings panel | — |
+| `certificateOf(courseId, addr)` view | dashboard | Returns claimed tokenId (0 if not yet claimed) | — |
+
+## Gas Fee Responsibility
+
+All actions on Base are paid by the wallet that signs the transaction — there
+is no platform sponsorship and no meta-transactions.
+
+- **Educators / consultants** pay gas for `registerCourse`, `withdrawUSDC`,
+  and the optional `mintCertificatesForBuyers` sponsored batch.
+- **Students** pay gas for `purchase` and the separate `claimCertificate`
+  call that mints their NFT. Splitting the mint out of the purchase keeps
+  on-chain control with the buyer (they decide when, and pay for it
+  themselves) and removes any platform-paid gas exposure.
+- **Owner** pays gas for `withdrawPlatformFees` sweeps.
+
+The frontend surfaces an estimated ETH cost before each signature via
+`TokenomicAssets.estimateActionGas('purchase' | 'claim' | 'register' | 'withdraw', params)`.
 
 Purchase emits both `CoursePurchased` (legacy) and a new
 `PurchaseSettled(courseId, buyer, educator, consultant, …, ipfsMetadataURI)`

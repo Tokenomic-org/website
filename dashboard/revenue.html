@@ -248,6 +248,16 @@ function revenuePage() {
 }
 </script>
 
+                <div class="dash-card" style="margin-top:24px;background:#fff7ec;border-left:4px solid #ff6000;" id="tkn-gas-notice">
+                    <div style="font-size:0.85rem;color:#0c2230;line-height:1.55;">
+                        <i class="fas fa-info-circle" style="color:#ff6000;margin-right:6px;"></i>
+                        <strong>Gas fees:</strong> as an educator/consultant you pay the gas
+                        on Base for registering courses and withdrawing earnings. Estimates
+                        appear before you sign each transaction. There are no platform-paid
+                        gas subsidies — every action stays in your wallet.
+                    </div>
+                </div>
+
                 <div class="dash-card" style="margin-top:24px;" id="onchain-earnings-card">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
                         <h4 style="margin:0;"><i class="fas fa-coins" style="color:#ff6000;margin-right:8px;"></i>On-Chain Earnings (USDC)</h4>
@@ -324,7 +334,10 @@ function revenuePage() {
                     var html = '<table style="width:100%;border-collapse:collapse;font-size:0.86rem;"><thead><tr style="text-align:left;color:#5a8299;border-bottom:1px solid #e8eef5;"><th style="padding:6px 4px;">Course</th><th>Buyer</th><th>You earned</th><th>Cert</th><th>Tx</th></tr></thead><tbody>';
                     sales.slice(0,25).forEach(function(s){
                       var b = s.buyer.slice(0,6)+'…'+s.buyer.slice(-4);
-                      html += '<tr style="border-bottom:1px solid #f0f4fa;"><td style="padding:8px 4px;">#'+s.courseId+'</td><td><code style="font-size:0.78rem;">'+b+'</code></td><td>'+s.educatorAmount+' USDC</td><td>#'+s.certificateTokenId+'</td><td><a href="'+s.explorerUrl+'" target="_blank" rel="noopener">view</a></td></tr>';
+                      var certCell = (s.certificateTokenId && s.certificateTokenId !== '0')
+                        ? '#'+s.certificateTokenId
+                        : '<span style="color:#9aa6b2;">unclaimed</span>';
+                      html += '<tr style="border-bottom:1px solid #f0f4fa;"><td style="padding:8px 4px;">#'+s.courseId+'</td><td><code style="font-size:0.78rem;">'+b+'</code></td><td>'+s.educatorAmount+' USDC</td><td>'+certCell+'</td><td><a href="'+s.explorerUrl+'" target="_blank" rel="noopener">view</a></td></tr>';
                     });
                     slot.innerHTML = html + '</tbody></table>';
                   }
@@ -332,10 +345,18 @@ function revenuePage() {
                     var btn = document.getElementById('tkn-withdraw-btn');
                     var status = document.getElementById('tkn-withdraw-status');
                     if (!window.TokenomicAssets){ status.innerHTML='<span style="color:#e53e3e;">Web3 not loaded</span>'; return; }
-                    btn.disabled = true; status.innerHTML='Submitting transaction…';
+                    btn.disabled = true; status.innerHTML='Estimating gas…';
                     try {
+                      // Show gas estimate before requesting signature so the user is never surprised.
+                      var est = await window.TokenomicAssets.estimateActionGas('withdraw', {});
+                      var gasMsg = est && est.message ? est.message : 'You will pay the gas for this withdrawal on Base.';
+                      if (!confirm(gasMsg + '\n\nProceed with the withdrawal?')) {
+                        status.innerHTML = '<span style="color:#5a8299;">Cancelled.</span>';
+                        return;
+                      }
+                      status.innerHTML = 'Submitting transaction… (you pay the gas)';
                       var r = await window.TokenomicAssets.withdrawEarnings();
-                      status.innerHTML = '<span style="color:#00C853;">✓ Withdrew '+r.amount+' USDC.</span> <a href="'+r.explorerUrl+'" target="_blank" rel="noopener">View on BaseScan →</a>';
+                      status.innerHTML = '<span style="color:#00C853;">✓ Withdrew '+r.amount+' USDC. Gas paid by you.</span> <a href="'+r.explorerUrl+'" target="_blank" rel="noopener">View on BaseScan →</a>';
                       loadEarnings();
                     } catch(err){
                       status.innerHTML = '<span style="color:#e53e3e;">'+(err && err.message || err)+'</span>';

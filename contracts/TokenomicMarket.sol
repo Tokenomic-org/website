@@ -11,8 +11,16 @@ interface ITokenomicCertificate {
 }
 
 /// @title TokenomicMarket
-/// @notice USDC-priced course marketplace with automatic 90/5/5 revenue split
-///         (educator / consultant / platform) and atomic certificate minting.
+/// @notice USDC-priced course marketplace with 90/5/5 revenue split
+///         (educator / consultant / platform).
+///
+/// @dev Gas Fee Responsibility:
+///        - Educators / consultants pay gas for `registerCourse`, `withdrawUSDC`,
+///          and any admin actions they perform.
+///        - Students pay gas for `purchase` and for the separate
+///          `claimCertificate` mint that follows. Certificate minting is
+///          intentionally split from purchase so buyers control (and pay for)
+///          NFT issuance themselves — no platform-sponsored mints.
 contract TokenomicMarket is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -52,6 +60,10 @@ contract TokenomicMarket is Ownable, ReentrancyGuard {
 
     /// @notice Has a wallet already purchased a given course? (Prevents duplicate certs.)
     mapping(uint256 => mapping(address => bool)) public hasPurchased;
+
+    /// @notice Certificate tokenId minted for (courseId, buyer) via `claimCertificate`.
+    ///         0 means the buyer has purchased but not yet claimed.
+    mapping(uint256 => mapping(address => uint256)) public certificateOf;
 
     /// @notice USDC credited to each address from purchases, claimable via `withdrawUSDC`.
     mapping(address => uint256) public pendingWithdrawals;
@@ -95,6 +107,13 @@ contract TokenomicMarket is Ownable, ReentrancyGuard {
     );
     event Withdrawn(address indexed account, uint256 amount);
     event PlatformWithdrawn(address indexed to, uint256 amount);
+    /// @notice Emitted when a buyer claims (mints) their certificate. Buyer pays the gas.
+    event CertificateClaimed(
+        uint256 indexed courseId,
+        address indexed buyer,
+        uint256 certificateTokenId,
+        string ipfsMetadataURI
+    );
 
     error CourseInactive();
     error CourseNotFound();
@@ -104,6 +123,8 @@ contract TokenomicMarket is Ownable, ReentrancyGuard {
     error InvalidShares();
     error CertificateNotSet();
     error NothingToWithdraw();
+    error NotPurchased();
+    error AlreadyClaimed();
 
     constructor(address initialOwner, address usdcAddress, address certificateAddress) Ownable(initialOwner) {
         if (usdcAddress == address(0)) revert InvalidAddress();
@@ -191,18 +212,17 @@ contract TokenomicMarket is Ownable, ReentrancyGuard {
     // ---------- Purchase ----------
 
     /// @notice Pay USDC for a course. Caller must have called `usdc.approve(market, price)` first.
+    ///         Student pays the gas. The certificate NFT is **not** minted here — call
+    ///         `claimCertificate(courseId, ipfsMetadataURI)` afterwards (also paid by the student).
     /// @param courseId          Course to purchase.
-    /// @param ipfsMetadataURI   IPFS URI of the certificate metadata to mint for the buyer.
-    function purchase(uint256 courseId, string calldata ipfsMetadataURI)
+    function purchase(uint256 courseId)
         external
         nonReentrant
-        returns (uint256 certificateTokenId)
     {
         Course memory c = courses[courseId];
         if (c.educator == address(0)) revert CourseNotFound();
         if (!c.active) revert CourseInactive();
         if (hasPurchased[courseId][msg.sender]) revert AlreadyPurchased();
-        if (address(certificate) == address(0)) revert CertificateNotSet();
 
         hasPurchased[courseId][msg.sender] = true;
 
@@ -232,8 +252,7 @@ contract TokenomicMarket is Ownable, ReentrancyGuard {
         }
         platformBalance += platformAmount;
 
-        certificateTokenId = certificate.mint(msg.sender, courseId, ipfsMetadataURI);
-
+        // certificateTokenId == 0 here; the buyer mints separately via `claimCertificate`.
         emit CoursePurchased(
             courseId,
             msg.sender,
@@ -241,7 +260,7 @@ contract TokenomicMarket is Ownable, ReentrancyGuard {
             educatorAmount,
             consultantAmount,
             platformAmount,
-            certificateTokenId
+            0
         );
         emit PurchaseSettled(
             courseId,
@@ -251,9 +270,56 @@ contract TokenomicMarket is Ownable, ReentrancyGuard {
             educatorAmount,
             consultantAmount,
             platformAmount,
-            certificateTokenId,
-            ipfsMetadataURI
+            0,
+            ""
         );
+    }
+
+    // ---------- Certificate claim (student-paid mint) ----------
+
+    /// @notice Mint the certificate NFT for a course the caller has already purchased.
+    ///         Student pays the gas; one mint per (courseId, buyer).
+    /// @param courseId          Course the caller previously purchased.
+    /// @param ipfsMetadataURI   `ipfs://...` URI for the lightweight cert metadata JSON.
+    /// @return certificateTokenId Minted ERC-721 tokenId.
+    function claimCertificate(uint256 courseId, string calldata ipfsMetadataURI)
+        external
+        nonReentrant
+        returns (uint256 certificateTokenId)
+    {
+        if (!hasPurchased[courseId][msg.sender]) revert NotPurchased();
+        if (certificateOf[courseId][msg.sender] != 0) revert AlreadyClaimed();
+        if (address(certificate) == address(0)) revert CertificateNotSet();
+        if (bytes(ipfsMetadataURI).length == 0) revert InvalidAddress();
+
+        certificateTokenId = certificate.mint(msg.sender, courseId, ipfsMetadataURI);
+        certificateOf[courseId][msg.sender] = certificateTokenId;
+
+        emit CertificateClaimed(courseId, msg.sender, certificateTokenId, ipfsMetadataURI);
+    }
+
+    /// @notice Optional: educator may sponsor a batch of buyer mints (educator pays gas).
+    ///         Useful for promotional or premium tiers; not used by the default flow.
+    function mintCertificatesForBuyers(
+        uint256 courseId,
+        address[] calldata buyers,
+        string[] calldata ipfsMetadataURIs
+    ) external nonReentrant {
+        Course memory c = courses[courseId];
+        if (c.educator == address(0)) revert CourseNotFound();
+        if (msg.sender != c.educator) revert InvalidAddress();
+        if (address(certificate) == address(0)) revert CertificateNotSet();
+        if (buyers.length != ipfsMetadataURIs.length) revert InvalidAddress();
+
+        for (uint256 i = 0; i < buyers.length; i++) {
+            address buyer = buyers[i];
+            if (!hasPurchased[courseId][buyer]) continue;
+            if (certificateOf[courseId][buyer] != 0) continue;
+            if (bytes(ipfsMetadataURIs[i]).length == 0) continue;
+            uint256 tid = certificate.mint(buyer, courseId, ipfsMetadataURIs[i]);
+            certificateOf[courseId][buyer] = tid;
+            emit CertificateClaimed(courseId, buyer, tid, ipfsMetadataURIs[i]);
+        }
     }
 
     // ---------- Withdrawals ----------
