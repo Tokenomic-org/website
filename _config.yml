@@ -55,6 +55,11 @@ exclude:
   - .replit
   - replit.nix
   - .github/
+  - workers/
+  - contracts/
+  - scripts/
+  - tests/
+  - "**/node_modules/"
 
 
 collections:
