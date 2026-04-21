@@ -5,6 +5,9 @@
  *   POST /api/comments/:articleSlug              Submit a comment (rate limited)
  *   GET  /api/dashboard/stats                    Aggregate stats from KV
  *   GET  /api/dashboard/activity                 Recent activity feed
+ *   POST /stream/direct-upload                   Cloudflare Stream creator upload URL
+ *   GET  /stream/:uid                            Stream asset status + playback URLs
+ *   POST /stream/:uid/json-meta                  Persist course metadata for a Stream uid
  *   GET  /api/health
  *
  * Bindings (wrangler.toml):
@@ -230,83 +233,144 @@ app.get('/api/dashboard/activity', async (c) => {
 });
 
 /**
- * POST /ipfs/upload            multipart/form-data  field "file"
- * POST /ipfs/upload-json       application/json     body = metadata
+ * Cloudflare Stream — Direct Creator Upload
  *
- * Both proxy to nft.storage using the NFT_STORAGE_TOKEN env var so the
- * write-capable token never leaves the server. Rate limited per IP.
+ * Course videos are hosted on Cloudflare Stream (managed encoding,
+ * adaptive HLS/DASH, embed players, signed URLs). The browser never
+ * sees the account-wide CF_STREAM_TOKEN — it's held server-side here.
  *
- * Response: { cid, ipfsURI, gatewayURL }
+ *   POST /stream/direct-upload     body: { name?, maxDurationSeconds?, creator?, meta? }
+ *                                  -> { uid, uploadURL, playback, embed, thumbnail }
+ *   GET  /stream/:uid              -> { uid, status, duration, playback, embed, thumbnail, ready }
+ *   POST /stream/:uid/json-meta    body: { ...metadata }   stored alongside in COMMENTS_KV
+ *                                  -> { ok: true, key }
+ *
+ * Required env:
+ *   CF_ACCOUNT_ID    Cloudflare account id
+ *   CF_STREAM_TOKEN  API token with `Stream:Edit` permission (secret)
  */
-async function pinToNftStorage(env, payload, contentType) {
-  if (!env.NFT_STORAGE_TOKEN) {
-    return { ok: false, status: 503, error: 'IPFS pinning not configured' };
-  }
-  const resp = await fetch('https://api.nft.storage/upload', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${env.NFT_STORAGE_TOKEN}`,
-      'Content-Type': contentType
-    },
-    body: payload
-  });
-  const data = await resp.json().catch(() => ({}));
-  if (!resp.ok || !data || !data.ok) {
-    return { ok: false, status: resp.status || 502, error: (data && data.error && data.error.message) || 'pin failed' };
-  }
-  const cid = data.value && data.value.cid;
+function streamCustomerSubdomain(env, uid, kind = 'hls') {
+  const sub = env.STREAM_CUSTOMER_SUBDOMAIN || ''; // e.g. customer-abc123.cloudflarestream.com
+  if (!sub || !uid) return '';
+  if (kind === 'embed') return `https://${sub}/${uid}/iframe`;
+  if (kind === 'thumb') return `https://${sub}/${uid}/thumbnails/thumbnail.jpg`;
+  if (kind === 'dash')  return `https://${sub}/${uid}/manifest/video.mpd`;
+  return `https://${sub}/${uid}/manifest/video.m3u8`;
+}
+
+function streamPlaybackBlock(env, uid, apiPlayback) {
+  // CF API returns playback.{hls,dash} once the upload is ready; before that
+  // we synthesize URLs from STREAM_CUSTOMER_SUBDOMAIN if configured.
+  const hls  = (apiPlayback && apiPlayback.hls)  || streamCustomerSubdomain(env, uid, 'hls');
+  const dash = (apiPlayback && apiPlayback.dash) || streamCustomerSubdomain(env, uid, 'dash');
   return {
-    ok: true,
-    cid,
-    ipfsURI: `ipfs://${cid}`,
-    gatewayURL: `https://${cid}.ipfs.nftstorage.link`
+    uid,
+    playback:  { hls, dash },
+    embed:     streamCustomerSubdomain(env, uid, 'embed'),
+    thumbnail: streamCustomerSubdomain(env, uid, 'thumb')
   };
 }
 
-app.post('/ipfs/upload', async (c) => {
+async function callStream(env, path, init = {}) {
+  if (!env.CF_STREAM_TOKEN || !env.CF_ACCOUNT_ID) {
+    return { ok: false, status: 503, error: 'Cloudflare Stream not configured' };
+  }
+  const url = `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/stream${path}`;
+  const resp = await fetch(url, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${env.CF_STREAM_TOKEN}`,
+      'Content-Type': 'application/json',
+      ...(init.headers || {})
+    }
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok || !data || data.success === false) {
+    const msg = (data && data.errors && data.errors[0] && data.errors[0].message) || `Stream API ${resp.status}`;
+    return { ok: false, status: resp.status || 502, error: msg };
+  }
+  return { ok: true, data };
+}
+
+app.post('/stream/direct-upload', async (c) => {
   const ip = clientIp(c);
-  const rl = await rateLimit(c, `${ip}:ipfs`, 30, 60);
+  const rl = await rateLimit(c, `${ip}:stream-upload`, 20, 60);
   c.header('X-RateLimit-Remaining', String(rl.remaining));
   if (!rl.ok) return c.json({ error: 'Rate limit exceeded' }, 429);
 
-  const ct = c.req.header('content-type') || '';
-  if (!ct.toLowerCase().startsWith('multipart/form-data')) {
-    return c.json({ error: 'Expected multipart/form-data with a "file" field' }, 400);
-  }
-  try {
-    const form = await c.req.formData();
-    const file = form.get('file');
-    if (!file || typeof file === 'string') return c.json({ error: 'Missing file' }, 400);
-    const maxBytes = parseInt(c.env.MAX_UPLOAD_BYTES || String(25 * 1024 * 1024), 10);
-    if (file.size > maxBytes) return c.json({ error: `File exceeds ${maxBytes} bytes` }, 413);
-    const r = await pinToNftStorage(c.env, file.stream(), file.type || 'application/octet-stream');
-    if (!r.ok) return c.json({ error: r.error }, r.status);
-    return c.json({ ok: true, cid: r.cid, ipfsURI: r.ipfsURI, gatewayURL: r.gatewayURL });
-  } catch (e) {
-    console.error('ipfs upload failed:', e);
-    return c.json({ error: 'Upload failed' }, 500);
-  }
+  let body = {};
+  try { body = await c.req.json(); } catch {}
+  const wallet = (c.req.header('x-wallet') || body.creator || '').toString().slice(0, 64);
+  const maxDuration = Math.min(
+    parseInt(body.maxDurationSeconds || c.env.STREAM_MAX_DURATION_SECONDS || '21600', 10),
+    21600
+  );
+  const meta = Object.assign(
+    {
+      name: (body.name || 'tokenomic-course').toString().slice(0, 200),
+      uploadedFrom: 'tokenomic-api'
+    },
+    typeof body.meta === 'object' && body.meta ? body.meta : {}
+  );
+  const allowedOrigins = (c.env.STREAM_ALLOWED_ORIGINS || c.env.ALLOWED_ORIGINS || '')
+    .split(',').map((s) => s.trim().replace(/^https?:\/\//, '').replace(/\/.*$/, ''))
+    .filter((s) => s && !s.includes('*'));
+
+  const r = await callStream(c.env, '/direct_upload', {
+    method: 'POST',
+    body: JSON.stringify({
+      maxDurationSeconds: maxDuration,
+      creator: wallet || undefined,
+      meta,
+      requireSignedURLs: false,
+      allowedOrigins: allowedOrigins.length ? allowedOrigins : undefined
+    })
+  });
+  if (!r.ok) return c.json({ error: r.error }, r.status);
+
+  const uid = r.data.result.uid;
+  const uploadURL = r.data.result.uploadURL;
+  return c.json({
+    ok: true,
+    uploadURL,
+    ...streamPlaybackBlock(c.env, uid, null)
+  });
 });
 
-app.post('/ipfs/upload-json', async (c) => {
+app.get('/stream/:uid', async (c) => {
+  const uid = c.req.param('uid');
+  if (!/^[a-f0-9]{20,64}$/i.test(uid)) return c.json({ error: 'Invalid uid' }, 400);
+  const r = await callStream(c.env, `/${uid}`);
+  if (!r.ok) return c.json({ error: r.error }, r.status);
+  const v = r.data.result;
+  return c.json({
+    ok: true,
+    status: v.status && v.status.state,
+    ready: v.readyToStream === true,
+    duration: v.duration || 0,
+    size: v.size || 0,
+    meta: v.meta || {},
+    ...streamPlaybackBlock(c.env, v.uid, v.playback)
+  });
+});
+
+app.post('/stream/:uid/json-meta', async (c) => {
   const ip = clientIp(c);
-  const rl = await rateLimit(c, `${ip}:ipfs`, 60, 60);
+  const rl = await rateLimit(c, `${ip}:stream-meta`, 60, 60);
   c.header('X-RateLimit-Remaining', String(rl.remaining));
   if (!rl.ok) return c.json({ error: 'Rate limit exceeded' }, 429);
 
+  const uid = c.req.param('uid');
+  if (!/^[a-f0-9]{20,64}$/i.test(uid)) return c.json({ error: 'Invalid uid' }, 400);
   let body;
   try { body = await c.req.json(); }
   catch { return c.json({ error: 'Invalid JSON body' }, 400); }
   if (!body || typeof body !== 'object') return c.json({ error: 'Body must be a JSON object' }, 400);
-  try {
-    const payload = JSON.stringify(body);
-    const r = await pinToNftStorage(c.env, payload, 'application/json');
-    if (!r.ok) return c.json({ error: r.error }, r.status);
-    return c.json({ ok: true, cid: r.cid, ipfsURI: r.ipfsURI, gatewayURL: r.gatewayURL });
-  } catch (e) {
-    console.error('ipfs json upload failed:', e);
-    return c.json({ error: 'Upload failed' }, 500);
-  }
+  if (!c.env.COMMENTS_KV) return c.json({ error: 'Storage not configured' }, 503);
+
+  const key = `stream-meta:${uid}`;
+  await c.env.COMMENTS_KV.put(key, JSON.stringify(body));
+  return c.json({ ok: true, key, uri: `stream:${uid}` });
 });
 
 app.notFound((c) => c.json({ error: 'Not found', path: c.req.path }, 404));

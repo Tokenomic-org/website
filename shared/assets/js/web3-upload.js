@@ -1,86 +1,120 @@
 /**
  * web3-upload.js — Educator course upload flow.
  *
- *   1. Pin files + metadata JSON to IPFS via the Cloudflare Worker proxy
- *      (which holds the nft.storage / web3.storage API key) or directly to
- *      nft.storage if NFT_STORAGE_TOKEN is exposed at build time.
- *   2. Build a metadata.json describing the course and pin it.
- *   3. Call TokenomicMarket.registerCourse(ipfsURI, priceInUSDC, consultant).
+ *   1. Ask the api-worker for a one-time Cloudflare Stream upload URL.
+ *   2. Browser POSTs the video file directly to Cloudflare Stream.
+ *   3. POST course metadata (title, description, price, consultant, files[])
+ *      to the api-worker so it's persisted under stream-meta:<uid> in KV.
+ *   4. Call TokenomicMarket.registerCourse("stream:<uid>", priceInUSDC, consultant).
  *
- * Designed to attach to any element via TokenomicUpload.bindForm(formEl, opts).
+ * No course files ever land in the agent worker — the browser uploads
+ * straight to Cloudflare Stream, and the worker only mints the upload
+ * ticket using its server-side CF_STREAM_TOKEN secret.
  */
 (function (global) {
   'use strict';
 
   var ENV = (global.__TKN_ENV) || {};
 
-  // Optional Worker endpoint that proxies pinning. See workers/api-worker.
-  // Expected POST endpoints:
-  //   POST /ipfs/upload          (multipart/form-data, file field "file")  -> { cid, url }
-  //   POST /ipfs/upload-json     (application/json body)                   -> { cid, url }
-  var IPFS_UPLOAD_BASE = ENV.IPFS_UPLOAD_BASE || ENV.WORKER_API_BASE || '';
-  var NFT_STORAGE_TOKEN = ENV.NFT_STORAGE_TOKEN || ''; // only set in trusted dev builds
+  // api-worker base URL. The Stream endpoints live under /stream/*.
+  var API_BASE = (ENV.API_BASE || ENV.WORKER_API_BASE || '').replace(/\/$/, '');
 
-  function publicGateway(cid, path) {
-    var p = path ? ('/' + String(path).replace(/^\//, '')) : '';
-    return 'https://cloudflare-ipfs.com/ipfs/' + cid + p;
+  function streamUri(uid)   { return 'stream:' + uid; }
+  function streamEmbed(uid) {
+    var sub = ENV.STREAM_CUSTOMER_SUBDOMAIN || '';
+    return sub ? ('https://' + sub + '/' + uid + '/iframe') : '';
+  }
+  function streamHls(uid) {
+    var sub = ENV.STREAM_CUSTOMER_SUBDOMAIN || '';
+    return sub ? ('https://' + sub + '/' + uid + '/manifest/video.m3u8') : '';
   }
 
-  async function uploadFileViaWorker(file) {
-    var fd = new FormData();
-    fd.append('file', file, file.name);
-    var res = await fetch(IPFS_UPLOAD_BASE.replace(/\/$/, '') + '/ipfs/upload', {
+  /**
+   * Mint a Cloudflare Stream Direct Creator Upload URL via the api-worker.
+   * @param {Object} opts
+   * @param {string} [opts.name]
+   * @param {string} [opts.creator]   wallet address
+   * @param {Object} [opts.meta]
+   * @param {number} [opts.maxDurationSeconds]
+   */
+  async function requestUploadTicket(opts) {
+    if (!API_BASE) throw new Error('API_BASE not configured');
+    var res = await fetch(API_BASE + '/stream/direct-upload', {
       method: 'POST',
-      body: fd,
-      credentials: 'omit'
+      headers: {
+        'content-type': 'application/json',
+        'x-wallet': (opts && opts.creator) || ''
+      },
+      credentials: 'omit',
+      body: JSON.stringify({
+        name: opts && opts.name,
+        creator: opts && opts.creator,
+        meta: opts && opts.meta,
+        maxDurationSeconds: opts && opts.maxDurationSeconds
+      })
     });
-    if (!res.ok) throw new Error('Worker upload failed: ' + res.status);
+    if (!res.ok) {
+      var err = await res.text().catch(function () { return ''; });
+      throw new Error('Stream ticket failed: ' + res.status + ' ' + err);
+    }
     return await res.json();
   }
 
-  async function uploadJSONViaWorker(json) {
-    var res = await fetch(IPFS_UPLOAD_BASE.replace(/\/$/, '') + '/ipfs/upload-json', {
+  /**
+   * Upload a single File/Blob to a previously-minted Stream upload URL.
+   * Cloudflare Stream's Direct Creator Upload endpoint accepts a
+   * multipart/form-data POST with field "file".
+   */
+  async function uploadToStream(uploadURL, file, onProgress) {
+    return await new Promise(function (resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', uploadURL, true);
+      xhr.upload.addEventListener('progress', function (e) {
+        if (e.lengthComputable && typeof onProgress === 'function') {
+          onProgress(e.loaded, e.total);
+        }
+      });
+      xhr.onerror = function () { reject(new Error('Upload network error')); };
+      xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) resolve(true);
+        else reject(new Error('Upload failed: ' + xhr.status + ' ' + xhr.responseText));
+      };
+      var fd = new FormData();
+      fd.append('file', file, (file && file.name) || 'video');
+      xhr.send(fd);
+    });
+  }
+
+  /**
+   * Poll /stream/:uid until the asset is ready (or maxWaitMs elapses).
+   */
+  async function waitForReady(uid, maxWaitMs) {
+    var deadline = Date.now() + (maxWaitMs || 120000);
+    while (Date.now() < deadline) {
+      try {
+        var res = await fetch(API_BASE + '/stream/' + uid, { credentials: 'omit' });
+        if (res.ok) {
+          var j = await res.json();
+          if (j.ready) return j;
+        }
+      } catch (_) {}
+      await new Promise(function (r) { setTimeout(r, 3000); });
+    }
+    return { ready: false };
+  }
+
+  /**
+   * Persist course metadata server-side, keyed by Stream uid.
+   */
+  async function saveMetadata(uid, metadata) {
+    var res = await fetch(API_BASE + '/stream/' + uid + '/json-meta', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(json),
-      credentials: 'omit'
+      credentials: 'omit',
+      body: JSON.stringify(metadata)
     });
-    if (!res.ok) throw new Error('Worker upload failed: ' + res.status);
+    if (!res.ok) throw new Error('saveMetadata failed: ' + res.status);
     return await res.json();
-  }
-
-  async function uploadFileToNftStorage(file) {
-    if (!NFT_STORAGE_TOKEN) throw new Error('No NFT_STORAGE_TOKEN exposed');
-    var res = await fetch('https://api.nft.storage/upload', {
-      method: 'POST',
-      headers: { 'authorization': 'Bearer ' + NFT_STORAGE_TOKEN },
-      body: file
-    });
-    var data = await res.json();
-    if (!data || !data.ok) throw new Error('nft.storage upload failed: ' + JSON.stringify(data));
-    return { cid: data.value.cid, url: 'ipfs://' + data.value.cid };
-  }
-
-  async function uploadJSONToNftStorage(json) {
-    var blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
-    return uploadFileToNftStorage(blob);
-  }
-
-  async function pinFile(file, opts) {
-    opts = opts || {};
-    if (IPFS_UPLOAD_BASE) {
-      try { return await uploadFileViaWorker(file); }
-      catch (e) { if (!NFT_STORAGE_TOKEN) throw e; }
-    }
-    return await uploadFileToNftStorage(file);
-  }
-
-  async function pinJSON(json) {
-    if (IPFS_UPLOAD_BASE) {
-      try { return await uploadJSONViaWorker(json); }
-      catch (e) { if (!NFT_STORAGE_TOKEN) throw e; }
-    }
-    return await uploadJSONToNftStorage(json);
   }
 
   /**
@@ -88,94 +122,97 @@
    * @param {Object}   payload
    * @param {string}   payload.title
    * @param {string}   payload.description
-   * @param {File[]}   payload.files       Course content files (videos, PDFs, etc.)
+   * @param {File[]}   payload.files       Course content files (videos primarily)
    * @param {string}   payload.priceInUSDC e.g. "49.99"
    * @param {string}   [payload.consultant] Optional 0x... address for revenue share
    * @param {Function} [payload.onProgress] (stage, info) callback
-   * @returns {Promise<{courseId, txHash, metadataURI, explorerUrl, fileCids}>}
+   * @returns {Promise<{courseId, txHash, contentURI, embedUrl, hlsUrl, streamUid}>}
    */
   async function publishCourse(payload) {
     var onP = payload.onProgress || function () {};
     if (!payload.title) throw new Error('title is required');
     if (!payload.priceInUSDC) throw new Error('priceInUSDC is required');
-    if (typeof TokenomicAssets === 'undefined') {
-      throw new Error('TokenomicAssets not loaded');
-    }
+    if (typeof TokenomicAssets === 'undefined') throw new Error('TokenomicAssets not loaded');
     if (!TokenomicAssets.MARKET_ADDRESS) {
       throw new Error('MARKET_CONTRACT not configured. Set window.__TKN_ENV.MARKET_CONTRACT.');
     }
 
     var files = payload.files || [];
-    var fileCids = [];
+    if (!files.length) throw new Error('At least one video file is required');
+    var primary = files[0];
 
-    for (var i = 0; i < files.length; i++) {
-      onP('uploading-file', { index: i, total: files.length, name: files[i].name });
-      var pinned = await pinFile(files[i]);
-      fileCids.push({
-        name: files[i].name,
-        size: files[i].size,
-        type: files[i].type,
-        cid: pinned.cid,
-        ipfsUri: 'ipfs://' + pinned.cid,
-        gatewayUrl: publicGateway(pinned.cid)
-      });
-    }
+    onP('requesting-upload-url', { name: primary.name, size: primary.size });
+    var ticket = await requestUploadTicket({
+      name: payload.title,
+      creator: payload.consultant || '',
+      meta: { courseTitle: payload.title }
+    });
 
-    onP('uploading-metadata', null);
+    onP('uploading-video', { name: primary.name, size: primary.size, uid: ticket.uid });
+    await uploadToStream(ticket.uploadURL, primary, function (loaded, total) {
+      onP('upload-progress', { loaded: loaded, total: total, percent: Math.round(loaded * 100 / total) });
+    });
+
+    onP('encoding', { uid: ticket.uid });
+    var ready = await waitForReady(ticket.uid, 5 * 60 * 1000);
+
     var metadata = {
       name: payload.title,
       description: payload.description || '',
       external_url: payload.externalUrl || '',
-      image: payload.image || (fileCids[0] ? 'ipfs://' + fileCids[0].cid : ''),
       attributes: [
         { trait_type: 'priceUSDC', value: String(payload.priceInUSDC) },
-        { trait_type: 'fileCount', value: fileCids.length }
+        { trait_type: 'storage',   value: 'cloudflare-stream' }
       ],
       properties: {
         version: 1,
-        contentType: 'tokenomic.course.v1',
-        files: fileCids,
+        contentType: 'tokenomic.course.v2',
+        stream: {
+          uid: ticket.uid,
+          embed: (ready && ready.embed) || streamEmbed(ticket.uid),
+          hls:   (ready && ready.playback && ready.playback.hls) || streamHls(ticket.uid),
+          duration: (ready && ready.duration) || 0
+        },
         consultant: payload.consultant || null,
         publishedAt: new Date().toISOString()
       }
     };
 
-    var pinnedMeta = await pinJSON(metadata);
-    var metadataURI = 'ipfs://' + pinnedMeta.cid;
+    onP('saving-metadata', { uid: ticket.uid });
+    await saveMetadata(ticket.uid, metadata);
 
-    onP('registering-on-chain', { metadataURI: metadataURI });
+    var contentURI = streamUri(ticket.uid);
+    onP('registering-on-chain', { contentURI: contentURI });
     var result = await TokenomicAssets.registerCourseOnChain(
-      metadataURI,
+      contentURI,
       payload.priceInUSDC,
       payload.consultant || ''
     );
 
     onP('done', result);
     return Object.assign({}, result, {
-      metadataURI: metadataURI,
-      metadata: metadata,
-      fileCids: fileCids
+      contentURI: contentURI,
+      streamUid:  ticket.uid,
+      embedUrl:   metadata.properties.stream.embed,
+      hlsUrl:     metadata.properties.stream.hls,
+      metadata:   metadata
     });
   }
 
   /**
    * Bind a <form> to publishCourse(). The form should contain inputs:
    *   name="title", name="description", name="priceInUSDC",
-   *   name="consultant" (optional), name="files" type="file" multiple
-   * Optional descendants used for UX:
-   *   [data-tkn-upload-status], [data-tkn-upload-progress],
-   *   [data-tkn-upload-submit], [data-tkn-upload-result]
+   *   name="consultant" (optional), name="files" type="file" (video)
    */
   function bindForm(formEl, opts) {
     opts = opts || {};
-    if (!formEl) return;
-    if (formEl.dataset.tknBound === '1') return;
+    if (!formEl || formEl.dataset.tknBound === '1') return;
     formEl.dataset.tknBound = '1';
 
-    var statusEl = formEl.querySelector('[data-tkn-upload-status]');
+    var statusEl   = formEl.querySelector('[data-tkn-upload-status]');
     var progressEl = formEl.querySelector('[data-tkn-upload-progress]');
-    var resultEl = formEl.querySelector('[data-tkn-upload-result]');
-    var submitBtn = formEl.querySelector('[data-tkn-upload-submit]') || formEl.querySelector('button[type=submit]');
+    var resultEl   = formEl.querySelector('[data-tkn-upload-result]');
+    var submitBtn  = formEl.querySelector('[data-tkn-upload-submit]') || formEl.querySelector('button[type=submit]');
 
     function setStatus(msg, kind) {
       if (statusEl) {
@@ -190,23 +227,21 @@
     function setProgress(stage, info) {
       if (!progressEl) return;
       var label = stage;
-      if (stage === 'uploading-file' && info) {
-        label = 'Uploading file ' + (info.index + 1) + '/' + info.total + ' — ' + info.name;
-      } else if (stage === 'uploading-metadata') {
-        label = 'Pinning metadata to IPFS…';
-      } else if (stage === 'registering-on-chain') {
-        label = 'Registering course on Base…';
-      } else if (stage === 'done') {
-        label = 'Course published!';
-      }
+      if (stage === 'requesting-upload-url') label = 'Requesting Cloudflare Stream upload URL…';
+      else if (stage === 'uploading-video')  label = 'Uploading ' + info.name + '…';
+      else if (stage === 'upload-progress')  label = 'Uploading: ' + info.percent + '%';
+      else if (stage === 'encoding')         label = 'Cloudflare Stream is encoding the video…';
+      else if (stage === 'saving-metadata')  label = 'Saving course metadata…';
+      else if (stage === 'registering-on-chain') label = 'Registering course on Base…';
+      else if (stage === 'done')             label = 'Course published!';
       progressEl.textContent = label;
     }
 
     formEl.addEventListener('submit', async function (ev) {
       ev.preventDefault();
       var fd = new FormData(formEl);
-      var files = formEl.querySelector('input[type=file]');
-      var fileList = files && files.files ? Array.prototype.slice.call(files.files) : [];
+      var fileInput = formEl.querySelector('input[type=file]');
+      var fileList = fileInput && fileInput.files ? Array.prototype.slice.call(fileInput.files) : [];
 
       setBusy(true);
       setStatus('Publishing…', 'info');
@@ -221,12 +256,16 @@
         });
         setStatus('Course published! Course ID: #' + res.courseId, 'success');
         if (resultEl) {
+          var iframeHtml = res.embedUrl
+            ? '<div class="tkn-upload-preview"><iframe src="' + res.embedUrl + '" allow="accelerometer; gyroscope; encrypted-media; picture-in-picture;" allowfullscreen></iframe></div>'
+            : '';
           resultEl.innerHTML =
             '<div class="tkn-upload-success">' +
               '<div><strong>Course ID:</strong> #' + res.courseId + '</div>' +
-              '<div><strong>Metadata:</strong> <a href="https://cloudflare-ipfs.com/ipfs/' +
-                res.metadataURI.replace('ipfs://','') + '" target="_blank" rel="noopener">' + res.metadataURI + '</a></div>' +
+              '<div><strong>Stream UID:</strong> <code>' + res.streamUid + '</code></div>' +
+              '<div><strong>Content URI:</strong> <code>' + res.contentURI + '</code></div>' +
               '<div><a href="' + res.explorerUrl + '" target="_blank" rel="noopener">View transaction on BaseScan →</a></div>' +
+              iframeHtml +
             '</div>';
         }
         if (typeof opts.onSuccess === 'function') opts.onSuccess(res);
@@ -243,8 +282,12 @@
   global.TokenomicUpload = {
     publishCourse: publishCourse,
     bindForm: bindForm,
-    pinFile: pinFile,
-    pinJSON: pinJSON,
-    publicGateway: publicGateway
+    requestUploadTicket: requestUploadTicket,
+    uploadToStream: uploadToStream,
+    waitForReady: waitForReady,
+    saveMetadata: saveMetadata,
+    streamUri: streamUri,
+    streamEmbed: streamEmbed,
+    streamHls: streamHls
   };
 })(typeof window !== 'undefined' ? window : this);

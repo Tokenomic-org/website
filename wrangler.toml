@@ -2,7 +2,7 @@
 # Cloudflare Workers configuration for Tokenomic
 #
 # Two Workers deployed as separate [env.<name>] environments:
-#   - api-worker   (comments + dashboard + IPFS pinning, KV-backed)
+#   - api-worker   (comments + dashboard + Cloudflare Stream uploads, KV-backed)
 #   - web3-worker  (read-only on-chain proxy)
 #
 # Deploy:
@@ -27,10 +27,15 @@ enabled = true
 head_sampling_rate = 1
 
 [env.api-worker.vars]
-ALLOWED_ORIGINS  = "https://tokenomic.org,https://*.tokenomic.org,https://*.cf-ipfs.com,https://*.pages.dev,https://tokenomic.guillaumelauzier.workers.dev"
-MAX_COMMENT_LEN  = "4000"
-REQUIRE_WALLET   = "false"
-MAX_UPLOAD_BYTES = "26214400"
+ALLOWED_ORIGINS              = "https://tokenomic.org,https://*.tokenomic.org,https://*.pages.dev,https://tokenomic.guillaumelauzier.workers.dev"
+MAX_COMMENT_LEN              = "4000"
+REQUIRE_WALLET               = "false"
+CF_ACCOUNT_ID                = "c016d64a9a4f4a2900fb3385bd08144f"
+STREAM_CUSTOMER_SUBDOMAIN    = ""    # e.g. customer-abc123.cloudflarestream.com (set after first Stream upload)
+STREAM_MAX_DURATION_SECONDS  = "21600"
+STREAM_ALLOWED_ORIGINS       = "https://tokenomic.org,https://tokenomic.guillaumelauzier.workers.dev"
+# Secret (set via `wrangler secret put CF_STREAM_TOKEN --env api-worker`):
+#   CF_STREAM_TOKEN   API token with `Stream:Edit` permission
 
 [[env.api-worker.kv_namespaces]]
 binding    = "COMMENTS_KV"
@@ -50,7 +55,7 @@ preview_id = "bc47b5da405d4de786536b763d9c4d76"
 # pattern   = "tokenomic.org/api/dashboard/*"
 # zone_name = "tokenomic.org"
 # [[env.api-worker.routes]]
-# pattern   = "tokenomic.org/ipfs/*"
+# pattern   = "tokenomic.org/stream/*"
 # zone_name = "tokenomic.org"
 
 # ---------- web3-worker ----------
@@ -66,11 +71,10 @@ enabled = true
 head_sampling_rate = 1
 
 [env.web3-worker.vars]
-ALLOWED_ORIGINS         = "https://tokenomic.org,https://*.tokenomic.org,https://*.cf-ipfs.com,https://*.pages.dev,https://tokenomic.guillaumelauzier.workers.dev"
+ALLOWED_ORIGINS         = "https://tokenomic.org,https://*.tokenomic.org,https://*.pages.dev,https://tokenomic.guillaumelauzier.workers.dev"
 BASE_RPC_URL            = "https://mainnet.base.org"
 BASE_CHAIN_ID           = "8453"
 CLOUDFLARE_ETH_GATEWAY  = "https://cloudflare-eth.com"
-IPFS_GATEWAY            = "https://cloudflare-ipfs.com"
 
 # [[env.web3-worker.routes]]
 # pattern   = "tokenomic.org/api/web3/*"

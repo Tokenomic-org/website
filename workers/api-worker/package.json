@@ -1,15 +1,11 @@
 {
-  "name": "api-worker",
+  "name": "tokenomic-api-worker",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "main": "index.js",
-  "scripts": {
-    "dev": "wrangler dev --config ../../wrangler.toml --name api-worker",
-    "deploy": "wrangler deploy --config ../../wrangler.toml --name api-worker"
-  },
   "dependencies": {
-    "hono": "^4.6.0"
+    "hono": "^4.0.0"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"

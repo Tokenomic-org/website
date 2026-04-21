@@ -1,0 +1,29 @@
+name                = "tokenomic-api"
+main                = "index.js"
+compatibility_date  = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev         = true
+keep_vars           = true
+
+[observability]
+enabled            = true
+head_sampling_rate = 1
+
+[vars]
+ALLOWED_ORIGINS              = "https://tokenomic.org,https://*.tokenomic.org,https://*.pages.dev,https://tokenomic.guillaumelauzier.workers.dev"
+MAX_COMMENT_LEN              = "4000"
+REQUIRE_WALLET               = "false"
+STREAM_CUSTOMER_SUBDOMAIN    = ""
+STREAM_MAX_DURATION_SECONDS  = "21600"
+STREAM_ALLOWED_ORIGINS       = "https://tokenomic.org,https://tokenomic.guillaumelauzier.workers.dev"
+# CF_ACCOUNT_ID and CF_STREAM_TOKEN are injected as secrets via wrangler secret put.
+
+[[kv_namespaces]]
+binding    = "COMMENTS_KV"
+id         = "bfaa55ab69d14b60b25dfe84d02ae53e"
+preview_id = "99ded23b6b954c6e84115b4991ef1345"
+
+[[kv_namespaces]]
+binding    = "RATE_LIMIT_KV"
+id         = "0e9898f0ec2146f1bf3a8cfa9e3d57ed"
+preview_id = "bc47b5da405d4de786536b763d9c4d76"

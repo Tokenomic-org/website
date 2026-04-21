@@ -1,17 +1,9 @@
 {
-  "name": "web3-worker",
+  "name": "tokenomic-web3-worker",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "main": "index.js",
-  "scripts": {
-    "dev": "wrangler dev --config ../../wrangler.toml --name web3-worker",
-    "deploy": "wrangler deploy --config ../../wrangler.toml --name web3-worker"
-  },
-  "dependencies": {
-    "hono": "^4.6.0",
-    "ethers": "^6.13.0"
-  },
   "devDependencies": {
     "wrangler": "^4.0.0"
   }

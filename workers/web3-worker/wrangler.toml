@@ -1,0 +1,16 @@
+name                = "tokenomic-web3"
+main                = "index.js"
+compatibility_date  = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev         = true
+keep_vars           = true
+
+[observability]
+enabled            = true
+head_sampling_rate = 1
+
+[vars]
+ALLOWED_ORIGINS         = "https://tokenomic.org,https://*.tokenomic.org,https://*.pages.dev,https://tokenomic.guillaumelauzier.workers.dev"
+BASE_RPC_URL            = "https://mainnet.base.org"
+BASE_CHAIN_ID           = "8453"
+CLOUDFLARE_ETH_GATEWAY  = "https://cloudflare-eth.com"
