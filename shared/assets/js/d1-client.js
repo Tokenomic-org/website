@@ -190,6 +190,31 @@
       var d = await api('POST', '/api/courses', courseData, true);
       return d.course;
     },
+    async updateCourse(id, patch) {
+      var d = await api('PATCH', '/api/courses/' + encodeURIComponent(id), patch, true);
+      return d.course;
+    },
+
+    // ---------- modules ----------
+
+    async getCourseModules(courseId) {
+      var d = await api('GET', '/api/courses/' + encodeURIComponent(courseId) + '/modules', null, false);
+      return d.items || [];
+    },
+    async createModule(courseId, data) {
+      var d = await api('POST', '/api/courses/' + encodeURIComponent(courseId) + '/modules', data, true);
+      return d.module;
+    },
+    async updateModule(moduleId, patch) {
+      var d = await api('PATCH', '/api/modules/' + encodeURIComponent(moduleId), patch, true);
+      return d.module;
+    },
+    async deleteModule(moduleId) {
+      return await api('DELETE', '/api/modules/' + encodeURIComponent(moduleId), null, true);
+    },
+    async reorderModules(courseId, ids) {
+      return await api('POST', '/api/courses/' + encodeURIComponent(courseId) + '/modules/reorder', { ids: ids }, true);
+    },
 
     // ---------- enrollments ----------
 

@@ -624,6 +624,220 @@ export function mountD1Routes(app) {
     }
   });
 
+  // Update editable course fields. Owner-gated (educator_wallet === auth.wallet)
+  // OR caller is admin.
+  app.patch('/api/courses/:id', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    const id = Number(c.req.param('id'));
+    if (!Number.isFinite(id) || id <= 0) return c.json({ error: 'Bad id' }, 400);
+    const course = await c.env.DB.prepare('SELECT * FROM courses WHERE id = ?').bind(id).first();
+    if (!course) return c.json({ error: 'Course not found' }, 404);
+    const isOwner = lc(course.educator_wallet) === auth.wallet;
+    let isAdmin = false;
+    if (!isOwner) {
+      const adminEnv = (c.env.ADMIN_WALLETS || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+      isAdmin = adminEnv.includes(auth.wallet);
+      if (!isAdmin) {
+        const p = await c.env.DB.prepare('SELECT roles FROM profiles WHERE wallet_address = ?').bind(auth.wallet).first();
+        const parsed = p ? jsonOrNull(p.roles) : null;
+        isAdmin = Array.isArray(parsed) && parsed.includes('admin');
+      }
+    }
+    if (!isOwner && !isAdmin) return c.json({ error: 'Not your course' }, 403);
+
+    let body = {}; try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+    const sets = [], binds = [];
+    const stringField = (key, max) => {
+      if (typeof body[key] === 'string') { sets.push(`${key} = ?`); binds.push(body[key].slice(0, max)); }
+    };
+    const numField = (key) => {
+      if (body[key] !== undefined && body[key] !== null && body[key] !== '') {
+        const n = Number(body[key]); if (Number.isFinite(n)) { sets.push(`${key} = ?`); binds.push(n); }
+      }
+    };
+    stringField('title', 200);
+    stringField('description', 4000);
+    stringField('category', 80);
+    stringField('level', 40);
+    stringField('thumbnail_url', 500);
+    stringField('stream_video_uid', 100);
+    // price/hours: validate non-negative.
+    if (body.price_usdc !== undefined && body.price_usdc !== null && body.price_usdc !== '') {
+      const n = Number(body.price_usdc);
+      if (!Number.isFinite(n) || n < 0 || n > 1e9) return c.json({ error: 'price_usdc must be a non-negative number' }, 400);
+      sets.push('price_usdc = ?'); binds.push(n);
+    }
+    if (body.estimated_hours !== undefined && body.estimated_hours !== null && body.estimated_hours !== '') {
+      const n = Number(body.estimated_hours);
+      if (!Number.isFinite(n) || n < 0 || n > 100000) return c.json({ error: 'estimated_hours must be a non-negative number' }, 400);
+      sets.push('estimated_hours = ?'); binds.push(n);
+    }
+    if (Array.isArray(body.what_you_learn)) {
+      sets.push('what_you_learn = ?'); binds.push(JSON.stringify(body.what_you_learn.slice(0, 50)));
+    }
+    if (body.status === 'draft' || body.status === 'active' || body.status === 'archived') {
+      sets.push('status = ?'); binds.push(body.status);
+    }
+    if (!sets.length) return c.json({ error: 'Nothing to update' }, 400);
+    binds.push(id);
+    await c.env.DB.prepare(`UPDATE courses SET ${sets.join(', ')} WHERE id = ?`).bind(...binds).run();
+    await audit(c.env, auth.wallet, 'course.update', 'course', id, { fields: sets.length });
+    const row = await c.env.DB.prepare('SELECT * FROM courses WHERE id = ?').bind(id).first();
+    return c.json({ ok: true, course: { ...row, what_you_learn: jsonOrNull(row.what_you_learn) || [] } });
+  });
+
+  // -------- modules --------
+
+  // Internal: load course + verify caller owns it (or is admin).
+  async function loadCourseAsOwner(c, id) {
+    const auth = await requireAuth(c);
+    if (auth.error) return { fail: auth.error };
+    const cid = Number(id);
+    if (!Number.isFinite(cid) || cid <= 0) return { fail: c.json({ error: 'Bad course id' }, 400) };
+    const course = await c.env.DB.prepare('SELECT * FROM courses WHERE id = ?').bind(cid).first();
+    if (!course) return { fail: c.json({ error: 'Course not found' }, 404) };
+    if (lc(course.educator_wallet) === auth.wallet) return { auth, course };
+    const adminEnv = (c.env.ADMIN_WALLETS || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+    if (adminEnv.includes(auth.wallet)) return { auth, course };
+    const p = await c.env.DB.prepare('SELECT roles FROM profiles WHERE wallet_address = ?').bind(auth.wallet).first();
+    const parsed = p ? jsonOrNull(p.roles) : null;
+    if (Array.isArray(parsed) && parsed.includes('admin')) return { auth, course };
+    return { fail: c.json({ error: 'Not your course' }, 403) };
+  }
+
+  // Atomic recompute of modules_count to avoid TOCTOU between read+write.
+  // We use a subquery so the COUNT and UPDATE happen as a single statement;
+  // SQLite/D1 evaluate subqueries against the same snapshot as the outer write.
+  async function refreshModuleCount(env, courseId) {
+    await env.DB.prepare(
+      'UPDATE courses SET modules_count = (SELECT COUNT(*) FROM modules WHERE course_id = ?) WHERE id = ?'
+    ).bind(courseId, courseId).run();
+  }
+
+  // Public list of modules for a course.
+  app.get('/api/courses/:id/modules', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const id = Number(c.req.param('id'));
+    if (!Number.isFinite(id) || id <= 0) return c.json({ error: 'Bad id' }, 400);
+    const exists = await c.env.DB.prepare('SELECT id FROM courses WHERE id = ?').bind(id).first();
+    if (!exists) return c.json({ error: 'Course not found' }, 404);
+    const { results } = await c.env.DB.prepare(
+      'SELECT id, course_id, position, title, body_md, video_uid, duration_minutes, created_at, updated_at FROM modules WHERE course_id = ? ORDER BY position ASC, id ASC'
+    ).bind(id).all();
+    return c.json({ items: results || [], count: (results || []).length });
+  });
+
+  // Append a new module.
+  app.post('/api/courses/:id/modules', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const gate = await loadCourseAsOwner(c, c.req.param('id'));
+    if (gate.fail) return gate.fail;
+    let body = {}; try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+    const title = (body.title || '').toString().trim();
+    if (title.length < 2 || title.length > 200) return c.json({ error: 'Title 2-200 chars' }, 400);
+    const bodyMd = typeof body.body_md === 'string' ? body.body_md.slice(0, 100000) : '';
+    const videoUid = typeof body.video_uid === 'string' && body.video_uid.length <= 100 ? body.video_uid : null;
+    const dur = body.duration_minutes != null && body.duration_minutes !== '' ? Number(body.duration_minutes) : null;
+    const duration = Number.isFinite(dur) && dur >= 0 && dur <= 100000 ? Math.round(dur) : null;
+    const maxRow = await c.env.DB.prepare('SELECT MAX(position) AS m FROM modules WHERE course_id = ?').bind(gate.course.id).first();
+    const nextPos = ((maxRow && maxRow.m) || 0) + 1;
+    const res = await c.env.DB.prepare(`
+      INSERT INTO modules (course_id, position, title, body_md, video_uid, duration_minutes, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+    `).bind(gate.course.id, nextPos, title, bodyMd, videoUid, duration).run();
+    const id = res.meta && res.meta.last_row_id;
+    await refreshModuleCount(c.env, gate.course.id);
+    await audit(c.env, gate.auth.wallet, 'module.create', 'module', id, { course_id: gate.course.id });
+    const row = await c.env.DB.prepare('SELECT * FROM modules WHERE id = ?').bind(id).first();
+    return c.json({ ok: true, module: row });
+  });
+
+  // Update a module.
+  app.patch('/api/modules/:id', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    // Auth first so we don't leak module-id existence to unauth callers.
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    const mid = Number(c.req.param('id'));
+    if (!Number.isFinite(mid) || mid <= 0) return c.json({ error: 'Bad id' }, 400);
+    const m = await c.env.DB.prepare('SELECT * FROM modules WHERE id = ?').bind(mid).first();
+    if (!m) return c.json({ error: 'Module not found' }, 404);
+    const gate = await loadCourseAsOwner(c, m.course_id);
+    if (gate.fail) return gate.fail;
+    let body = {}; try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+    const sets = [], binds = [];
+    if (typeof body.title === 'string') {
+      const t = body.title.trim();
+      if (t.length < 2 || t.length > 200) return c.json({ error: 'Title 2-200 chars' }, 400);
+      sets.push('title = ?'); binds.push(t);
+    }
+    if (typeof body.body_md === 'string') { sets.push('body_md = ?'); binds.push(body.body_md.slice(0, 100000)); }
+    if (body.video_uid === null || body.video_uid === '') { sets.push('video_uid = NULL'); }
+    else if (typeof body.video_uid === 'string' && body.video_uid.length <= 100) { sets.push('video_uid = ?'); binds.push(body.video_uid); }
+    if (body.duration_minutes === null || body.duration_minutes === '') { sets.push('duration_minutes = NULL'); }
+    else if (body.duration_minutes != null) {
+      const n = Number(body.duration_minutes);
+      if (Number.isFinite(n) && n >= 0 && n <= 100000) { sets.push('duration_minutes = ?'); binds.push(Math.round(n)); }
+    }
+    if (!sets.length) return c.json({ error: 'Nothing to update' }, 400);
+    sets.push("updated_at = datetime('now')");
+    binds.push(mid);
+    await c.env.DB.prepare(`UPDATE modules SET ${sets.join(', ')} WHERE id = ?`).bind(...binds).run();
+    await audit(c.env, gate.auth.wallet, 'module.update', 'module', mid, { course_id: m.course_id });
+    const row = await c.env.DB.prepare('SELECT * FROM modules WHERE id = ?').bind(mid).first();
+    return c.json({ ok: true, module: row });
+  });
+
+  // Delete a module and recompact positions.
+  app.delete('/api/modules/:id', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    // Auth first so we don't leak module-id existence to unauth callers.
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    const mid = Number(c.req.param('id'));
+    if (!Number.isFinite(mid) || mid <= 0) return c.json({ error: 'Bad id' }, 400);
+    const m = await c.env.DB.prepare('SELECT * FROM modules WHERE id = ?').bind(mid).first();
+    if (!m) return c.json({ error: 'Module not found' }, 404);
+    const gate = await loadCourseAsOwner(c, m.course_id);
+    if (gate.fail) return gate.fail;
+    await c.env.DB.prepare('DELETE FROM modules WHERE id = ?').bind(mid).run();
+    // Recompact positions so they remain a 1..N sequence.
+    const { results } = await c.env.DB.prepare(
+      'SELECT id FROM modules WHERE course_id = ? ORDER BY position ASC, id ASC'
+    ).bind(m.course_id).all();
+    let pos = 1;
+    for (const row of (results || [])) {
+      await c.env.DB.prepare('UPDATE modules SET position = ? WHERE id = ?').bind(pos++, row.id).run();
+    }
+    await refreshModuleCount(c.env, m.course_id);
+    await audit(c.env, gate.auth.wallet, 'module.delete', 'module', mid, { course_id: m.course_id });
+    return c.json({ ok: true });
+  });
+
+  // Reorder modules. Body: { ids: [moduleId, …] } in desired order.
+  app.post('/api/courses/:id/modules/reorder', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const gate = await loadCourseAsOwner(c, c.req.param('id'));
+    if (gate.fail) return gate.fail;
+    let body = {}; try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+    const ids = Array.isArray(body.ids) ? body.ids.map(Number).filter(n => Number.isFinite(n) && n > 0) : null;
+    if (!ids || !ids.length) return c.json({ error: 'ids[] required' }, 400);
+    if (new Set(ids).size !== ids.length) return c.json({ error: 'duplicate ids' }, 400);
+    // Verify every id belongs to this course and the set is complete.
+    const { results } = await c.env.DB.prepare('SELECT id FROM modules WHERE course_id = ?').bind(gate.course.id).all();
+    const owned = new Set((results || []).map(r => r.id));
+    if (owned.size !== ids.length || !ids.every(id => owned.has(id))) {
+      return c.json({ error: 'ids must match all modules of this course exactly' }, 400);
+    }
+    // Apply all reorders atomically via D1 batch (single transaction).
+    // Without this, a partial failure could leave duplicate positions.
+    const stmts = ids.map((id, i) => c.env.DB.prepare(
+      "UPDATE modules SET position = ?, updated_at = datetime('now') WHERE id = ? AND course_id = ?"
+    ).bind(i + 1, id, gate.course.id));
+    await c.env.DB.batch(stmts);
+    await audit(c.env, gate.auth.wallet, 'module.reorder', 'course', gate.course.id, { count: ids.length });
+    return c.json({ ok: true });
+  });
+
   // -------- communities --------
 
   app.get('/api/communities', async (c) => {

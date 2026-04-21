@@ -118,6 +118,21 @@ permalink: /my-courses/
 </style>
 
 <div id="course-toast-container" style="position:fixed;top:24px;right:24px;z-index:9999;"></div>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js" defer></script>
+<style>
+.md-preview h1,.md-preview h2,.md-preview h3 { color:#0A0F1A;margin:1em 0 0.4em; }
+.md-preview h1 { font-size:1.4rem; } .md-preview h2 { font-size:1.2rem; } .md-preview h3 { font-size:1.05rem; }
+.md-preview p { margin:0.6em 0; } .md-preview ul,.md-preview ol { padding-left:1.4em;margin:0.6em 0; }
+.md-preview pre { background:#0A0F1A;color:#e2e8f0;padding:12px 14px;border-radius:8px;overflow-x:auto;font-size:0.85rem; }
+.md-preview code { background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:0.88em; }
+.md-preview pre code { background:transparent;padding:0; }
+.md-preview a { color:#f97316;text-decoration:underline; }
+.md-preview blockquote { border-left:3px solid #f97316;padding:6px 14px;color:#5a8299;margin:0.8em 0;background:#f8fafb;border-radius:0 6px 6px 0; }
+.md-preview img { max-width:100%;border-radius:8px;margin:0.6em 0; }
+.md-preview table { border-collapse:collapse;margin:0.8em 0; }
+.md-preview th,.md-preview td { border:1px solid #e2e8f0;padding:6px 10px; }
+</style>
 
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
     <div style="display:flex;gap:0;border-bottom:2px solid #f0f2f5;">
@@ -133,7 +148,7 @@ permalink: /my-courses/
 
 <div class="row clearfix" style="margin-bottom:20px;">
     <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#f97316;" x-text="courses.length"></div><div class="stat-lbl">Total Courses</div></div></div>
-    <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#10b981;" x-text="courses.filter(function(c){return c.status==='published'}).length"></div><div class="stat-lbl">Published</div></div></div>
+    <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#10b981;" x-text="courses.filter(function(c){return c.status==='active'}).length"></div><div class="stat-lbl">Published</div></div></div>
     <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#3b82f6;" x-text="totalEnrolled"></div><div class="stat-lbl">Enrolled Students</div></div></div>
     <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="'$'+totalRevenue"></div><div class="stat-lbl">Gross Revenue</div></div></div>
 </div>
@@ -249,7 +264,7 @@ permalink: /my-courses/
                 <div style="padding:16px 16px 14px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:4px;">
                         <span class="course-badge" :style="'background:'+levelColor(course.level)+'20;color:'+levelColor(course.level)" x-text="levelLabel(course.level)"></span>
-                        <span class="course-badge" :style="course.status==='published' ? 'background:#10b98120;color:#10b981' : 'background:#f59e0b20;color:#f59e0b'" x-text="course.status"></span>
+                        <span class="course-badge" :style="course.status==='active' ? 'background:#10b98120;color:#10b981' : 'background:#f59e0b20;color:#f59e0b'" x-text="course.status"></span>
                     </div>
                     <template x-if="course.specialization">
                         <div style="font-size:0.72rem;color:#8b5cf6;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;" x-text="course.specialization"></div>
@@ -266,9 +281,9 @@ permalink: /my-courses/
                         <template x-if="course.estimatedHours"><span style="color:#5a8299;font-size:0.8rem;" x-text="course.estimatedHours+'h'"></span></template>
                     </div>
                     <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                        <button class="dash-btn dash-btn-outline" style="padding:5px 10px;font-size:0.78rem;flex:1;" @click="editCourse(course)"><i class="fas fa-edit" style="margin-right:4px;"></i>Edit</button>
-                        <button class="dash-btn" :class="course.status==='published' ? 'dash-btn-outline' : 'dash-btn-primary'" style="padding:5px 10px;font-size:0.78rem;flex:1;" @click="togglePublish(course)">
-                            <span x-text="course.status==='published' ? 'Unpublish' : 'Publish'"></span>
+                        <button class="dash-btn dash-btn-outline" x-show="isOwner(course)" style="padding:5px 10px;font-size:0.78rem;flex:1;" @click="editCourse(course)"><i class="fas fa-edit" style="margin-right:4px;"></i>Edit</button>
+                        <button class="dash-btn" x-show="isOwner(course)" :class="course.status==='active' ? 'dash-btn-outline' : 'dash-btn-primary'" style="padding:5px 10px;font-size:0.78rem;flex:1;" @click="togglePublish(course)">
+                            <span x-text="course.status==='active' ? 'Unpublish' : 'Publish'"></span>
                         </button>
                         <a :href="course.html_url" target="_blank" class="dash-btn dash-btn-outline" style="padding:5px 8px;font-size:0.78rem;" title="Open course source">
                             <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="vertical-align:middle;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
@@ -447,23 +462,33 @@ permalink: /my-courses/
                 <div x-show="!loadingModules">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
                         <h5 style="margin:0;font-size:0.95rem;">Modules (<span x-text="editModules.length"></span>)</h5>
-                        <button class="dash-btn dash-btn-primary" style="padding:6px 14px;font-size:0.82rem;" @click="showAddModule=!showAddModule"><i class="fas fa-plus" style="margin-right:4px;"></i> Add Module</button>
+                        <button class="dash-btn dash-btn-primary" style="padding:6px 14px;font-size:0.82rem;" @click="showAddModule=!showAddModule;moduleMsg=''"><i class="fas fa-plus" style="margin-right:4px;"></i> Add Module</button>
                     </div>
 
                     <!-- Add module form -->
                     <div x-show="showAddModule" x-transition class="add-module-form" style="margin-bottom:16px;">
                         <h6 style="margin:0 0 12px;font-size:0.9rem;color:#0A0F1A;">New Module</h6>
                         <div class="row clearfix" style="margin-bottom:10px;">
-                            <div class="col-md-8"><label style="display:block;color:#5a8299;font-size:0.8rem;margin-bottom:3px;">Module Title <span style="color:#e53e3e;">*</span></label><input x-model="nm.title" class="dash-input" placeholder="e.g. Introduction to Smart Contracts" /></div>
-                            <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.8rem;margin-bottom:3px;">Duration</label><input x-model="nm.duration" class="dash-input" placeholder="e.g. 45 min" /></div>
+                            <div class="col-md-8"><label style="display:block;color:#5a8299;font-size:0.8rem;margin-bottom:3px;">Module Title <span style="color:#e53e3e;">*</span></label><input x-model="nm.title" class="dash-input" placeholder="e.g. Introduction to Smart Contracts" maxlength="200" /></div>
+                            <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.8rem;margin-bottom:3px;">Duration (min)</label><input x-model="nm.duration_minutes" type="number" class="dash-input" placeholder="e.g. 45" min="0" /></div>
                         </div>
-                        <div style="margin-bottom:10px;"><label style="display:block;color:#5a8299;font-size:0.8rem;margin-bottom:3px;">Video URL <small>(YouTube, Vimeo, etc.)</small></label>
-                            <input x-model="nm.videoUrl" class="dash-input" placeholder="https://youtube.com/watch?v=..." />
+                        <div style="margin-bottom:10px;"><label style="display:block;color:#5a8299;font-size:0.8rem;margin-bottom:3px;">Cloudflare Stream Video UID <small style="color:#9ca3af;">(optional)</small></label>
+                            <input x-model="nm.video_uid" class="dash-input" placeholder="abc123def456…" maxlength="100" style="font-family:monospace;font-size:0.82rem;" />
                         </div>
-                        <div style="margin-bottom:12px;"><label style="display:block;color:#5a8299;font-size:0.8rem;margin-bottom:3px;">Module Description</label><textarea x-model="nm.description" class="dash-input" rows="2" placeholder="What will students learn in this module?"></textarea></div>
+                        <div style="margin-bottom:10px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+                                <label style="color:#5a8299;font-size:0.8rem;">Lesson Content (Markdown)</label>
+                                <div style="display:flex;gap:4px;">
+                                    <button @click="nmPreview=false" :class="!nmPreview && 'modal-tab-btn active'" class="modal-tab-btn" style="padding:3px 10px;font-size:0.75rem;">Write</button>
+                                    <button @click="nmPreview=true" :class="nmPreview && 'modal-tab-btn active'" class="modal-tab-btn" style="padding:3px 10px;font-size:0.75rem;">Preview</button>
+                                </div>
+                            </div>
+                            <textarea x-show="!nmPreview" x-model="nm.body_md" class="dash-input" rows="10" placeholder="# Lesson 1&#10;&#10;Write your lesson in **Markdown**.&#10;&#10;- Use lists&#10;- [Add links](https://example.com)&#10;- Embed `code`&#10;&#10;```js&#10;console.log('hello');&#10;```" style="font-family:ui-monospace,monospace;font-size:0.85rem;line-height:1.5;"></textarea>
+                            <div x-show="nmPreview" x-html="renderMd(nm.body_md)" class="md-preview" style="border:1px solid #e2e8f0;border-radius:8px;padding:14px;background:#fff;min-height:200px;font-size:0.92rem;line-height:1.6;"></div>
+                        </div>
                         <div style="display:flex;gap:8px;align-items:center;">
                             <button class="dash-btn dash-btn-primary" @click="addModule()" :disabled="addingModule" style="min-width:120px;"><span x-text="addingModule ? 'Creating...' : 'Create Module'"></span></button>
-                            <button class="dash-btn dash-btn-outline" @click="showAddModule=false;nm={title:'',description:'',videoUrl:'',duration:''}">Cancel</button>
+                            <button class="dash-btn dash-btn-outline" @click="showAddModule=false;resetNm()">Cancel</button>
                             <span x-show="moduleMsg" x-text="moduleMsg" :style="moduleMsg.includes('!') ? 'color:#10b981;' : 'color:#ef4444;'" style="font-size:0.82rem;"></span>
                         </div>
                     </div>
@@ -473,21 +498,55 @@ permalink: /my-courses/
                         <p style="color:#5a8299;margin-bottom:10px;">No modules yet.</p>
                         <button class="dash-btn dash-btn-primary" style="padding:7px 18px;font-size:0.85rem;" @click="showAddModule=true">Add First Module</button>
                     </div>
-                    <template x-for="(m, idx) in editModules" :key="idx">
-                        <div class="module-row">
-                            <div class="module-num" x-text="idx+1"></div>
-                            <div style="flex:1;">
-                                <strong style="font-size:0.88rem;" x-text="m.name.replace(/^module-\d+-?/,'').replace(/\.md$/,'').replace(/-/g,' ')"></strong>
-                                <div style="color:#9ca3af;font-size:0.75rem;margin-top:2px;" x-text="m.name"></div>
+                    <template x-for="(m, idx) in editModules" :key="m.id">
+                        <div style="margin-bottom:8px;">
+                            <div class="module-row">
+                                <div class="module-num" x-text="idx+1"></div>
+                                <div style="flex:1;min-width:0;">
+                                    <strong style="font-size:0.88rem;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" x-text="m.title"></strong>
+                                    <div style="color:#9ca3af;font-size:0.72rem;margin-top:2px;">
+                                        <span x-show="m.duration_minutes" x-text="m.duration_minutes+' min'"></span>
+                                        <span x-show="m.duration_minutes && m.video_uid"> · </span>
+                                        <span x-show="m.video_uid">video</span>
+                                        <span x-show="!m.duration_minutes && !m.video_uid">markdown lesson</span>
+                                    </div>
+                                </div>
+                                <div style="display:flex;gap:4px;">
+                                    <button class="dash-btn dash-btn-outline" :disabled="idx===0||savingModule" style="padding:4px 8px;font-size:0.72rem;" @click="moveModule(idx,-1)" title="Move up">↑</button>
+                                    <button class="dash-btn dash-btn-outline" :disabled="idx===editModules.length-1||savingModule" style="padding:4px 8px;font-size:0.72rem;" @click="moveModule(idx,1)" title="Move down">↓</button>
+                                    <button class="dash-btn dash-btn-outline" style="padding:4px 10px;font-size:0.72rem;" @click="toggleEditModule(m.id)"><i class="fas fa-edit"></i></button>
+                                    <button class="dash-btn dash-btn-outline" style="padding:4px 10px;font-size:0.72rem;color:#ef4444;border-color:#fecaca;" @click="deleteModule(m)"><i class="fas fa-trash"></i></button>
+                                </div>
                             </div>
-                            <div style="display:flex;gap:6px;">
-                                <a :href="m.html_url" target="_blank" class="dash-btn dash-btn-outline" style="padding:4px 10px;font-size:0.75rem;text-decoration:none;"><i class="fab fa-github"></i> Edit</a>
+                            <!-- Inline edit panel -->
+                            <div x-show="editModuleId===m.id" x-transition style="border:1px solid #f0f2f5;border-top:none;border-radius:0 0 8px 8px;background:#fafbfc;padding:14px;margin-top:-8px;">
+                                <div class="row clearfix" style="margin-bottom:10px;">
+                                    <div class="col-md-8"><label style="display:block;color:#5a8299;font-size:0.78rem;margin-bottom:3px;">Title</label><input x-model="em.title" class="dash-input" maxlength="200" /></div>
+                                    <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.78rem;margin-bottom:3px;">Duration (min)</label><input x-model="em.duration_minutes" type="number" class="dash-input" min="0" /></div>
+                                </div>
+                                <div style="margin-bottom:10px;"><label style="display:block;color:#5a8299;font-size:0.78rem;margin-bottom:3px;">Stream Video UID</label><input x-model="em.video_uid" class="dash-input" maxlength="100" style="font-family:monospace;font-size:0.82rem;" placeholder="optional" /></div>
+                                <div style="margin-bottom:10px;">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+                                        <label style="color:#5a8299;font-size:0.78rem;">Lesson Content (Markdown)</label>
+                                        <div style="display:flex;gap:4px;">
+                                            <button @click="emPreview=false" :class="!emPreview && 'modal-tab-btn active'" class="modal-tab-btn" style="padding:3px 10px;font-size:0.72rem;">Write</button>
+                                            <button @click="emPreview=true" :class="emPreview && 'modal-tab-btn active'" class="modal-tab-btn" style="padding:3px 10px;font-size:0.72rem;">Preview</button>
+                                        </div>
+                                    </div>
+                                    <textarea x-show="!emPreview" x-model="em.body_md" class="dash-input" rows="12" style="font-family:ui-monospace,monospace;font-size:0.85rem;line-height:1.5;"></textarea>
+                                    <div x-show="emPreview" x-html="renderMd(em.body_md)" class="md-preview" style="border:1px solid #e2e8f0;border-radius:8px;padding:14px;background:#fff;min-height:200px;font-size:0.92rem;line-height:1.6;"></div>
+                                </div>
+                                <div style="display:flex;gap:8px;align-items:center;">
+                                    <button class="dash-btn dash-btn-primary" @click="saveModule(m)" :disabled="savingModule" style="min-width:120px;"><span x-text="savingModule?'Saving...':'Save Module'"></span></button>
+                                    <button class="dash-btn dash-btn-outline" @click="editModuleId=null">Close</button>
+                                    <span x-show="moduleMsg" x-text="moduleMsg" :style="moduleMsg.includes('!')?'color:#10b981':'color:#ef4444'" style="font-size:0.82rem;"></span>
+                                </div>
                             </div>
                         </div>
                     </template>
-                    <div x-show="editModules.length > 0" style="margin-top:12px;padding:10px 12px;background:#f0f4ff;border-radius:6px;font-size:0.8rem;color:#5a8299;">
+                    <div x-show="editModules.length > 1" style="margin-top:12px;padding:10px 12px;background:#f0f4ff;border-radius:6px;font-size:0.8rem;color:#5a8299;">
                         <i class="fas fa-info-circle" style="color:#667eea;margin-right:4px;"></i>
-                        Module content is written in Markdown. Click <strong>Edit</strong> to write lesson content, add quiz questions, and embed media.
+                        Use the ↑ ↓ buttons to reorder modules. Changes save automatically.
                     </div>
                 </div>
             </div>
@@ -553,7 +612,11 @@ function coursesPage() {
         editingCourse: null, editTab: 'overview',
         editModules: [], loadingModules: false,
         showAddModule: false, addingModule: false, moduleMsg: '',
-        nm: { title:'', description:'', videoUrl:'', duration:'' },
+        nm: { title:'', body_md:'', video_uid:'', duration_minutes:'' },
+        nmPreview: false,
+        editModuleId: null, em: { title:'', body_md:'', video_uid:'', duration_minutes:'' },
+        emPreview: false, savingModule: false,
+        myWallet: '',
         editForm: { title:'', level:'beginner', priceUSDC:0, estimatedHours:'', visibility:'public', specialization:'', prerequisites:'', description:'', whatYouLearn:'', promoVideoUrl:'' },
         editThumbPreview: '', editThumbData: '',
         uploadingThumb: false, thumbMsg: '',
@@ -597,14 +660,40 @@ function coursesPage() {
             this.totalEnrolled = this.courses.reduce(function(s,c){ return s+(c.enrolledCount||0); }, 0);
             this.totalRevenue = this.courses.reduce(function(s,c){ return s+((c.priceUSDC||0)*(c.enrolledCount||0)); }, 0);
         },
+        normalizeCourse(c) {
+            return Object.assign({}, c, {
+                priceUSDC: c.price_usdc != null ? c.price_usdc : (c.priceUSDC || 0),
+                modules: c.modules_count != null ? c.modules_count : (c.modules || 0),
+                enrolledCount: c.enrolled_count != null ? c.enrolled_count : (c.enrolledCount || 0),
+                estimatedHours: c.estimated_hours != null ? c.estimated_hours : (c.estimatedHours || 0),
+                thumbnailUrl: c.thumbnail_url || c.thumbnailUrl || '',
+                whatYouLearn: Array.isArray(c.what_you_learn) ? c.what_you_learn.join('\n') : (c.whatYouLearn || ''),
+                educator_wallet: (c.educator_wallet || '').toLowerCase(),
+                html_url: c.html_url || ('/course/?slug=' + encodeURIComponent(c.slug || c.id))
+            });
+        },
         loadCourses() {
             var self = this;
             self.loading = true;
-            fetch('/api/courses')
+            // "My Courses" — only show courses owned by the current wallet.
+            var wallet = '';
+            try {
+                if (window.TokenomicSupabase && TokenomicSupabase.getTokenWallet) wallet = TokenomicSupabase.getTokenWallet() || '';
+            } catch (e) {}
+            if (!wallet) {
+                var el = document.querySelector('.wallet-status-text');
+                if (el && el.textContent && el.textContent.indexOf('0x') !== -1) wallet = el.textContent.trim();
+            }
+            self.myWallet = (wallet || '').toLowerCase();
+            var url = '/api/courses' + (self.myWallet ? '?educator=' + encodeURIComponent(self.myWallet) : '');
+            (window.TokenomicSupabase ? TokenomicSupabase : null);
+            var apiBase = (window.TOKENOMIC_API_BASE || 'https://tokenomic-api.guillaumelauzier.workers.dev').replace(/\/+$/,'');
+            fetch(apiBase + url)
                 .then(function(r) { if (!r.ok) throw new Error('Server error'); return r.json(); })
                 .then(function(data) {
                     if (data.error) { self.showToast(data.error,'error'); self.courses=[]; self.filtered=[]; self.loading=false; return; }
-                    self.courses = data.courses || [];
+                    var raw = data.items || data.courses || [];
+                    self.courses = raw.map(function(c){ return self.normalizeCourse(c); });
                     self.computeStats(); self.filterCourses(); self.loading = false;
                 })
                 .catch(function(err) { console.error(err); self.showToast('Failed to load courses','error'); self.courses=[]; self.filtered=[]; self.loading=false; });
@@ -654,22 +743,27 @@ function coursesPage() {
             })
             .catch(function() { self.creating=false; self.createError='Failed to create course. Please try again.'; });
         },
+        isOwner(course) {
+            return course && course.educator_wallet && course.educator_wallet === this.myWallet;
+        },
         togglePublish(course) {
-            var self = this, newState = course.status !== 'published';
-            fetch('/api/courses/'+course.id+'/publish', { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({published:newState}) })
-            .then(function(r){ return r.json(); })
-            .then(function(data) {
-                if (data.error) { self.showToast(data.error,'error'); return; }
-                course.status = newState ? 'published' : 'draft';
-                self.showToast(newState ? 'Course published!' : 'Course unpublished','success');
-            })
-            .catch(function(){ self.showToast('Failed to update status','error'); });
+            var self = this, newStatus = course.status === 'active' ? 'draft' : 'active';
+            if (!window.TokenomicSupabase) { self.showToast('Wallet client not loaded','error'); return; }
+            TokenomicSupabase.updateCourse(course.id, { status: newStatus })
+                .then(function(updated) {
+                    course.status = updated.status;
+                    self.showToast(newStatus === 'active' ? 'Course published!' : 'Course unpublished','success');
+                })
+                .catch(function(e){ self.showToast(e.message || 'Failed to update status','error'); });
         },
         editCourse(course) {
+            if (!this.isOwner(course)) { this.showToast("You can only edit your own courses",'error'); return; }
             this.editingCourse = course;
             this.editTab = 'overview';
             this.editModules = []; this.loadingModules = false;
             this.showAddModule = false; this.moduleMsg = '';
+            this.editModuleId = null; this.savingModule = false;
+            this.resetNm();
             this.editThumbPreview = ''; this.editThumbData = ''; this.thumbMsg = '';
             this.savingEdit = false; this.editMsg = '';
             this.mediaItems = [];
@@ -685,56 +779,146 @@ function coursesPage() {
                 whatYouLearn: course.whatYouLearn || '',
                 promoVideoUrl: course.promoVideoUrl || ''
             };
+            // Eagerly load modules so the count badge is right when user clicks the tab.
+            this.loadModules();
+        },
+        // Render markdown with marked.js if loaded; fall back to escaped pre.
+        renderMd(src) {
+            if (!src) return '<p style="color:#9ca3af;">Nothing to preview yet.</p>';
+            if (window.marked && typeof window.marked.parse === 'function') {
+                try {
+                    if (window.marked.setOptions) window.marked.setOptions({ breaks: true, gfm: true });
+                    var html = window.marked.parse(String(src));
+                    // Sanitize with DOMPurify (regex-based stripping is not safe).
+                    if (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function') {
+                        return window.DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+                    }
+                    // If DOMPurify is unavailable, fall through to escaped pre.
+                } catch (e) { /* fall through */ }
+            }
+            var esc = String(src).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            return '<pre style="white-space:pre-wrap;">' + esc + '</pre>';
+        },
+        resetNm() {
+            this.nm = { title:'', body_md:'', video_uid:'', duration_minutes:'' };
+            this.nmPreview = false;
         },
         loadModules() {
-            if (!this.editingCourse || this.loadingModules) return;
+            if (!this.editingCourse) return;
             var self = this;
             self.loadingModules = true;
-            fetch('/api/courses/'+self.editingCourse.id+'/modules')
-            .then(function(r){ return r.json(); })
-            .then(function(data){ self.editModules = data.modules||[]; self.loadingModules=false; })
-            .catch(function(){ self.loadingModules=false; });
+            TokenomicSupabase.getCourseModules(self.editingCourse.id)
+                .then(function(items){ self.editModules = items || []; self.loadingModules = false; })
+                .catch(function(e){ self.loadingModules = false; self.showToast('Failed to load modules: ' + (e.message||''),'error'); });
         },
         addModule() {
-            if (!this.nm.title) return;
+            if (!this.nm.title || this.nm.title.length < 2) { this.moduleMsg = 'Title required (2-200 chars)'; return; }
             var self = this;
             self.addingModule = true; self.moduleMsg = '';
-            var order = self.editModules.length + 1;
-            fetch('/api/courses/'+self.editingCourse.id+'/modules', {
-                method:'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ title:self.nm.title, description:self.nm.description, videoUrl:self.nm.videoUrl, duration:self.nm.duration, order:order })
-            })
-            .then(function(r){ return r.json(); })
-            .then(function(data) {
-                self.addingModule = false;
-                if (data.error) { self.moduleMsg = data.error; return; }
-                self.moduleMsg = 'Module created!';
-                self.editingCourse.modules = (self.editingCourse.modules||0)+1;
-                self.nm = { title:'', description:'', videoUrl:'', duration:'' };
-                self.showAddModule = false;
-                self.loadingModules = true;
-                fetch('/api/courses/'+self.editingCourse.id+'/modules').then(function(r){ return r.json(); }).then(function(d){ self.editModules=d.modules||[]; self.loadingModules=false; });
-                setTimeout(function(){ self.moduleMsg=''; }, 4000);
-            })
-            .catch(function(){ self.addingModule=false; self.moduleMsg='Failed to create module.'; });
+            var payload = {
+                title: self.nm.title,
+                body_md: self.nm.body_md || '',
+                video_uid: self.nm.video_uid || null,
+                duration_minutes: self.nm.duration_minutes !== '' ? Number(self.nm.duration_minutes) : null
+            };
+            TokenomicSupabase.createModule(self.editingCourse.id, payload)
+                .then(function(m) {
+                    self.addingModule = false;
+                    self.editModules.push(m);
+                    self.editingCourse.modules = self.editModules.length;
+                    self.resetNm(); self.showAddModule = false;
+                    self.moduleMsg = 'Module created!';
+                    setTimeout(function(){ self.moduleMsg=''; }, 4000);
+                })
+                .catch(function(e){ self.addingModule = false; self.moduleMsg = e.message || 'Failed to create module.'; });
+        },
+        toggleEditModule(id) {
+            if (this.editModuleId === id) { this.editModuleId = null; return; }
+            var m = this.editModules.find(function(x){ return x.id === id; });
+            if (!m) return;
+            this.em = {
+                title: m.title || '',
+                body_md: m.body_md || '',
+                video_uid: m.video_uid || '',
+                duration_minutes: m.duration_minutes != null ? m.duration_minutes : ''
+            };
+            this.emPreview = false;
+            this.editModuleId = id;
+            this.moduleMsg = '';
+        },
+        saveModule(m) {
+            var self = this;
+            if (!self.em.title || self.em.title.length < 2) { self.moduleMsg = 'Title required (2-200 chars)'; return; }
+            self.savingModule = true; self.moduleMsg = '';
+            var payload = {
+                title: self.em.title,
+                body_md: self.em.body_md || '',
+                video_uid: self.em.video_uid ? self.em.video_uid : null,
+                duration_minutes: self.em.duration_minutes !== '' ? Number(self.em.duration_minutes) : null
+            };
+            TokenomicSupabase.updateModule(m.id, payload)
+                .then(function(updated) {
+                    self.savingModule = false;
+                    var idx = self.editModules.findIndex(function(x){ return x.id === m.id; });
+                    if (idx !== -1) self.editModules[idx] = updated;
+                    self.moduleMsg = 'Saved!';
+                    setTimeout(function(){ self.moduleMsg=''; }, 3000);
+                })
+                .catch(function(e){ self.savingModule = false; self.moduleMsg = e.message || 'Save failed'; });
+        },
+        deleteModule(m) {
+            if (!confirm('Delete module "' + m.title + '"? This cannot be undone.')) return;
+            var self = this;
+            TokenomicSupabase.deleteModule(m.id)
+                .then(function() {
+                    self.editModules = self.editModules.filter(function(x){ return x.id !== m.id; });
+                    self.editingCourse.modules = self.editModules.length;
+                    if (self.editModuleId === m.id) self.editModuleId = null;
+                    self.showToast('Module deleted','success');
+                })
+                .catch(function(e){ self.showToast(e.message || 'Delete failed','error'); });
+        },
+        moveModule(idx, dir) {
+            var newIdx = idx + dir;
+            if (newIdx < 0 || newIdx >= this.editModules.length) return;
+            var self = this;
+            // Optimistic local swap
+            var arr = self.editModules.slice();
+            var tmp = arr[idx]; arr[idx] = arr[newIdx]; arr[newIdx] = tmp;
+            self.editModules = arr;
+            self.savingModule = true;
+            TokenomicSupabase.reorderModules(self.editingCourse.id, arr.map(function(m){ return m.id; }))
+                .then(function(){ self.savingModule = false; })
+                .catch(function(e){
+                    self.savingModule = false;
+                    self.showToast('Reorder failed: ' + (e.message||''),'error');
+                    // Revert
+                    var revert = self.editModules.slice();
+                    var t = revert[idx]; revert[idx] = revert[newIdx]; revert[newIdx] = t;
+                    self.editModules = revert;
+                });
         },
         saveEditForm() {
             var self = this;
             self.savingEdit = true; self.editMsg = '';
-            fetch('/api/courses/'+self.editingCourse.id, {
-                method:'PATCH', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify(self.editForm)
-            })
-            .then(function(r){ return r.json(); })
-            .then(function(data) {
-                self.savingEdit = false;
-                if (data.error) { self.editMsg = data.error; return; }
-                Object.assign(self.editingCourse, self.editForm);
-                self.editMsg = 'Changes saved!';
-                self.filterCourses();
-                setTimeout(function(){ self.editMsg=''; }, 4000);
-            })
-            .catch(function(){ self.savingEdit=false; self.editMsg='Save failed.'; });
+            var what = (self.editForm.whatYouLearn || '').split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+            var payload = {
+                title: self.editForm.title,
+                description: self.editForm.description,
+                level: self.editForm.level,
+                price_usdc: Number(self.editForm.priceUSDC) || 0,
+                estimated_hours: self.editForm.estimatedHours !== '' ? Number(self.editForm.estimatedHours) : null,
+                what_you_learn: what
+            };
+            TokenomicSupabase.updateCourse(self.editingCourse.id, payload)
+                .then(function(updated) {
+                    self.savingEdit = false;
+                    Object.assign(self.editingCourse, self.normalizeCourse(updated));
+                    self.editMsg = 'Changes saved!';
+                    self.filterCourses();
+                    setTimeout(function(){ self.editMsg=''; }, 4000);
+                })
+                .catch(function(e){ self.savingEdit = false; self.editMsg = e.message || 'Save failed.'; });
         },
         uploadEditThumbnail() {
             if (!this.editThumbData) return;
