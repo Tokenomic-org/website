@@ -154,7 +154,9 @@
     });
 
     onP('encoding', { uid: ticket.uid });
-    var ready = await waitForReady(ticket.uid, 5 * 60 * 1000);
+    // Encoding for longer videos can take many minutes; allow up to 15
+    // minutes before falling back to synthesized URLs.
+    var ready = await waitForReady(ticket.uid, 15 * 60 * 1000);
 
     var metadata = {
       name: payload.title,

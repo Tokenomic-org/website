@@ -46,7 +46,24 @@ The platform is built on a static site generation approach using Jekyll, with th
 - **Branding**: Utilizes a specific color palette (`#F7931A`, `#0A0F1A`), Inter font for dashboards, and a defined logo. Dashboard styling is managed via `dashboard.css`, incorporating a design system with consistent UI elements.
 - **Mobile Responsiveness**: The dashboard sidebar collapses into a slide-out drawer on smaller screens, managed by CSS and JavaScript.
 
+## Cloudflare Workers Infrastructure
+Three Workers, each with its own dedicated `wrangler.toml` (the root `wrangler.toml` is documentation-only — wrangler v4 is finicky about resolving `[env.X]` blocks when run from subdirectories, so deploy from each worker's directory with `--config ./wrangler.toml`):
+- **`tokenomic`** (`workers/site-worker/`) — serves the static `_site/` build via the `ASSETS` binding plus tiny script handler for `/__health` and `/__config`. Hosts public env vars (BASE chain config, contract addresses, API/WEB3 base URLs, `STREAM_CUSTOMER_SUBDOMAIN`).
+- **`tokenomic-api`** (`workers/api-worker/`) — Hono app for comments, dashboard stats, and Cloudflare Stream uploads. KV: `COMMENTS_KV`, `RATE_LIMIT_KV`. Secrets: `CF_ACCOUNT_ID`, `CF_STREAM_TOKEN` (Stream:Edit-scoped API token).
+- **`tokenomic-web3`** (`workers/web3-worker/`) — read-only on-chain proxy.
+
+All deployed at `https://<name>.guillaumelauzier.workers.dev`. Observability + invocation logs enabled on all three.
+
+## Course Content Storage — Cloudflare Stream
+Course videos are uploaded **directly from the browser to Cloudflare Stream** using the Direct Creator Upload API. The `tokenomic-api` Worker mints one-time upload URLs server-side using its `CF_STREAM_TOKEN` secret — the account-level token never touches the client.
+- `POST /stream/direct-upload` → `{ uid, uploadURL, playback, embed, thumbnail }`
+- `GET  /stream/:uid` → `{ status, ready, duration, playback, embed, thumbnail }`
+- `POST /stream/:uid/json-meta` → persists course metadata under KV key `stream-meta:<uid>`
+
+The on-chain content URI stored in `TokenomicMarket.registerCourse` is `stream:<uid>` (replacing the old `ipfs://...` scheme). Frontend flow lives in `shared/assets/js/web3-upload.js`. Cloudflare Stream subscription must be active on the account (`$5/mo + per-minute storage/viewing fees`).
+
 ## External Dependencies
+- **Cloudflare Stream**: Hosts and transcodes course videos (managed encoding, adaptive HLS/DASH, embed players). Replaces the previous IPFS/nft.storage pipeline.
 - **Supabase**: Backend-as-a-Service for database and authentication, client integrated via `/shared/assets/js/supabase-client.js`.
 - **Helio**: Used for USDC payments on the Base L2 network.
 - **0xSplits**: Facilitates revenue distribution, specifically a 90/5/5 split.

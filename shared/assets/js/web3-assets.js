@@ -807,15 +807,19 @@ var TokenomicAssets = {
 
   /**
    * Register a course on-chain. Caller becomes the educator.
-   * @param {string} ipfsMetadataURI - ipfs://Qm...
+   * @param {string} ipfsMetadataURI - Content URI: `ipfs://Qm...` (legacy) or
+   *                                   `stream:<cloudflare-stream-uid>` (current).
    * @param {string|number} priceInUSDC - Human-readable USDC (e.g. "49.99").
    * @param {string} consultant - Optional address (use ethers.constants.AddressZero for none).
    */
   async registerCourseOnChain(ipfsMetadataURI, priceInUSDC, consultant) {
     await this.ensureBaseChain();
     var market = await this._getMarketSigner();
-    if (!ipfsMetadataURI || ipfsMetadataURI.indexOf('ipfs://') !== 0) {
-      throw new Error('ipfsMetadataURI must start with ipfs://');
+    if (!ipfsMetadataURI ||
+        (ipfsMetadataURI.indexOf('ipfs://')  !== 0 &&
+         ipfsMetadataURI.indexOf('stream:')  !== 0 &&
+         ipfsMetadataURI.indexOf('https://') !== 0)) {
+      throw new Error('content URI must start with ipfs://, stream:, or https://');
     }
     var priceWei = ethers.utils.parseUnits(String(priceInUSDC), 6);
     var addr = consultant && /^0x[0-9a-fA-F]{40}$/.test(consultant)
