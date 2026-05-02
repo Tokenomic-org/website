@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------
+ * Tokenomic design tokens — dark by default. The `.theme-light` class
+ * (toggled via dark-mode.js) inverts to the light surface palette.
+ * Brand colours (#F7931A primary, #ff6000 accent, #001f29 deep teal)
+ * stay constant across themes for brand recognition.
+ * ------------------------------------------------------------------ */
+:root, html {
+  --tk-bg:        10 17 26;       /* #0A111A */
+  --tk-surface:   16 25 36;       /* #101924 */
+  --tk-surface-2: 22 33 47;       /* #16212F */
+  --tk-fg:        236 244 250;    /* #ECF4FA */
+  --tk-muted:     142 165 184;    /* #8EA5B8 */
+  --tk-border:    36 52 70;       /* #243446 */
+  --tk-brand:     247 147 26;     /* #F7931A */
+  --tk-brand-fg:  10 17 26;
+  --tk-accent:    255 96 0;       /* #ff6000 */
+  --tk-success:    34 197 94;
+  --tk-danger:    239  68  68;
+}
+
+html.theme-light, .theme-light {
+  --tk-bg:        247 250 252;
+  --tk-surface:   255 255 255;
+  --tk-surface-2: 244 247 250;
+  --tk-fg:         10  31  41;
+  --tk-muted:      90 130 153;
+  --tk-border:    228 234 240;
+  --tk-brand:     247 147  26;
+  --tk-brand-fg:  255 255 255;
+  --tk-accent:    255  96   0;
+}
+
+/* Islands are root containers for Tailwind-styled UI; reset Bootstrap
+ * "all-elements-inherit-line-height" surprises only inside the island.
+ * Outside the island the existing Bootstrap layout is untouched. */
+[data-island] { color: rgb(var(--tk-fg)); font-family: Inter, system-ui, sans-serif; }
+[data-island] *, [data-island] *::before, [data-island] *::after { box-sizing: border-box; }
+[data-island] button { font-family: inherit; }
+
+/* Skeleton shimmer */
+.tk-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--tk-surface-2)) 0%,
+    rgb(var(--tk-border)) 40%,
+    rgb(var(--tk-surface-2)) 80%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+/* Custom scrollbars in islands so they match the dark theme */
+[data-island] ::-webkit-scrollbar { width: 10px; height: 10px; }
+[data-island] ::-webkit-scrollbar-thumb {
+  background: rgb(var(--tk-border)); border-radius: 8px;
+}
+[data-island] ::-webkit-scrollbar-track { background: transparent; }
+
+/* Focus rings */
+[data-island] :focus-visible {
+  outline: 2px solid rgb(var(--tk-brand));
+  outline-offset: 2px;
+  border-radius: 6px;
+}

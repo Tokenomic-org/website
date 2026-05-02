@@ -44,6 +44,7 @@
 
 import { verifyMessage } from 'viem';
 import { readSessionFromCookie } from './siwe.js';
+import { isSubscriptionActive } from './subscription.js';
 
 // ---------- helpers ----------
 
@@ -141,6 +142,42 @@ async function requireAuth(c) {
   }
 
   return { error: c.json({ error: 'Authentication required (Bearer token or SIWE cookie)' }, 401) };
+}
+
+/**
+ * Resolve the caller's wallet WITHOUT 401-ing when no credentials are
+ * present. Used by routes that gracefully degrade for anonymous readers
+ * (e.g. the article paywall, which must serve an excerpt to everyone).
+ * Returns `{ wallet }` or `{ wallet: null }`.
+ */
+async function getOptionalAuth(c) {
+  const auth = c.req.header('authorization') || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (token) {
+    const secret = c.env.JWT_SECRET;
+    if (secret) {
+      const payload = await verifyJwt(token, secret);
+      if (payload && isHexAddress(payload.wallet)) return { wallet: lc(payload.wallet) };
+    }
+  }
+  try {
+    const session = await readSessionFromCookie(c);
+    if (session && isHexAddress(session.address)) return { wallet: lc(session.address) };
+  } catch (_) { /* swallow */ }
+  return { wallet: null };
+}
+
+/** Truncate `body` to its first N paragraphs (split on blank lines or </p>). */
+function truncateToParagraphs(body, n = 3) {
+  if (typeof body !== 'string' || !body) return '';
+  // Prefer HTML-paragraph splitting when the body looks like HTML.
+  if (/<\/p>/i.test(body)) {
+    const m = body.match(/<p[\s\S]*?<\/p>/gi) || [];
+    return m.slice(0, n).join('\n');
+  }
+  // Otherwise split on blank lines (markdown / plain text).
+  const parts = body.split(/\n\s*\n/).filter(Boolean);
+  return parts.slice(0, n).join('\n\n');
 }
 
 // Admin gate. Authenticates first, then checks env.ADMIN_WALLETS (bootstrap)
@@ -927,7 +964,38 @@ export function mountD1Routes(app) {
     if (!isValidSlug(slug)) return c.json({ error: 'Invalid slug' }, 400);
     const row = await c.env.DB.prepare('SELECT * FROM articles WHERE slug = ?').bind(slug).first();
     if (!row) return c.json({ error: 'Not found' }, 404);
-    return c.json(row);
+
+    // ---- Server-side paywall ----
+    // Anonymous and non-subscribers see the first 3 paragraphs of `body`
+    // plus the full metadata. The author of the article is always allowed
+    // to read their own work in full.
+    const { wallet } = await getOptionalAuth(c);
+    let allowFull = false;
+    let reason = 'anonymous';
+    if (wallet) {
+      reason = 'no_subscription';
+      if (lc(row.author_wallet || '') === wallet) {
+        allowFull = true; reason = 'author';
+      } else if (await isSubscriptionActive(c.env, wallet)) {
+        allowFull = true; reason = 'subscribed';
+      }
+    }
+
+    if (allowFull) {
+      return c.json({ ...row, paywalled: false, paywall_reason: reason });
+    }
+    const fullLength = row.body ? String(row.body).length : 0;
+    const excerpt = truncateToParagraphs(row.body, 3);
+    return c.json({
+      ...row,
+      body: excerpt,
+      body_truncated: fullLength > excerpt.length,
+      paywalled: true,
+      paywall_reason: reason,
+      paywall_message: wallet
+        ? 'Subscribe to read the full article.'
+        : 'Sign in and subscribe to read the full article.',
+    });
   });
 
   app.post('/api/articles', async (c) => {

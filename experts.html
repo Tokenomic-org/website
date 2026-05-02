@@ -3,107 +3,27 @@ layout: default
 title: "Find Experts & Consultants"
 permalink: /experts/
 ---
-<section class="page-title" style="background-color:#0A0F1A;padding:80px 0 50px;color:#fff;">
-    <div class="auto-container">
-        <h1 style="color:#fff;">Find Experts &amp; Consultants</h1>
-        <p style="color:#9fb3c8;max-width:640px;">Approved Tokenomic consultants and educators. Book 1:1 sessions paid in USDC on Base, or browse their courses and communities.</p>
-    </div>
-</section>
 
-<section style="padding:50px 0;background:#f5f7fa;min-height:60vh;">
-    <div class="auto-container">
-        <div x-data="expertsDirectory()" x-init="init()">
-            <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
-                <button @click="filter='consultant'"
-                        :style="filter==='consultant' ? 'border:2px solid #ff6000;background:#fff;color:#0A0F1A;' : 'border:2px solid #eef2f6;background:#fff;color:#5a8299;'"
-                        style="padding:8px 18px;border-radius:8px;font-weight:600;cursor:pointer;">
-                    Consultants
-                </button>
-                <button @click="filter='educator'"
-                        :style="filter==='educator' ? 'border:2px solid #ff6000;background:#fff;color:#0A0F1A;' : 'border:2px solid #eef2f6;background:#fff;color:#5a8299;'"
-                        style="padding:8px 18px;border-radius:8px;font-weight:600;cursor:pointer;">
-                    Educators
-                </button>
-                <button @click="filter='all'"
-                        :style="filter==='all' ? 'border:2px solid #ff6000;background:#fff;color:#0A0F1A;' : 'border:2px solid #eef2f6;background:#fff;color:#5a8299;'"
-                        style="padding:8px 18px;border-radius:8px;font-weight:600;cursor:pointer;">
-                    All
-                </button>
-            </div>
+{% include header.html %}
+{% include island-bootstrap.html %}
 
-            <div x-show="loading" style="text-align:center;padding:40px;color:#5a8299;">Loading…</div>
-            <div x-show="!loading && !visible.length" style="background:#fff;border-radius:12px;padding:40px;text-align:center;">
-                <h3>No experts yet</h3>
-                <p style="color:#5a8299;">Approved consultants and educators will appear here. Apply for a role at <a href="/apply/" style="color:#ff6000;">/apply/</a>.</p>
-            </div>
-
-            <div class="row clearfix">
-                <template x-for="e in visible" :key="e.wallet_address">
-                    <div class="col-lg-4 col-md-6 col-sm-12" style="margin-bottom:20px;">
-                        <div style="background:#fff;border-radius:12px;padding:20px;height:100%;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-                            <div style="display:flex;gap:14px;align-items:center;">
-                                <div style="width:54px;height:54px;border-radius:50%;background:#ff6000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.3rem;overflow:hidden;">
-                                    <template x-if="e.avatar_url"><img :src="e.avatar_url" style="width:100%;height:100%;object-fit:cover;" /></template>
-                                    <template x-if="!e.avatar_url"><span x-text="(e.display_name || 'T').charAt(0).toUpperCase()"></span></template>
-                                </div>
-                                <div style="flex:1;min-width:0;">
-                                    <h5 style="margin:0;color:#0A0F1A;" x-text="e.display_name || shortAddr(e.wallet_address)"></h5>
-                                    <small style="color:#ff6000;" x-text="(e.role || 'expert').replace(/^./, c => c.toUpperCase())"></small>
-                                </div>
-                            </div>
-                            <div x-show="e.specialty" style="font-size:0.85rem;color:#5a8299;"><strong>Specialty:</strong> <span x-text="e.specialty"></span></div>
-                            <p x-show="e.bio" style="color:#5a8299;font-size:0.9rem;flex:1;" x-text="(e.bio || '').slice(0, 140) + ((e.bio||'').length > 140 ? '…' : '')"></p>
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
-                                <span x-show="e.rate_30 || e.rate_60" style="color:#00a651;font-weight:700;">
-                                    <span x-show="e.rate_30">$<span x-text="e.rate_30"></span>/30m</span>
-                                    <span x-show="!e.rate_30 && e.rate_60">$<span x-text="e.rate_60"></span>/60m</span>
-                                </span>
-                                <a :href="'/bookings/?to=' + e.wallet_address"
-                                   class="theme-btn btn-style-one"
-                                   style="padding:8px 18px;font-size:0.85rem;border-radius:6px;"
-                                   x-show="e.role === 'consultant'">Book</a>
-                                <a :href="'/profile/?wallet=' + e.wallet_address"
-                                   style="color:#5a8299;font-size:0.85rem;text-decoration:none;"
-                                   x-show="e.role !== 'consultant'">View profile →</a>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </div>
-        </div>
-    </div>
-</section>
-
-<script src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" defer></script>
-<script>
-function expertsDirectory() {
-    return {
-        loading: true,
-        all: [],
-        filter: 'consultant',
-        get visible() {
-            if (this.filter === 'all') return this.all;
-            return this.all.filter(e => e.role === this.filter);
-        },
-        async init() {
-            try {
-                const consultants = await window.TokenomicAPI.getConsultants();
-                const educators   = await window.TokenomicAPI.getEducators();
-                // De-dupe by wallet (an expert can have both roles).
-                const seen = {};
-                this.all = [].concat(consultants || [], educators || []).filter(e => {
-                    if (!e || !e.wallet_address) return false;
-                    if (seen[e.wallet_address]) return false;
-                    seen[e.wallet_address] = 1;
-                    return true;
-                });
-            } catch (e) {
-                console.warn('experts directory:', e.message);
-            } finally {
-                this.loading = false;
-            }
-        },
-        shortAddr(a) { if (!a) return ''; return a.slice(0,6) + '…' + a.slice(-4); }
-    };
+<style>
+.experts-hero {
+    background: linear-gradient(135deg, #0A111A 0%, #001f29 50%, #06c6ee 100%);
+    padding: 140px 0 56px;
+    text-align: center;
 }
-</script>
+.experts-hero h1 { color:#fff; font-size:42px; font-weight:800; margin:0 0 12px; letter-spacing:-0.5px; }
+.experts-hero p  { color:rgba(255,255,255,0.78); font-size:16px; max-width:640px; margin:0 auto; line-height:1.6; }
+</style>
+
+<section class="experts-hero">
+    <div class="auto-container">
+        <h1>Find Experts &amp; Consultants</h1>
+        <p>Approved Tokenomic consultants and educators. Book 1:1 sessions paid in USDC on Base, or browse their courses and communities.</p>
+    </div>
+</section>
+
+<div data-island="ExpertsDirectory"></div>
+
+<script defer src="/assets/islands/dist/ExpertsDirectory.iife.js"></script>

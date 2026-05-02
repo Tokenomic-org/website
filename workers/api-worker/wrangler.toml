@@ -33,6 +33,11 @@ BASE_SEPOLIA_RPC_URL         = "https://sepolia.base.org"
 USDC_BASE                    = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
 USDC_BASE_SEPOLIA            = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
 PLATFORM_TREASURY            = ""    # set via `wrangler secret put PLATFORM_TREASURY` if you do not want it public
+# SubscriptionManager (Phase 1 contracts). When unset, the article paywall
+# stays closed for everyone (conservative default). Set per environment to
+# the deployed proxy/impl address on Base mainnet or Base Sepolia.
+SUBSCRIPTION_MANAGER         = ""
+SUBSCRIPTION_CHAIN_ID        = "8453"   # 8453=base, 84532=base-sepolia
 # Secrets (set via `wrangler secret put …`):
 #   JWT_SECRET           HS256 key for legacy /api/auth/login JWTs
 #   SIWE_SECRET          (optional) dedicated HMAC key for SIWE cookies; falls back to JWT_SECRET
