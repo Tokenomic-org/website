@@ -1,4 +1,4 @@
-const TokenomicWallet = {
+var TokenomicWallet = {
   provider: null,
   signer: null,
   account: null,
@@ -86,6 +86,10 @@ const TokenomicWallet = {
       if (window.ethereum) {
         ethereum = window.ethereum;
       }
+    } else if (providerType === 'walletconnect' || providerType === 'coinbase-smart') {
+      // Route through @wagmi/core (loaded by web3-bundle.js). Falls back to
+      // an injected provider if wagmi has not finished bootstrapping yet.
+      return await this.connectWithWagmi(providerType);
     }
 
     if (!ethereum && window.ethereum) {
@@ -121,9 +125,74 @@ const TokenomicWallet = {
     }
   },
 
+  /**
+   * Phase 0: connect through @wagmi/core for the QR / passkey flows that
+   * cannot be done with raw window.ethereum.
+   *
+   *   walletconnect    -> WalletConnect v2 QR (requires WC_PROJECT_ID at build)
+   *   coinbase-smart   -> Coinbase Smart Wallet (passkey-based, no extension)
+   */
+  async connectWithWagmi(kind) {
+    var W = window.TokenomicWeb3;
+    if (!W) {
+      alert('Web3 stack still loading. Please wait a moment and try again.');
+      return null;
+    }
+    var connector;
+    try {
+      var instances = (W.config && W.config.connectors) || [];
+      if (kind === 'walletconnect') {
+        connector = instances.find(function (c) { return c.id === 'walletConnect'; });
+        if (!connector) {
+          alert('WalletConnect is not configured. Set WC_PROJECT_ID and rebuild the web3 bundle.');
+          return null;
+        }
+      } else if (kind === 'coinbase-smart') {
+        connector = instances.find(function (c) { return c.id === 'coinbaseWalletSDK' || c.id === 'coinbaseWallet'; });
+      }
+      if (!connector) {
+        alert('Connector not available.');
+        return null;
+      }
+      var result = await W.connect({ connector: connector, chainId: W.chains.base.id });
+      var addr = (result && result.accounts && result.accounts[0]) || null;
+      if (!addr) return null;
+      this.account = addr;
+      this.chainId = '0x' + (result.chainId || 8453).toString(16);
+      sessionStorage.setItem('tkn_wallet', this.account);
+      this.updateUI();
+      // Mirror account changes from wagmi back into the legacy session.
+      try {
+        if (!this._wagmiWatcher) {
+          this._wagmiWatcher = W.watchAccount(function (acct) {
+            if (acct && acct.address) {
+              TokenomicWallet.account = acct.address;
+              sessionStorage.setItem('tkn_wallet', acct.address);
+            } else {
+              TokenomicWallet.account = null;
+              sessionStorage.removeItem('tkn_wallet');
+            }
+            TokenomicWallet.updateUI();
+          });
+        }
+      } catch (_) { /* noop */ }
+      return this.account;
+    } catch (err) {
+      console.error('wagmi connect failed:', err);
+      return null;
+    }
+  },
+
   disconnect() {
     this.account = null;
     sessionStorage.removeItem('tkn_wallet');
+    // Also disconnect the wagmi side if present so the next connect prompts
+    // for a fresh provider rather than silently restoring the old session.
+    try {
+      if (window.TokenomicWeb3 && window.TokenomicWeb3.disconnect) {
+        window.TokenomicWeb3.disconnect().catch(function () {});
+      }
+    } catch (_) { /* noop */ }
     this.updateUI();
   },
 
@@ -335,6 +404,16 @@ const TokenomicWallet = {
             '<div class="wm-info"><span class="wm-name">' + rbLabel + '</span></div>' +
             '<svg class="wm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>' +
           '</button>' +
+          '<button class="wm-wallet-btn" onclick="TokenomicWallet.connectWithProvider(\'walletconnect\')">' +
+            '<div class="wm-icon" style="background:#3B99FC;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">WC</div>' +
+            '<div class="wm-info"><span class="wm-name">WalletConnect</span><span class="wm-note">Scan QR with any wallet</span></div>' +
+            '<svg class="wm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>' +
+          '</button>' +
+          '<button class="wm-wallet-btn" onclick="TokenomicWallet.connectWithProvider(\'coinbase-smart\')">' +
+            '<div class="wm-icon" style="background:#0052FF;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">CB</div>' +
+            '<div class="wm-info"><span class="wm-name">Coinbase Smart Wallet</span><span class="wm-note">Passkey — no extension needed</span></div>' +
+            '<svg class="wm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>' +
+          '</button>' +
         '</div>' +
         (window.ethereum ? '<div class="wm-divider"><span>or</span></div>' +
           '<button class="wm-detect-btn" onclick="TokenomicWallet.connectWithProvider(\'any\')">Use Detected Wallet</button>' : '') +
@@ -414,3 +493,5 @@ document.addEventListener('DOMContentLoaded', function() {
     TokenomicWallet.updateUI();
   }
 });
+
+if (typeof window !== "undefined") { window.TokenomicWallet = TokenomicWallet; }

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "hardhat test",
-    "build:web3": "esbuild shared/assets/js/web3-bundle-src.js --bundle --minify --format=esm --target=es2020 --outfile=shared/assets/js/web3-bundle.js",
+    "build:web3": "esbuild shared/assets/js/web3-bundle-src.js --bundle --minify --format=esm --target=es2020 --outfile=shared/assets/js/web3-bundle.js --define:process.env.WC_PROJECT_ID=\"'$WC_PROJECT_ID'\" --define:process.env.BASE_RPC_URL=\"'${BASE_RPC_URL:-https://mainnet.base.org}'\" --define:process.env.BASE_SEPOLIA_RPC_URL=\"'${BASE_SEPOLIA_RPC_URL:-https://sepolia.base.org}'\"",
     "build": "npm run build:web3 && bundle exec jekyll build",
     "deploy": "wrangler deploy",
     "deploy:full": "npm run build && wrangler deploy",
@@ -17,7 +17,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@wagmi/core": "^3.4.8",
+    "@coinbase/wallet-sdk": "^4.3.7",
+    "@wagmi/connectors": "^5.11.2",
+    "@wagmi/core": "^2.22.1",
     "esbuild": "^0.28.0",
     "ethers": "^5.8.0",
     "express": "^5.2.1",

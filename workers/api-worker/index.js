@@ -26,6 +26,7 @@ import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { mountD1Routes } from './d1-routes.js';
 import { ChatRoom, mountChatRoutes } from './chat-room.js';
+import { mountSiweRoutes } from './siwe.js';
 
 export { ChatRoom };
 
@@ -103,6 +104,11 @@ function isHexAddress(s) {
 }
 
 app.get('/api/health', (c) => c.json({ ok: true, worker: 'api-worker', ts: Date.now() }));
+
+// SIWE cookie-session auth (Phase 0): GET /api/siwe/nonce, POST /api/siwe/verify,
+// POST /api/siwe/logout, GET /api/siwe/me. Sets HMAC-signed HTTP-only
+// `tk_session` cookie used by `requireAuth()` middleware.
+mountSiweRoutes(app);
 
 // D1-backed routes (profiles, courses, communities, articles, experts, revenue, bookings, enrollments, messages, auth)
 mountD1Routes(app);

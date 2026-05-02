@@ -12,5 +12,9 @@ head_sampling_rate = 1
 [vars]
 ALLOWED_ORIGINS         = "https://tokenomic.org,https://*.tokenomic.org,https://*.pages.dev,https://tokenomic.guillaumelauzier.workers.dev"
 BASE_RPC_URL            = "https://mainnet.base.org"
+BASE_SEPOLIA_RPC_URL    = "https://sepolia.base.org"
 BASE_CHAIN_ID           = "8453"
+BASE_SEPOLIA_CHAIN_ID   = "84532"
 CLOUDFLARE_ETH_GATEWAY  = "https://cloudflare-eth.com"
+USDC_BASE               = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+USDC_BASE_SEPOLIA       = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"

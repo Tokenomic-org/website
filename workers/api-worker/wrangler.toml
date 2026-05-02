@@ -16,7 +16,18 @@ REQUIRE_WALLET               = "false"
 STREAM_CUSTOMER_SUBDOMAIN    = ""
 STREAM_MAX_DURATION_SECONDS  = "21600"
 STREAM_ALLOWED_ORIGINS       = "https://tokenomic.org,https://tokenomic.guillaumelauzier.workers.dev"
-# CF_ACCOUNT_ID and CF_STREAM_TOKEN are injected as secrets via wrangler secret put.
+# Phase 0: SIWE / chain config (public)
+SIWE_DOMAIN                  = "tokenomic.org"
+BASE_RPC_URL                 = "https://mainnet.base.org"
+BASE_SEPOLIA_RPC_URL         = "https://sepolia.base.org"
+USDC_BASE                    = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+USDC_BASE_SEPOLIA            = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
+PLATFORM_TREASURY            = ""    # set via `wrangler secret put PLATFORM_TREASURY` if you do not want it public
+# Secrets (set via `wrangler secret put …`):
+#   JWT_SECRET           HS256 key for legacy /api/auth/login JWTs
+#   SIWE_SECRET          (optional) dedicated HMAC key for SIWE cookies; falls back to JWT_SECRET
+#   CF_ACCOUNT_ID        Cloudflare account id for Stream API
+#   CF_STREAM_TOKEN      `Stream:Edit` API token
 
 [[kv_namespaces]]
 binding    = "COMMENTS_KV"

@@ -1,7 +1,7 @@
 # Tokenomic
 
 ## Overview
-Tokenomic is an institutional DeFi education and intelligence platform. Its primary purpose is to provide structured learning and market insights in the decentralized finance space. The platform aims to be a comprehensive resource for users looking to deepen their understanding of DeFi through articles, courses, and expert consultations. Key capabilities include content delivery, community engagement, and analytics dashboards for users and content creators.
+Tokenomic is an institutional DeFi education and intelligence platform providing structured learning and market insights. It offers articles, courses, and expert consultations to deepen understanding of DeFi, with key capabilities including content delivery, community engagement, and analytics dashboards. The platform aims to be a comprehensive resource for users.
 
 ## User Preferences
 - **Dual-File Architecture Adherence**: It's critical to maintain the dual-file architecture. All visible changes in Replit must be made in `_site/` files directly. Source files (`assets/`, `shared/`, `_includes/`, `_layouts/`) are for Jekyll builds (GitHub Pages). When changing CSS, JS, HTML includes, or templates, I need to edit **BOTH** the `_site/` version (for Replit) and the source `.html` file (for GitHub Pages).
@@ -13,84 +13,32 @@ Tokenomic is an institutional DeFi education and intelligence platform. Its prim
 - **Header Inline Styles**: Search button and wallet button alignment are defined in a `<style>` block within header includes and must be present on every page.
 - **Bulk HTML Edits**: For bulk editing of `_site/` HTML pages, I should use `find _site -name "*.html" -exec sed ...` for consistency.
 
-## File Structure
-- **Dashboard source files**: `dashboard/` directory contains all 11 dashboard source templates:
-  - `dashboard/index.html` (main dashboard)
-  - `dashboard/revenue.html`, `dashboard/bookings.html`, `dashboard/chat.html`
-  - `dashboard/courses.html`, `dashboard/events.html`, `dashboard/articles.html`
-  - `dashboard/profile.html`, `dashboard/social.html`, `dashboard/communities.html`
-  - `dashboard/leaderboard.html`
-- **Built output**: `_site/dashboard/[page]/index.html` for each dashboard page.
-- **Public pages**: `courses.html`, `communities.html`, `educators.html`, `learn.html`, `expert-profile.html`, `community-profile.html` in project root.
-- **Static pages**: `about.html`, `contact.html`, `pricing.html`, `privacy.html`, `terms.html` in project root.
-
-## URL Routing (server.js)
-- **Dashboard base**: `/dashboard/` serves `_site/dashboard/index.html`
-- **Wallet-based dashboard pages**: `/{page}/{wallet}` where page is one of: `revenue`, `bookings`, `chat`, `courses`, `events`, `articles`, `profile`, `social` — serves corresponding dashboard template.
-- **Leaderboard**: `/leaderboard` serves dashboard leaderboard template.
-- **Expert profiles**: `/experts/:slug` serves expert profile template. `/expert/:slug` redirects (301) to `/experts/:slug`.
-- **Community profiles**: `/communities/:slug` is dual-purpose — if slug matches `0x[hex]` pattern, serves dashboard communities template; otherwise serves community profile template. `/community/:slug` redirects (301) to `/communities/:slug`.
-- **Sidebar wallet JS**: Dashboard sidebar links use `data-dash="[page]"` attributes. Injected JS reads the wallet address from the URL path (regex `/0x[0-9a-fA-F]+/`) or `localStorage('tkn_wallet_address')` and rewrites sidebar hrefs to `/{page}/{wallet}`.
-
 ## System Architecture
-The platform is built on a static site generation approach using Jekyll, with the site pre-built into the `_site/` directory. An Express server (`server.js`) serves these static files and proxies API requests. The frontend leverages Bootstrap 4, jQuery, custom CSS, Alpine.js for dashboard reactivity, and Chart.js for data visualization. Web3 integration is handled via Ethers.js v5 for the Base L2 network, supporting wallet-native authentication (MetaMask/Rabby).
+The platform uses a static site generation approach with Jekyll, serving pre-built files from the `_site/` directory via an Express server (`server.js`). This server also proxies API requests. The frontend is built with Bootstrap 4, jQuery, custom CSS, Alpine.js for reactivity, and Chart.js for data visualization. Web3 integration uses Ethers.js v5 for the Base L2 network, supporting wallet-native authentication (MetaMask/Rabby).
 
-**Key Features:**
-- **Content Management**: Articles are sourced from `learn.tokenomic.org`, processed, and displayed on the platform. There's a comprehensive dashboard for content creators to manage articles, including an editor with markdown support, analytics, and publishing workflows that interact with a GitHub repository.
-- **Course Management**: A GitHub repo-backed system allows educators to create, manage, and publish courses. Each course corresponds to a GitHub repository, storing metadata and module content. Students can track their learning progress, and certifications are on-chain verified.
-- **Community System**: Similar to courses, communities are managed via GitHub repositories, enabling discussions through GitHub Issues and member management. A public `/communities/` page lists all communities with filters (level, educator, search, sort) and links to educator profiles.
-- **Dashboard**: Provides various dashboards for analytics, revenue tracking, events, bookings, chat, and leaderboards.
-- **User Profiles**: Extensive user profile management, including public profiles for educators and consultants, application processes for roles, and social links.
-- **Web3 Asset Ownership**: On-chain asset management via `shared/assets/js/web3-assets.js` — SIWE-style ownership proofs, USDC/ETH balance reads, asset registration (courses, articles, certifications), course tokenization, cert NFT minting, and revenue claiming on Base chain. Server APIs at `/api/verify-signature` (with cryptographic EIP-191 recovery), `/api/assets/:wallet`, `/api/assets/register`, `/api/assets/certify`, `/api/assets/summary/:wallet`. File-based persistence in `data/assets/` and `data/proofs/`. Dashboard profile page has "On-Chain Assets" section with balances, verification, role-specific actions, asset list, and contract status panel.
-- **Gas Fee Responsibility (April 2026)**: Every Base transaction is paid by the wallet that signs it. `TokenomicMarket.purchase(courseId)` no longer auto-mints — students separately call `claimCertificate(courseId, ipfsMetadataURI)` and pay that mint's gas themselves. Educators/consultants pay gas for `registerCourse` and `withdrawUSDC`. Optional `mintCertificatesForBuyers(courseId, buyers[], uris[])` lets an educator sponsor a batch of student mints (educator pays). Frontend exposes `TokenomicAssets.estimateActionGas('purchase'|'claim'|'register'|'withdraw', params)` for pre-signature ETH-cost estimates and the educator dashboard surfaces these in a confirm dialog before withdraw. New view `certificateOf(courseId, addr)` returns the claimed tokenId (0 if not yet claimed). See `FULL-OWNERSHIP-FLOW.md` § Gas Fee Responsibility. Note: `test/TokenomicMarket.test.js` has a pre-existing toolchain mismatch (project pins ethers v5; hardhat-ethers expects v6) — `npx hardhat compile` succeeds; `npx hardhat test` fails at `getSigners()` for both old and new tests, unrelated to this refactor.
-- **SEO & Feeds**: Includes RSS feed, XML sitemap, and `robots.txt` for discoverability, with dynamic Open Graph meta tags for social sharing of articles.
-- **Branding**: Utilizes a specific color palette (`#F7931A`, `#0A0F1A`), Inter font for dashboards, and a defined logo. Dashboard styling is managed via `dashboard.css`, incorporating a design system with consistent UI elements.
-- **Mobile Responsiveness**: The dashboard sidebar collapses into a slide-out drawer on smaller screens, managed by CSS and JavaScript.
-
-## Replit Environment Setup
-- **Node.js packages**: Installed via npm (express, pg, ethers, esbuild, viem, @wagmi/core, serve)
-- **Ruby/Jekyll**: Installed via bundle (`bundle exec jekyll build` generates `_site/` on each startup)
-- **Database**: Replit PostgreSQL (DATABASE_URL auto-configured). Tables: `newsletter_subscribers`, `admin_sessions`, `pending_content`, `pending_users`
-- **Workflow**: `bundle exec jekyll build && node server.js` on port 5000
-- **Optional secrets**: `ADMIN_PASSWORD` (for admin panel), `GITHUB_PERSONAL_ACCESS_TOKEN` (for communities/courses/articles GitHub integration). Set these in the Replit Secrets tab.
-
-## Cloudflare Workers Infrastructure
-Three Workers, each with its own dedicated `wrangler.toml` (the root `wrangler.toml` is documentation-only — wrangler v4 is finicky about resolving `[env.X]` blocks when run from subdirectories, so deploy from each worker's directory with `--config ./wrangler.toml`):
-- **`tokenomic`** (`workers/site-worker/`) — serves the static `_site/` build via the `ASSETS` binding plus tiny script handler for `/__health` and `/__config`. Hosts public env vars (BASE chain config, contract addresses, API/WEB3 base URLs, `STREAM_CUSTOMER_SUBDOMAIN`).
-- **`tokenomic-api`** (`workers/api-worker/`) — Hono app for comments, dashboard stats, and Cloudflare Stream uploads. KV: `COMMENTS_KV`, `RATE_LIMIT_KV`. Secrets: `CF_ACCOUNT_ID`, `CF_STREAM_TOKEN` (Stream:Edit-scoped API token).
-- **`tokenomic-web3`** (`workers/web3-worker/`) — read-only on-chain proxy.
-
-All deployed at `https://<name>.guillaumelauzier.workers.dev`. Observability + invocation logs enabled on all three.
-
-## Course Content Storage — Cloudflare Stream
-Course videos are uploaded **directly from the browser to Cloudflare Stream** using the Direct Creator Upload API. The `tokenomic-api` Worker mints one-time upload URLs server-side using its `CF_STREAM_TOKEN` secret — the account-level token never touches the client.
-- `POST /stream/direct-upload` → `{ uid, uploadURL, playback, embed, thumbnail }`
-- `GET  /stream/:uid` → `{ status, ready, duration, playback, embed, thumbnail }`
-- `POST /stream/:uid/json-meta` → persists course metadata under KV key `stream-meta:<uid>`
-
-The on-chain content URI stored in `TokenomicMarket.registerCourse` is `stream:<uid>` (replacing the old `ipfs://...` scheme). Frontend flow lives in `shared/assets/js/web3-upload.js`. Cloudflare Stream subscription must be active on the account (`$5/mo + per-minute storage/viewing fees`).
-
-## Application Database — Cloudflare D1
-**Supabase has been removed.** All app data (profiles, courses, communities, articles, experts, enrollments, bookings, revenue, messages) lives in a Cloudflare D1 SQLite database `tokenomic-db` (uuid `6c1e01cf-1e87-4419-b705-f8eec1935fe4`), bound as `DB` on the `tokenomic-api` worker.
-
-- Schema: `workers/api-worker/migrations/0001_init.sql` (8 tables) → `0004_modules.sql` (S4 course modules) → `0005_events.sql` (S5 native events: 13 tables total). Apply with `wrangler d1 execute tokenomic-db --file=./migrations/<file> --remote`.
-- Worker routes: `workers/api-worker/d1-routes.js` (mounted from `index.js`). Read endpoints are public; write endpoints require `Authorization: Bearer <jwt>`.
-- Auth: nonce-challenge wallet sign-in. `POST /api/auth/nonce` → `POST /api/auth/login {wallet, signature}` → 24h HS256 JWT (verified via Web Crypto, signature checked via `viem`'s `verifyMessage`). `JWT_SECRET` is a wrangler secret on `tokenomic-api`.
-- Frontend client: `shared/assets/js/d1-client.js` exports `window.TokenomicSupabase` (legacy name kept for drop-in compatibility) plus `window.TokenomicAPI`. Methods: `signIn(wallet?)` (autodetects from `TokenomicWallet.account` if omitted), `signOut()`, `isSignedIn()`. The old `demoData()` fallback is gone — pages render true empty state when D1 is empty.
-- **Native Events (S5)**: First-party event hosting replaces the Luma proxy. `events` and `event_rsvps` tables back endpoints `GET/POST/PATCH/DELETE /api/events`, `GET /api/events/:idOrSlug` (with optional `my_rsvp`), `POST/DELETE /api/events/:id/rsvp` (capacity → waitlist with auto-promote), `GET /api/events/:id/rsvps` (host-gated), `GET /api/events/me/rsvps`. Capacity races are prevented by a single `INSERT ... SELECT CASE ... END FROM events` statement that ties capacity check + admit decision atomically; promotion runs in a loop and uses a conditional `UPDATE` so concurrent cancels can't lose seats. Visibility model: `public` (anyone), `unlisted` (slug-only access — numeric-ID enumeration blocked), `private` (host/admin/RSVPer only; returns 404 to non-allowed callers). Pages: `dashboard/events.html` (host UI), `events-calendar.html` (`/events/calendar/`), `event.html` (`/event/?slug=...`).
-- Out of scope this round (deferred): R2 thumbnail/PDF uploads (needs R2-permission API token), realtime chat (D1 has no pub/sub — currently polled every 5s), rich course editor with drag-and-drop modules, analytics dashboards, killing legacy `server.js`.
+**Key Architectural Decisions & Features:**
+- **Content & Course Management**: Articles and courses are managed via GitHub repositories, allowing creators to publish and manage content, and students to track progress. Certifications are on-chain verified.
+- **Community System**: GitHub-backed communities facilitate discussions and member management, listed on a public `/communities/` page.
+- **Dashboard**: Provides analytics, revenue tracking, events, bookings, chat, and leaderboards.
+- **User Profiles**: Comprehensive profile management for users, educators, and consultants.
+- **Web3 Asset Ownership**: On-chain asset management (SIWE-style proofs, USDC/ETH balance, asset registration, tokenization, NFT minting, revenue claiming) on the Base chain via `web3-assets.js`. Transactions are paid by the signing wallet.
+- **SEO & Feeds**: Includes RSS, XML sitemap, `robots.txt`, and dynamic Open Graph meta tags.
+- **Branding**: Uses a specific color palette (`#F7931A`, `#0A0F1A`), Inter font, and defined logo. Dashboard styling is consistent via `dashboard.css`.
+- **Mobile Responsiveness**: Dashboard sidebar collapses into a slide-out drawer on smaller screens.
+- **Web3 Wallet Stack**: Pinned to `@wagmi/core@^2`, `@wagmi/connectors@^5`, `@coinbase/wallet-sdk@^4`, `viem@^2` for wallet connectivity, supporting MetaMask, Coinbase, Rabby, WalletConnect, and Coinbase Smart Wallet.
+- **SIWE Integration**: Cookie-based session flow for secure wallet sign-in via the `tokenomic-api` worker, utilizing EIP-4361 messages and `viem.verifyMessage`.
+- **Native Events (S5)**: First-party event hosting with event creation, RSVPs, and capacity management, stored in D1.
 
 ## External Dependencies
-- **Cloudflare D1**: Primary application database (SQLite at the edge). Replaces Supabase.
-- **Cloudflare Stream**: Hosts and transcodes course videos (managed encoding, adaptive HLS/DASH, embed players). Replaces the previous IPFS/nft.storage pipeline.
-- **viem**: Wallet signature verification inside the `tokenomic-api` worker (EIP-191 `verifyMessage`).
+- **Cloudflare D1**: Primary application database (SQLite at the edge).
+- **Cloudflare Stream**: Hosts and transcodes course videos using Direct Creator Upload API.
+- **viem**: Used for wallet signature verification (EIP-191 `verifyMessage`) in the API worker.
 - **Helio**: Used for USDC payments on the Base L2 network.
-- **0xSplits**: Facilitates revenue distribution, specifically a 90/5/5 split.
-- **Luma**: Calendar and event management, with events synced via the `/api/luma-events` proxy.
-- **GitHub API**: Utilized for course and community management (creating/updating repositories, managing files, issues) and article publishing workflows, requiring a `GITHUB_PERSONAL_ACCESS_TOKEN`.
-- **Ethers.js v5**: Web3 library for blockchain interaction on the Base L2 network (also installed server-side for signature verification via `ethers.utils.verifyMessage`).
-- **Chart.js**: JavaScript charting library for data visualization in dashboards.
-- **Alpine.js**: Lightweight JavaScript framework for reactive UI components in dashboards.
+- **0xSplits**: Facilitates revenue distribution with a 90/5/5 split.
+- **GitHub API**: Used for course, community, and article content management.
+- **Ethers.js v5**: Web3 library for blockchain interaction on the Base L2 network.
+- **Chart.js**: JavaScript charting library for data visualization.
+- **Alpine.js**: Lightweight JavaScript framework for reactive UI components.
 - **Bootstrap 4**: Frontend framework for responsive design.
 - **jQuery**: JavaScript library for DOM manipulation.
-- **Font Awesome 6.4.0 CDN**: Icon library for UI elements.
+- **Font Awesome 6.4.0 CDN**: Icon library.

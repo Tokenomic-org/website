@@ -171,7 +171,7 @@ Object.keys(pageTitles).forEach(function(f) {
     '        <script src="/shared/assets/js/d1-client.js"></script>\n' +
     '        <script src="/shared/assets/js/profile-photo.js"></script>\n' +
     '        <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>\n' +
-    '        <script src="/shared/assets/js/web3-wallet.js"></script>\n' +
+    '        <script src="/shared/assets/js/web3-wallet.js"></script>\n        <script type="module" src="/shared/assets/js/web3-bundle.js"></script>\n        <script src="/shared/assets/js/siwe-client.js"></script>\n' +
     '        <script src="/shared/assets/js/web3-assets.js"></script>\n' +
     '        <script src="/shared/assets/js/site-search.js"></script>\n' +
     '        <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>\n' +
@@ -360,7 +360,7 @@ Object.keys(publicPages).forEach(function(f) {
     '        <script src="/shared/assets/js/d1-client.js"></script>\n' +
     '        <script src="/shared/assets/js/profile-photo.js"></script>\n' +
     '        <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>\n' +
-    '        <script src="/shared/assets/js/web3-wallet.js"></script>\n' +
+    '        <script src="/shared/assets/js/web3-wallet.js"></script>\n        <script type="module" src="/shared/assets/js/web3-bundle.js"></script>\n        <script src="/shared/assets/js/siwe-client.js"></script>\n' +
     '        <script src="/shared/assets/js/web3-assets.js"></script>\n' +
     '        <script src="/shared/assets/js/site-search.js"></script>\n' +
     '    </body>\n' +
@@ -503,7 +503,7 @@ function stripJekyll(html) {
     '        <script src="/shared/assets/js/d1-client.js"></script>\n' +
     '        <script src="/shared/assets/js/profile-photo.js"></script>\n' +
     '        <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>\n' +
-    '        <script src="/shared/assets/js/web3-wallet.js"></script>\n' +
+    '        <script src="/shared/assets/js/web3-wallet.js"></script>\n        <script type="module" src="/shared/assets/js/web3-bundle.js"></script>\n        <script src="/shared/assets/js/siwe-client.js"></script>\n' +
     '        <script src="/shared/assets/js/web3-assets.js"></script>\n' +
     '        <script src="/shared/assets/js/site-search.js"></script>\n' +
     '    </body>\n' +
@@ -601,7 +601,7 @@ Object.keys(staticPages).forEach(function(f) {
     '        <script src="/shared/assets/js/d1-client.js"></script>\n' +
     '        <script src="/shared/assets/js/profile-photo.js"></script>\n' +
     '        <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>\n' +
-    '        <script src="/shared/assets/js/web3-wallet.js"></script>\n' +
+    '        <script src="/shared/assets/js/web3-wallet.js"></script>\n        <script type="module" src="/shared/assets/js/web3-bundle.js"></script>\n        <script src="/shared/assets/js/siwe-client.js"></script>\n' +
     '        <script src="/shared/assets/js/web3-assets.js"></script>\n' +
     '        <script src="/shared/assets/js/site-search.js"></script>\n' +
     '    </body>\n' +
