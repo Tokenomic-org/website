@@ -47,6 +47,13 @@ The platform is built on a static site generation approach using Jekyll, with th
 - **Branding**: Utilizes a specific color palette (`#F7931A`, `#0A0F1A`), Inter font for dashboards, and a defined logo. Dashboard styling is managed via `dashboard.css`, incorporating a design system with consistent UI elements.
 - **Mobile Responsiveness**: The dashboard sidebar collapses into a slide-out drawer on smaller screens, managed by CSS and JavaScript.
 
+## Replit Environment Setup
+- **Node.js packages**: Installed via npm (express, pg, ethers, esbuild, viem, @wagmi/core, serve)
+- **Ruby/Jekyll**: Installed via bundle (`bundle exec jekyll build` generates `_site/` on each startup)
+- **Database**: Replit PostgreSQL (DATABASE_URL auto-configured). Tables: `newsletter_subscribers`, `admin_sessions`, `pending_content`, `pending_users`
+- **Workflow**: `bundle exec jekyll build && node server.js` on port 5000
+- **Optional secrets**: `ADMIN_PASSWORD` (for admin panel), `GITHUB_PERSONAL_ACCESS_TOKEN` (for communities/courses/articles GitHub integration). Set these in the Replit Secrets tab.
+
 ## Cloudflare Workers Infrastructure
 Three Workers, each with its own dedicated `wrangler.toml` (the root `wrangler.toml` is documentation-only — wrangler v4 is finicky about resolving `[env.X]` blocks when run from subdirectories, so deploy from each worker's directory with `--config ./wrangler.toml`):
 - **`tokenomic`** (`workers/site-worker/`) — serves the static `_site/` build via the `ASSETS` binding plus tiny script handler for `/__health` and `/__config`. Hosts public env vars (BASE chain config, contract addresses, API/WEB3 base URLs, `STREAM_CUSTOMER_SUBDOMAIN`).
