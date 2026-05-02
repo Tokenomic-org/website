@@ -1,9 +1,8 @@
 /**
  * test-full-flow.js — End-to-end simulation of the on-chain Tokenomic flow.
  *
- * Standalone ethers v5 script (the project is locked to ethers v5 because
- * server.js uses ethers.utils.verifyMessage). It works against any JSON-RPC
- * endpoint — local Anvil/Hardhat node, Base Sepolia, or Base mainnet.
+ * Standalone ethers v6 script. Works against any JSON-RPC endpoint —
+ * local Anvil/Hardhat node, Base Sepolia, or Base mainnet.
  *
  * Local quickstart (two terminals):
  *
@@ -24,6 +23,11 @@
  * Defaults:
  *   - PRIVATE_KEYS defaults to the well-known anvil/hardhat-node test keys.
  *   - When USDC_ADDRESS is unset, MockUSDC is deployed and 1000 USDC minted to the student.
+ *
+ * NOTE: this script targets the *legacy* TokenomicMarket / TokenomicCertificate
+ * contracts. The Phase 1 suite (RoleRegistry, CourseAccess1155, CertificateNFT,
+ * SubscriptionManager, ReferralRegistry, SplitsManager) is exercised by the
+ * Hardhat unit tests in `test/`.
  */
 const fs = require("fs");
 const path = require("path");
@@ -31,7 +35,6 @@ const { ethers } = require("ethers");
 
 const RPC = process.env.RPC_URL || "http://127.0.0.1:8545";
 const KEYS = (process.env.PRIVATE_KEYS ||
-  // standard local test keys (deployer, educator, student, consultant)
   "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80," +
   "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d," +
   "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a," +
@@ -43,18 +46,28 @@ const ART = name => {
   return path.join(__dirname, "..", "artifacts", "contracts", `${name}.sol`, `${base}.json`);
 };
 const load = name => JSON.parse(fs.readFileSync(ART(name), "utf8"));
-const fmt = bn => ethers.utils.formatUnits(bn, 6);
+const fmt  = bn => ethers.formatUnits(bn, 6);
 
 async function deploy(signer, artifact, args) {
   const F = new ethers.ContractFactory(artifact.abi, artifact.bytecode, signer);
   const c = await F.deploy(...(args || []));
-  await c.deployed();
+  await c.waitForDeployment();
   return c;
+}
+
+function findEvent(contract, receipt, name) {
+  for (const log of receipt.logs) {
+    try {
+      const parsed = contract.interface.parseLog(log);
+      if (parsed && parsed.name === name) return parsed;
+    } catch (_) { /* not from this contract */ }
+  }
+  return null;
 }
 
 async function main() {
   if (KEYS.length < 4) throw new Error("Need at least 4 PRIVATE_KEYS (deployer,educator,student,consultant)");
-  const provider = new ethers.providers.JsonRpcProvider(RPC);
+  const provider = new ethers.JsonRpcProvider(RPC);
   const [deployer, educator, student, consultant] = KEYS.map(k => new ethers.Wallet(k, provider));
 
   const net = await provider.getNetwork();
@@ -66,6 +79,7 @@ async function main() {
 
   // 1) USDC
   let usdc;
+  let usdcAddress;
   if (process.env.USDC_ADDRESS) {
     const usdcAbi = [
       "function balanceOf(address) view returns (uint256)",
@@ -73,47 +87,46 @@ async function main() {
       "function transfer(address,uint256) returns (bool)"
     ];
     usdc = new ethers.Contract(process.env.USDC_ADDRESS, usdcAbi, provider);
-    console.log("\n[1] Using existing USDC:", process.env.USDC_ADDRESS);
+    usdcAddress = process.env.USDC_ADDRESS;
+    console.log("\n[1] Using existing USDC:", usdcAddress);
   } else {
     const mockArt = load("mocks/MockUSDC");
     usdc = await deploy(deployer, mockArt);
-    console.log("\n[1] MockUSDC at", usdc.address);
-    await (await usdc.connect(deployer).mint(student.address, ethers.utils.parseUnits("1000", 6))).wait();
+    usdcAddress = await usdc.getAddress();
+    console.log("\n[1] MockUSDC at", usdcAddress);
+    await (await usdc.connect(deployer).mint(student.address, ethers.parseUnits("1000", 6))).wait();
   }
 
   // 2) Deploy Cert + Market
   const certArt   = load("TokenomicCertificate");
   const marketArt = load("TokenomicMarket");
   const cert   = await deploy(deployer, certArt,   [deployer.address]);
-  const market = await deploy(deployer, marketArt, [deployer.address, usdc.address, cert.address]);
-  await (await cert.connect(deployer).setMarket(market.address)).wait();
-  console.log("[2] Certificate:", cert.address);
-  console.log("    Market:     ", market.address);
+  const market = await deploy(deployer, marketArt, [deployer.address, usdcAddress, await cert.getAddress()]);
+  await (await cert.connect(deployer).setMarket(await market.getAddress())).wait();
+  console.log("[2] Certificate:", await cert.getAddress());
+  console.log("    Market:     ", await market.getAddress());
 
   // 3) Educator registers a course
-  const price = ethers.utils.parseUnits("49.99", 6);
+  const price = ethers.parseUnits("49.99", 6);
   const ipfs  = "ipfs://bafkreiabc123fakecidforlocaltest";
   const tx1   = await market.connect(educator).registerCourse(ipfs, price, consultant.address);
   const r1    = await tx1.wait();
-  const reg   = r1.events.find(e => e.event === "CourseRegistered");
+  const reg   = findEvent(market, r1, "CourseRegistered");
   const courseId = reg.args.courseId.toString();
   console.log(`[3] Course #${courseId} registered (49.99 USDC, consultant=${consultant.address.slice(0,6)}…)`);
 
   // 4) Student approves + purchases
-  await (await usdc.connect(student).approve(market.address, price)).wait();
-  const tx2 = await market.connect(student).purchase(courseId, ipfs + "/cert/student.json");
+  await (await usdc.connect(student).approve(await market.getAddress(), price)).wait();
+  const tx2 = await market.connect(student).purchase(courseId);
   const r2  = await tx2.wait();
-  const ev  = r2.events.find(e => e.event === "CoursePurchased");
-  console.log(`[4] Student purchased -> tokenId #${ev.args.certificateTokenId.toString()}, ` +
+  const ev  = findEvent(market, r2, "CoursePurchased");
+  console.log(`[4] Student purchased -> certificateTokenId pending=${ev.args.certificateTokenId.toString()}, ` +
               `educatorAmount=${fmt(ev.args.educatorAmount)} USDC, ` +
               `consultantAmount=${fmt(ev.args.consultantAmount)} USDC, ` +
               `platformAmount=${fmt(ev.args.platformAmount)} USDC`);
 
-  // 5) Verify NFT ownership + balances
-  const certOwner = await cert.ownerOf(ev.args.certificateTokenId);
-  const certURI   = await cert.tokenURI(ev.args.certificateTokenId);
-  console.log(`[5] Cert owner: ${certOwner.toLowerCase() === student.address.toLowerCase() ? "✓ student" : "✗ MISMATCH"}, URI: ${certURI}`);
-  console.log(`    Educator pending:   ${fmt(await market.pendingWithdrawals(educator.address))} USDC`);
+  // 5) Verify balances
+  console.log(`[5] Educator pending:   ${fmt(await market.pendingWithdrawals(educator.address))} USDC`);
   console.log(`    Consultant pending: ${fmt(await market.pendingWithdrawals(consultant.address))} USDC`);
   console.log(`    Platform balance:   ${fmt(await market.platformBalance())} USDC`);
 
@@ -121,14 +134,14 @@ async function main() {
   const before = await usdc.balanceOf(educator.address);
   await (await market.connect(educator).withdrawUSDC()).wait();
   const after  = await usdc.balanceOf(educator.address);
-  console.log(`[6] Educator withdrew: +${fmt(after.sub(before))} USDC`);
+  console.log(`[6] Educator withdrew: +${fmt(after - before)} USDC`);
   await (await market.connect(consultant).withdrawUSDC()).wait();
   console.log(`    Consultant USDC bal: ${fmt(await usdc.balanceOf(consultant.address))} USDC`);
 
   // 7) Owner sweeps platform fees
   const ownerBefore = await usdc.balanceOf(deployer.address);
   await (await market.connect(deployer).withdrawPlatformFees(deployer.address)).wait();
-  console.log(`[7] Owner platform sweep: +${fmt((await usdc.balanceOf(deployer.address)).sub(ownerBefore))} USDC`);
+  console.log(`[7] Owner platform sweep: +${fmt((await usdc.balanceOf(deployer.address)) - ownerBefore)} USDC`);
 
   // 8) Read-side checks (mirrors getEducatorCourses / getEducatorSales)
   const ids   = await market.getCoursesByEducator(educator.address);

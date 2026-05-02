@@ -11,7 +11,8 @@
     "deploy:full": "npm run build && wrangler deploy",
     "deploy:contracts": "hardhat run scripts/deploy.js --network base",
     "deploy:contracts:testnet": "hardhat run scripts/deploy.js --network base-sepolia",
-    "compile": "hardhat compile"
+    "compile": "hardhat compile",
+    "coverage": "hardhat coverage"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +22,7 @@
     "@wagmi/connectors": "^5.11.2",
     "@wagmi/core": "^2.22.1",
     "esbuild": "^0.28.0",
-    "ethers": "^5.8.0",
+    "ethers": "^6.16.0",
     "express": "^5.2.1",
     "pg": "^8.20.0",
     "serve": "^14.2.6",

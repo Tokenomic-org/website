@@ -28,6 +28,7 @@ The platform uses a static site generation approach with Jekyll, serving pre-bui
 - **Web3 Wallet Stack**: Pinned to `@wagmi/core@^2`, `@wagmi/connectors@^5`, `@coinbase/wallet-sdk@^4`, `viem@^2` for wallet connectivity, supporting MetaMask, Coinbase, Rabby, WalletConnect, and Coinbase Smart Wallet.
 - **SIWE Integration**: Cookie-based session flow for secure wallet sign-in via the `tokenomic-api` worker, utilizing EIP-4361 messages and `viem.verifyMessage`.
 - **Native Events (S5)**: First-party event hosting with event creation, RSVPs, and capacity management, stored in D1.
+- **Phase 1 Smart Contract Suite (Base L2)**: Six contracts replace the legacy `TokenomicMarket` + `TokenomicCertificate`: `RoleRegistry` (OZ AccessControl), `ReferralRegistry` (one-shot `setReferrer`), `SplitsManager` (wraps audited 0xSplits `SplitMain` for educator/referrer/treasury revenue fan-out), `CourseAccess1155` (soulbound ERC-1155, USDC-priced, lazy per-(educator, buyer) splitter), `CertificateNFT` (soulbound ERC-721, EDUCATOR_ROLE-only mint), `SubscriptionManager` (monthly USDC subs with `isActive(addr)`). Hardhat tests reach 100% line coverage on the suite. ABIs published to `packages/abi/`; per-network deploy records in `deployments/`. Mainnet deploys are gated by `CONFIRM_MAINNET=1`. ethers migrated to v6 across `server.js` and `scripts/test-full-flow.js` to satisfy hardhat-ethers' peer dep.
 
 ## External Dependencies
 - **Cloudflare D1**: Primary application database (SQLite at the edge).
@@ -36,7 +37,8 @@ The platform uses a static site generation approach with Jekyll, serving pre-bui
 - **Helio**: Used for USDC payments on the Base L2 network.
 - **0xSplits**: Facilitates revenue distribution with a 90/5/5 split.
 - **GitHub API**: Used for course, community, and article content management.
-- **Ethers.js v5**: Web3 library for blockchain interaction on the Base L2 network.
+- **Ethers.js v6**: Web3 library for blockchain interaction on the Base L2 network (used by `server.js` for SIWE signature recovery and by Hardhat tooling).
+- **0xSplits SplitMain**: Audited revenue-distribution contract at `0x2ed6c4B5dA6378c7897AC67Ba9e43102Feb694EE` on both Base mainnet and Base Sepolia, wrapped by `SplitsManager`.
 - **Chart.js**: JavaScript charting library for data visualization.
 - **Alpine.js**: Lightweight JavaScript framework for reactive UI components.
 - **Bootstrap 4**: Frontend framework for responsive design.

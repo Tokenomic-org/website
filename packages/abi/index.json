@@ -1,0 +1,11 @@
+{
+  "contracts": [
+    "RoleRegistry",
+    "ReferralRegistry",
+    "SplitsManager",
+    "CourseAccess1155",
+    "CertificateNFT",
+    "SubscriptionManager"
+  ],
+  "deployments": {}
+}

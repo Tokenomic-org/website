@@ -1161,7 +1161,7 @@ app.post('/api/verify-signature', function(req, res) {
     }
 
     try {
-        var recoveredAddress = ethers.utils.verifyMessage(message, signature).toLowerCase();
+        var recoveredAddress = ethers.verifyMessage(message, signature).toLowerCase();
         if (recoveredAddress !== wallet) {
             return res.status(403).json({ error: 'Signature does not match the claimed wallet address.', verified: false });
         }

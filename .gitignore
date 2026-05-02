@@ -16,3 +16,6 @@ attached_assets/
 cache/
 artifacts/
 !artifacts/abis/
+coverage/
+coverage.json
+typechain-types/
