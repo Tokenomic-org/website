@@ -102,12 +102,17 @@ describe("CourseAccess1155", function () {
     expect(await course.hasAccess(student.address, 1)).to.equal(true);
 
     const split = await mgr.getSplitFor(educator.address, student.address, 900_000, 50_000, 50_000);
-    // Funds were forwarded into the split and then sit there until distribute.
-    expect(await usdc.balanceOf(split)).to.equal(PRICE);
+    // purchase() auto-distributes — funds are credited to recipients in the
+    // same tx; the split itself ends up empty.
+    expect(await usdc.balanceOf(split)).to.equal(0n);
+    const usdcAddr = await usdc.getAddress();
+    expect(await splitMain.withdrawable(educator.address, usdcAddr)).to.equal((PRICE * 900_000n) / 1_000_000n);
+    expect(await splitMain.withdrawable(referrer.address, usdcAddr)).to.equal((PRICE * 50_000n) / 1_000_000n);
+    expect(await splitMain.withdrawable(treasury.address, usdcAddr)).to.equal((PRICE * 50_000n) / 1_000_000n);
 
-    // After distribute, recipients can withdraw.
-    await mgr.distribute(split);
-    expect(await splitMain.withdrawable(educator.address, await usdc.getAddress())).to.equal((PRICE * 900_000n) / 1_000_000n);
+    // Recipient pulls into their wallet via SplitMain.
+    await splitMain.withdraw(educator.address, 0, [usdcAddr]);
+    expect(await usdc.balanceOf(educator.address)).to.equal((PRICE * 900_000n) / 1_000_000n);
   });
 
   it("purchase reverts on missing / inactive / already-owned / non-existent", async function () {
@@ -127,7 +132,7 @@ describe("CourseAccess1155", function () {
       .to.be.revertedWithCustomError(course, "AlreadyOwned");
   });
 
-  it("re-uses the cached split for two courses with the same bps tuple", async function () {
+  it("re-uses the cached split for two courses with the same bps tuple (auto-distributes both)", async function () {
     await course.connect(educator).createCourse(PRICE, 900_000, 50_000, 50_000, "ipfs://a");
     await course.connect(educator).createCourse(PRICE, 900_000, 50_000, 50_000, "ipfs://b");
 
@@ -137,7 +142,10 @@ describe("CourseAccess1155", function () {
     await course.connect(student).purchase(2);
     const split2 = await mgr.getSplitFor(educator.address, student.address, 900_000, 50_000, 50_000);
     expect(split1).to.equal(split2);
-    expect(await usdc.balanceOf(split1)).to.equal(2n * PRICE);
+    // Auto-distribute drains the split each time → balance is always 0.
+    expect(await usdc.balanceOf(split1)).to.equal(0n);
+    expect(await splitMain.withdrawable(educator.address, await usdc.getAddress()))
+      .to.equal((2n * PRICE * 900_000n) / 1_000_000n);
   });
 
   it("uses different splits for two courses with different bps tuples (per-course economics preserved)", async function () {
@@ -151,11 +159,10 @@ describe("CourseAccess1155", function () {
     const splitA = await mgr.getSplitFor(educator.address, student.address, 900_000, 50_000, 50_000);
     const splitB = await mgr.getSplitFor(educator.address, student.address, 800_000, 100_000, 100_000);
     expect(splitA).to.not.equal(splitB);
-    expect(await usdc.balanceOf(splitA)).to.equal(PRICE);
-    expect(await usdc.balanceOf(splitB)).to.equal(PRICE);
+    // Auto-distribute drains both splits in their respective purchase txs.
+    expect(await usdc.balanceOf(splitA)).to.equal(0n);
+    expect(await usdc.balanceOf(splitB)).to.equal(0n);
 
-    await mgr.distribute(splitA);
-    await mgr.distribute(splitB);
     expect(await splitMain.withdrawable(educator.address, await usdc.getAddress()))
       .to.equal((PRICE * 900_000n) / 1_000_000n + (PRICE * 800_000n) / 1_000_000n);
   });
@@ -170,9 +177,7 @@ describe("CourseAccess1155", function () {
 
     const legit = await mgr.getSplitFor(educator.address, student.address, 900_000, 50_000, 50_000);
     expect(legit).to.not.equal(ethers.ZeroAddress);
-    expect(await usdc.balanceOf(legit)).to.equal(PRICE);
-
-    await mgr.distribute(legit);
+    expect(await usdc.balanceOf(legit)).to.equal(0n); // auto-distributed
     expect(await splitMain.withdrawable(educator.address, await usdc.getAddress()))
       .to.equal((PRICE * 900_000n) / 1_000_000n);
   });

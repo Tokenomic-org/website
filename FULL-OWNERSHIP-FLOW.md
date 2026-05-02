@@ -45,7 +45,7 @@ signs.
 | `CourseAccess1155`     | `createCourse(price, eduBps, refBps, platBps, uri)` | EDUCATOR_ROLE | Mint a new course token id |
 | `CourseAccess1155`     | `updateCourse(id, price, active)` | course's educator | Edit price / pause |
 | `CourseAccess1155`     | `setActive(id, active)`          | PLATFORM_ROLE        | Platform takedown |
-| `CourseAccess1155`     | `purchase(courseId)`             | buyer (after `approve`) | Pay USDC, receive soulbound 1155 |
+| `CourseAccess1155`     | `purchase(courseId)`             | buyer (after `approve`) | Pay USDC, fund + auto-distribute the split, receive soulbound 1155 |
 | `CertificateNFT`       | `mint(to, courseId, uri)`        | EDUCATOR_ROLE        | Issue a soulbound cert |
 | `CertificateNFT`       | `burn(tokenId)`                  | token owner          | Self-burn |
 | `SubscriptionManager`  | `subscribe()` / `subscribeMultiple(n)` | subscriber (after `approve`) | Pay N months of USDC |
@@ -65,9 +65,8 @@ is no platform sponsorship and no meta-transactions in Phase 1.
 | Educator updates price / pauses (`updateCourse`) | educator |
 | Educator mints a certificate (`certificateNFT.mint`) | educator |
 | Buyer binds a referrer (`setReferrer`) | buyer |
-| Buyer purchases (`courseAccess.purchase`) — also lazily creates the split on first buy from this educator | buyer |
-| Anyone triggers `splitsManager.distribute(split)` to fan USDC out | caller |
-| Educator / referrer / treasury withdraws from SplitMain | the recipient |
+| Buyer purchases (`courseAccess.purchase`) — also lazily creates the split on first buy and auto-distributes the freshly-funded USDC | buyer |
+| Educator / referrer / treasury withdraws their accrued USDC from SplitMain | the recipient |
 | Subscriber pays monthly (`subscribe`, `subscribeMultiple`) | subscriber |
 | Platform updates treasury / monthly price (`setTreasury`, `setMonthlyPrice`) | PLATFORM_ROLE |
 
@@ -89,20 +88,22 @@ Phase 2/3 (the Phase 0 wallet stack already wires `wagmi`'s
    treasury automatically.
 4. **Approve + buy** — buyer calls
    `usdc.approve(courseAccess, 99_900000)` then
-   `courseAccess.purchase(1)`. In one tx the contract:
+   `courseAccess.purchase(1)`. In **one** tx the contract:
    - pulls 99.90 USDC from the buyer;
-   - looks up (or lazily creates) the `(educator, buyer)` split via
-     `SplitsManager` — the split's recipients are educator / referrer /
-     treasury, sized in 1e6 bps;
+   - looks up (or lazily creates) the `(educator, buyer, eduBps,
+     refBps, platBps)` split via `SplitsManager` — recipients are
+     educator / referrer / treasury, sized in 1e6 bps;
    - forwards the 99.90 USDC into the split address;
+   - **auto-distributes** by calling `SplitsManager.distribute(split)`,
+     which invokes `SplitMain.distributeERC20` and immediately credits
+     per-recipient withdrawable balances inside SplitMain;
    - mints the buyer a soulbound `CourseAccess1155` token id 1.
-5. **Distribute** — anyone calls `splitsManager.distribute(split)` (gas
-   paid by the caller — typically the educator or a keeper). 0xSplits
-   credits per-recipient withdrawable balances.
-6. **Withdraw** — educator / referrer / treasury each call
-   `splitMain.withdraw(addr, 0, [usdcAddress])` to pull their share to
-   their wallet.
-7. **Certify** — when the educator marks the course as completed for the
+5. **Withdraw** — educator / referrer / treasury each call
+   `splitMain.withdraw(addr, 0, [usdcAddress])` whenever they want to
+   pull their accumulated share to their wallet (this is the standard
+   0xSplits push-credit / pull-wallet pattern; the credit happens at
+   purchase time).
+6. **Certify** — when the educator marks the course as completed for the
    buyer, they call `certificateNFT.mint(buyer, 1, "ipfs://cert.json")`.
    The cert is soulbound — the buyer cannot transfer it but may
    `burn(tokenId)` themselves.

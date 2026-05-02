@@ -122,10 +122,10 @@ Records:
 3. Buyer `usdc.approve(courseAccess, 99_900000)` then `courseAccess.purchase(1)`.
 4. Confirm:
    - Buyer's `balanceOf(buyer, 1) == 1`, `safeTransferFrom` reverts with `SoulboundTransfer`.
-   - `splitsManager.getSplitFor(educator, buyer)` returns the lazily-deployed split.
-   - `usdc.balanceOf(split) == 99_900000` until anyone calls `splitsManager.distribute(split)` to fan funds out via SplitMain.
+   - `splitsManager.getSplitFor(educator, buyer, 900_000, 50_000, 50_000)` returns the lazily-deployed split.
+   - `purchase()` auto-distributed: `usdc.balanceOf(split) == 0` and `splitMain.withdrawable(educator, USDC) == 99_900000 * 0.9 == 89_910000`. Educator pulls into their wallet with `splitMain.withdraw(educator, 0, [USDC])`.
 5. Educator mints a cert: `certificateNFT.mint(buyer, 1, "ipfs://cert.json")`.
-6. Subscription smoke: `subscriptionManager.subscribe()` after `usdc.approve(sub, 9_990000)`.
+6. Subscription smoke: `subscriptionManager.subscribe()` after `usdc.approve(sub, 9_990000)`. USDC moves directly to the treasury address.
 
 ---
 
@@ -197,6 +197,7 @@ SUBSCRIPTION_MANAGER = "0x…"
 
 ## 9. Security notes
 
+- **Auto-distribution:** `CourseAccess1155.purchase` calls `SplitsManager.fundSplit` *and* `SplitsManager.distribute` in the same tx, so each recipient (educator, optional referrer, treasury) is credited inside SplitMain immediately. Recipients still pull their balance with `SplitMain.withdraw` — that is the standard 0xSplits push-credit / pull-wallet model.
 - **Reentrancy:** `CourseAccess1155.purchase` and `SubscriptionManager.subscribe*` are `nonReentrant`; both follow checks-effects-interactions and use `SafeERC20`.
 - **Soulbound:** Both `CourseAccess1155` (`_update` hook) and `CertificateNFT` (`_update` override) revert with `SoulboundTransfer` on any transfer between non-zero addresses. Mints and burns remain open.
 - **Splits:** Bps inputs are validated to sum to `1_000_000` (1e6) per 0xSplits convention. Recipients are sorted ascending and duplicate addresses are merged before `SplitMain.createSplit` is called. The `(educator, buyer)` cache is keyed by the full bps tuple, so (a) two courses from the same educator with different splits get different splitters per buyer, and (b) a third party who pre-creates a split for a target pair with bogus bps cannot poison subsequent legitimate purchases (the legitimate `purchase()` looks up the cache slot keyed by the *course-configured* bps, not the griefer's).

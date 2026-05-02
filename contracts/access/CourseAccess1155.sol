@@ -184,6 +184,11 @@ contract CourseAccess1155 is ERC1155, ReentrancyGuard {
         }
         usdc.forceApprove(address(splits), c.priceUSDC);
         splits.fundSplit(split, c.priceUSDC);
+        // Immediately fan the funds out so each recipient (educator,
+        // optional referrer, treasury) is credited in the same tx.
+        // Recipients still pull-withdraw from SplitMain, which is the
+        // 0xSplits convention.
+        splits.distribute(split);
 
         _mint(msg.sender, courseId, 1, "");
         emit CoursePurchased(courseId, msg.sender, split, c.priceUSDC);
