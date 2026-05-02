@@ -27,7 +27,11 @@ enabled = true
 head_sampling_rate = 1
 
 [env.api-worker.vars]
-ALLOWED_ORIGINS              = "https://tokenomic.org,https://*.tokenomic.org,https://*.pages.dev,https://tokenomic.guillaumelauzier.workers.dev"
+# First-party origins only. Do NOT add https://*.pages.dev, https://*.replit.dev,
+# https://*.repl.co, or https://*.workers.dev — those are multi-tenant and would
+# let any attacker-controlled subdomain make credentialed CORS requests with the
+# victim's tk_session cookie. List explicit staging hostnames if needed.
+ALLOWED_ORIGINS              = "https://tokenomic.org,https://www.tokenomic.org,https://*.tokenomic.org,https://tokenomic.guillaumelauzier.workers.dev,http://localhost:5000,http://127.0.0.1:5000"
 MAX_COMMENT_LEN              = "4000"
 REQUIRE_WALLET               = "false"
 CF_ACCOUNT_ID                = "c016d64a9a4f4a2900fb3385bd08144f"
@@ -71,7 +75,8 @@ enabled = true
 head_sampling_rate = 1
 
 [env.web3-worker.vars]
-ALLOWED_ORIGINS         = "https://tokenomic.org,https://*.tokenomic.org,https://*.pages.dev,https://tokenomic.guillaumelauzier.workers.dev"
+# First-party origins only — no multi-tenant wildcards (see api-worker note above).
+ALLOWED_ORIGINS         = "https://tokenomic.org,https://www.tokenomic.org,https://*.tokenomic.org,https://tokenomic.guillaumelauzier.workers.dev,http://localhost:5000"
 BASE_RPC_URL            = "https://mainnet.base.org"
 BASE_CHAIN_ID           = "8453"
 CLOUDFLARE_ETH_GATEWAY  = "https://cloudflare-eth.com"
