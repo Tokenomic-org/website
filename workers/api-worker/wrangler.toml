@@ -16,6 +16,10 @@ head_sampling_rate = 1
 # subdomain on those platforms steal cookie-authenticated responses. To add a
 # specific staging Pages or Replit dev URL, list its exact hostname here.
 ALLOWED_ORIGINS              = "https://tokenomic.org,https://www.tokenomic.org,https://*.tokenomic.org,https://tokenomic.guillaumelauzier.workers.dev,http://localhost:5000,http://127.0.0.1:5000"
+# Domains accepted in the SIWE message header (line 1: "<domain> wants you to sign in...").
+# First entry is the canonical/default; clients should prefer it via window.TOKENOMIC_SIWE_DOMAIN.
+SIWE_DOMAIN                  = "tokenomic.org"
+SIWE_DOMAINS                 = "tokenomic.org,www.tokenomic.org"
 MAX_COMMENT_LEN              = "4000"
 REQUIRE_WALLET               = "false"
 STREAM_CUSTOMER_SUBDOMAIN    = ""

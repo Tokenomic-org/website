@@ -116,6 +116,7 @@ var TokenomicWallet = {
       }
 
       sessionStorage.setItem('tkn_wallet', this.account);
+      TokenomicWallet._kickSiwe(this.account);
       this.updateUI();
       this.setupListeners(ethereum);
       return this.account;
@@ -160,6 +161,7 @@ var TokenomicWallet = {
       this.account = addr;
       this.chainId = '0x' + (result.chainId || 8453).toString(16);
       sessionStorage.setItem('tkn_wallet', this.account);
+      TokenomicWallet._kickSiwe(this.account);
       this.updateUI();
       // Mirror account changes from wagmi back into the legacy session.
       try {
@@ -183,7 +185,13 @@ var TokenomicWallet = {
     }
   },
 
-  disconnect() {
+  async disconnect() {
+    // Tear down any cookie-backed SIWE session before dropping local state.
+    try { if (window.TokenomicSiwe) await window.TokenomicSiwe.signOut(); } catch (_) {}
+    return TokenomicWallet._disconnectInner();
+  },
+
+  _disconnectInner() {
     this.account = null;
     sessionStorage.removeItem('tkn_wallet');
     // Also disconnect the wagmi side if present so the next connect prompts
@@ -228,6 +236,7 @@ var TokenomicWallet = {
         this.account = accounts[0] || null;
         if (this.account) {
           sessionStorage.setItem('tkn_wallet', this.account);
+      TokenomicWallet._kickSiwe(this.account);
         } else {
           sessionStorage.removeItem('tkn_wallet');
         }
@@ -288,6 +297,36 @@ var TokenomicWallet = {
 
   isLoggedIn() {
     return !!this.account;
+  },
+
+  /**
+   * Best-effort: after a successful wallet connect, drive the SIWE flow
+   * so the api-worker receives a `tk_session` cookie. Cookie-authed D1
+   * routes will then work without a Bearer JWT. Failure is logged but
+   * never blocks the UI — signed-out users can still browse public reads.
+   * Re-uses any active session if /api/siwe/me reports the same address.
+   */
+  async _kickSiwe(address) {
+    if (!address || !window.TokenomicSiwe) return;
+    if (TokenomicWallet._siweInFlight) return;
+    TokenomicWallet._siweInFlight = true;
+    try {
+      var existing = null;
+      try { existing = await window.TokenomicSiwe.me(); } catch (_) {}
+      if (existing && existing.address &&
+          existing.address.toLowerCase() === address.toLowerCase()) {
+        return; // already signed in for this address
+      }
+      if (existing && existing.address &&
+          existing.address.toLowerCase() !== address.toLowerCase()) {
+        try { await window.TokenomicSiwe.signOut(); } catch (_) {}
+      }
+      await window.TokenomicSiwe.signIn();
+    } catch (err) {
+      console.warn('SIWE auto-sign-in skipped:', err && err.message ? err.message : err);
+    } finally {
+      TokenomicWallet._siweInFlight = false;
+    }
   },
 
   /**

@@ -32,13 +32,22 @@
   async function api(method, path, body, requireAuth) {
     var headers = { 'Content-Type': 'application/json' };
     if (requireAuth) {
+      // Phase 0 — accept either auth path. Bearer JWT (legacy) is preferred
+      // when present because it lets API clients (CI, scripts, native apps)
+      // bypass cookie semantics. Otherwise we rely on the SIWE tk_session
+      // HTTP-only cookie which is sent automatically thanks to
+      // credentials:'include' below. The api-worker requireAuth() accepts
+      // both paths.
       var t = getToken();
-      if (!t) throw new Error('Not signed in. Call TokenomicSupabase.signIn(wallet) first.');
-      headers['Authorization'] = 'Bearer ' + t;
+      if (t) headers['Authorization'] = 'Bearer ' + t;
     }
     var res = await fetch(API_BASE + path, {
       method: method,
       headers: headers,
+      // Always send credentials so cookie-authed sessions work cross-origin
+      // (static site host -> api-worker host). Public reads silently get no
+      // cookie if the user isn't signed in, which is fine.
+      credentials: 'include',
       body: body ? JSON.stringify(body) : undefined
     });
     var data = null;

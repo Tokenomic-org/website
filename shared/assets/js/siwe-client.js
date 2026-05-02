@@ -22,7 +22,12 @@
   function lc(s) { return (s || '').toString().toLowerCase(); }
 
   function buildMessage(opts) {
-    var domain = opts.domain || window.location.host || 'tokenomic.org';
+    // Server enforces an exact domain match against SIWE_DOMAIN (or any of the
+    // hosts in SIWE_DOMAINS). To avoid a mismatch when a user visits
+    // www.tokenomic.org while the worker expects tokenomic.org, we let the
+    // page override via window.TOKENOMIC_SIWE_DOMAIN. Default to the canonical
+    // production host so the message is verifiable even from preview origins.
+    var domain = opts.domain || window.TOKENOMIC_SIWE_DOMAIN || 'tokenomic.org';
     var uri = opts.uri || window.location.origin || ('https://' + domain);
     var statement = opts.statement ||
       'Sign in to Tokenomic. This signature does not authorize any transaction or fee.';

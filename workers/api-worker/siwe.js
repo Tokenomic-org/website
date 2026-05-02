@@ -281,8 +281,14 @@ export function mountSiweRoutes(app) {
     const parsed = parseSiweMessage(message);
     if (!parsed) return c.json({ error: 'Malformed SIWE message' }, 400);
 
-    const expectedDomain = c.env.SIWE_DOMAIN || SIWE_DOMAIN_DEFAULT;
-    if (parsed.domain !== expectedDomain) {
+    // Allow either a single SIWE_DOMAIN or a comma-separated SIWE_DOMAINS
+    // allowlist so canonical+www (and staging) hosts can both verify against
+    // the same worker without rebuilding. Each entry must match exactly —
+    // no wildcards, no path/port games.
+    const allowedDomains = ((c.env.SIWE_DOMAINS || c.env.SIWE_DOMAIN || SIWE_DOMAIN_DEFAULT) + '')
+      .split(',').map((s) => s.trim()).filter(Boolean);
+    const expectedDomain = allowedDomains[0];
+    if (!allowedDomains.includes(parsed.domain)) {
       return c.json({ error: `Domain mismatch (expected ${expectedDomain})` }, 401);
     }
     if (lc(parsed.address) !== lc(address)) {
