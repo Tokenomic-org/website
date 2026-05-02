@@ -43,6 +43,7 @@
  */
 
 import { verifyMessage } from 'viem';
+import { readSessionFromCookie } from './siwe.js';
 
 // ---------- helpers ----------
 
@@ -117,14 +118,29 @@ async function verifyJwt(token, secret) {
 async function requireAuth(c) {
   const auth = c.req.header('authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  if (!token) return { error: c.json({ error: 'Missing Bearer token' }, 401) };
-  const secret = c.env.JWT_SECRET;
-  if (!secret) return { error: c.json({ error: 'JWT_SECRET not configured on worker' }, 503) };
-  const payload = await verifyJwt(token, secret);
-  if (!payload || !isHexAddress(payload.wallet)) {
-    return { error: c.json({ error: 'Invalid or expired token' }, 401) };
+
+  // Path 1 — Bearer JWT (legacy /api/auth/login flow). Always tried first
+  // because it's explicit and lets API clients (CI, scripts) bypass cookie
+  // semantics entirely.
+  if (token) {
+    const secret = c.env.JWT_SECRET;
+    if (!secret) return { error: c.json({ error: 'JWT_SECRET not configured on worker' }, 503) };
+    const payload = await verifyJwt(token, secret);
+    if (!payload || !isHexAddress(payload.wallet)) {
+      return { error: c.json({ error: 'Invalid or expired token' }, 401) };
+    }
+    return { wallet: lc(payload.wallet), exp: payload.exp };
   }
-  return { wallet: lc(payload.wallet), exp: payload.exp };
+
+  // Path 2 — SIWE cookie (Phase 0 /api/siwe/verify flow). Browser sessions
+  // sign in once and ride the HTTP-only `tk_session` cookie for all
+  // subsequent protected calls.
+  const session = await readSessionFromCookie(c);
+  if (session && isHexAddress(session.address)) {
+    return { wallet: lc(session.address), exp: session.exp };
+  }
+
+  return { error: c.json({ error: 'Authentication required (Bearer token or SIWE cookie)' }, 401) };
 }
 
 // Admin gate. Authenticates first, then checks env.ADMIN_WALLETS (bootstrap)

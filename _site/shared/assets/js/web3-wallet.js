@@ -290,6 +290,57 @@ var TokenomicWallet = {
     return !!this.account;
   },
 
+  /**
+   * Header pill dropdown toggle. Bound to the avatar pill onclick.
+   * Closes on outside click via the document listener registered in the
+   * DOMContentLoaded bootstrap below.
+   */
+  toggleAccountDropdown(ev) {
+    if (ev && ev.stopPropagation) ev.stopPropagation();
+    var dd = document.getElementById('wallet-account-dropdown');
+    if (!dd) return;
+    var open = dd.classList.toggle('open');
+    var pill = document.querySelector('.wallet-account-pill');
+    if (pill) pill.setAttribute('aria-expanded', open ? 'true' : 'false');
+  },
+
+  closeAccountDropdown() {
+    var dd = document.getElementById('wallet-account-dropdown');
+    if (dd) dd.classList.remove('open');
+    var pill = document.querySelector('.wallet-account-pill');
+    if (pill) pill.setAttribute('aria-expanded', 'false');
+  },
+
+  /**
+   * Switch the connected wallet to Base mainnet (8453) or Base Sepolia
+   * (84532). Prefers the Phase 0 wagmi facade so injected/WalletConnect/
+   * Smart Wallet all work; falls back to a raw wallet_switchEthereumChain
+   * RPC for legacy injected providers if wagmi is not available.
+   */
+  async switchToNetwork(name) {
+    var targetId = name === 'base-sepolia' ? 84532 : 8453;
+    this.closeAccountDropdown();
+    try {
+      if (window.TokenomicWeb3 && window.TokenomicWeb3.switchChain) {
+        await window.TokenomicWeb3.switchChain(targetId);
+      } else if (window.ethereum && window.ethereum.request) {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x' + targetId.toString(16) }],
+        });
+      } else {
+        throw new Error('No wallet available to switch network');
+      }
+      this.chainId = '0x' + targetId.toString(16);
+      this.updateUI();
+    } catch (err) {
+      console.warn('switchToNetwork failed:', err && err.message ? err.message : err);
+      if (typeof alert === 'function') {
+        alert('Could not switch network: ' + (err && err.message ? err.message : 'unknown error'));
+      }
+    }
+  },
+
   updateUI() {
     var isConnected = !!this.account;
 
@@ -313,10 +364,38 @@ var TokenomicWallet = {
       el.style.display = isConnected ? '' : 'none';
     });
 
+    // Header pill (connected state) — show as inline-flex when connected.
+    document.querySelectorAll('.wallet-account-pill').forEach(function(el) {
+      el.style.display = isConnected ? 'inline-flex' : 'none';
+    });
+    if (!isConnected) {
+      document.querySelectorAll('.wallet-account-dropdown').forEach(function(el) {
+        el.classList.remove('open');
+      });
+    }
+
     document.querySelectorAll('.wallet-addr-text').forEach(function(el) {
       if (isConnected) {
         el.textContent = TokenomicWallet.truncateAddress(TokenomicWallet.account);
       }
+    });
+
+    // Basescan link target on the dropdown — keeps in sync with current chain.
+    var addr = TokenomicWallet.account;
+    var chainHex = (TokenomicWallet.chainId || '0x2105').toString();
+    var chainNum = chainHex.indexOf('0x') === 0 ? parseInt(chainHex, 16) : Number(chainHex);
+    var basescanBase = chainNum === 84532
+      ? 'https://sepolia.basescan.org/address/'
+      : 'https://basescan.org/address/';
+    var netName = chainNum === 84532 ? 'Base Sepolia' : (chainNum === 8453 ? 'Base' : ('Chain ' + chainNum));
+    document.querySelectorAll('.wallet-basescan-link').forEach(function(el) {
+      el.setAttribute('href', addr ? (basescanBase + addr) : '#');
+    });
+    document.querySelectorAll('.wallet-network-label').forEach(function(el) {
+      el.textContent = netName;
+    });
+    document.querySelectorAll('.wallet-network-id').forEach(function(el) {
+      el.textContent = String(chainNum || '');
     });
 
     document.querySelectorAll('.tkn-wallet-status').forEach(function(el) {
@@ -494,4 +573,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-if (typeof window !== "undefined") { window.TokenomicWallet = TokenomicWallet; }
+if (typeof window !== "undefined") {
+  window.TokenomicWallet = TokenomicWallet;
+  // Close the header pill dropdown when clicking anywhere outside it.
+  document.addEventListener('click', function (ev) {
+    var dd = document.getElementById('wallet-account-dropdown');
+    if (!dd || !dd.classList.contains('open')) return;
+    var container = ev.target && ev.target.closest ? ev.target.closest('.wallet-btn-header') : null;
+    if (!container) TokenomicWallet.closeAccountDropdown();
+  });
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') TokenomicWallet.closeAccountDropdown();
+  });
+}

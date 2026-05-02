@@ -99,20 +99,24 @@ export async function verifySession(token, secret) {
 }
 
 function setSessionCookie(c, token, ttlSec) {
+  // SameSite=None is required because the api-worker is on a different
+  // eTLD+1 than the static site (workers.dev vs tokenomic.org); browsers
+  // drop SameSite=Lax cookies on cross-site fetch(credentials:'include').
+  // Secure is mandatory whenever SameSite=None is used.
   const parts = [
     `${SESSION_COOKIE}=${token}`,
     'Path=/',
     `Max-Age=${ttlSec}`,
     'HttpOnly',
     'Secure',
-    'SameSite=Lax',
+    'SameSite=None',
   ];
   c.header('Set-Cookie', parts.join('; '));
 }
 
 function clearSessionCookie(c) {
   c.header('Set-Cookie',
-    `${SESSION_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`);
+    `${SESSION_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=None`);
 }
 
 function readCookie(c, name) {

@@ -35,24 +35,74 @@ const app = new Hono();
 app.use('*', logger());
 app.use('*', secureHeaders());
 
-app.use('*', async (c, next) => {
-  const allowList = (c.env.ALLOWED_ORIGINS || 'https://tokenomic.org,https://*.tokenomic.org,https://*.cf-ipfs.com,https://*.pages.dev,http://localhost:5000')
+// First-party origin allowlist. We deliberately do NOT default to multi-tenant
+// wildcards like https://*.pages.dev or https://*.cf-ipfs.com because those
+// would let any attacker-controlled subdomain on those platforms make
+// credentialed (cookie) cross-origin calls and exfiltrate authenticated
+// responses. Operators can add staging/preview origins via the
+// ALLOWED_ORIGINS env var (comma-separated, supports `https://*.your.tld`).
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://tokenomic.org',
+  'https://www.tokenomic.org',
+  'https://*.tokenomic.org',
+  'http://localhost:5000',
+  'http://127.0.0.1:5000',
+];
+function buildAllowList(env) {
+  return (env.ALLOWED_ORIGINS || DEFAULT_ALLOWED_ORIGINS.join(','))
     .split(',').map((s) => s.trim()).filter(Boolean);
+}
+function originIsAllowed(reqOrigin, allowList) {
+  if (!reqOrigin) return false;
+  for (const pattern of allowList) {
+    if (pattern === reqOrigin) return true;
+    if (pattern.startsWith('https://*.')) {
+      const suffix = pattern.slice('https://*.'.length);
+      if (reqOrigin.startsWith('https://') && reqOrigin.endsWith('.' + suffix)) return true;
+    }
+  }
+  return false;
+}
+
+// Hard server-side Origin allowlist for cookie-authed state-changing routes.
+// Independent of CORS headers — even if a misconfigured CORS layer reflected
+// an attacker origin, this gate would still reject the request before the
+// handler runs.
+app.use('/api/siwe/verify', async (c, next) => {
+  if (c.req.method === 'OPTIONS') return next();
+  const allowList = buildAllowList(c.env);
+  const origin = c.req.header('origin') || '';
+  if (origin && !originIsAllowed(origin, allowList)) {
+    return c.json({ error: 'Origin not allowed' }, 403);
+  }
+  return next();
+});
+app.use('/api/siwe/logout', async (c, next) => {
+  if (c.req.method === 'OPTIONS') return next();
+  const allowList = buildAllowList(c.env);
+  const origin = c.req.header('origin') || '';
+  if (origin && !originIsAllowed(origin, allowList)) {
+    return c.json({ error: 'Origin not allowed' }, 403);
+  }
+  return next();
+});
+
+app.use('*', async (c, next) => {
+  const allowList = buildAllowList(c.env);
+  // Resolve a single allowed origin (no wildcard reflection) so the SIWE
+  // cookie flow can run with credentials. The browser refuses
+  // `Access-Control-Allow-Origin: *` together with credentials.
+  const reqOrigin = c.req.header('origin') || '';
+  const allowOrigin = originIsAllowed(reqOrigin, allowList) ? reqOrigin : '';
   const handler = cors({
-    origin: (origin) => {
-      if (!origin) return '*';
-      for (const pattern of allowList) {
-        if (pattern === origin) return origin;
-        if (pattern.startsWith('https://*.')) {
-          const suffix = pattern.slice('https://*.'.length);
-          if (origin.startsWith('https://') && origin.endsWith('.' + suffix)) return origin;
-        }
-      }
-      return null;
-    },
-    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    // For non-browser requests (no Origin) we still echo `*`, but those
+    // requests cannot send cookies anyway, so credentials are moot.
+    origin: allowOrigin || (reqOrigin ? null : '*'),
+    credentials: true,
+    allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization', 'X-Wallet'],
-    maxAge: 86400
+    exposeHeaders: ['Set-Cookie'],
+    maxAge: 86400,
   });
   return handler(c, next);
 });

@@ -70,9 +70,8 @@
     width:32px;
     height:32px;
 }
-.wallet-btn-header { display:inline-flex; align-items:center; }
-.wallet-btn-header a.wallet-login-btn,
-.wallet-btn-header a.wallet-logged-in-btn {
+.wallet-btn-header { display:inline-flex; align-items:center; position:relative; }
+.wallet-btn-header a.wallet-login-btn {
     align-items:center;
     gap:6px;
     padding:6px 18px;
@@ -88,8 +87,86 @@
     border:none;
     box-shadow:none;
     line-height:1.4;
+    display:inline-flex;
 }
-.wallet-btn-header a:hover { background:#e55500 !important; }
+.wallet-btn-header a.wallet-login-btn:hover { background:#e55500 !important; }
+.wallet-btn-header .wallet-account-pill {
+    display:none;
+    align-items:center;
+    gap:8px;
+    padding:4px 12px 4px 4px;
+    font-size:12px;
+    font-weight:600;
+    border-radius:30px;
+    background:rgba(255,255,255,0.08);
+    color:#fff;
+    border:1px solid rgba(255,255,255,0.12);
+    cursor:pointer;
+    transition:background 0.2s;
+    line-height:1.4;
+    font-family:inherit;
+}
+.wallet-btn-header .wallet-account-pill:hover { background:rgba(255,255,255,0.14); }
+.wallet-btn-header .wallet-account-pill .wm-avatar {
+    width:24px; height:24px; border-radius:50%;
+    background:linear-gradient(135deg,#ff6000,#ffb066);
+    flex-shrink:0;
+}
+.wallet-btn-header .wallet-account-pill .wallet-addr-text { letter-spacing:0.4px; }
+.wallet-btn-header .wallet-account-pill .wm-caret {
+    width:0; height:0;
+    border-left:4px solid transparent;
+    border-right:4px solid transparent;
+    border-top:5px solid rgba(255,255,255,0.7);
+    margin-left:2px;
+}
+.wallet-btn-header .wallet-account-dropdown {
+    display:none;
+    position:absolute;
+    right:0;
+    top:calc(100% + 8px);
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:14px;
+    padding:8px;
+    min-width:240px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.45);
+    z-index:9999;
+    text-align:left;
+}
+.wallet-btn-header .wallet-account-dropdown.open { display:block; }
+.wallet-btn-header .wallet-account-dropdown .wm-net-label {
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:11px; color:#9ca3af;
+    padding:6px 10px 8px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    margin-bottom:6px;
+    text-transform:uppercase; letter-spacing:0.6px;
+}
+.wallet-btn-header .wallet-account-dropdown .wm-net-label .wm-net-dot {
+    width:8px; height:8px; border-radius:50%; background:#22c55e; display:inline-block; margin-right:6px;
+}
+.wallet-btn-header .wallet-account-dropdown a,
+.wallet-btn-header .wallet-account-dropdown button {
+    display:flex; align-items:center; gap:10px;
+    width:100%;
+    padding:10px 12px;
+    font-size:13px; font-weight:500;
+    color:#e5e7eb;
+    background:transparent;
+    border:none;
+    border-radius:8px;
+    text-decoration:none;
+    text-align:left;
+    cursor:pointer;
+    transition:background 0.15s;
+    font-family:inherit;
+}
+.wallet-btn-header .wallet-account-dropdown a:hover,
+.wallet-btn-header .wallet-account-dropdown button:hover { background:rgba(255,255,255,0.06); color:#fff; }
+.wallet-btn-header .wallet-account-dropdown .wm-divider { height:1px; background:rgba(255,255,255,0.06); margin:6px 4px; }
+.wallet-btn-header .wallet-account-dropdown button.wm-disconnect { color:#fca5a5; }
+.wallet-btn-header .wallet-account-dropdown button.wm-disconnect:hover { background:rgba(239,68,68,0.12); color:#fecaca; }
 @media (max-width: 991px) {
     .wallet-btn-header { display:none !important; }
     .main-header .header-upper { padding:8px 0 !important; }
@@ -186,7 +263,26 @@
                     <!--Connect Wallet Btn (desktop only)-->
                     <div class="wallet-btn-header">
                         <a href="#" class="wallet-login-btn" onclick="TokenomicWallet.connect(); return false;"><span class="btn-title">Connect Wallet</span></a>
-                        <a href="/dashboard/" class="wallet-logged-in-btn" style="display:none;"><span class="btn-title wallet-addr-text">Dashboard</span></a>
+                        <button type="button" class="wallet-account-pill" onclick="TokenomicWallet.toggleAccountDropdown(event); return false;" aria-haspopup="menu" aria-expanded="false">
+                            <span class="wm-avatar"></span>
+                            <span class="wallet-addr-text">Dashboard</span>
+                            <span class="wm-caret"></span>
+                        </button>
+                        <div class="wallet-account-dropdown" role="menu" id="wallet-account-dropdown">
+                            <div class="wm-net-label"><span><span class="wm-net-dot"></span><span class="wallet-network-label">Base</span></span><span class="wallet-network-id" style="opacity:0.6;">8453</span></div>
+                            <a href="/dashboard/" role="menuitem"><span style="opacity:0.85;">📊</span> Dashboard</a>
+                            <button type="button" role="menuitem" onclick="TokenomicWallet.switchToNetwork('base'); return false;">
+                                <span style="opacity:0.85;">🔵</span> Switch to Base
+                            </button>
+                            <button type="button" role="menuitem" onclick="TokenomicWallet.switchToNetwork('base-sepolia'); return false;">
+                                <span style="opacity:0.85;">🧪</span> Switch to Base Sepolia
+                            </button>
+                            <a href="#" target="_blank" rel="noopener" role="menuitem" class="wallet-basescan-link"><span style="opacity:0.85;">🔗</span> View on Basescan</a>
+                            <div class="wm-divider"></div>
+                            <button type="button" role="menuitem" class="wm-disconnect" onclick="TokenomicWallet.disconnect(); return false;">
+                                <span style="opacity:0.85;">⏏</span> Disconnect
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -207,6 +303,7 @@
             <div class="wallet-mobile-btn" style="padding:20px 25px;">
                 <a href="#" class="wallet-login-btn" onclick="TokenomicWallet.connect(); return false;"><span class="btn-title">Connect Wallet</span></a>
                 <a href="/dashboard/" class="wallet-logged-in-btn" style="display:none;margin-top:10px;"><span class="btn-title wallet-addr-text">Dashboard</span></a>
+                <a href="#" class="wallet-logged-in-btn wm-disconnect-mobile" style="display:none;margin-top:10px;background:rgba(239,68,68,0.15);color:#fecaca;" onclick="TokenomicWallet.disconnect(); return false;"><span class="btn-title">Disconnect</span></a>
             </div>
             <!--Social Links-->
             <div class="social-links">
