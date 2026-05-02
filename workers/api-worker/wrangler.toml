@@ -25,8 +25,9 @@ REQUIRE_WALLET               = "false"
 STREAM_CUSTOMER_SUBDOMAIN    = ""
 STREAM_MAX_DURATION_SECONDS  = "21600"
 STREAM_ALLOWED_ORIGINS       = "https://tokenomic.org,https://tokenomic.guillaumelauzier.workers.dev"
-# Phase 0: SIWE / chain config (public)
-SIWE_DOMAIN                  = "tokenomic.org"
+# Phase 0: SIWE / chain config (public). SIWE_DOMAIN/SIWE_DOMAINS are
+# defined above near ALLOWED_ORIGINS — TOML disallows duplicate keys in
+# the same table, so they are not redeclared here.
 BASE_RPC_URL                 = "https://mainnet.base.org"
 BASE_SEPOLIA_RPC_URL         = "https://sepolia.base.org"
 USDC_BASE                    = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
