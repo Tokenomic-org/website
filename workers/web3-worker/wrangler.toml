@@ -10,7 +10,10 @@ enabled            = true
 head_sampling_rate = 1
 
 [vars]
-ALLOWED_ORIGINS         = "https://tokenomic.org,https://*.tokenomic.org,https://*.pages.dev,https://tokenomic.guillaumelauzier.workers.dev"
+# First-party origins only. Do NOT add multi-tenant wildcards (*.pages.dev,
+# *.replit.dev, *.repl.co, *.workers.dev) — they enable credentialed
+# cross-origin attacks. List explicit hostnames for staging/preview.
+ALLOWED_ORIGINS         = "https://tokenomic.org,https://www.tokenomic.org,https://*.tokenomic.org,https://tokenomic.guillaumelauzier.workers.dev,http://localhost:5000"
 BASE_RPC_URL            = "https://mainnet.base.org"
 BASE_SEPOLIA_RPC_URL    = "https://sepolia.base.org"
 BASE_CHAIN_ID           = "8453"
