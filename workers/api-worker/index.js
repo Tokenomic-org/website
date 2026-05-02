@@ -64,25 +64,44 @@ function originIsAllowed(reqOrigin, allowList) {
   return false;
 }
 
-// Hard server-side Origin allowlist for cookie-authed state-changing routes.
-// Independent of CORS headers — even if a misconfigured CORS layer reflected
-// an attacker origin, this gate would still reject the request before the
-// handler runs.
-app.use('/api/siwe/verify', async (c, next) => {
-  if (c.req.method === 'OPTIONS') return next();
+// CSRF defense for ALL state-changing requests.
+//
+// Because tk_session uses SameSite=None (required for cross-site
+// tokenomic.org -> *.workers.dev cookie transport), browsers will attach
+// the cookie on third-party POST/PATCH/PUT/DELETE/OPTIONS attempts. Without
+// this gate, an attacker page could trigger an authenticated mutation on
+// behalf of the victim. We require the Origin (or, as a fallback, the
+// Referer) of every mutating request to be on the first-party allowlist.
+//
+// Notes:
+//  - GET/HEAD/OPTIONS are intentionally NOT gated. CORS preflights (OPTIONS)
+//    must succeed unconditionally so the browser can complete the
+//    handshake; cross-origin reads are already gated by CORS+credentials.
+//  - We only enforce when Origin/Referer is present. Native API clients
+//    (curl, mobile apps, CI scripts) do not send those headers and rely
+//    on Bearer JWT — they cannot CSRF a browser session.
+//  - This runs before CORS so the response is a clean 403 even if CORS
+//    config drift would otherwise reflect the attacker origin.
+const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+app.use('*', async (c, next) => {
+  if (!MUTATING_METHODS.has(c.req.method)) return next();
   const allowList = buildAllowList(c.env);
   const origin = c.req.header('origin') || '';
-  if (origin && !originIsAllowed(origin, allowList)) {
-    return c.json({ error: 'Origin not allowed' }, 403);
+  if (origin) {
+    if (!originIsAllowed(origin, allowList)) {
+      return c.json({ error: 'Origin not allowed' }, 403);
+    }
+    return next();
   }
-  return next();
-});
-app.use('/api/siwe/logout', async (c, next) => {
-  if (c.req.method === 'OPTIONS') return next();
-  const allowList = buildAllowList(c.env);
-  const origin = c.req.header('origin') || '';
-  if (origin && !originIsAllowed(origin, allowList)) {
-    return c.json({ error: 'Origin not allowed' }, 403);
+  // No Origin header — check Referer as a secondary signal. Some legacy
+  // browsers strip Origin from same-site POSTs but still send Referer.
+  const referer = c.req.header('referer') || '';
+  if (referer) {
+    let refOrigin = '';
+    try { refOrigin = new URL(referer).origin; } catch (_) {}
+    if (refOrigin && !originIsAllowed(refOrigin, allowList)) {
+      return c.json({ error: 'Referer not allowed' }, 403);
+    }
   }
   return next();
 });

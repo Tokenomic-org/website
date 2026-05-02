@@ -1,5 +1,15 @@
 -- 0006_phase0_siwe_users_subscriptions.sql
 --
+-- Schema contract: the canonical "users" table is `profiles`, created in an
+-- earlier migration and keyed by `wallet_address` (lowercased EIP-55 hex).
+-- We deliberately do NOT add a separate `users` table because every Phase 0+
+-- relation already foreign-keys to `profiles.wallet_address`. SIWE sessions,
+-- subscriptions, referrals, expert_profiles, lessons, community_members,
+-- bookings and availability_providers all reference profiles directly.
+-- If a future phase needs a richer auth/user model, the migration should
+-- rename or extend `profiles` rather than introduce a parallel table.
+--
+--
 -- Phase 0 D1 bootstrap: tables required by the rest of the Tokenomic build
 -- plan (subscriptions, referrals, calendar bookings, expert profiles, …).
 -- Existing tables intentionally kept untouched:
