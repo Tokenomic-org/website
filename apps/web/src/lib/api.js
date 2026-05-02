@@ -37,7 +37,9 @@ export async function api(path, opts = {}) {
   const promise = (async () => {
     let resp;
     try {
-      resp = await fetch(url, { ...opts, headers, credentials: 'include' });
+      // Bearer JWT carries auth — no need to forward cookies, which would
+      // require the worker to send Access-Control-Allow-Credentials: true.
+      resp = await fetch(url, { ...opts, headers, credentials: 'omit' });
     } catch (e) {
       throw new ApiError(0, 'Network error', e?.message || String(e));
     }

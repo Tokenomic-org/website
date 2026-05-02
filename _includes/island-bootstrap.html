@@ -13,8 +13,7 @@
     } catch (e) {}
   })();
 </script>
-<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<!-- React + ReactDOM are bundled into each island IIFE. No CDN dependency. -->
 <style>
   /* Floating dark-mode toggle for island-rendered pages. Lives outside the
      React tree so it works even if an island fails to hydrate. */

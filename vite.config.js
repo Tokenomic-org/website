@@ -27,15 +27,7 @@ export default defineConfig({
       fileName: () => `${ISLAND}.iife.js`,
     },
     rollupOptions: {
-      external: ['react', 'react-dom', 'react-dom/client'],
-      output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-          'react-dom/client': 'ReactDOM',
-        },
-        inlineDynamicImports: true,
-      },
+      output: { inlineDynamicImports: true },
     },
     minify: 'esbuild',
     target: 'es2019',
@@ -47,4 +39,9 @@ export default defineConfig({
     },
   },
   esbuild: { jsx: 'automatic' },
+  // React reads process.env.NODE_ENV at runtime; lib mode doesn't define it,
+  // so we inline the production literal to avoid a ReferenceError in browsers.
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  },
 });
