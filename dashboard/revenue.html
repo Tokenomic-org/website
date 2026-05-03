@@ -171,7 +171,7 @@ permalink: /revenue/
             <thead><tr><th>TX Hash</th><th>Description</th><th>Gross</th><th>Your Share</th><th>Treasury</th><th>Rewards</th><th>Status</th><th>Date</th></tr></thead>
             <tbody>
                 <template x-for="tx in transactions" :key="tx.id">
-                    <tr style="transition:background 0.2s;" onmouseover="this.style.background='#f0f4f8'" onmouseout="this.style.background=''">
+                    <tr class="tkn-row-hover" style="transition:background 0.2s;">
                         <td><a :href="'https://basescan.org/tx/'+tx.tx_hash" target="_blank" style="font-family:monospace;font-size:0.75rem;color:#ff6000;text-decoration:none;" x-text="tx.tx_hash.substring(0,10)+'...'"></a></td>
                         <td x-text="tx.description"></td>
                         <td><strong x-text="'$'+tx.amount_usdc"></strong></td>
