@@ -3,6 +3,7 @@ import { mountIsland } from '@lib/island.jsx';
 import { api, ApiError } from '@lib/api.js';
 import { useUrlState } from '@lib/url-state.js';
 import { useInfiniteScroll } from '@lib/use-infinite-scroll.js';
+import { t, tf, useLocale } from '@lib/i18n.js';
 import { Card, CardContent } from '@ui/Card.jsx';
 import { Button } from '@ui/Button.jsx';
 import { Input } from '@ui/Input.jsx';
@@ -13,27 +14,34 @@ import { Avatar } from '@ui/Avatar.jsx';
 
 const PAGE = 12;
 
-const LEVELS = [
-  { value: '', label: 'All levels' },
-  { value: 'Beginner', label: 'Beginner' },
-  { value: 'Intermediate', label: 'Intermediate' },
-  { value: 'Advanced', label: 'Advanced' },
-];
-const ASSETS = [
-  { value: '', label: 'All asset classes' },
-  { value: 'DeFi', label: 'DeFi' },
-  { value: 'Stablecoins', label: 'Stablecoins' },
-  { value: 'Trading', label: 'Trading' },
-  { value: 'Compliance', label: 'Compliance' },
-];
-const SORT = [
-  { value: 'newest', label: 'Newest' },
-  { value: 'price-asc', label: 'Price ↑' },
-  { value: 'price-desc', label: 'Price ↓' },
-  { value: 'duration', label: 'Shortest' },
-];
+function buildLevels() {
+  return [
+    { value: '', label: t('courses.filters.all_levels', 'All levels') },
+    { value: 'Beginner', label: t('courses.filters.level_beginner', 'Beginner') },
+    { value: 'Intermediate', label: t('courses.filters.level_intermediate', 'Intermediate') },
+    { value: 'Advanced', label: t('courses.filters.level_advanced', 'Advanced') },
+  ];
+}
+function buildAssets() {
+  return [
+    { value: '', label: t('courses.filters.all_assets', 'All asset classes') },
+    { value: 'DeFi', label: t('courses.filters.asset_defi', 'DeFi') },
+    { value: 'Stablecoins', label: t('courses.filters.asset_stablecoins', 'Stablecoins') },
+    { value: 'Trading', label: t('courses.filters.asset_trading', 'Trading') },
+    { value: 'Compliance', label: t('courses.filters.asset_compliance', 'Compliance') },
+  ];
+}
+function buildSort() {
+  return [
+    { value: 'newest', label: t('courses.filters.sort_newest', 'Newest') },
+    { value: 'price-asc', label: t('courses.filters.sort_price_asc', 'Price ↑') },
+    { value: 'price-desc', label: t('courses.filters.sort_price_desc', 'Price ↓') },
+    { value: 'duration', label: t('courses.filters.sort_duration', 'Shortest') },
+  ];
+}
 
 function CoursesCatalog() {
+  useLocale();
   const [filters, setFilters] = useUrlState({
     q: '',
     level: '',
@@ -91,6 +99,10 @@ function CoursesCatalog() {
     { enabled: shown < filtered.length },
   );
 
+  const resultsLabel = filtered.length === 1
+    ? tf('courses.filters.results_one', '{count} result', { count: filtered.length })
+    : tf('courses.filters.results_other', '{count} results', { count: filtered.length });
+
   return (
     <div className="bg-bg min-h-screen">
       <div className="container max-w-7xl py-10">
@@ -98,7 +110,7 @@ function CoursesCatalog() {
         <Card className="mb-8 sticky top-4 z-20 backdrop-blur-md bg-surface/85">
           <CardContent className="p-4 flex flex-wrap items-center gap-3">
             <Input
-              placeholder="Search courses, educators…"
+              placeholder={t('courses.filters.search_placeholder', 'Search courses, educators…')}
               value={filters.q}
               onChange={(e) => setFilters({ q: e.target.value })}
               className="flex-1 min-w-[220px]"
@@ -106,10 +118,10 @@ function CoursesCatalog() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
               }
             />
-            <Select value={filters.level} onChange={(v) => setFilters({ level: v })} options={LEVELS} ariaLabel="Level" />
-            <Select value={filters.asset} onChange={(v) => setFilters({ asset: v })} options={ASSETS} ariaLabel="Asset class" />
+            <Select value={filters.level} onChange={(v) => setFilters({ level: v })} options={buildLevels()} ariaLabel={t('courses.filters.level_aria', 'Level')} />
+            <Select value={filters.asset} onChange={(v) => setFilters({ asset: v })} options={buildAssets()} ariaLabel={t('courses.filters.asset_aria', 'Asset class')} />
             <Input
-              placeholder="Max price (USDC)"
+              placeholder={t('courses.filters.max_price', 'Max price (USDC)')}
               type="number"
               value={filters.maxPrice}
               onChange={(e) => setFilters({ maxPrice: e.target.value })}
@@ -122,18 +134,18 @@ function CoursesCatalog() {
                 onChange={(e) => setFilters({ cert: e.target.checked })}
                 className="accent-brand"
               />
-              Certificate
+              {t('courses.filters.certificate', 'Certificate')}
             </label>
             <div className="ml-auto flex items-center gap-3">
-              <span className="text-xs text-muted hidden sm:inline">{filtered.length} result{filtered.length === 1 ? '' : 's'}</span>
-              <Select value={filters.sort} onChange={(v) => setFilters({ sort: v })} options={SORT} ariaLabel="Sort" />
+              <span className="text-xs text-muted hidden sm:inline">{resultsLabel}</span>
+              <Select value={filters.sort} onChange={(v) => setFilters({ sort: v })} options={buildSort()} ariaLabel={t('courses.filters.sort_aria', 'Sort')} />
             </div>
           </CardContent>
         </Card>
 
         {error && (
           <Card className="border-danger/40 bg-danger/10 mb-6">
-            <CardContent className="p-4 text-sm text-fg">Couldn't load courses: {error}</CardContent>
+            <CardContent className="p-4 text-sm text-fg">{tf('courses.load_error', "Couldn't load courses: {error}", { error })}</CardContent>
           </Card>
         )}
 
@@ -144,9 +156,9 @@ function CoursesCatalog() {
         ) : filtered.length === 0 ? (
           <Card className="text-center py-16">
             <CardContent>
-              <h3 className="text-xl font-semibold mb-2">No courses match those filters</h3>
-              <p className="text-muted mb-4">Try clearing a filter or broadening your search.</p>
-              <Button variant="outline" onClick={() => setFilters({ q: '', level: '', asset: '', maxPrice: '', cert: false })}>Clear filters</Button>
+              <h3 className="text-xl font-semibold mb-2">{t('courses.empty_title', 'No courses match those filters')}</h3>
+              <p className="text-muted mb-4">{t('courses.empty_body', 'Try clearing a filter or broadening your search.')}</p>
+              <Button variant="outline" onClick={() => setFilters({ q: '', level: '', asset: '', maxPrice: '', cert: false })}>{t('courses.clear', 'Clear filters')}</Button>
             </CardContent>
           </Card>
         ) : (
@@ -166,6 +178,17 @@ function CoursesCatalog() {
   );
 }
 
+function levelLabel(v) {
+  if (!v) return v;
+  const key = 'courses.filters.level_' + String(v).toLowerCase();
+  return t(key, v);
+}
+function assetLabel(v) {
+  if (!v) return v;
+  const key = 'courses.filters.asset_' + String(v).toLowerCase();
+  return t(key, v);
+}
+
 function CourseCard({ c }) {
   const slug = c.slug || c.id;
   const href = '/courses/' + (c.slug || c.id || '');
@@ -181,24 +204,24 @@ function CourseCard({ c }) {
             <div className="w-full h-full bg-gradient-to-br from-brand/30 to-accent/30" />
           )}
           {c.has_certificate && (
-            <div className="absolute top-3 right-3"><Badge variant="brand">Cert</Badge></div>
+            <div className="absolute top-3 right-3"><Badge variant="brand">{t('courses.card.cert_badge', 'Cert')}</Badge></div>
           )}
         </div>
         <div className="p-5 flex-1 flex flex-col">
           <div className="flex items-center gap-2 mb-2 flex-wrap">
-            {c.level && <Badge variant="outline">{c.level}</Badge>}
-            {(c.category || c.asset_class) && <Badge>{c.category || c.asset_class}</Badge>}
+            {c.level && <Badge variant="outline">{levelLabel(c.level)}</Badge>}
+            {(c.category || c.asset_class) && <Badge>{assetLabel(c.category || c.asset_class)}</Badge>}
           </div>
-          <h3 className="font-semibold text-fg leading-snug line-clamp-2 mb-2">{c.title || 'Untitled course'}</h3>
+          <h3 className="font-semibold text-fg leading-snug line-clamp-2 mb-2">{c.title || t('courses.card.untitled', 'Untitled course')}</h3>
           {c.description && <p className="text-sm text-muted line-clamp-2 mb-4">{c.description}</p>}
           <div className="mt-auto flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <Avatar size="sm" src={c.educator_avatar} name={c.educator_name || 'T'} />
-              <span className="text-xs text-muted truncate">{c.educator_name || 'Tokenomic Team'}</span>
+              <span className="text-xs text-muted truncate">{c.educator_name || t('courses.card.default_author', 'Tokenomic Team')}</span>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-base font-bold text-fg">{price > 0 ? `$${price}` : 'Free'}</div>
-              {dur > 0 && <div className="text-[11px] text-muted">{dur >= 60 ? `${Math.round(dur / 60)}h` : `${dur}m`}</div>}
+              <div className="text-base font-bold text-fg">{price > 0 ? `$${price}` : t('courses.card.free', 'Free')}</div>
+              {dur > 0 && <div className="text-[11px] text-muted">{dur >= 60 ? tf('courses.card.duration_hours', '{n}h', { n: Math.round(dur / 60) }) : tf('courses.card.duration_minutes', '{n}m', { n: dur })}</div>}
             </div>
           </div>
         </div>

@@ -53,8 +53,10 @@
   },
   "creator": {
     "role": { "educator": "Educator", "consultant": "Consultant" },
+    "roles": { "learner": "learner" },
     "nav": { "open": "Open navigation", "main_dashboard": "Main dashboard" },
     "splash": {
+      "default_title": "Workbench",
       "verifying": "Verifying your session…",
       "signin_title": "Sign in required",
       "signin_subtitle": "Connect your wallet and sign in to access the workbench.",
@@ -69,5 +71,146 @@
       "analytics": "Analytics", "revenue": "Revenue", "settings": "Settings",
       "services": "Services", "availability": "Availability", "bookings": "Bookings"
     }
+  },
+  "courses": {
+    "filters": {
+      "search_placeholder": "Search courses, educators…",
+      "level_aria": "Level",
+      "asset_aria": "Asset class",
+      "max_price": "Max price (USDC)",
+      "certificate": "Certificate",
+      "sort_aria": "Sort",
+      "results_one": "{count} result",
+      "results_other": "{count} results",
+      "all_levels": "All levels",
+      "level_beginner": "Beginner",
+      "level_intermediate": "Intermediate",
+      "level_advanced": "Advanced",
+      "all_assets": "All asset classes",
+      "asset_defi": "DeFi",
+      "asset_stablecoins": "Stablecoins",
+      "asset_trading": "Trading",
+      "asset_compliance": "Compliance",
+      "sort_newest": "Newest",
+      "sort_price_asc": "Price ↑",
+      "sort_price_desc": "Price ↓",
+      "sort_duration": "Shortest"
+    },
+    "load_error": "Couldn't load courses: {error}",
+    "empty_title": "No courses match those filters",
+    "empty_body": "Try clearing a filter or broadening your search.",
+    "clear": "Clear filters",
+    "card": {
+      "cert_badge": "Cert",
+      "untitled": "Untitled course",
+      "default_author": "Tokenomic Team",
+      "free": "Free",
+      "duration_hours": "{n}h",
+      "duration_minutes": "{n}m"
+    }
+  },
+  "communities": {
+    "filters": {
+      "search_placeholder": "Search communities…",
+      "level_aria": "Level",
+      "category_aria": "Category",
+      "sort_aria": "Sort",
+      "all_levels": "All levels",
+      "level_beginner": "Beginner",
+      "level_intermediate": "Intermediate",
+      "level_advanced": "Advanced",
+      "all_categories": "All categories",
+      "cat_trading": "Trading",
+      "cat_defi": "DeFi",
+      "cat_research": "Research",
+      "cat_compliance": "Compliance",
+      "sort_members": "Most members",
+      "sort_newest": "Newest",
+      "sort_alpha": "A → Z",
+      "results_one": "{count} community",
+      "results_other": "{count} communities"
+    },
+    "load_error": "Couldn't load communities: {error}",
+    "empty_title": "No communities match",
+    "empty_body": "Adjust the filters or check back soon.",
+    "clear": "Clear filters",
+    "card": {
+      "premium": "Premium",
+      "untitled": "Untitled community",
+      "default_owner": "Tokenomic"
+    }
+  },
+  "experts": {
+    "tabs": { "all": "All", "consultants": "Consultants", "educators": "Educators" },
+    "roles": { "consultant": "Consultant", "educator": "Educator", "admin": "Admin", "learner": "Learner" },
+    "filters": {
+      "search_placeholder": "Search experts…",
+      "sort_aria": "Sort",
+      "sort_recent": "Recently active",
+      "sort_rate_asc": "Rate ↑",
+      "sort_rate_desc": "Rate ↓",
+      "sort_alpha": "A → Z"
+    },
+    "load_error": "Couldn't load experts: {error}",
+    "empty_title": "No experts found",
+    "empty_body_prefix": "Adjust the filters or apply at",
+    "empty_body_suffix": "to be listed.",
+    "clear": "Clear filters",
+    "card": {
+      "default_name": "Tokenomic Expert",
+      "verified": "Verified",
+      "specialty": "Specialty:",
+      "rate_30": "${rate}/30m",
+      "rate_60": "${rate}/60m",
+      "rate_request": "Rate on request",
+      "view_profile": "View profile →"
+    }
+  },
+  "articles": {
+    "categories": {
+      "all": "All",
+      "Strategy": "Strategy",
+      "Technical": "Technical",
+      "Market": "Market",
+      "Other": "Other"
+    },
+    "search_placeholder": "Search articles…",
+    "load_error": "Couldn't load articles: {error}",
+    "empty_title": "No articles match",
+    "empty_body": "Try a different category or clear the search.",
+    "clear": "Clear filters",
+    "featured": "Featured",
+    "default_author": "Tokenomic Team",
+    "reading_time": "· {min}m read",
+    "authors_title": "Meet our authors",
+    "authors_view_all": "View all →",
+    "cta_title": "Share your DeFi expertise",
+    "cta_body": "Educators and consultants can publish to the Tokenomic feed straight from their dashboard.",
+    "cta_button": "Go to article studio"
+  },
+  "booking": {
+    "default_name": "this consultant",
+    "title": "Book {name}",
+    "free": "Free",
+    "price_usdc": "${price} USDC",
+    "duration_min": "{m} min",
+    "prev": "← Prev",
+    "next": "Next →",
+    "loading": "Loading availability…",
+    "no_calendar": "No calendar connected — slots assume Mon–Fri 09:00–18:00 UTC.",
+    "no_slots": "No free slots on this day.",
+    "hold_expires": "Hold expires in 15 minutes.",
+    "topic_placeholder": "Topic (e.g. tokenomics review)",
+    "email_placeholder": "Email for the calendar invite",
+    "tx_placeholder": "USDC payment tx hash (0x…)",
+    "pay_hint": "Pay {price} USDC on Base to {wallet} and paste the tx hash above.",
+    "back": "Back",
+    "confirming": "Confirming…",
+    "confirm": "Confirm booking",
+    "confirmed_title": "✓ Booking confirmed",
+    "meeting_link": "Meeting link:",
+    "view_all": "View all my bookings →",
+    "wallet_required": "Connect your wallet first to hold a slot.",
+    "slot_range_utc": "{start} – {end} UTC"
   }
 }

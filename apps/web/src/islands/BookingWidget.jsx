@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { api, isLoggedIn } from '../lib/api.js';
+import { t, tf, useLocale } from '../lib/i18n.js';
 
 /**
  * BookingWidget — mounted on consultant profile pages. Reads merged
@@ -13,8 +14,9 @@ import { api, isLoggedIn } from '../lib/api.js';
  *   defaultPriceUsdc  number (display, also passed to /confirm)
  */
 export default function BookingWidget(props) {
+  useLocale();
   const wallet = (props.consultantWallet || '').toLowerCase();
-  const name   = props.consultantName || 'this consultant';
+  const name   = props.consultantName || t('booking.default_name', 'this consultant');
   const [duration, setDuration] = useState(Number(props.defaultDuration) || 30);
   const [price]    = useState(Number(props.defaultPriceUsdc) || 0);
   const [dayOffset, setDayOffset] = useState(0); // days from today
@@ -50,7 +52,7 @@ export default function BookingWidget(props) {
 
   async function handleHold(slot) {
     if (!isLoggedIn()) {
-      setError('Connect your wallet first to hold a slot.');
+      setError(t('booking.wallet_required', 'Connect your wallet first to hold a slot.'));
       return;
     }
     setBusy(true); setError(null);
@@ -93,13 +95,13 @@ export default function BookingWidget(props) {
   if (confirmed) {
     return (
       <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-5 text-emerald-100">
-        <div className="text-lg font-bold mb-1">✓ Booking confirmed</div>
+        <div className="text-lg font-bold mb-1">{t('booking.confirmed_title', '✓ Booking confirmed')}</div>
         <div className="text-sm opacity-90">
           {fmtDay(picked.start)} · {fmtTime(picked.start)} – {fmtTime(picked.end)}
         </div>
         {confirmed.meeting_url && (
           <div className="mt-3 text-sm">
-            Meeting link:{' '}
+            {t('booking.meeting_link', 'Meeting link:')}{' '}
             <a className="underline text-emerald-200" href={confirmed.meeting_url}
                target="_blank" rel="noopener">{confirmed.meeting_url}</a>
           </div>
@@ -108,7 +110,7 @@ export default function BookingWidget(props) {
           <div className="mt-2 text-xs text-amber-200">{confirmed.warnings.join(' ')}</div>
         )}
         <a href="/bookings/" className="mt-4 inline-block text-sm underline opacity-90">
-          View all my bookings →
+          {t('booking.view_all', 'View all my bookings →')}
         </a>
       </div>
     );
@@ -117,9 +119,9 @@ export default function BookingWidget(props) {
   return (
     <div className="rounded-xl border border-[rgb(36,52,70)] bg-[rgb(16,25,36)] p-5 text-[#ECF4FA]">
       <div className="flex items-baseline justify-between mb-3">
-        <h3 className="text-lg font-bold m-0">Book {name}</h3>
+        <h3 className="text-lg font-bold m-0">{tf('booking.title', 'Book {name}', { name })}</h3>
         <div className="text-sm opacity-75">
-          {price > 0 ? `$${price} USDC` : 'Free'} · {duration} min
+          {price > 0 ? tf('booking.price_usdc', '${price} USDC', { price }) : t('booking.free', 'Free')} · {tf('booking.duration_min', '{m} min', { m: duration })}
         </div>
       </div>
 
@@ -133,7 +135,7 @@ export default function BookingWidget(props) {
                       ? 'bg-[#ff6000] border-[#ff6000] text-white'
                       : 'border-[rgb(36,52,70)] text-[#a5bcd0] hover:text-white')
                   }>
-            {m} min
+            {tf('booking.duration_min', '{m} min', { m })}
           </button>
         ))}
       </div>
@@ -142,23 +144,23 @@ export default function BookingWidget(props) {
         <button type="button" onClick={() => setDayOffset(d => Math.max(0, d - 1))}
                 disabled={dayOffset === 0}
                 className="px-2 py-1 rounded text-sm opacity-80 disabled:opacity-30">
-          ← Prev
+          {t('booking.prev', '← Prev')}
         </button>
         <div className="text-sm font-semibold">{fmtDayLabel(range.label)}</div>
         <button type="button" onClick={() => setDayOffset(d => Math.min(30, d + 1))}
                 className="px-2 py-1 rounded text-sm opacity-80">
-          Next →
+          {t('booking.next', 'Next →')}
         </button>
       </div>
 
-      {loading && <div className="text-sm opacity-70">Loading availability…</div>}
+      {loading && <div className="text-sm opacity-70">{t('booking.loading', 'Loading availability…')}</div>}
       {error && <div className="text-sm text-red-300 mb-2">{error}</div>}
 
       {!loading && data && (
         <>
           {data.providers.length === 0 && (
             <div className="text-xs text-amber-300 mb-3 p-2 bg-amber-500/10 rounded">
-              No calendar connected — slots assume Mon–Fri 09:00–18:00 UTC.
+              {t('booking.no_calendar', 'No calendar connected — slots assume Mon–Fri 09:00–18:00 UTC.')}
             </div>
           )}
 
@@ -166,7 +168,7 @@ export default function BookingWidget(props) {
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-72 overflow-y-auto">
               {data.slots.length === 0 && (
                 <div className="col-span-full text-sm opacity-70 py-4 text-center">
-                  No free slots on this day.
+                  {t('booking.no_slots', 'No free slots on this day.')}
                 </div>
               )}
               {data.slots.map(s => (
@@ -184,33 +186,33 @@ export default function BookingWidget(props) {
             <div className="space-y-3">
               <div className="p-3 rounded bg-[rgb(11,18,27)] border border-[rgb(36,52,70)] text-sm">
                 <div className="font-semibold">{fmtDay(picked.start)}</div>
-                <div className="opacity-80">{fmtTime(picked.start)} – {fmtTime(picked.end)} UTC</div>
-                <div className="text-xs opacity-60 mt-1">Hold expires in 15 minutes.</div>
+                <div className="opacity-80">{tf('booking.slot_range_utc', '{start} – {end} UTC', { start: fmtTime(picked.start), end: fmtTime(picked.end) })}</div>
+                <div className="text-xs opacity-60 mt-1">{t('booking.hold_expires', 'Hold expires in 15 minutes.')}</div>
               </div>
-              <input type="text" placeholder="Topic (e.g. tokenomics review)"
+              <input type="text" placeholder={t('booking.topic_placeholder', 'Topic (e.g. tokenomics review)')}
                      value={topic} onChange={e => setTopic(e.target.value)}
                      className="w-full px-3 py-2 rounded bg-[rgb(11,18,27)] border border-[rgb(36,52,70)] text-sm" />
-              <input type="email" placeholder="Email for the calendar invite"
+              <input type="email" placeholder={t('booking.email_placeholder', 'Email for the calendar invite')}
                      value={email} onChange={e => setEmail(e.target.value)}
                      className="w-full px-3 py-2 rounded bg-[rgb(11,18,27)] border border-[rgb(36,52,70)] text-sm" />
               {price > 0 && (
-                <input type="text" placeholder="USDC payment tx hash (0x…)"
+                <input type="text" placeholder={t('booking.tx_placeholder', 'USDC payment tx hash (0x…)')}
                        value={txHash} onChange={e => setTxHash(e.target.value)}
                        className="w-full px-3 py-2 rounded bg-[rgb(11,18,27)] border border-[rgb(36,52,70)] text-sm font-mono" />
               )}
               {price > 0 && !txHash && (
                 <div className="text-xs text-amber-300">
-                  Pay {price} USDC on Base to {short(wallet)} and paste the tx hash above.
+                  {tf('booking.pay_hint', 'Pay {price} USDC on Base to {wallet} and paste the tx hash above.', { price, wallet: short(wallet) })}
                 </div>
               )}
               <div className="flex gap-2">
                 <button type="button" onClick={() => setPicked(null)}
                         className="px-3 py-2 rounded text-sm border border-[rgb(36,52,70)]">
-                  Back
+                  {t('booking.back', 'Back')}
                 </button>
                 <button type="button" onClick={handleConfirm} disabled={busy}
                         className="flex-1 px-3 py-2 rounded text-sm bg-[#ff6000] text-white font-semibold disabled:opacity-50">
-                  {busy ? 'Confirming…' : 'Confirm booking'}
+                  {busy ? t('booking.confirming', 'Confirming…') : t('booking.confirm', 'Confirm booking')}
                 </button>
               </div>
             </div>

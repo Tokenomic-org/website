@@ -17,6 +17,7 @@ import { Card, CardContent } from '@ui/Card.jsx';
 import { Button } from '@ui/Button.jsx';
 import { Badge } from '@ui/Badge.jsx';
 import { Dialog, DialogContent } from '@ui/Dialog.jsx';
+import { t, useLocale } from '@lib/i18n.js';
 
 import EducatorCourses      from './educator/Courses.jsx';
 import EducatorLessons      from './educator/Lessons.jsx';
@@ -32,16 +33,6 @@ import ConsultantBookings     from './consultant/Bookings.jsx';
 import SharedArticles    from './shared/Articles.jsx';
 import SharedCommunities from './shared/Communities.jsx';
 import SharedSettings    from './shared/Settings.jsx';
-
-// Lightweight wrapper around the global i18n runtime loaded by the
-// footer (window.TKNI18n). Falls back to the supplied English default
-// if the runtime isn't initialized yet (e.g. during SSR snapshots).
-function t(key, fallback) {
-  if (typeof window !== 'undefined' && window.TKNI18n && typeof window.TKNI18n.t === 'function') {
-    return window.TKNI18n.t(key, fallback);
-  }
-  return fallback;
-}
 
 // Section labels resolve against window.TKNI18n at render time so the
 // EN/TR/ES toggle in the footer reflows the sidebar without a reload.
@@ -80,11 +71,7 @@ export default function CreatorShell({ role = 'educator', section = '' }) {
   const [me, setMe] = useState({ loading: true, error: null, data: null });
   const [drawer, setDrawer] = useState(false);
   // Re-render when the user toggles the language so SECTIONS labels reflow.
-  const [, setLocaleTick] = useState(0);
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.TKNI18n || !window.TKNI18n.onChange) return;
-    return window.TKNI18n.onChange(() => setLocaleTick((n) => n + 1));
-  }, []);
+  useLocale();
 
   useEffect(() => {
     let cancelled = false;
@@ -121,10 +108,10 @@ export default function CreatorShell({ role = 'educator', section = '' }) {
     return (
       <Splash title={t('creator.splash.not_role_title', 'Not a {role}').replace('{role}', label)}
         subtitle={t('creator.splash.not_role_subtitle',
-          "Your wallet doesn't hold the {role} role yet. Apply from your profile to unlock this workbench.").replace(/\{role\}/g, role)}
+          "Your wallet doesn't hold the {role} role yet. Apply from your profile to unlock this workbench.").replace(/\{role\}/g, label)}
         accent="danger">
         <div className="text-xs text-muted mt-2">
-          {t('creator.splash.have_roles', 'Have:')} {roles.join(', ') || 'learner'}
+          {t('creator.splash.have_roles', 'Have:')} {roles.join(', ') || t('creator.roles.learner', 'learner')}
         </div>
         <Button className="mt-3" variant="outline" onClick={() => (window.location.href = '/profile/#consultant-registration')}>
           {t('creator.splash.apply_cta', 'Apply to become a {role}').replace('{role}', label)}
@@ -186,12 +173,13 @@ export default function CreatorShell({ role = 'educator', section = '' }) {
   );
 }
 
-function Splash({ title = 'Workbench', subtitle, accent, children }) {
+function Splash({ title, subtitle, accent, children }) {
+  const resolvedTitle = title != null ? title : t('creator.splash.default_title', 'Workbench');
   return (
     <div className="min-h-screen bg-bg text-fg flex items-center justify-center px-6">
       <Card className="max-w-md w-full">
         <CardContent className="py-10 text-center space-y-3">
-          <div className={'text-2xl font-bold ' + (accent === 'danger' ? 'text-danger' : '')}>{title}</div>
+          <div className={'text-2xl font-bold ' + (accent === 'danger' ? 'text-danger' : '')}>{resolvedTitle}</div>
           {subtitle && <p className="text-muted">{subtitle}</p>}
           {children}
         </CardContent>

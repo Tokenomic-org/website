@@ -3,6 +3,7 @@ import { mountIsland } from '@lib/island.jsx';
 import { api, ApiError } from '@lib/api.js';
 import { useUrlState } from '@lib/url-state.js';
 import { useInfiniteScroll } from '@lib/use-infinite-scroll.js';
+import { t, tf, useLocale } from '@lib/i18n.js';
 import { Card, CardContent } from '@ui/Card.jsx';
 import { Button } from '@ui/Button.jsx';
 import { Input } from '@ui/Input.jsx';
@@ -14,7 +15,13 @@ import { SkeletonCard, Skeleton } from '@ui/Skeleton.jsx';
 const CATEGORIES = ['all', 'Strategy', 'Technical', 'Market'];
 const PAGE = 12;
 
+function categoryLabel(c) {
+  if (c === 'all') return t('articles.categories.all', 'All');
+  return t('articles.categories.' + c, c);
+}
+
 function ArticlesHub() {
+  useLocale();
   const [state, setState] = useUrlState({ cat: 'all', q: '' });
   const [articles, setArticles] = useState([]);
   const [authors, setAuthors]   = useState([]);
@@ -77,13 +84,13 @@ function ArticlesHub() {
           <Tabs value={state.cat} onValueChange={(v) => setState({ cat: v })}>
             <TabsList>
               {CATEGORIES.map((c) => (
-                <TabsTrigger key={c} value={c}>{c === 'all' ? 'All' : c}</TabsTrigger>
+                <TabsTrigger key={c} value={c}>{categoryLabel(c)}</TabsTrigger>
               ))}
             </TabsList>
           </Tabs>
           <div className="ml-auto">
             <Input
-              placeholder="Search articles…"
+              placeholder={t('articles.search_placeholder', 'Search articles…')}
               value={state.q}
               onChange={(e) => setState({ q: e.target.value })}
               className="w-72"
@@ -94,7 +101,7 @@ function ArticlesHub() {
 
         {error && (
           <Card className="border-danger/40 bg-danger/10 mb-6">
-            <CardContent className="p-4 text-sm">Couldn't load articles: {error}</CardContent>
+            <CardContent className="p-4 text-sm">{tf('articles.load_error', "Couldn't load articles: {error}", { error })}</CardContent>
           </Card>
         )}
 
@@ -106,15 +113,15 @@ function ArticlesHub() {
           </div>
         ) : filtered.length === 0 ? (
           <Card className="text-center py-16"><CardContent>
-            <h3 className="text-xl font-semibold mb-2">No articles match</h3>
-            <p className="text-muted mb-4">Try a different category or clear the search.</p>
-            <Button variant="outline" onClick={() => setState({ q: '', cat: 'all' })}>Clear filters</Button>
+            <h3 className="text-xl font-semibold mb-2">{t('articles.empty_title', 'No articles match')}</h3>
+            <p className="text-muted mb-4">{t('articles.empty_body', 'Try a different category or clear the search.')}</p>
+            <Button variant="outline" onClick={() => setState({ q: '', cat: 'all' })}>{t('articles.clear', 'Clear filters')}</Button>
           </CardContent></Card>
         ) : (
           <>
             {state.cat === 'all' && featured.length > 0 && (
               <section className="mb-12">
-                <SectionTitle title="Featured" />
+                <SectionTitle title={t('articles.featured', 'Featured')} />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {featured.map((a, idx) => <ArticleCard key={a.slug} article={a} hero={idx === 0} />)}
                 </div>
@@ -123,7 +130,7 @@ function ArticlesHub() {
 
             {Object.keys(grouped).map((cat) => (
               <section key={cat} className="mb-12">
-                <SectionTitle title={cat} />
+                <SectionTitle title={categoryLabel(cat)} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {grouped[cat].map((a) => <ArticleCard key={a.slug} article={a} />)}
                 </div>
@@ -140,9 +147,9 @@ function ArticlesHub() {
 
             <Card className="mt-10 bg-gradient-to-br from-brand/15 to-accent/15 border-brand/30 text-center">
               <CardContent className="p-10">
-                <h3 className="text-2xl font-bold mb-2 text-fg">Share your DeFi expertise</h3>
-                <p className="text-muted mb-5 max-w-xl mx-auto">Educators and consultants can publish to the Tokenomic feed straight from their dashboard.</p>
-                <Button onClick={() => (window.location.href = '/dashboard-articles/')}>Go to article studio</Button>
+                <h3 className="text-2xl font-bold mb-2 text-fg">{t('articles.cta_title', 'Share your DeFi expertise')}</h3>
+                <p className="text-muted mb-5 max-w-xl mx-auto">{t('articles.cta_body', 'Educators and consultants can publish to the Tokenomic feed straight from their dashboard.')}</p>
+                <Button onClick={() => (window.location.href = '/dashboard-articles/')}>{t('articles.cta_button', 'Go to article studio')}</Button>
               </CardContent>
             </Card>
           </>
@@ -175,9 +182,9 @@ function ArticleCard({ article, hero = false }) {
         </div>
         <div className="p-5">
           <div className="flex items-center gap-2 mb-2 text-[11px] uppercase tracking-wide text-muted">
-            {article.category && <Badge>{article.category}</Badge>}
+            {article.category && <Badge>{categoryLabel(article.category)}</Badge>}
             {date && <span>{date}</span>}
-            {article.reading_time ? <span>· {article.reading_time}m read</span> : null}
+            {article.reading_time ? <span>{tf('articles.reading_time', '· {min}m read', { min: article.reading_time })}</span> : null}
           </div>
           <h3 className={`font-semibold text-fg leading-snug line-clamp-2 mb-2 ${hero ? 'text-xl' : 'text-base'}`}>
             {article.title}
@@ -185,7 +192,7 @@ function ArticleCard({ article, hero = false }) {
           {article.excerpt && <p className="text-sm text-muted line-clamp-2 mb-3">{article.excerpt}</p>}
           <div className="flex items-center gap-2 text-xs text-muted">
             <Avatar size="xs" src={article.author_avatar} name={article.author_name || 'T'} />
-            <span>{article.author_name || 'Tokenomic Team'}</span>
+            <span>{article.author_name || t('articles.default_author', 'Tokenomic Team')}</span>
           </div>
         </div>
       </Card>
@@ -197,14 +204,14 @@ function AuthorsStrip({ authors }) {
   return (
     <Card className="mb-10">
       <CardContent className="p-6 flex items-center justify-between flex-wrap gap-4">
-        <h3 className="text-lg font-semibold text-fg">Meet our authors</h3>
+        <h3 className="text-lg font-semibold text-fg">{t('articles.authors_title', 'Meet our authors')}</h3>
         <div className="flex items-center">
           <div className="flex -space-x-2">
             {authors.map((a) => (
               <Avatar key={a.wallet_address || a.id} src={a.avatar_url} name={a.display_name} className="ring-2 ring-surface" />
             ))}
           </div>
-          <a href="/experts/" className="ml-4 text-sm text-brand font-semibold hover:underline">View all →</a>
+          <a href="/experts/" className="ml-4 text-sm text-brand font-semibold hover:underline">{t('articles.authors_view_all', 'View all →')}</a>
         </div>
       </CardContent>
     </Card>

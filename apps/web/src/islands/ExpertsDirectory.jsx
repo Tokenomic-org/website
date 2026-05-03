@@ -3,6 +3,7 @@ import { mountIsland } from '@lib/island.jsx';
 import { api, ApiError } from '@lib/api.js';
 import { useUrlState } from '@lib/url-state.js';
 import { useInfiniteScroll } from '@lib/use-infinite-scroll.js';
+import { t, tf, useLocale } from '@lib/i18n.js';
 import { Tabs, TabsList, TabsTrigger } from '@ui/Tabs.jsx';
 import { Card, CardContent } from '@ui/Card.jsx';
 import { Button } from '@ui/Button.jsx';
@@ -12,16 +13,19 @@ import { Badge } from '@ui/Badge.jsx';
 import { Avatar } from '@ui/Avatar.jsx';
 import { Skeleton, SkeletonText } from '@ui/Skeleton.jsx';
 
-const SORT = [
-  { value: 'recent',  label: 'Recently active' },
-  { value: 'rate-asc',  label: 'Rate ↑' },
-  { value: 'rate-desc', label: 'Rate ↓' },
-  { value: 'alpha',  label: 'A → Z' },
-];
+function buildSort() {
+  return [
+    { value: 'recent',    label: t('experts.filters.sort_recent', 'Recently active') },
+    { value: 'rate-asc',  label: t('experts.filters.sort_rate_asc', 'Rate ↑') },
+    { value: 'rate-desc', label: t('experts.filters.sort_rate_desc', 'Rate ↓') },
+    { value: 'alpha',     label: t('experts.filters.sort_alpha', 'A → Z') },
+  ];
+}
 
 const PAGE = 12;
 
 function ExpertsDirectory() {
+  useLocale();
   const [state, setState] = useUrlState({ tab: 'all', q: '', sort: 'recent' });
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,26 +88,26 @@ function ExpertsDirectory() {
         <div className="flex flex-wrap items-center gap-4 mb-8">
           <Tabs value={state.tab} onValueChange={(v) => setState({ tab: v })}>
             <TabsList>
-              <TabsTrigger value="all">All <span className="ml-1.5 text-xs opacity-70">{counts.all}</span></TabsTrigger>
-              <TabsTrigger value="consultants">Consultants <span className="ml-1.5 text-xs opacity-70">{counts.consultants}</span></TabsTrigger>
-              <TabsTrigger value="educators">Educators <span className="ml-1.5 text-xs opacity-70">{counts.educators}</span></TabsTrigger>
+              <TabsTrigger value="all">{t('experts.tabs.all', 'All')} <span className="ml-1.5 text-xs opacity-70">{counts.all}</span></TabsTrigger>
+              <TabsTrigger value="consultants">{t('experts.tabs.consultants', 'Consultants')} <span className="ml-1.5 text-xs opacity-70">{counts.consultants}</span></TabsTrigger>
+              <TabsTrigger value="educators">{t('experts.tabs.educators', 'Educators')} <span className="ml-1.5 text-xs opacity-70">{counts.educators}</span></TabsTrigger>
             </TabsList>
           </Tabs>
           <div className="ml-auto flex items-center gap-3 flex-wrap">
             <Input
-              placeholder="Search experts…"
+              placeholder={t('experts.filters.search_placeholder', 'Search experts…')}
               value={state.q}
               onChange={(e) => setState({ q: e.target.value })}
               className="w-72"
               leadingIcon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>}
             />
-            <Select value={state.sort} onChange={(v) => setState({ sort: v })} options={SORT} ariaLabel="Sort" />
+            <Select value={state.sort} onChange={(v) => setState({ sort: v })} options={buildSort()} ariaLabel={t('experts.filters.sort_aria', 'Sort')} />
           </div>
         </div>
 
         {error && (
           <Card className="border-danger/40 bg-danger/10 mb-6">
-            <CardContent className="p-4 text-sm">Couldn't load experts: {error}</CardContent>
+            <CardContent className="p-4 text-sm">{tf('experts.load_error', "Couldn't load experts: {error}", { error })}</CardContent>
           </Card>
         )}
 
@@ -119,9 +123,9 @@ function ExpertsDirectory() {
         ) : filtered.length === 0 ? (
           <Card className="text-center py-16">
             <CardContent>
-              <h3 className="text-xl font-semibold mb-2">No experts found</h3>
-              <p className="text-muted mb-4">Adjust the filters or apply at <a href="/apply/" className="text-brand">/apply</a> to be listed.</p>
-              <Button variant="outline" onClick={() => setState({ q: '', tab: 'all' })}>Clear filters</Button>
+              <h3 className="text-xl font-semibold mb-2">{t('experts.empty_title', 'No experts found')}</h3>
+              <p className="text-muted mb-4">{t('experts.empty_body_prefix', 'Adjust the filters or apply at')} <a href="/apply/" className="text-brand">/apply</a> {t('experts.empty_body_suffix', 'to be listed.')}</p>
+              <Button variant="outline" onClick={() => setState({ q: '', tab: 'all' })}>{t('experts.clear', 'Clear filters')}</Button>
             </CardContent>
           </Card>
         ) : (
@@ -143,10 +147,17 @@ function ExpertsDirectory() {
 
 function shortAddr(a) { if (!a) return ''; return a.slice(0, 6) + '…' + a.slice(-4); }
 
+function roleLabel(role) {
+  if (!role) return role;
+  const r = String(role).toLowerCase();
+  const fallback = r[0].toUpperCase() + r.slice(1);
+  return t('experts.roles.' + r, fallback);
+}
+
 function ExpertCard({ e }) {
   const wallet = e.wallet_address || e.wallet || '';
   const href = '/expert/' + wallet;
-  const name = e.display_name || shortAddr(wallet) || 'Tokenomic Expert';
+  const name = e.display_name || shortAddr(wallet) || t('experts.card.default_name', 'Tokenomic Expert');
   const r30 = Number(e.rate_30 || 0);
   const r60 = Number(e.rate_60 || 0);
   return (
@@ -158,18 +169,22 @@ function ExpertCard({ e }) {
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-fg truncate">{name}</h3>
               <div className="flex items-center gap-2 mt-1">
-                {e.role && <Badge variant="brand">{e.role[0].toUpperCase() + e.role.slice(1)}</Badge>}
-                {e.is_verified && <Badge variant="success">Verified</Badge>}
+                {e.role && <Badge variant="brand">{roleLabel(e.role)}</Badge>}
+                {e.is_verified && <Badge variant="success">{t('experts.card.verified', 'Verified')}</Badge>}
               </div>
             </div>
           </div>
-          {e.specialty && <div className="text-xs text-muted"><strong className="text-fg">Specialty:</strong> {e.specialty}</div>}
+          {e.specialty && <div className="text-xs text-muted"><strong className="text-fg">{t('experts.card.specialty', 'Specialty:')}</strong> {e.specialty}</div>}
           {e.bio && <p className="text-sm text-muted line-clamp-3 flex-1">{e.bio}</p>}
           <div className="flex items-center justify-between mt-auto pt-3 border-t border-border">
             <div className="text-sm font-bold text-success">
-              {r30 > 0 ? `$${r30}/30m` : r60 > 0 ? `$${r60}/60m` : <span className="text-muted font-normal">Rate on request</span>}
+              {r30 > 0
+                ? tf('experts.card.rate_30', '${rate}/30m', { rate: r30 })
+                : r60 > 0
+                  ? tf('experts.card.rate_60', '${rate}/60m', { rate: r60 })
+                  : <span className="text-muted font-normal">{t('experts.card.rate_request', 'Rate on request')}</span>}
             </div>
-            <span className="text-xs text-brand opacity-0 group-hover:opacity-100 transition-opacity">View profile →</span>
+            <span className="text-xs text-brand opacity-0 group-hover:opacity-100 transition-opacity">{t('experts.card.view_profile', 'View profile →')}</span>
           </div>
         </CardContent>
       </Card>

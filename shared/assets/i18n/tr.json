@@ -53,8 +53,10 @@
   },
   "creator": {
     "role": { "educator": "Eğitmen", "consultant": "Danışman" },
+    "roles": { "learner": "öğrenci" },
     "nav": { "open": "Menüyü aç", "main_dashboard": "Ana panel" },
     "splash": {
+      "default_title": "Çalışma Alanı",
       "verifying": "Oturumunuz doğrulanıyor…",
       "signin_title": "Giriş gerekli",
       "signin_subtitle": "Çalışma alanına erişmek için cüzdanınızı bağlayın ve giriş yapın.",
@@ -69,5 +71,146 @@
       "analytics": "Analitik", "revenue": "Gelir", "settings": "Ayarlar",
       "services": "Hizmetler", "availability": "Müsaitlik", "bookings": "Rezervasyonlar"
     }
+  },
+  "courses": {
+    "filters": {
+      "search_placeholder": "Kurs veya eğitmen ara…",
+      "level_aria": "Seviye",
+      "asset_aria": "Varlık sınıfı",
+      "max_price": "Azami fiyat (USDC)",
+      "certificate": "Sertifika",
+      "sort_aria": "Sırala",
+      "results_one": "{count} sonuç",
+      "results_other": "{count} sonuç",
+      "all_levels": "Tüm seviyeler",
+      "level_beginner": "Başlangıç",
+      "level_intermediate": "Orta",
+      "level_advanced": "İleri",
+      "all_assets": "Tüm varlık sınıfları",
+      "asset_defi": "DeFi",
+      "asset_stablecoins": "Stabilcoinler",
+      "asset_trading": "Alım-Satım",
+      "asset_compliance": "Uyum",
+      "sort_newest": "En yeni",
+      "sort_price_asc": "Fiyat ↑",
+      "sort_price_desc": "Fiyat ↓",
+      "sort_duration": "En kısa"
+    },
+    "load_error": "Kurslar yüklenemedi: {error}",
+    "empty_title": "Bu filtrelere uygun kurs yok",
+    "empty_body": "Bir filtreyi temizlemeyi veya aramanızı genişletmeyi deneyin.",
+    "clear": "Filtreleri temizle",
+    "card": {
+      "cert_badge": "Sertifika",
+      "untitled": "Adsız kurs",
+      "default_author": "Tokenomic Ekibi",
+      "free": "Ücretsiz",
+      "duration_hours": "{n}sa",
+      "duration_minutes": "{n}dk"
+    }
+  },
+  "communities": {
+    "filters": {
+      "search_placeholder": "Topluluk ara…",
+      "level_aria": "Seviye",
+      "category_aria": "Kategori",
+      "sort_aria": "Sırala",
+      "all_levels": "Tüm seviyeler",
+      "level_beginner": "Başlangıç",
+      "level_intermediate": "Orta",
+      "level_advanced": "İleri",
+      "all_categories": "Tüm kategoriler",
+      "cat_trading": "Alım-Satım",
+      "cat_defi": "DeFi",
+      "cat_research": "Araştırma",
+      "cat_compliance": "Uyum",
+      "sort_members": "En çok üyeli",
+      "sort_newest": "En yeni",
+      "sort_alpha": "A → Z",
+      "results_one": "{count} topluluk",
+      "results_other": "{count} topluluk"
+    },
+    "load_error": "Topluluklar yüklenemedi: {error}",
+    "empty_title": "Eşleşen topluluk yok",
+    "empty_body": "Filtreleri ayarlayın veya yakında tekrar bakın.",
+    "clear": "Filtreleri temizle",
+    "card": {
+      "premium": "Premium",
+      "untitled": "Adsız topluluk",
+      "default_owner": "Tokenomic"
+    }
+  },
+  "experts": {
+    "tabs": { "all": "Tümü", "consultants": "Danışmanlar", "educators": "Eğitmenler" },
+    "roles": { "consultant": "Danışman", "educator": "Eğitmen", "admin": "Yönetici", "learner": "Öğrenci" },
+    "filters": {
+      "search_placeholder": "Uzman ara…",
+      "sort_aria": "Sırala",
+      "sort_recent": "Son aktif",
+      "sort_rate_asc": "Ücret ↑",
+      "sort_rate_desc": "Ücret ↓",
+      "sort_alpha": "A → Z"
+    },
+    "load_error": "Uzmanlar yüklenemedi: {error}",
+    "empty_title": "Uzman bulunamadı",
+    "empty_body_prefix": "Filtreleri ayarlayın veya listelenmek için",
+    "empty_body_suffix": "üzerinden başvurun.",
+    "clear": "Filtreleri temizle",
+    "card": {
+      "default_name": "Tokenomic Uzmanı",
+      "verified": "Doğrulanmış",
+      "specialty": "Uzmanlık:",
+      "rate_30": "${rate}/30dk",
+      "rate_60": "${rate}/60dk",
+      "rate_request": "Ücret talep üzerine",
+      "view_profile": "Profili gör →"
+    }
+  },
+  "articles": {
+    "categories": {
+      "all": "Tümü",
+      "Strategy": "Strateji",
+      "Technical": "Teknik",
+      "Market": "Piyasa",
+      "Other": "Diğer"
+    },
+    "search_placeholder": "Makale ara…",
+    "load_error": "Makaleler yüklenemedi: {error}",
+    "empty_title": "Eşleşen makale yok",
+    "empty_body": "Farklı bir kategori deneyin veya aramayı temizleyin.",
+    "clear": "Filtreleri temizle",
+    "featured": "Öne çıkanlar",
+    "default_author": "Tokenomic Ekibi",
+    "reading_time": "· {min}dk okuma",
+    "authors_title": "Yazarlarımızla tanışın",
+    "authors_view_all": "Tümünü gör →",
+    "cta_title": "DeFi uzmanlığınızı paylaşın",
+    "cta_body": "Eğitmenler ve danışmanlar Tokenomic akışında doğrudan kontrol panelinden yayın yapabilir.",
+    "cta_button": "Makale stüdyosuna git"
+  },
+  "booking": {
+    "default_name": "bu danışman",
+    "title": "{name} ile Randevu",
+    "free": "Ücretsiz",
+    "price_usdc": "${price} USDC",
+    "duration_min": "{m} dk",
+    "prev": "← Önceki",
+    "next": "Sonraki →",
+    "loading": "Müsaitlik yükleniyor…",
+    "no_calendar": "Bağlı takvim yok — saatler Pzt–Cum 09:00–18:00 UTC olarak varsayılır.",
+    "no_slots": "Bu gün için müsait saat yok.",
+    "hold_expires": "Rezervasyon hakkı 15 dakika içinde sona erer.",
+    "topic_placeholder": "Konu (örn. tokenomik incelemesi)",
+    "email_placeholder": "Takvim daveti için e-posta",
+    "tx_placeholder": "USDC ödeme tx hash'i (0x…)",
+    "pay_hint": "Base üzerinde {wallet} adresine {price} USDC ödeyin ve tx hash'ini yukarıya yapıştırın.",
+    "back": "Geri",
+    "confirming": "Onaylanıyor…",
+    "confirm": "Rezervasyonu onayla",
+    "confirmed_title": "✓ Rezervasyon onaylandı",
+    "meeting_link": "Görüşme bağlantısı:",
+    "view_all": "Tüm rezervasyonlarımı gör →",
+    "wallet_required": "Saat tutmak için önce cüzdanınızı bağlayın.",
+    "slot_range_utc": "{start} – {end} UTC"
   }
 }

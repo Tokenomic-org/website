@@ -53,8 +53,10 @@
   },
   "creator": {
     "role": { "educator": "Educador", "consultant": "Consultor" },
+    "roles": { "learner": "estudiante" },
     "nav": { "open": "Abrir navegación", "main_dashboard": "Panel principal" },
     "splash": {
+      "default_title": "Panel de trabajo",
       "verifying": "Verificando tu sesión…",
       "signin_title": "Inicio de sesión requerido",
       "signin_subtitle": "Conecta tu wallet e inicia sesión para acceder al panel.",
@@ -69,5 +71,146 @@
       "analytics": "Analítica", "revenue": "Ingresos", "settings": "Ajustes",
       "services": "Servicios", "availability": "Disponibilidad", "bookings": "Reservas"
     }
+  },
+  "courses": {
+    "filters": {
+      "search_placeholder": "Buscar cursos, educadores…",
+      "level_aria": "Nivel",
+      "asset_aria": "Clase de activo",
+      "max_price": "Precio máx. (USDC)",
+      "certificate": "Certificado",
+      "sort_aria": "Ordenar",
+      "results_one": "{count} resultado",
+      "results_other": "{count} resultados",
+      "all_levels": "Todos los niveles",
+      "level_beginner": "Principiante",
+      "level_intermediate": "Intermedio",
+      "level_advanced": "Avanzado",
+      "all_assets": "Todas las clases de activo",
+      "asset_defi": "DeFi",
+      "asset_stablecoins": "Stablecoins",
+      "asset_trading": "Trading",
+      "asset_compliance": "Cumplimiento",
+      "sort_newest": "Más recientes",
+      "sort_price_asc": "Precio ↑",
+      "sort_price_desc": "Precio ↓",
+      "sort_duration": "Más cortos"
+    },
+    "load_error": "No se pudieron cargar los cursos: {error}",
+    "empty_title": "Ningún curso coincide con esos filtros",
+    "empty_body": "Intenta quitar un filtro o ampliar tu búsqueda.",
+    "clear": "Limpiar filtros",
+    "card": {
+      "cert_badge": "Cert",
+      "untitled": "Curso sin título",
+      "default_author": "Equipo Tokenomic",
+      "free": "Gratis",
+      "duration_hours": "{n}h",
+      "duration_minutes": "{n}min"
+    }
+  },
+  "communities": {
+    "filters": {
+      "search_placeholder": "Buscar comunidades…",
+      "level_aria": "Nivel",
+      "category_aria": "Categoría",
+      "sort_aria": "Ordenar",
+      "all_levels": "Todos los niveles",
+      "level_beginner": "Principiante",
+      "level_intermediate": "Intermedio",
+      "level_advanced": "Avanzado",
+      "all_categories": "Todas las categorías",
+      "cat_trading": "Trading",
+      "cat_defi": "DeFi",
+      "cat_research": "Investigación",
+      "cat_compliance": "Cumplimiento",
+      "sort_members": "Más miembros",
+      "sort_newest": "Más recientes",
+      "sort_alpha": "A → Z",
+      "results_one": "{count} comunidad",
+      "results_other": "{count} comunidades"
+    },
+    "load_error": "No se pudieron cargar las comunidades: {error}",
+    "empty_title": "Ninguna comunidad coincide",
+    "empty_body": "Ajusta los filtros o vuelve más tarde.",
+    "clear": "Limpiar filtros",
+    "card": {
+      "premium": "Premium",
+      "untitled": "Comunidad sin título",
+      "default_owner": "Tokenomic"
+    }
+  },
+  "experts": {
+    "tabs": { "all": "Todos", "consultants": "Consultores", "educators": "Educadores" },
+    "roles": { "consultant": "Consultor", "educator": "Educador", "admin": "Administrador", "learner": "Estudiante" },
+    "filters": {
+      "search_placeholder": "Buscar expertos…",
+      "sort_aria": "Ordenar",
+      "sort_recent": "Activos recientemente",
+      "sort_rate_asc": "Tarifa ↑",
+      "sort_rate_desc": "Tarifa ↓",
+      "sort_alpha": "A → Z"
+    },
+    "load_error": "No se pudieron cargar los expertos: {error}",
+    "empty_title": "No se encontraron expertos",
+    "empty_body_prefix": "Ajusta los filtros o solicita en",
+    "empty_body_suffix": "para aparecer listado.",
+    "clear": "Limpiar filtros",
+    "card": {
+      "default_name": "Experto Tokenomic",
+      "verified": "Verificado",
+      "specialty": "Especialidad:",
+      "rate_30": "${rate}/30m",
+      "rate_60": "${rate}/60m",
+      "rate_request": "Tarifa a consultar",
+      "view_profile": "Ver perfil →"
+    }
+  },
+  "articles": {
+    "categories": {
+      "all": "Todos",
+      "Strategy": "Estrategia",
+      "Technical": "Técnico",
+      "Market": "Mercado",
+      "Other": "Otros"
+    },
+    "search_placeholder": "Buscar artículos…",
+    "load_error": "No se pudieron cargar los artículos: {error}",
+    "empty_title": "Ningún artículo coincide",
+    "empty_body": "Prueba otra categoría o limpia la búsqueda.",
+    "clear": "Limpiar filtros",
+    "featured": "Destacados",
+    "default_author": "Equipo Tokenomic",
+    "reading_time": "· {min} min de lectura",
+    "authors_title": "Conoce a nuestros autores",
+    "authors_view_all": "Ver todos →",
+    "cta_title": "Comparte tu experiencia DeFi",
+    "cta_body": "Educadores y consultores pueden publicar en el feed de Tokenomic directamente desde su panel.",
+    "cta_button": "Ir al estudio de artículos"
+  },
+  "booking": {
+    "default_name": "este consultor",
+    "title": "Reservar con {name}",
+    "free": "Gratis",
+    "price_usdc": "${price} USDC",
+    "duration_min": "{m} min",
+    "prev": "← Anterior",
+    "next": "Siguiente →",
+    "loading": "Cargando disponibilidad…",
+    "no_calendar": "Sin calendario conectado — los huecos asumen Lun–Vie 09:00–18:00 UTC.",
+    "no_slots": "Sin huecos libres este día.",
+    "hold_expires": "La reserva caduca en 15 minutos.",
+    "topic_placeholder": "Tema (p. ej. revisión de tokenomics)",
+    "email_placeholder": "Correo para la invitación de calendario",
+    "tx_placeholder": "Hash tx de pago USDC (0x…)",
+    "pay_hint": "Paga {price} USDC en Base a {wallet} y pega el hash tx arriba.",
+    "back": "Atrás",
+    "confirming": "Confirmando…",
+    "confirm": "Confirmar reserva",
+    "confirmed_title": "✓ Reserva confirmada",
+    "meeting_link": "Enlace de reunión:",
+    "view_all": "Ver todas mis reservas →",
+    "wallet_required": "Conecta tu wallet primero para reservar un hueco.",
+    "slot_range_utc": "{start} – {end} UTC"
   }
 }
