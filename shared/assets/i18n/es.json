@@ -22,10 +22,18 @@
     "newsletter": "Boletín",
     "subscribe": "Suscríbete ahora",
     "email_placeholder": "Introduce tu correo",
+    "get_updates": "Recibe todas las novedades",
     "language": "Idioma",
+    "copyright_prefix": "Copyright",
     "rights": "Todos los derechos reservados.",
     "privacy": "Política de Privacidad",
-    "terms": "Términos del Servicio"
+    "terms": "Términos del Servicio",
+    "links": {
+      "about": "Acerca",
+      "educators": "Educadores",
+      "consultants": "Consultores",
+      "articles": "Artículos"
+    }
   },
   "common": {
     "loading": "Cargando…",

@@ -90,6 +90,51 @@ const REPORT_ONLY_CSP =
   "object-src 'none'; " +
   "base-uri 'self'";
 
+// Legacy CSP for path-prefixes that still ship Alpine-style inline
+// `<script>` blocks (the older /dashboard/{bookings,chat,communities,
+// events,index,leaderboard,revenue,social,referrals,profile} hub
+// pages). These predate the Phase 7 island rewrite and have not yet
+// been audited for inline-script extraction. We allow 'unsafe-inline'
+// on script-src here ONLY — 'unsafe-eval' is still forbidden, and the
+// super-strict Report-Only header is still emitted so we can drive
+// the eventual extraction pass with real violation data.
+const LEGACY_CSP =
+  "default-src 'self'; " +
+  "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; " +
+  "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
+  "img-src 'self' data: blob: https:; " +
+  "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
+  "connect-src 'self' https: wss:; " +
+  "frame-ancestors 'none'; " +
+  "object-src 'none'; " +
+  "base-uri 'self'; " +
+  "form-action 'self'; " +
+  "upgrade-insecure-requests";
+
+// Path prefixes that have NOT been audited for inline scripts and still
+// receive the legacy CSP. Everything else gets STRICT_CSP. Add to this
+// list with caution and remove entries as pages are extracted.
+const LEGACY_CSP_PREFIXES = [
+  '/dashboard/bookings',
+  '/dashboard/chat',
+  '/dashboard/communities',
+  '/dashboard/events',
+  '/dashboard/leaderboard',
+  '/dashboard/revenue',
+  '/dashboard/social',
+  '/dashboard/referrals',
+  '/dashboard/profile',
+  '/dashboard/articles',
+  '/dashboard/courses',
+];
+function isLegacyPath(pathname) {
+  if (pathname === '/dashboard' || pathname === '/dashboard/') return true;
+  for (const p of LEGACY_CSP_PREFIXES) {
+    if (pathname === p || pathname === p + '/' || pathname.startsWith(p + '/')) return true;
+  }
+  return false;
+}
+
 function withSecurityHeaders(resp, url, env) {
   const h = new Headers(resp.headers);
   h.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
@@ -102,9 +147,15 @@ function withSecurityHeaders(resp, url, env) {
     'camera=(), microphone=(), geolocation=(), payment=(self), usb=(), interest-cohort=()'
   );
   if (!h.has('Content-Security-Policy')) {
-    h.set('Content-Security-Policy', STRICT_CSP);
+    const pathname = (url && url.pathname) || '';
+    h.set(
+      'Content-Security-Policy',
+      isLegacyPath(pathname) ? LEGACY_CSP : STRICT_CSP,
+    );
   }
   if (env && env.CSP_REPORT_URL) {
+    // Report-Only stays at full strictness EVERYWHERE so the legacy
+    // pages keep generating violation reports to drive extraction.
     h.set(
       'Content-Security-Policy-Report-Only',
       REPORT_ONLY_CSP + '; report-uri ' + env.CSP_REPORT_URL,

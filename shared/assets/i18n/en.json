@@ -22,10 +22,18 @@
     "newsletter": "Newsletter",
     "subscribe": "Subscribe Now",
     "email_placeholder": "Enter email address",
+    "get_updates": "Get every single update",
     "language": "Language",
+    "copyright_prefix": "Copyright",
     "rights": "All rights reserved.",
     "privacy": "Privacy Policy",
-    "terms": "Terms of Service"
+    "terms": "Terms of Service",
+    "links": {
+      "about": "About",
+      "educators": "Educators",
+      "consultants": "Consultants",
+      "articles": "Articles"
+    }
   },
   "common": {
     "loading": "Loading…",

@@ -22,10 +22,18 @@
     "newsletter": "Bülten",
     "subscribe": "Şimdi Abone Ol",
     "email_placeholder": "E-posta adresinizi girin",
+    "get_updates": "Tüm güncellemeleri al",
     "language": "Dil",
+    "copyright_prefix": "Telif Hakkı",
     "rights": "Tüm hakları saklıdır.",
     "privacy": "Gizlilik Politikası",
-    "terms": "Hizmet Şartları"
+    "terms": "Hizmet Şartları",
+    "links": {
+      "about": "Hakkımızda",
+      "educators": "Eğitmenler",
+      "consultants": "Danışmanlar",
+      "articles": "Makaleler"
+    }
   },
   "common": {
     "loading": "Yükleniyor…",
