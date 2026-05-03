@@ -1257,6 +1257,81 @@ export function mountD1Routes(app) {
     return c.json({ ok: true, message: row });
   });
 
+  // -------- community feed (slug-based) --------
+  // Convenience wrappers around the messages table, addressed by community
+  // slug for friendly URLs (CommunityProfile island consumes these).
+
+  async function resolveCommunityIdBySlug(env, slug) {
+    if (!isValidSlug(slug)) return null;
+    const row = await env.DB.prepare('SELECT id FROM communities WHERE slug = ?').bind(slug).first();
+    return row ? Number(row.id) : null;
+  }
+
+  app.get('/api/communities/:slug/feed', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const slug = c.req.param('slug');
+    const cid = await resolveCommunityIdBySlug(c.env, slug);
+    if (!cid) return c.json({ error: 'Community not found' }, 404);
+    const limit = Math.min(Math.max(Number(c.req.query('limit')) || 50, 1), 200);
+    const before = Number(c.req.query('before')) || 0;
+    const sql = before > 0
+      ? `SELECT m.*, p.display_name, p.avatar_url
+         FROM messages m LEFT JOIN profiles p ON p.wallet_address = m.author_wallet
+         WHERE m.community_id = ? AND m.id < ?
+         ORDER BY m.id DESC LIMIT ?`
+      : `SELECT m.*, p.display_name, p.avatar_url
+         FROM messages m LEFT JOIN profiles p ON p.wallet_address = m.author_wallet
+         WHERE m.community_id = ?
+         ORDER BY m.id DESC LIMIT ?`;
+    const stmt = before > 0
+      ? c.env.DB.prepare(sql).bind(cid, before, limit)
+      : c.env.DB.prepare(sql).bind(cid, limit);
+    const { results } = await stmt.all();
+    const items = (results || []).reverse();
+    return c.json({
+      community_id: cid,
+      items,
+      count: items.length,
+      next_cursor: items.length === limit ? items[0].id : null,
+    });
+  });
+
+  app.post('/api/communities/:slug/posts', async (c) => {
+    const r = dbReady(c); if (r) return r;
+    const auth = await requireAuth(c); if (auth.error) return auth.error;
+    const slug = c.req.param('slug');
+    const cid = await resolveCommunityIdBySlug(c.env, slug);
+    if (!cid) return c.json({ error: 'Community not found' }, 404);
+    let body = {}; try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+    const text = (body.body || body.text || '').toString().slice(0, 4000);
+    if (text.trim().length < 1) return c.json({ error: 'Post body required' }, 400);
+    // Membership gate: writers must either own the community or be a row in
+    // community_members. Read-only viewers are intentionally not blocked
+    // from GET /feed (public communities surface their feed to everyone).
+    const owner = await c.env.DB.prepare(
+      'SELECT educator_wallet FROM communities WHERE id = ?'
+    ).bind(cid).first();
+    let allowed = owner && lc(owner.educator_wallet) === auth.wallet;
+    if (!allowed) {
+      const member = await c.env.DB.prepare(
+        'SELECT 1 FROM community_members WHERE community_id = ? AND wallet = ?'
+      ).bind(cid, auth.wallet).first().catch(() => null);
+      allowed = !!member;
+    }
+    if (!allowed) return c.json({ error: 'Join the community to post' }, 403);
+
+    const ins = await c.env.DB.prepare(
+      'INSERT INTO messages (community_id, author_wallet, body) VALUES (?, ?, ?)'
+    ).bind(cid, auth.wallet, text).run();
+    const id = ins.meta && ins.meta.last_row_id;
+    const row = await c.env.DB.prepare(`
+      SELECT m.*, p.display_name, p.avatar_url
+      FROM messages m LEFT JOIN profiles p ON p.wallet_address = m.author_wallet
+      WHERE m.id = ?
+    `).bind(id).first();
+    return c.json({ ok: true, post: row }, 201);
+  });
+
   // ========================================================================
   // events — first-party event hosting (replaces the Luma proxy).
   // ========================================================================

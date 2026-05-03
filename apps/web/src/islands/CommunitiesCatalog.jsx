@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { mountIsland } from '@lib/island.jsx';
 import { api, ApiError } from '@lib/api.js';
 import { useUrlState } from '@lib/url-state.js';
+import { useInfiniteScroll } from '@lib/use-infinite-scroll.js';
 import { Card, CardContent } from '@ui/Card.jsx';
 import { Button } from '@ui/Button.jsx';
 import { Input } from '@ui/Input.jsx';
@@ -9,6 +10,8 @@ import { Select } from '@ui/Select.jsx';
 import { Badge } from '@ui/Badge.jsx';
 import { Skeleton, SkeletonCard } from '@ui/Skeleton.jsx';
 import { Avatar } from '@ui/Avatar.jsx';
+
+const PAGE = 12;
 
 const LEVELS = [
   { value: '', label: 'All levels' },
@@ -34,6 +37,9 @@ function CommunitiesCatalog() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [shown, setShown] = useState(PAGE);
+
+  useEffect(() => { setShown(PAGE); }, [filters.q, filters.level, filters.category, filters.sort]);
 
   useEffect(() => {
     let alive = true;
@@ -63,6 +69,12 @@ function CommunitiesCatalog() {
     }
     return out;
   }, [items, filters]);
+
+  const visible = filtered.slice(0, shown);
+  const sentinelRef = useInfiniteScroll(
+    () => setShown((s) => Math.min(s + PAGE, filtered.length)),
+    { enabled: shown < filtered.length },
+  );
 
   return (
     <div className="bg-bg min-h-screen">
@@ -104,9 +116,16 @@ function CommunitiesCatalog() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((c) => <CommunityCard key={c.id || c.slug} c={c} />)}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {visible.map((c) => <CommunityCard key={c.id || c.slug} c={c} />)}
+            </div>
+            {shown < filtered.length && (
+              <div ref={sentinelRef} className="flex justify-center py-10">
+                <Skeleton className="h-3 w-32" />
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

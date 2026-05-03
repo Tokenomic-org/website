@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { mountIsland } from '@lib/island.jsx';
 import { api, ApiError } from '@lib/api.js';
 import { useUrlState } from '@lib/url-state.js';
+import { useInfiniteScroll } from '@lib/use-infinite-scroll.js';
 import { Card, CardContent } from '@ui/Card.jsx';
 import { Button } from '@ui/Button.jsx';
 import { Input } from '@ui/Input.jsx';
@@ -11,6 +12,7 @@ import { Badge } from '@ui/Badge.jsx';
 import { SkeletonCard, Skeleton } from '@ui/Skeleton.jsx';
 
 const CATEGORIES = ['all', 'Strategy', 'Technical', 'Market'];
+const PAGE = 12;
 
 function ArticlesHub() {
   const [state, setState] = useUrlState({ cat: 'all', q: '' });
@@ -18,6 +20,9 @@ function ArticlesHub() {
   const [authors, setAuthors]   = useState([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
+  const [shown, setShown]       = useState(PAGE);
+
+  useEffect(() => { setShown(PAGE); }, [state.cat, state.q]);
 
   useEffect(() => {
     let alive = true;
@@ -48,16 +53,22 @@ function ArticlesHub() {
     });
   }, [articles, state]);
 
+  const visible = filtered.slice(0, shown);
+  const sentinelRef = useInfiniteScroll(
+    () => setShown((s) => Math.min(s + PAGE, filtered.length)),
+    { enabled: shown < filtered.length },
+  );
+
   const grouped = useMemo(() => {
     const out = {};
-    for (const a of filtered) {
+    for (const a of visible) {
       const k = a.category || 'Other';
       (out[k] ||= []).push(a);
     }
     return out;
-  }, [filtered]);
+  }, [visible]);
 
-  const featured = filtered.slice(0, 3);
+  const featured = visible.slice(0, 3);
 
   return (
     <div className="bg-bg min-h-screen">
@@ -118,6 +129,12 @@ function ArticlesHub() {
                 </div>
               </section>
             ))}
+
+            {shown < filtered.length && (
+              <div ref={sentinelRef} className="flex justify-center py-10">
+                <Skeleton className="h-3 w-32" />
+              </div>
+            )}
 
             {authors.length > 0 && <AuthorsStrip authors={authors} />}
 

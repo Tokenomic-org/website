@@ -47,6 +47,13 @@ const DEFAULT_ALLOWED_ORIGINS = [
   'https://*.tokenomic.org',
   'http://localhost:5000',
   'http://127.0.0.1:5000',
+  // Replit dev/preview environments. Wildcard is safe here because each
+  // dev URL is bound to one user's authenticated workspace and CSRF still
+  // gates mutating requests on Origin match.
+  'https://*.replit.dev',
+  'https://*.repl.co',
+  'https://*.kirk.replit.dev',
+  'https://*.picard.replit.dev',
 ];
 function buildAllowList(env) {
   return (env.ALLOWED_ORIGINS || DEFAULT_ALLOWED_ORIGINS.join(','))

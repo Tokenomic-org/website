@@ -34,12 +34,22 @@ export async function api(path, opts = {}) {
   const tok = bearerToken();
   if (tok && !headers.has('authorization')) headers.set('authorization', 'Bearer ' + tok);
 
+  // Auth transport selection:
+  //  - Default 'omit'. Bearer JWT in the Authorization header carries
+  //    auth for both API clients and browser sessions, and the deployed
+  //    api-worker on *.workers.dev does not always reflect arbitrary
+  //    origins (so credentialed requests would be rejected by CORS).
+  //  - SIWE cookie sessions (tk_session) opt in by passing
+  //    `{ credentials: 'include' }` explicitly. The worker is set up
+  //    to send Access-Control-Allow-Credentials: true and reflect
+  //    allowlisted origins; browsers running on an allowlisted origin
+  //    can use the cookie path that way.
+  const credentials = opts.credentials ?? 'omit';
+
   const promise = (async () => {
     let resp;
     try {
-      // Bearer JWT carries auth — no need to forward cookies, which would
-      // require the worker to send Access-Control-Allow-Credentials: true.
-      resp = await fetch(url, { ...opts, headers, credentials: 'omit' });
+      resp = await fetch(url, { ...opts, headers, credentials });
     } catch (e) {
       throw new ApiError(0, 'Network error', e?.message || String(e));
     }

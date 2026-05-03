@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { mountIsland } from '@lib/island.jsx';
 import { api, ApiError } from '@lib/api.js';
 import { useUrlState } from '@lib/url-state.js';
+import { useInfiniteScroll } from '@lib/use-infinite-scroll.js';
 import { Tabs, TabsList, TabsTrigger } from '@ui/Tabs.jsx';
 import { Card, CardContent } from '@ui/Card.jsx';
 import { Button } from '@ui/Button.jsx';
@@ -18,11 +19,16 @@ const SORT = [
   { value: 'alpha',  label: 'A → Z' },
 ];
 
+const PAGE = 12;
+
 function ExpertsDirectory() {
   const [state, setState] = useUrlState({ tab: 'all', q: '', sort: 'recent' });
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [shown, setShown] = useState(PAGE);
+
+  useEffect(() => { setShown(PAGE); }, [state.tab, state.q, state.sort]);
 
   useEffect(() => {
     let alive = true;
@@ -55,6 +61,12 @@ function ExpertsDirectory() {
     }
     return out;
   }, [items, state]);
+
+  const visible = filtered.slice(0, shown);
+  const sentinelRef = useInfiniteScroll(
+    () => setShown((s) => Math.min(s + PAGE, filtered.length)),
+    { enabled: shown < filtered.length },
+  );
 
   const counts = useMemo(() => {
     const c = { all: items.length, consultants: 0, educators: 0 };
@@ -113,9 +125,16 @@ function ExpertsDirectory() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((e) => <ExpertCard key={e.wallet_address || e.wallet || e.id} e={e} />)}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {visible.map((e) => <ExpertCard key={e.wallet_address || e.wallet || e.id} e={e} />)}
+            </div>
+            {shown < filtered.length && (
+              <div ref={sentinelRef} className="flex justify-center py-10">
+                <Skeleton className="h-3 w-32" />
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
