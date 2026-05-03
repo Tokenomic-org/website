@@ -162,11 +162,15 @@ async function verifyInviteToken(env, token) {
   catch { return null; }
   const expectedSig = b64url(await hmac(key, payload));
   if (!(await timingSafeEqB64(sigB64, expectedSig))) return null;
-  const parts = payload.split('.');
-  if (parts.length !== 3) return null;
-  const inviteId = Number(parts[0]);
-  const email    = parts[1];
-  const sender   = parts[2];
+  // Email values can contain `.` (domains, sub-domains, +tags), so we
+  // cannot split() on `.`. Bound the inviteId by the FIRST `.` and the
+  // sender wallet by the LAST `.`. Email is whatever sits between.
+  const first = payload.indexOf('.');
+  const last  = payload.lastIndexOf('.');
+  if (first <= 0 || last <= first) return null;
+  const inviteId = Number(payload.slice(0, first));
+  const email    = payload.slice(first + 1, last);
+  const sender   = payload.slice(last + 1);
   if (!Number.isFinite(inviteId) || !isEmail(email) || !isHexAddr(sender)) return null;
   return { inviteId, email, sender: lc(sender) };
 }
