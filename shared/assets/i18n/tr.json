@@ -1,0 +1,46 @@
+{
+  "nav": {
+    "home": "Ana Sayfa",
+    "courses": "Kurslar",
+    "communities": "Topluluklar",
+    "experts": "Uzmanlar",
+    "articles": "Makaleler",
+    "about": "Hakkımızda",
+    "contact": "İletişim",
+    "dashboard": "Kontrol Paneli"
+  },
+  "wallet": {
+    "connect": "Cüzdanı Bağla",
+    "disconnect": "Bağlantıyı Kes",
+    "switch_to_base": "Base'e Geç",
+    "switch_to_base_sepolia": "Base Sepolia'ya Geç",
+    "view_on_basescan": "Basescan'de Görüntüle"
+  },
+  "footer": {
+    "tagline": "Topluluk öncülüğünde DeFi zekâsı. Uzman liderliğindeki kurslara, profesyonel danışmanlığa ve kurumsal dijital ekonomileri inşa etmek için derinlemesine araştırmalara erişin.",
+    "connect": "Bağlan",
+    "newsletter": "Bülten",
+    "subscribe": "Şimdi Abone Ol",
+    "email_placeholder": "E-posta adresinizi girin",
+    "language": "Dil",
+    "rights": "Tüm hakları saklıdır.",
+    "privacy": "Gizlilik Politikası",
+    "terms": "Hizmet Şartları"
+  },
+  "common": {
+    "loading": "Yükleniyor…",
+    "error": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+    "empty": "Henüz gösterilecek bir şey yok.",
+    "search": "Ara",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "confirm": "Onayla",
+    "more": "Devamını oku",
+    "back": "Geri"
+  },
+  "paywall": {
+    "title": "Aboneler tam makaleyi okuyabilir.",
+    "body": "Tüm kütüphanenin kilidini açmak için Base üzerinden USDC ile abone olun.",
+    "cta": "Abone ol"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "nav": {
+    "home": "Home",
+    "courses": "Courses",
+    "communities": "Communities",
+    "experts": "Experts",
+    "articles": "Articles",
+    "about": "About",
+    "contact": "Contact",
+    "dashboard": "Dashboard"
+  },
+  "wallet": {
+    "connect": "Connect Wallet",
+    "disconnect": "Disconnect",
+    "switch_to_base": "Switch to Base",
+    "switch_to_base_sepolia": "Switch to Base Sepolia",
+    "view_on_basescan": "View on Basescan"
+  },
+  "footer": {
+    "tagline": "Community-led DeFi intelligence. Access expert-driven courses, professional advisory, and deep research to architect and scale institutional digital economies.",
+    "connect": "Connect",
+    "newsletter": "Newsletter",
+    "subscribe": "Subscribe Now",
+    "email_placeholder": "Enter email address",
+    "language": "Language",
+    "rights": "All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong. Please try again.",
+    "empty": "Nothing to show yet.",
+    "search": "Search",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "more": "Read more",
+    "back": "Back"
+  },
+  "paywall": {
+    "title": "Subscribers can read the full article.",
+    "body": "Subscribe with USDC on Base to unlock the full library.",
+    "cta": "Become a subscriber"
+  }
+}

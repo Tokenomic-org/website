@@ -1,3 +1,6 @@
+<script src="/shared/assets/js/i18n.js" defer></script>
+<script src="/shared/assets/js/lang-toggle.js" defer></script>
+<script src="/shared/assets/js/dom-purify-loader.js" defer></script>
 <footer class="main-footer alternate">
     <div class="auto-container">
         <!--Widgets Section-->
@@ -10,8 +13,13 @@
                             <div class="footer-logo">
                                 <a href="{{site.url}}"><img src="{{site.logo_url}}" alt="{{site.title}}"/></a>
                             </div>
-                            <div class="text">
+                            <div class="text" data-i18n="footer.tagline">
                                 Community-led DeFi intelligence. Access expert-driven courses, professional advisory, and deep research to architect and scale institutional digital economies.
+                            </div>
+                            <!-- Phase 7 — language toggle (mounted by /shared/assets/js/lang-toggle.js) -->
+                            <div style="margin-top:18px;display:flex;align-items:center;gap:10px;font-size:12px;color:rgba(255,255,255,0.6);">
+                                <span data-i18n="footer.language">Language</span>
+                                <span id="tkn-lang-toggle"></span>
                             </div>
                         </div>
                     </div>

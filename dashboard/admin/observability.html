@@ -1,0 +1,185 @@
+---
+layout: null
+permalink: /dashboard/admin/observability/
+---
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Observability — Tokenomic Admin</title>
+<meta name="robots" content="noindex,nofollow" />
+{% include island-bootstrap.html %}
+<style>
+  body { background:#0A0F1A; color:#ECF4FA; font-family: Inter, system-ui, sans-serif; margin:0; padding:24px; }
+  h1 { font-size:22px; margin:0 0 8px; }
+  .sub { color:#8FA3B5; font-size:13px; margin-bottom:24px; }
+  .grid { display:grid; gap:16px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); margin-bottom:24px; }
+  .card { background:#101924; border:1px solid #243446; border-radius:12px; padding:16px; }
+  .card h3 { margin:0 0 8px; font-size:13px; color:#8FA3B5; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
+  .card .v { font-size:24px; font-weight:600; }
+  .card .v.err { color:#fca5a5; }
+  table { width:100%; border-collapse:collapse; background:#101924; border:1px solid #243446; border-radius:12px; overflow:hidden; }
+  th, td { padding:10px 14px; text-align:left; font-size:13px; border-bottom:1px solid #1a2738; }
+  th { background:#0e1620; color:#8FA3B5; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; font-size:11px; }
+  tr:last-child td { border-bottom:none; }
+  .ctl { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .ctl select { background:#101924; color:#ECF4FA; border:1px solid #243446; border-radius:8px; padding:6px 10px; }
+  .err-box { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); color:#fca5a5; padding:12px 14px; border-radius:10px; margin-bottom:16px; font-size:13px; }
+  .muted { color:#8FA3B5; }
+</style>
+</head>
+<body>
+  <h1>Observability</h1>
+  <div class="sub">Per-route latency, error rate, and request volume sourced from Workers Analytics Engine.</div>
+
+  <div id="not-configured" class="err-box" style="display:none;"></div>
+  <div id="auth-required" class="err-box" style="display:none;">
+    Admin sign-in required. <a href="/dashboard/admin/" style="color:#fca5a5;text-decoration:underline;">Sign in</a>
+  </div>
+
+  <div class="ctl">
+    <label for="window" class="muted">Window:</label>
+    <select id="window">
+      <option value="15m">Last 15 minutes</option>
+      <option value="1h" selected>Last 1 hour</option>
+      <option value="6h">Last 6 hours</option>
+      <option value="24h">Last 24 hours</option>
+    </select>
+    <button id="refresh" class="muted" style="background:transparent;border:1px solid #243446;color:inherit;border-radius:8px;padding:6px 14px;cursor:pointer;">Refresh</button>
+  </div>
+
+  <div class="grid" id="summary">
+    <div class="card"><h3>Requests</h3><div class="v" id="m-requests">—</div></div>
+    <div class="card"><h3>Avg latency</h3><div class="v" id="m-latency">—</div></div>
+    <div class="card"><h3>P95 latency</h3><div class="v" id="m-p95">—</div></div>
+    <div class="card"><h3>5xx errors</h3><div class="v err" id="m-5xx">—</div></div>
+    <div class="card"><h3>4xx errors</h3><div class="v err" id="m-4xx">—</div></div>
+  </div>
+
+  <h2 style="font-size:16px;margin:24px 0 12px;">Top routes</h2>
+  <table id="routes-table">
+    <thead><tr><th>Route</th><th>Requests</th><th>Avg ms</th><th>P95 ms</th><th>5xx</th></tr></thead>
+    <tbody><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
+  </table>
+
+  <h2 style="font-size:16px;margin:24px 0 12px;">Recent errors</h2>
+  <table id="errors-table">
+    <thead><tr><th>When</th><th>Route</th><th>Method</th><th>Status</th><th>Country</th><th>Latency</th></tr></thead>
+    <tbody><tr><td colspan="6" class="muted">Loading…</td></tr></tbody>
+  </table>
+
+<script>
+  (function () {
+    var API = (window.__TKN_ENV && window.__TKN_ENV.API_BASE) || '';
+    function url(path, q) {
+      var u = API + path;
+      if (q) u += '?' + Object.keys(q).map(function (k) {
+        return encodeURIComponent(k) + '=' + encodeURIComponent(q[k]);
+      }).join('&');
+      return u;
+    }
+    function fmt(n) {
+      if (n == null || isNaN(n)) return '—';
+      n = Number(n);
+      if (n > 1000) return (n/1000).toFixed(1) + 'k';
+      return n.toFixed(n < 10 ? 1 : 0);
+    }
+    function ms(n) { return n == null ? '—' : Math.round(Number(n)) + ' ms'; }
+
+    function notConfigured(missing) {
+      var box = document.getElementById('not-configured');
+      box.style.display = 'block';
+      box.textContent =
+        'Workers Analytics Engine is not configured. Missing secrets: ' +
+        (missing || []).join(', ') +
+        '. See workers/api-worker/SECRETS.md for setup instructions.';
+    }
+
+    function authRequired() {
+      document.getElementById('auth-required').style.display = 'block';
+    }
+
+    function readRow(data, key) {
+      // AE returns { meta: [...], data: [{ key: value, ... }] }
+      var rows = (data && data.data) || [];
+      return rows[0] && rows[0][key];
+    }
+
+    function loadAll() {
+      var w = document.getElementById('window').value;
+      var headers = { 'Accept': 'application/json' };
+      var opts = { credentials: 'include', headers: headers };
+
+      fetch(url('/admin/observability/summary', { window: w }), opts)
+        .then(function (r) {
+          if (r.status === 401 || r.status === 403) { authRequired(); throw new Error('auth'); }
+          return r.json();
+        })
+        .then(function (j) {
+          if (!j.ok && j.error === 'analytics-not-configured') {
+            notConfigured(j.missing); return;
+          }
+          document.getElementById('m-requests').textContent = fmt(readRow(j, 'requests'));
+          document.getElementById('m-latency').textContent  = ms(readRow(j, 'avg_latency_ms'));
+          document.getElementById('m-p95').textContent      = ms(readRow(j, 'p95_latency_ms'));
+          document.getElementById('m-5xx').textContent      = fmt(readRow(j, 'errors_5xx'));
+          document.getElementById('m-4xx').textContent      = fmt(readRow(j, 'errors_4xx'));
+        })
+        .catch(function () {});
+
+      fetch(url('/admin/observability/routes', { window: w }), opts)
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          var tbody = document.querySelector('#routes-table tbody');
+          tbody.innerHTML = '';
+          var rows = (j && j.data) || [];
+          if (!rows.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="muted">No traffic in window.</td></tr>';
+            return;
+          }
+          rows.forEach(function (r) {
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+              '<td>' + (r.route || '—') + '</td>' +
+              '<td>' + fmt(r.requests) + '</td>' +
+              '<td>' + ms(r.avg_latency_ms) + '</td>' +
+              '<td>' + ms(r.p95_latency_ms) + '</td>' +
+              '<td>' + fmt(r.errors_5xx) + '</td>';
+            tbody.appendChild(tr);
+          });
+        })
+        .catch(function () {});
+
+      fetch(url('/admin/observability/errors', { window: w }), opts)
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          var tbody = document.querySelector('#errors-table tbody');
+          tbody.innerHTML = '';
+          var rows = (j && j.data) || [];
+          if (!rows.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="muted">No errors in window. Nice.</td></tr>';
+            return;
+          }
+          rows.forEach(function (r) {
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+              '<td class="muted">' + new Date(r.timestamp).toLocaleTimeString() + '</td>' +
+              '<td>' + (r.route || '—') + '</td>' +
+              '<td>' + (r.method || '') + '</td>' +
+              '<td>' + Math.round(r.status || 0) + '</td>' +
+              '<td>' + (r.country || 'XX') + '</td>' +
+              '<td>' + ms(r.latency_ms) + '</td>';
+            tbody.appendChild(tr);
+          });
+        })
+        .catch(function () {});
+    }
+
+    document.getElementById('refresh').addEventListener('click', loadAll);
+    document.getElementById('window').addEventListener('change', loadAll);
+    loadAll();
+  })();
+</script>
+</body>
+</html>

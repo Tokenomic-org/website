@@ -1,0 +1,46 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "courses": "Cursos",
+    "communities": "Comunidades",
+    "experts": "Expertos",
+    "articles": "Artículos",
+    "about": "Acerca",
+    "contact": "Contacto",
+    "dashboard": "Panel"
+  },
+  "wallet": {
+    "connect": "Conectar Wallet",
+    "disconnect": "Desconectar",
+    "switch_to_base": "Cambiar a Base",
+    "switch_to_base_sepolia": "Cambiar a Base Sepolia",
+    "view_on_basescan": "Ver en Basescan"
+  },
+  "footer": {
+    "tagline": "Inteligencia DeFi liderada por la comunidad. Accede a cursos impartidos por expertos, asesoría profesional e investigación profunda para diseñar y escalar economías digitales institucionales.",
+    "connect": "Conectar",
+    "newsletter": "Boletín",
+    "subscribe": "Suscríbete ahora",
+    "email_placeholder": "Introduce tu correo",
+    "language": "Idioma",
+    "rights": "Todos los derechos reservados.",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos del Servicio"
+  },
+  "common": {
+    "loading": "Cargando…",
+    "error": "Algo salió mal. Inténtalo de nuevo.",
+    "empty": "Aún no hay nada que mostrar.",
+    "search": "Buscar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "more": "Leer más",
+    "back": "Atrás"
+  },
+  "paywall": {
+    "title": "Los suscriptores pueden leer el artículo completo.",
+    "body": "Suscríbete con USDC en Base para desbloquear toda la biblioteca.",
+    "cta": "Suscribirme"
+  }
+}

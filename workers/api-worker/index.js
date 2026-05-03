@@ -23,7 +23,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { secureHeaders } from 'hono/secure-headers';
 import { mountD1Routes } from './d1-routes.js';
 import { ChatRoom, mountChatRoutes } from './chat-room.js';
 import { mountSiweRoutes } from './siwe.js';
@@ -33,13 +32,27 @@ import { mountReferralRoutes, handleInviteQueueBatch } from './referrals.js';
 import { mountContentRoutes } from './content-infra.js';
 import { mountEducatorRoutes } from './educator-routes.js';
 import { mountConsultantRoutes } from './consultant-routes.js';
+// Phase 7 — security + observability middleware.
+import {
+  geoBlockMiddleware,
+  tightSecureHeaders,
+  authRateLimitMiddleware,
+} from './security.js';
+import { analyticsMiddleware, mountObservabilityRoutes } from './observability.js';
 
 export { ChatRoom };
 
 const app = new Hono();
 
+// Phase 7 ordering matters:
+//  1. geo-block FIRST so banned-country traffic never touches D1 / contracts.
+//  2. secureHeaders next so even error responses carry CSP/HSTS.
+//  3. analytics third so we capture latency of denied/limited requests too.
+//  4. logger after analytics — it's only useful for live tailing.
+app.use('*', geoBlockMiddleware());
+app.use('*', tightSecureHeaders());
+app.use('*', analyticsMiddleware());
 app.use('*', logger());
-app.use('*', secureHeaders());
 
 // First-party origin allowlist. We deliberately do NOT default to multi-tenant
 // wildcards like https://*.pages.dev or https://*.cf-ipfs.com because those
@@ -172,6 +185,10 @@ function clientIp(c) {
   return c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'anon';
 }
 
+// Phase 7 — auth-endpoint burst limiter. Mounted after rateLimit/clientIp
+// are defined; runs only on /api/auth/*, /api/siwe/verify, /admin/login.
+app.use('*', authRateLimitMiddleware(rateLimit, clientIp));
+
 function escapeForStorage(s, maxLen) {
   if (typeof s !== 'string') return '';
   return s.replace(/\u0000/g, '').slice(0, maxLen);
@@ -223,6 +240,10 @@ mountContentRoutes(app);
 // own role-gated /api/educator/* and /api/consultant/* routes.
 mountEducatorRoutes(app);
 mountConsultantRoutes(app);
+
+// Phase 7: /admin/observability/{summary,routes,errors} backed by Workers
+// Analytics Engine. All gated by requireRole('admin').
+mountObservabilityRoutes(app);
 
 app.get('/api/comments/:slug', async (c) => {
   const slug = c.req.param('slug');

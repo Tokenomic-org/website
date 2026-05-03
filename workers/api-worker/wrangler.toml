@@ -9,6 +9,15 @@ keep_vars           = true
 enabled            = true
 head_sampling_rate = 1
 
+# Phase 7 — Workers Analytics Engine binding. Every request writes one
+# data point (route, method, status, country, role, latency, bytes) so
+# /admin/observability can chart per-route latency + error rate. The
+# dataset name is duplicated as ANALYTICS_ENGINE_DATASET below so the
+# admin endpoints can query it via the AE SQL API.
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "tokenomic_api_requests"
+
 [vars]
 # First-party origins only. Multi-tenant wildcards (https://*.pages.dev,
 # https://*.replit.dev, https://*.repl.co, https://*.workers.dev) must NEVER
@@ -115,6 +124,20 @@ CF_IMAGES_DELIVERY_HASH          = ""
 # Phase 6 — Playback gating policy (see content-infra.js):
 #   "unset-only" (default) | "always" | "never"
 ENROLLMENT_D1_FALLBACK           = "unset-only"
+
+# Phase 7 — Observability + alerting.
+#   ANALYTICS_ENGINE_DATASET   Name of the AE dataset (duplicate of the
+#                              binding above so /admin/observability can
+#                              build SQL queries). Required for the admin
+#                              dashboard; the writeDataPoint() side
+#                              works off the binding alone.
+#   OPS_ALERT_EMAIL            Where error-spike alerts are routed via
+#                              Cloudflare Email Routing. Configured at
+#                              dashboard level; the Worker just reads
+#                              this so the observability page can show
+#                              "Alerts → <addr>".
+ANALYTICS_ENGINE_DATASET         = "tokenomic_api_requests"
+OPS_ALERT_EMAIL                  = ""
 
 [[r2_buckets]]
 binding     = "R2_BUCKET"
