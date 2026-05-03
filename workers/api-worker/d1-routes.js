@@ -45,6 +45,7 @@
 import { verifyMessage } from 'viem';
 import { readSessionFromCookie } from './siwe.js';
 import { isSubscriptionActive } from './subscription.js';
+import { sendEmail, logEmail, tplWelcome } from './mail.js';
 
 // ---------- helpers ----------
 
@@ -326,6 +327,23 @@ export function mountD1Routes(app) {
     `).bind(wallet, display_name, legacyRole, roles, bio, specialty, email, avatar_url, rate_30, rate_60, approved).run();
 
     const row = await c.env.DB.prepare('SELECT * FROM profiles WHERE wallet_address = ?').bind(wallet).first();
+
+    // Phase 6: send a welcome email the first time a wallet completes
+    // its profile (i.e. the row didn't exist before this PUT) AND we
+    // have a deliverable email on file. Fire-and-forget; failures are
+    // logged to email_log but never block profile creation.
+    if (!existing && row && row.email) {
+      try {
+        const tpl = tplWelcome({ name: row.display_name || null, dashboardUrl: 'https://tokenomic.org/dashboard/' });
+        const send = await sendEmail(c.env, { to: row.email, ...tpl });
+        await logEmail(c.env, {
+          recipient: row.email, template: 'welcome', subject: tpl.subject,
+          status: send.ok ? 'sent' : 'failed', error: send.error || null,
+          message_id: send.message_id || null, meta: { wallet },
+        });
+      } catch (_) { /* never block profile creation */ }
+    }
+
     return c.json({ ok: true, profile: row });
   });
 

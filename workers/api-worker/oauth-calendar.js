@@ -19,6 +19,7 @@
  */
 
 import { readSessionFromCookie } from './siwe.js';
+import { sendEmail, logEmail, tplBookingConfirmed } from './mail.js';
 
 // ────────────────────────────────────────────────────────────────────────────
 // helpers
@@ -1028,6 +1029,28 @@ export function mountCalendarRoutes(app) {
         Math.round((Date.parse(end) - Date.parse(start)) / 60_000),
         externalEventId, p?.event?.location?.join_url || null, end
       ).run();
+
+      // Phase 6: confirmation email to the invitee. Best-effort.
+      if (inviteeEmail) {
+        try {
+          const expert = await c.env.DB.prepare(
+            'SELECT display_name FROM profiles WHERE wallet_address = ?'
+          ).bind(conn.wallet).first();
+          const tpl = tplBookingConfirmed({
+            expertName: (expert && expert.display_name) || 'your expert',
+            startTime:  start,
+            joinUrl:    p?.event?.location?.join_url || null,
+            cancelUrl:  p?.invitee?.cancel_url || null,
+          });
+          const send = await sendEmail(c.env, { to: inviteeEmail, ...tpl });
+          await logEmail(c.env, {
+            recipient: inviteeEmail, template: 'booking-confirmed', subject: tpl.subject,
+            status: send.ok ? 'sent' : 'failed', error: send.error || null,
+            message_id: send.message_id || null,
+            meta: { provider: 'calendly', external_event_id: externalEventId },
+          });
+        } catch (_) { /* never block webhook */ }
+      }
     } else if (event === 'invitee.canceled' && externalEventId) {
       await c.env.DB.prepare(
         `UPDATE bookings SET status = 'cancelled'

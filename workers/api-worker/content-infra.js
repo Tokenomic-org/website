@@ -369,6 +369,15 @@ export function mountContentRoutes(app) {
     const courseId = courseRaw != null ? Number(courseRaw) : null;
     const moduleId = moduleRaw != null ? Number(moduleRaw) : null;
 
+    // Phase 6 hardening: this endpoint mints a paid Cloudflare Stream
+    // direct-creator URL, so we MUST tie every issuance to a course
+    // (or module → course) the caller owns. Refuse anonymous module-
+    // less requests outright — otherwise any authenticated wallet
+    // could mint upload URLs and burn the educator's Stream quota.
+    if (!moduleId && !courseId) {
+      return jsonError(c, 400, 'course_id or module_id is required (must own the target course).');
+    }
+
     // Authorization: if a moduleId was supplied, resolve it to its
     // owning course and enforce that the caller is the educator (or
     // admin) for THAT course. Without this check, any authenticated
@@ -522,8 +531,14 @@ export function mountContentRoutes(app) {
     let reason = null;
     let allowed = false;
 
-    if (Number(course.price_usdc || 0) === 0) {
-      allowed = true; reason = 'free-course';
+    // Phase 6 default policy: enrollment is required for ALL courses,
+    // including free ones. The legacy free-course bypass is now opt-in
+    // via FREE_COURSE_PUBLIC_PLAYBACK="true" so operators who want a
+    // truly anonymous "watch any free lesson" UX can re-enable it,
+    // but the default matches the task's enrollment-only requirement.
+    const freeBypass = String(c.env.FREE_COURSE_PUBLIC_PLAYBACK || 'false').toLowerCase() === 'true';
+    if (freeBypass && Number(course.price_usdc || 0) === 0) {
+      allowed = true; reason = 'free-course-public';
     } else if (wallet) {
       if (lc(course.educator_wallet) === wallet) { allowed = true; reason = 'owner'; }
       else if (await isAdmin(c.env, wallet))     { allowed = true; reason = 'admin'; }
