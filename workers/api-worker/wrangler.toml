@@ -70,6 +70,15 @@ ROLE_REGISTRY_CHAIN_ID       = "8453"
 #                                    OAuth callback page targets this origin in
 #                                    its postMessage. Defaults to the popup's own
 #                                    origin which is correct for first-party flows.
+#
+# Phase 5 — Referrals & contact import:
+#   TURNSTILE_SITE_KEY               Cloudflare Turnstile public site key (used in dashboard JS)
+#   TURNSTILE_SECRET_KEY             Turnstile siteverify secret (set via wrangler secret)
+#   INVITE_HMAC_KEY                  ≥32 byte secret used to HMAC-sign one-time invite tokens
+#   MAIL_FROM                        e.g. "Tokenomic Invites <invites@tokenomic.org>"
+#   MAIL_FROM_DOMAIN                 e.g. "tokenomic.org" — used for MailChannels DKIM block
+#   MAIL_DKIM_SELECTOR               DKIM selector (default "mailchannels")
+#   MAIL_DKIM_PRIVATE_KEY            base64 PKCS#8 private key (set via wrangler secret)
 
 [[kv_namespaces]]
 binding    = "COMMENTS_KV"

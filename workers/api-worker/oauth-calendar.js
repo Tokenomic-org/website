@@ -186,6 +186,7 @@ function providerConfig(env, provider) {
         tokenUrl: 'https://oauth2.googleapis.com/token',
         scopes:   ['https://www.googleapis.com/auth/calendar.events',
                    'https://www.googleapis.com/auth/calendar.readonly',
+                   'https://www.googleapis.com/auth/contacts.readonly',
                    'openid', 'email'],
         extra: { access_type: 'offline', prompt: 'consent', include_granted_scopes: 'true' },
       };
@@ -197,7 +198,7 @@ function providerConfig(env, provider) {
         authUrl:  `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize`,
         tokenUrl: `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`,
         scopes:   ['offline_access', 'openid', 'email',
-                   'Calendars.ReadWrite', 'User.Read'],
+                   'Calendars.ReadWrite', 'Contacts.Read', 'User.Read'],
         extra: { response_mode: 'query', prompt: 'select_account' },
       };
     }
@@ -272,7 +273,7 @@ async function refreshAccessToken(env, provider, refreshToken) {
  * Load the connection row, decrypt+refresh if needed, and return a usable
  * access token. Persists rotated refresh tokens transparently.
  */
-async function getAccessToken(env, wallet, provider) {
+export async function getAccessToken(env, wallet, provider) {
   async function readRow() {
     return env.DB.prepare(
       `SELECT id, refresh_token_enc, access_token_enc, expires_at, external_account_id, external_calendar_id, scope

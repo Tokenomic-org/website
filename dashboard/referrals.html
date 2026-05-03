@@ -1,0 +1,351 @@
+---
+layout: dashboard
+title: "Referrals"
+permalink: /referrals/
+---
+<section class="dashboard-section">
+  <div class="auto-container">
+    <div class="row">
+      <div class="col-lg-3 col-md-4 col-sm-12">
+        <div class="dashboard-sidebar">
+          <div class="sidebar-brand">
+            <div class="brand-icon">T</div>
+            <div>
+              <div class="brand-text">Tokenomic</div>
+              <div class="brand-sub">Dashboard</div>
+            </div>
+          </div>
+          <nav class="dashboard-nav">
+            <div class="sidebar-section-label">Main</div>
+            <a href="/dashboard/" class="dash-nav-item"><span class="flaticon-home-1"></span> Dashboard</a>
+            <a href="/communities/" class="dash-nav-item"><span class="flaticon-user-3"></span> Communities</a>
+            <a href="/my-courses/" class="dash-nav-item"><span class="flaticon-notebook"></span> Courses</a>
+            <a href="/events/" class="dash-nav-item"><span class="flaticon-calendar"></span> Events</a>
+            <div class="sidebar-section-label">Finance</div>
+            <a href="/revenue/" class="dash-nav-item"><span class="flaticon-money"></span> Revenue</a>
+            <a href="/bookings/" class="dash-nav-item"><span class="flaticon-calendar"></span> Bookings</a>
+            <div class="sidebar-section-label">Content</div>
+            <a href="/chat/" class="dash-nav-item"><span class="flaticon-speech-bubble"></span> Chat</a>
+            <a href="/articles/" class="dash-nav-item"><span class="flaticon-edit"></span> Articles</a>
+            <a href="/social/" class="dash-nav-item"><span class="flaticon-share"></span> Social</a>
+            <a href="/referrals/" class="dash-nav-item active"><span class="flaticon-share"></span> Referrals</a>
+            <div class="sidebar-section-label">Progress</div>
+            <a href="/leaderboard/" class="dash-nav-item"><span class="flaticon-trophy"></span> Leaderboard</a>
+            <a href="/profile/" class="dash-nav-item"><span class="flaticon-user-3"></span> Profile</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="col-lg-9 col-md-8 col-sm-12">
+        <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+          <div style="width:80px;height:80px;border-radius:50%;background:#0A0F1A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+            <span class="flaticon-share" style="color:#ff6000;font-size:2rem;"></span>
+          </div>
+          <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
+          <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">Sign in with your wallet to get your shareable referral link, see attributed signups, and invite contacts.</p>
+          <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+        </div>
+
+        <div class="dashboard-content" style="display:none;">
+          <div x-data="referralsPage()" x-init="init()">
+
+            <!-- Hero card -->
+            <div style="background:linear-gradient(135deg,#0A0F1A 0%,#1a2744 100%);border-radius:12px;padding:24px 28px;margin-bottom:24px;color:#fff;">
+              <h4 style="color:#fff;margin:0 0 6px;">Earn 5% USDC on every referred sale</h4>
+              <p style="color:#8899A6;font-size:0.9rem;margin:0 0 16px;">Your link sets a 60-day attribution cookie. On the referee's first sign-in, the wallet is permanently linked to you on-chain via <code style="background:rgba(255,255,255,0.1);padding:1px 6px;border-radius:4px;font-size:0.85rem;">ReferralRegistry</code>. Every paid action they take routes 5% to your wallet via the splitter.</p>
+              <div style="display:flex;gap:8px;align-items:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 14px;flex-wrap:wrap;">
+                <span style="color:#ff6000;font-weight:600;font-size:0.85rem;">YOUR LINK:</span>
+                <code style="flex:1;color:#fff;font-size:0.88rem;word-break:break-all;min-width:200px;" x-text="me.link || 'Loading…'"></code>
+                <button class="dash-btn dash-btn-primary" style="padding:6px 16px;font-size:0.82rem;" @click="copyLink()" x-text="copied ? '✓ Copied' : 'Copy'"></button>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+                <a :href="'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Join me on Tokenomic — tokenomics courses, expert consults, on-chain communities. ') + encodeURIComponent(me.link || '')" target="_blank" rel="noopener" class="dash-btn dash-btn-outline" style="padding:6px 14px;font-size:0.78rem;color:#fff;border-color:rgba(255,255,255,0.3);"><i class="fab fa-twitter"></i> Share to X</a>
+                <a :href="'https://warpcast.com/~/compose?text=' + encodeURIComponent('Join me on Tokenomic — ' + (me.link || ''))" target="_blank" rel="noopener" class="dash-btn dash-btn-outline" style="padding:6px 14px;font-size:0.78rem;color:#fff;border-color:rgba(255,255,255,0.3);">Share to Farcaster</a>
+                <a :href="'mailto:?subject=' + encodeURIComponent('Join me on Tokenomic') + '&body=' + encodeURIComponent('I think you would find Tokenomic useful — ' + (me.link || ''))" class="dash-btn dash-btn-outline" style="padding:6px 14px;font-size:0.78rem;color:#fff;border-color:rgba(255,255,255,0.3);"><i class="fas fa-envelope"></i> Email</a>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="row clearfix" style="margin-bottom:24px;">
+              <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;">
+                <div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="me.signups ?? '–'"></div><div class="stat-lbl">Signups attributed</div></div>
+              </div>
+              <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;">
+                <div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="me.qualified ?? '–'"></div><div class="stat-lbl">Qualified (paid sale)</div></div>
+              </div>
+              <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;">
+                <div class="dash-stat"><div class="stat-val" style="color:#F7931A;" x-text="(me.usdc_earned ?? 0).toFixed ? me.usdc_earned.toFixed(2) : me.usdc_earned"></div><div class="stat-lbl">USDC earned</div></div>
+              </div>
+              <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;">
+                <div class="dash-stat"><div class="stat-val" x-text="me.paid ?? '–'"></div><div class="stat-lbl">Payouts settled</div></div>
+              </div>
+            </div>
+
+            <!-- Invite by email -->
+            <div class="dash-card" style="margin-bottom:24px;">
+              <h4 style="margin:0 0 4px;">Invite contacts</h4>
+              <p style="color:#5a8299;font-size:0.85rem;margin:0 0 16px;">Drop a CSV (must contain <code>email</code> and optional <code>name</code> columns), or pull from Google / Outlook. Each invite carries your referral link.</p>
+
+              <!-- Source picker -->
+              <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+                <button class="dash-btn" :class="source==='csv' ? 'dash-btn-primary' : 'dash-btn-outline'" @click="source='csv'">📄 CSV upload</button>
+                <button class="dash-btn" :class="source==='google' ? 'dash-btn-primary' : 'dash-btn-outline'" @click="loadGoogle()">G Google contacts</button>
+                <button class="dash-btn" :class="source==='microsoft' ? 'dash-btn-primary' : 'dash-btn-outline'" @click="loadMicrosoft()">⊞ Outlook contacts</button>
+              </div>
+
+              <!-- CSV drop zone -->
+              <div x-show="source==='csv'" style="border:2px dashed #ccd6dd;border-radius:10px;padding:24px;text-align:center;background:#fafbfc;cursor:pointer;"
+                @dragover.prevent="dragOver=true" @dragleave.prevent="dragOver=false"
+                @drop.prevent="dragOver=false; handleFile($event.dataTransfer.files[0])"
+                @click="$refs.csvInput.click()"
+                :style="dragOver ? 'border-color:#ff6000;background:#fff7f0;' : ''">
+                <input type="file" accept=".csv,text/csv" x-ref="csvInput" @change="handleFile($event.target.files[0])" style="display:none;" />
+                <div style="font-size:2rem;color:#ccd6dd;margin-bottom:8px;">⬆</div>
+                <div style="color:#0A0F1A;font-weight:600;">Drop a CSV here, or click to choose</div>
+                <div style="color:#5a8299;font-size:0.82rem;margin-top:4px;">Up to <span x-text="MAX_RECIPIENTS"></span> emails per send</div>
+              </div>
+
+              <div x-show="loading" style="text-align:center;color:#5a8299;padding:20px;">Loading contacts…</div>
+              <div x-show="loadError" style="background:#fff5f5;border:1px solid #fed7d7;color:#c53030;padding:12px;border-radius:8px;margin-top:12px;font-size:0.85rem;" x-text="loadError"></div>
+
+              <!-- Preview list -->
+              <div x-show="contacts.length > 0" style="margin-top:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+                  <strong style="color:#0A0F1A;"><span x-text="selectedCount()"></span> of <span x-text="contacts.length"></span> selected</strong>
+                  <div style="display:flex;gap:8px;">
+                    <button class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.78rem;" @click="selectAll(true)">Select all</button>
+                    <button class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.78rem;" @click="selectAll(false)">Clear</button>
+                  </div>
+                </div>
+                <div style="max-height:300px;overflow-y:auto;border:1px solid #e8ecef;border-radius:8px;">
+                  <template x-for="(c,i) in contacts" :key="i">
+                    <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid #f0f2f5;cursor:pointer;" :style="c.bad ? 'background:#fffbe6;' : ''">
+                      <input type="checkbox" x-model="c.selected" :disabled="c.bad" style="accent-color:#ff6000;" />
+                      <div style="flex:1;min-width:0;">
+                        <div style="font-weight:600;color:#0A0F1A;font-size:0.88rem;" x-text="c.name || c.email"></div>
+                        <div style="color:#5a8299;font-size:0.78rem;" x-text="c.email"></div>
+                      </div>
+                      <span x-show="c.bad" style="color:#d69e2e;font-size:0.75rem;" x-text="c.bad"></span>
+                    </label>
+                  </template>
+                </div>
+
+                <textarea x-model="personalMessage" placeholder="Add a personal note (optional, max 1000 chars)" maxlength="1000" rows="3" class="dash-input" style="margin-top:12px;width:100%;"></textarea>
+
+                <!-- Turnstile widget -->
+                <div x-show="turnstileSiteKey" class="cf-turnstile" :data-sitekey="turnstileSiteKey" data-callback="onTurnstileVerified" style="margin-top:12px;"></div>
+                <p x-show="!turnstileSiteKey" style="color:#d69e2e;font-size:0.78rem;margin-top:8px;">⚠ Turnstile site key not configured — sends will be rejected by the worker until <code>TURNSTILE_SECRET_KEY</code> is set.</p>
+
+                <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap;">
+                  <button class="dash-btn dash-btn-primary" :disabled="sending || selectedCount()===0 || (turnstileSiteKey && !turnstileToken)" @click="send()">
+                    <span x-show="!sending">Send invitations (<span x-text="selectedCount()"></span>)</span>
+                    <span x-show="sending">Sending…</span>
+                  </button>
+                  <span x-show="sendResult" style="font-size:0.85rem;color:#5a8299;" x-text="sendResult"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent attribution -->
+            <div class="dash-card">
+              <h4 style="margin:0 0 12px;">Recent attribution</h4>
+              <div x-show="me.recent && me.recent.length === 0" style="color:#8899A6;text-align:center;padding:24px;">No referrals yet — share your link to get started.</div>
+              <div x-show="me.recent && me.recent.length > 0" style="overflow-x:auto;">
+                <table class="dash-table" style="width:100%;">
+                  <thead><tr><th>Referee</th><th>Status</th><th>Reward (USDC)</th><th>Linked</th></tr></thead>
+                  <tbody>
+                    <template x-for="r in (me.recent || [])" :key="r.referee_wallet + r.created_at">
+                      <tr>
+                        <td><span class="wallet-pill" style="padding:3px 8px;font-size:0.7rem;" x-text="r.referee_wallet ? (r.referee_wallet.slice(0,6) + '…' + r.referee_wallet.slice(-4)) : '—'"></span></td>
+                        <td><span class="dash-badge" :class="r.status==='paid' ? 'dash-badge-success' : r.status==='qualified' ? 'dash-badge-info' : 'dash-badge-warning'" x-text="r.status"></span></td>
+                        <td x-text="(Number(r.reward_usdc) || 0).toFixed(2)"></td>
+                        <td style="font-size:0.78rem;color:#5a8299;" x-text="(r.created_at || '').slice(0,10)"></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script>
+window.onTurnstileVerified = function(token) {
+  var roots = document.querySelectorAll('[x-data^="referralsPage"]');
+  roots.forEach(function(r) { if (r.__x && r.__x.$data) r.__x.$data.turnstileToken = token; });
+};
+
+function referralsPage() {
+  var API = (window.TOKENOMIC_API_BASE || (window.__TKN_ENV && window.__TKN_ENV.API_BASE) || '').replace(/\/+$/, '');
+  return {
+    MAX_RECIPIENTS: 50,
+    me: { link: '', signups: 0, qualified: 0, paid: 0, usdc_earned: 0, recent: [] },
+    source: 'csv',
+    contacts: [],          // [{ name, email, selected, bad? }]
+    dragOver: false,
+    loading: false,
+    loadError: '',
+    sending: false,
+    sendResult: '',
+    copied: false,
+    personalMessage: '',
+    turnstileSiteKey: (window.__TKN_ENV && window.__TKN_ENV.TURNSTILE_SITE_KEY) || '',
+    turnstileToken: '',
+
+    async init() {
+      try {
+        var jwt = localStorage.getItem('tkn-jwt') || localStorage.getItem('jwt') || '';
+        var headers = { 'accept': 'application/json' };
+        if (jwt && jwt !== 'null') headers['authorization'] = 'Bearer ' + jwt;
+        var r = await fetch(API + '/api/referrals/me', { headers: headers, credentials: 'include' });
+        if (r.ok) this.me = await r.json();
+      } catch (e) { console.warn('referrals/me failed', e); }
+    },
+
+    copyLink() {
+      if (!this.me.link) return;
+      navigator.clipboard.writeText(this.me.link).then(() => {
+        this.copied = true;
+        setTimeout(() => this.copied = false, 2000);
+      });
+    },
+
+    selectedCount() { return this.contacts.filter(c => c.selected && !c.bad).length; },
+    selectAll(v) { this.contacts.forEach(c => { if (!c.bad) c.selected = v; }); },
+
+    handleFile(file) {
+      if (!file) return;
+      this.source = 'csv';
+      this.loadError = '';
+      var reader = new FileReader();
+      reader.onload = (e) => {
+        try { this.parseCsv(String(e.target.result || '')); }
+        catch (err) { this.loadError = 'Could not parse CSV: ' + err.message; }
+      };
+      reader.readAsText(file);
+    },
+
+    parseCsv(text) {
+      // Minimal CSV: header line + comma-separated rows. Quoted fields supported.
+      var lines = text.replace(/\r\n/g, '\n').split('\n').filter(l => l.trim());
+      if (!lines.length) throw new Error('Empty file');
+      var header = this.splitCsvRow(lines[0]).map(h => h.toLowerCase().trim());
+      var emailIdx = header.indexOf('email');
+      var nameIdx  = header.indexOf('name');
+      if (emailIdx < 0) {
+        // Single-column file? Treat as bare emails.
+        emailIdx = 0;
+        nameIdx = -1;
+        lines.unshift('email');
+      }
+      var seen = new Set();
+      var out = [];
+      for (var i = 1; i < lines.length; i++) {
+        var row = this.splitCsvRow(lines[i]);
+        var email = (row[emailIdx] || '').trim().toLowerCase();
+        var name  = nameIdx >= 0 ? (row[nameIdx] || '').trim() : '';
+        if (!email) continue;
+        if (seen.has(email)) continue;
+        seen.add(email);
+        var bad = '';
+        if (!/^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[a-zA-Z]{2,}$/.test(email)) bad = 'invalid';
+        out.push({ email: email, name: name, selected: !bad, bad: bad });
+        if (out.length >= 500) break;
+      }
+      this.contacts = out;
+    },
+
+    splitCsvRow(line) {
+      var out = []; var cur = ''; var q = false;
+      for (var i = 0; i < line.length; i++) {
+        var ch = line[i];
+        if (q) {
+          if (ch === '"' && line[i+1] === '"') { cur += '"'; i++; }
+          else if (ch === '"') { q = false; }
+          else { cur += ch; }
+        } else {
+          if (ch === ',') { out.push(cur); cur = ''; }
+          else if (ch === '"') { q = true; }
+          else { cur += ch; }
+        }
+      }
+      out.push(cur);
+      return out;
+    },
+
+    async loadGoogle() {
+      this.source = 'google';
+      this.loading = true; this.loadError = '';
+      try {
+        var jwt = localStorage.getItem('tkn-jwt') || localStorage.getItem('jwt') || '';
+        var r = await fetch(API + '/api/referrals/google-contacts', {
+          headers: jwt && jwt !== 'null' ? { 'authorization': 'Bearer ' + jwt } : {},
+          credentials: 'include',
+        });
+        var data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+        this.contacts = (data.contacts || []).map(c => ({ ...c, selected: true, bad: '' }));
+        if (!this.contacts.length) this.loadError = 'No contacts found in your Google account.';
+      } catch (e) {
+        this.loadError = 'Google import failed: ' + e.message + '. Make sure you have connected Google Calendar in Profile → Calendar Integrations (the same OAuth grants Contacts access).';
+      } finally { this.loading = false; }
+    },
+
+    async loadMicrosoft() {
+      this.source = 'microsoft';
+      this.loading = true; this.loadError = '';
+      try {
+        var jwt = localStorage.getItem('tkn-jwt') || localStorage.getItem('jwt') || '';
+        var r = await fetch(API + '/api/referrals/microsoft-contacts', {
+          headers: jwt && jwt !== 'null' ? { 'authorization': 'Bearer ' + jwt } : {},
+          credentials: 'include',
+        });
+        var data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+        this.contacts = (data.contacts || []).map(c => ({ ...c, selected: true, bad: '' }));
+        if (!this.contacts.length) this.loadError = 'No contacts found in your Microsoft account.';
+      } catch (e) {
+        this.loadError = 'Outlook import failed: ' + e.message + '. Connect Microsoft in Profile → Calendar Integrations first.';
+      } finally { this.loading = false; }
+    },
+
+    async send() {
+      var picked = this.contacts.filter(c => c.selected && !c.bad).slice(0, this.MAX_RECIPIENTS);
+      if (picked.length === 0) { this.sendResult = 'Nothing to send.'; return; }
+      if (this.turnstileSiteKey && !this.turnstileToken) { this.sendResult = 'Complete the Turnstile challenge first.'; return; }
+      this.sending = true; this.sendResult = '';
+      try {
+        var jwt = localStorage.getItem('tkn-jwt') || localStorage.getItem('jwt') || '';
+        var headers = { 'content-type': 'application/json', 'accept': 'application/json' };
+        if (jwt && jwt !== 'null') headers['authorization'] = 'Bearer ' + jwt;
+        var r = await fetch(API + '/api/referrals/invite-batch', {
+          method: 'POST',
+          headers: headers,
+          credentials: 'include',
+          body: JSON.stringify({
+            recipients: picked.map(c => ({ email: c.email, name: c.name })),
+            message: this.personalMessage,
+            source: this.source,
+            turnstileToken: this.turnstileToken,
+          }),
+        });
+        var data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+        var s = data.summary || {};
+        this.sendResult = `Sent ${s.sent || 0} • duplicate ${s.duplicate || 0} • suppressed ${s.suppressed || 0} • failed ${s.failed || 0}`;
+        // Reset turnstile (one-time use)
+        this.turnstileToken = '';
+        if (window.turnstile && window.turnstile.reset) try { window.turnstile.reset(); } catch (_) {}
+      } catch (e) {
+        this.sendResult = 'Send failed: ' + e.message;
+      } finally { this.sending = false; }
+    },
+  };
+}
+</script>

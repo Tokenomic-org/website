@@ -29,6 +29,7 @@
  */
 
 import { verifyMessage } from 'viem';
+import { linkReferrerOnSignIn } from './referrals.js';
 
 const SESSION_COOKIE = 'tk_session';
 const SESSION_TTL_SEC = 60 * 60 * 24 * 7;          // 7 days
@@ -334,6 +335,12 @@ export function mountSiweRoutes(app) {
     const exp = Math.floor(Date.now() / 1000) + SESSION_TTL_SEC;
     const token = await signSession({ address: lc(address), exp }, secret);
     setSessionCookie(c, token, SESSION_TTL_SEC);
+
+    // Phase 5: if a `tk_ref` cookie is set from a /r/<handle> visit and
+    // this wallet has no referrer recorded yet, persist the (referrer,
+    // referee) pair and clear the cookie. Best-effort — failures must
+    // never block the sign-in itself.
+    try { await linkReferrerOnSignIn(c, address); } catch (_) {}
 
     return c.json({ ok: true, address: lc(address), expiresAt: exp });
   });

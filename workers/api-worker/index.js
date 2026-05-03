@@ -29,6 +29,7 @@ import { ChatRoom, mountChatRoutes } from './chat-room.js';
 import { mountSiweRoutes } from './siwe.js';
 import { mountCalendarRoutes } from './oauth-calendar.js';
 import { mountAdminRoutes } from './admin-routes.js';
+import { mountReferralRoutes } from './referrals.js';
 
 export { ChatRoom };
 
@@ -202,6 +203,11 @@ mountCalendarRoutes(app);
 // route is gated by requireRole('admin') which checks the SIWE cookie, the
 // on-chain RoleRegistry, AND the env-pinned ADMIN_WALLETS allowlist.
 mountAdminRoutes(app);
+
+// Phase 5: /r/:handle attribution, referral dashboard JSON, contact import
+// (Google People + MS Graph), Turnstile-gated batch invites via MailChannels,
+// HMAC-signed unsubscribe links.
+mountReferralRoutes(app);
 
 app.get('/api/comments/:slug', async (c) => {
   const slug = c.req.param('slug');
