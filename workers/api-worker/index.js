@@ -28,6 +28,7 @@ import { mountD1Routes } from './d1-routes.js';
 import { ChatRoom, mountChatRoutes } from './chat-room.js';
 import { mountSiweRoutes } from './siwe.js';
 import { mountCalendarRoutes } from './oauth-calendar.js';
+import { mountAdminRoutes } from './admin-routes.js';
 
 export { ChatRoom };
 
@@ -196,6 +197,11 @@ mountChatRoutes(app);
 // Phase 4: Calendar OAuth (Google/Microsoft/Calendly), unified availability,
 // slot holds, booking confirmation with calendar write-through, Calendly webhook.
 mountCalendarRoutes(app);
+
+// Phase 3a: SIWE-aware admin console JSON API. Mounted under /admin/*; every
+// route is gated by requireRole('admin') which checks the SIWE cookie, the
+// on-chain RoleRegistry, AND the env-pinned ADMIN_WALLETS allowlist.
+mountAdminRoutes(app);
 
 app.get('/api/comments/:slug', async (c) => {
   const slug = c.req.param('slug');

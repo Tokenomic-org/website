@@ -38,6 +38,16 @@ PLATFORM_TREASURY            = ""    # set via `wrangler secret put PLATFORM_TRE
 # the deployed proxy/impl address on Base mainnet or Base Sepolia.
 SUBSCRIPTION_MANAGER         = ""
 SUBSCRIPTION_CHAIN_ID        = "8453"   # 8453=base, 84532=base-sepolia
+# Phase 3a: SIWE-aware admin console.
+#  - ADMIN_WALLETS   comma-separated lowercased EOAs that bypass on-chain role
+#                    checks. Bootstrap / break-glass; keep this list short.
+#  - ROLE_REGISTRY   deployed RoleRegistry address on the active chain.
+#                    When unset, the on-chain reader returns the base
+#                    ['learner'] role and admin gating falls back to
+#                    ADMIN_WALLETS + the legacy profiles.roles JSON column.
+ADMIN_WALLETS                = ""
+ROLE_REGISTRY                = ""
+ROLE_REGISTRY_CHAIN_ID       = "8453"
 # Secrets (set via `wrangler secret put …`):
 #   JWT_SECRET                       HS256 key for legacy /api/auth/login JWTs
 #   SIWE_SECRET                      (optional) dedicated HMAC key for SIWE cookies; falls back to JWT_SECRET
