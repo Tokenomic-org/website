@@ -91,17 +91,15 @@ footer = footer.replace(/\{\{site\.url\}\}/g, site.url)
 
 var newsletterScript = '<script>function submitNewsletter(e){e.preventDefault();var f=e.target;var email=f.querySelector("input[name=email]").value;var btn=f.querySelector("button");var msg=f.closest(".newsletter-widget").querySelector(".newsletter-msg")||document.createElement("div");btn.disabled=true;btn.textContent="Subscribing...";fetch("/api/newsletter/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email})}).then(function(r){return r.json()}).then(function(d){if(d.success){btn.textContent="Subscribed!";btn.style.background="#38a169";if(msg.classList){msg.textContent=d.message;msg.style.display="block";msg.style.color="#38a169";}f.querySelector("input[name=email]").value="";}else{throw new Error(d.error)}}).catch(function(err){btn.textContent="Subscribe Now";btn.disabled=false;if(msg.classList){msg.textContent=err.message||"Please try again";msg.style.display="block";msg.style.color="#e53e3e";}});return false;}</script>';
 
+// Phase 3c: dashboard/{index,courses,bookings,communities,profile,revenue}.html
+// are now React-island shells (LearnerShell) and ship as-is via Jekyll. They
+// must NOT be rewritten with the legacy bootstrap chrome below or they'd lose
+// their tailwind island styling and double-mount.
 var pageTitles = {
-  'dashboard/index.html': { title: 'Dashboard', out: '_site/dashboard' },
   'dashboard/articles.html': { title: 'Articles', out: '_site/dashboard/articles' },
-  'dashboard/bookings.html': { title: 'Bookings', out: '_site/dashboard/bookings' },
   'dashboard/chat.html': { title: 'Chat', out: '_site/dashboard/chat' },
-  'dashboard/communities.html': { title: 'Communities', out: '_site/dashboard/communities' },
-  'dashboard/courses.html': { title: 'Courses', out: '_site/dashboard/courses' },
   'dashboard/events.html': { title: 'Events', out: '_site/dashboard/events' },
   'dashboard/leaderboard.html': { title: 'Leaderboard', out: '_site/dashboard/leaderboard' },
-  'dashboard/profile.html': { title: 'Profile', out: '_site/dashboard/profile' },
-  'dashboard/revenue.html': { title: 'Revenue', out: '_site/dashboard/revenue' },
   'dashboard/social.html': { title: 'Social', out: '_site/dashboard/social' }
 };
 

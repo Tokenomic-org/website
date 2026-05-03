@@ -32,6 +32,7 @@ import { mountReferralRoutes, handleInviteQueueBatch } from './referrals.js';
 import { mountContentRoutes } from './content-infra.js';
 import { mountEducatorRoutes } from './educator-routes.js';
 import { mountConsultantRoutes } from './consultant-routes.js';
+import { mountLearnerRoutes } from './learner-routes.js';
 // Phase 7 — security + observability middleware.
 import {
   geoBlockMiddleware,
@@ -252,6 +253,11 @@ mountContentRoutes(app);
 // own role-gated /api/educator/* and /api/consultant/* routes.
 mountEducatorRoutes(app);
 mountConsultantRoutes(app);
+
+// Phase 3c: Learner home JSON API. /api/me/* endpoints used by LearnerShell
+// to render My Courses, subscriptions, communities, bookings, referrals,
+// wallet, and settings for any signed-in wallet.
+mountLearnerRoutes(app);
 
 // Phase 7: /admin/observability/{summary,routes,errors} backed by Workers
 // Analytics Engine. All gated by requireRole('admin').

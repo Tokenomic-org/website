@@ -1,212 +1,26 @@
 ---
-layout: dashboard
-title: "Dashboard"
+layout: null
 permalink: /dashboard/
+title: Dashboard
 ---
-<section class="dashboard-section" >
-    <div class="auto-container">
-        <div class="row">
-            <div class="col-lg-3 col-md-4 col-sm-12">
-                <div class="dashboard-sidebar">
-                    <div class="sidebar-brand">
-                        <div class="brand-icon">T</div>
-                        <div>
-                            <div class="brand-text">Tokenomic</div>
-                            <div class="brand-sub">Dashboard</div>
-                        </div>
-                    </div>
-                    <nav class="dashboard-nav">
-                        <div class="sidebar-section-label">Main</div>
-                        <a href="/dashboard/" class="dash-nav-item active">
-                            <span class="flaticon-home-1"></span> Dashboard
-                        </a>
-                        <a href="/communities/" data-dash="communities" class="dash-nav-item">
-                            <span class="flaticon-user-3"></span> Communities
-                        </a>
-                        <a href="/my-courses/" data-dash="courses" class="dash-nav-item">
-                            <span class="flaticon-notebook"></span> Courses
-                        </a>
-                        <a href="/events/" data-dash="events" class="dash-nav-item">
-                            <span class="flaticon-calendar"></span> Events
-                        </a>
-                        <div class="sidebar-section-label">Finance</div>
-                        <a href="/revenue/" data-dash="revenue" class="dash-nav-item">
-                            <span class="flaticon-money"></span> Revenue
-                        </a>
-                        <a href="/bookings/" data-dash="bookings" class="dash-nav-item">
-                            <span class="flaticon-calendar"></span> Bookings
-                        </a>
-                        <div class="sidebar-section-label">Content</div>
-                        <a href="/chat/" data-dash="chat" class="dash-nav-item">
-                            <span class="flaticon-speech-bubble"></span> Chat
-                        </a>
-                        <a href="/articles/" data-dash="articles" class="dash-nav-item">
-                            <span class="flaticon-edit"></span> Articles
-                        </a>
-                        <a href="/social/" data-dash="social" class="dash-nav-item">
-                            <span class="flaticon-share"></span> Social
-                        </a>
-                        <a href="/referrals/" data-dash="referrals" class="dash-nav-item">
-                            <span class="flaticon-share"></span> Referrals
-                        </a>
-                        <div class="sidebar-section-label">Progress</div>
-                        <a href="/leaderboard/" data-dash="leaderboard" class="dash-nav-item">
-                            <span class="flaticon-trophy"></span> Leaderboard
-                        </a>
-                        <a href="/profile/" data-dash="profile" class="dash-nav-item">
-                            <span class="flaticon-user-3"></span> Profile
-                        </a>
-                    </nav>
-                </div>
-            </div>
-            <div class="col-lg-9 col-md-8 col-sm-12">
-                                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                    <div style="width:80px;height:80px;border-radius:50%;background:#0A0F1A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
-                        <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
-                    </div>
-                    <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
-                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
-                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" data-tkn-action="connect">Login with Wallet</button>
-                </div>
-                <div class="dashboard-content" style="display:none;">
-                    <div x-data="dashboardHome()" x-init="init()">
-
-    <!-- Greeting + role pill (real, not "view-as") -->
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px;">
-        <div>
-            <h3 style="margin:0;color:#0A0F1A;">Welcome back<span x-show="displayName">, <span x-text="displayName"></span></span></h3>
-            <p style="margin:4px 0 0;color:#5a8299;font-size:0.9rem;">
-                <template x-for="r in roles" :key="r"><span class="dash-badge" :class="roleBadge(r)" style="margin-right:6px;text-transform:capitalize;" x-text="r"></span></template>
-                <span x-show="walletShort" style="font-family:monospace;font-size:0.78rem;color:#8899A6;margin-left:6px;" x-text="walletShort"></span>
-            </p>
-        </div>
-        <div x-show="!hasRole('educator') && !hasRole('admin')" style="display:flex;gap:8px;flex-wrap:wrap;">
-            <a href="/profile/#consultant-registration" class="dash-btn dash-btn-outline" style="padding:8px 14px;font-size:0.82rem;">Become an Educator</a>
-        </div>
-    </div>
-
-    <!-- Stat cards: real data, role-aware -->
-    <div class="row clearfix" style="margin-bottom:24px;">
-        <template x-for="stat in roleStats" :key="stat.label">
-            <div class="col-lg-3 col-md-6 col-sm-12" style="margin-bottom:16px;">
-                <div class="dash-stat">
-                    <div class="stat-val" :style="'color:' + stat.color" x-text="stat.value"></div>
-                    <div class="stat-lbl" x-text="stat.label"></div>
-                </div>
-            </div>
-        </template>
-    </div>
-
-    <!-- Admin only: review queue summary (S1 read-only) -->
-    <div class="dash-card" style="margin-bottom:20px;" x-show="hasRole('admin') && adminLoaded">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-            <h4 style="margin:0;"><i class="fas fa-shield-halved" style="color:#ff6000;margin-right:8px;"></i>Review Queue</h4>
-            <span style="font-size:0.78rem;color:#5a8299;">read-only this session</span>
-        </div>
-        <div class="row clearfix" x-show="adminCounts.total > 0">
-            <template x-for="(v, k) in adminCountsView" :key="k">
-                <div class="col-md-3 col-sm-6" style="margin-bottom:12px;">
-                    <div style="background:#f8fafc;border:1px solid #e8eef5;border-radius:10px;padding:14px;">
-                        <div style="font-size:1.6rem;font-weight:700;color:#0c2230;" x-text="v"></div>
-                        <div style="font-size:0.78rem;color:#5a8299;text-transform:capitalize;" x-text="k + ' awaiting review'"></div>
-                    </div>
-                </div>
-            </template>
-        </div>
-        <div x-show="adminCounts.total === 0" style="color:#5a8299;font-size:0.9rem;padding:8px 0;">Inbox zero — nothing waiting for review.</div>
-    </div>
-
-    <!-- Learner-first row: continue learning + suggested next step -->
-    <div class="row clearfix" x-show="hasRole('learner') && !hasRole('educator') && !hasRole('admin')">
-        <div class="col-lg-8 col-md-7 col-sm-12" style="margin-bottom:20px;">
-            <div class="dash-card">
-                <h4 style="margin-bottom:14px;">Continue learning</h4>
-                <div x-show="enrollments.length === 0" style="padding:24px;text-align:center;border:1px dashed #e8eef5;border-radius:10px;">
-                    <p style="color:#5a8299;margin-bottom:12px;">You haven't enrolled in a course yet.</p>
-                    <a href="/courses/" class="dash-btn dash-btn-primary" style="padding:8px 18px;">Browse the catalogue</a>
-                </div>
-                <template x-for="e in enrollments.slice(0,4)" :key="e.id || e.course_id">
-                    <a :href="e.url || ('/courses/' + (e.slug || ''))" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0f2f5;text-decoration:none;color:inherit;">
-                        <div style="flex:1;">
-                            <div style="font-weight:600;color:#0A0F1A;" x-text="e.title || e.course_title || 'Untitled course'"></div>
-                            <div style="font-size:0.78rem;color:#5a8299;">Progress <span x-text="(e.progress || 0) + '%'"></span></div>
-                        </div>
-                        <div style="width:120px;height:6px;background:#f0f2f5;border-radius:3px;overflow:hidden;">
-                            <div :style="'width:' + (e.progress || 0) + '%;height:100%;background:#ff6000;'"></div>
-                        </div>
-                    </a>
-                </template>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-5 col-sm-12" style="margin-bottom:20px;">
-            <div class="dash-card">
-                <h4 style="margin-bottom:14px;">Your stats</h4>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-                    <div><div style="font-size:1.4rem;font-weight:700;color:#0A0F1A;" x-text="learnerStats.xp"></div><div style="font-size:0.75rem;color:#5a8299;">XP</div></div>
-                    <div><div style="font-size:1.4rem;font-weight:700;color:#0A0F1A;" x-text="learnerStats.streak + 'd'"></div><div style="font-size:0.75rem;color:#5a8299;">Streak</div></div>
-                    <div><div style="font-size:1.4rem;font-weight:700;color:#0A0F1A;" x-text="learnerStats.certs"></div><div style="font-size:0.75rem;color:#5a8299;">Certificates</div></div>
-                    <div><div style="font-size:1.4rem;font-weight:700;color:#0A0F1A;" x-text="learnerStats.enrolled"></div><div style="font-size:0.75rem;color:#5a8299;">Enrolled</div></div>
-                </div>
-                <hr style="margin:16px 0;">
-                <p style="font-size:0.82rem;color:#5a8299;margin-bottom:10px;">Ready to teach?</p>
-                <a href="/profile/#consultant-registration" class="dash-btn dash-btn-primary" style="padding:8px 14px;font-size:0.82rem;width:100%;text-align:center;">Apply to become an Educator</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Educator-first row: needs attention + revenue -->
-    <div class="row clearfix" x-show="hasRole('educator') || hasRole('admin')">
-        <div class="col-lg-8 col-md-7 col-sm-12" style="margin-bottom:20px;">
-            <div class="dash-card">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-                    <h4 style="margin:0;">Recent revenue</h4>
-                    <a href="/revenue/" data-dash="revenue" class="dash-btn dash-btn-outline" style="padding:5px 14px;font-size:0.75rem;">View all</a>
-                </div>
-                <div x-show="recentTx.length === 0" style="padding:24px;text-align:center;border:1px dashed #e8eef5;border-radius:10px;">
-                    <p style="color:#5a8299;margin:0;">No transactions yet. Revenue will appear here once a learner buys one of your courses or books a consultation.</p>
-                </div>
-                <div x-show="recentTx.length > 0" style="overflow-x:auto;">
-                    <table class="dash-table">
-                        <thead><tr><th>Description</th><th>Amount</th><th>From</th><th>Status</th><th>Date</th></tr></thead>
-                        <tbody>
-                            <template x-for="tx in recentTx" :key="tx.id">
-                                <tr>
-                                    <td style="font-weight:500;" x-text="tx.description || '—'"></td>
-                                    <td><strong style="color:#0D7C3E;" x-text="'$' + (tx.amount_usdc || 0) + ' USDC'"></strong></td>
-                                    <td><span class="wallet-pill" style="padding:3px 8px;font-size:0.72rem;" x-text="shortAddr(tx.sender_wallet)"></span></td>
-                                    <td><span class="dash-badge" :class="tx.status==='confirmed'?'dash-badge-success':'dash-badge-warning'" x-text="tx.status || 'pending'"></span></td>
-                                    <td style="font-size:0.82rem;color:#5A6B7B;" x-text="tx.created_at ? new Date(tx.created_at).toLocaleDateString() : ''"></td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-5 col-sm-12" style="margin-bottom:20px;">
-            <div class="dash-card">
-                <h4 style="margin-bottom:14px;">Quick actions</h4>
-                <div class="quick-action-grid">
-                    <template x-for="action in quickActions" :key="action.label">
-                        <a :href="action.url" class="quick-action-card">
-                            <div class="qa-icon" :style="'background:' + action.iconBg + ';color:' + action.iconColor"><span :class="action.icon"></span></div>
-                            <div>
-                                <div class="qa-label" x-text="action.label"></div>
-                                <div class="qa-desc" x-text="action.desc"></div>
-                            </div>
-                        </a>
-                    </template>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<script src="/shared/assets/js/pages/home.js" defer></script>
-
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8">
+    <title>Dashboard · Tokenomic</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="shortcut icon" href="/assets/images/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="/assets/islands/dist/tailwind.css" />
+    <script src="/shared/assets/js/theme-bootstrap.js"></script>
+    <style>html,body{margin:0;padding:0;background:rgb(8,15,24);}</style>
+</head>
+<body>
+    <!--
+        Phase 3c learner home. LearnerShell verifies the SIWE session and
+        renders the welcome dashboard with quick stats + continue-learning.
+    -->
+    <div data-island="LearnerShell" data-props='{"section":"home"}'></div>
+    <script defer src="/assets/islands/dist/LearnerShell.iife.js"></script>
+</body>
+</html>
