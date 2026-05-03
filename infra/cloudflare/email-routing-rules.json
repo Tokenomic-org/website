@@ -1,0 +1,40 @@
+{
+  "$schema": "https://api.cloudflare.com/schemas/v4/zones/email/routing/rules.json",
+  "_comment": "Inbound email routing for tokenomic.org. Outbound alert mail (workers/api-worker/alerts.js) goes via MailChannels and is unrelated to these rules; these handle mail *arriving* at the zone.",
+
+  "rules": [
+    {
+      "name": "tkn-managed: forward alerts mailbox to OPS_ALERT_EMAIL",
+      "enabled": true,
+      "priority": 10,
+      "matchers": [
+        { "type": "literal", "field": "to", "value": "alerts@tokenomic.org" }
+      ],
+      "actions": [
+        { "type": "forward", "value": ["${OPS_ALERT_EMAIL}"] }
+      ],
+      "_comment": "alerts@ is the From: address used by workers/api-worker/alerts.js when the AE error-spike Cron fires. This rule forwards bounces, NDRs and replies to the on-call mailbox so we don't lose telemetry. ${OPS_ALERT_EMAIL} is interpolated by apply.sh from the env var of the same name; that address must be added as a verified destination in the Email Routing dashboard before applying."
+    },
+    {
+      "name": "tkn-managed: forward postmaster + abuse to OPS_ALERT_EMAIL",
+      "enabled": true,
+      "priority": 20,
+      "matchers": [
+        { "type": "literal", "field": "to", "value": "postmaster@tokenomic.org" },
+        { "type": "literal", "field": "to", "value": "abuse@tokenomic.org" }
+      ],
+      "actions": [
+        { "type": "forward", "value": ["${OPS_ALERT_EMAIL}"] }
+      ],
+      "_comment": "RFC 2142 mandatory mailboxes. Required for some upstream providers (e.g. AWS SES bounce notifications) to consider us a well-run sender."
+    }
+  ],
+
+  "catch_all": {
+    "name": "tkn-managed: drop catch-all",
+    "enabled": true,
+    "matchers": [{ "type": "all" }],
+    "actions": [{ "type": "drop" }],
+    "_comment": "Anything not matched above is silently dropped — we are not running a general-purpose mail server. Specific named mailboxes (hello@, support@, etc.) should be added as their own rules above this catch-all."
+  }
+}

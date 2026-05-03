@@ -1,0 +1,38 @@
+/*
+ * island-theme-fab.css
+ *
+ * Floating dark-mode toggle button used by the island-rendered pages. Lives
+ * outside the React tree so it works even if an island fails to hydrate.
+ *
+ * Was previously an inline <style> block in _includes/island-bootstrap.html;
+ * extracted so the site-worker CSP can drop 'unsafe-inline' from style-src
+ * (see infra/cloudflare/csp-rollout.md, phase 3).
+ */
+.tk-theme-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 999;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgb(16, 25, 36);
+  color: #ECF4FA;
+  border: 1px solid rgb(36, 52, 70);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform .15s ease, background .15s ease;
+}
+
+.tk-theme-fab:hover {
+  transform: translateY(-1px);
+}
+
+.theme-light .tk-theme-fab {
+  background: #ffffff;
+  color: #0A1F29;
+  border-color: #E4EAF0;
+}

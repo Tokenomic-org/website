@@ -1,39 +1,16 @@
 <!-- Tokenomic island bootstrap -->
 <link rel="stylesheet" href="/assets/islands/dist/tailwind.css" />
+<link rel="stylesheet" href="/shared/assets/css/island-theme-fab.css" />
 <!--
-  Phase 7 — single hashed inline bootstrap (architecture spec):
-  one tiny pre-paint dark-mode IIFE whose sha256 is allow-listed in
-  STRICT_SCRIPT_SRC. Inline because external scripts cannot reliably
-  win the FOUC race. Body MUST match the hash byte-for-byte; touch
-  it and you must regenerate sha256-… in workers/site-worker/index.js.
+  Phase 7 follow-up: pre-paint dark-mode bootstrap is now an external
+  synchronous script. No inline <script> blocks remain in this file, so the
+  site-worker CSP no longer needs a 'sha256-…' allowance for it. See
+  infra/cloudflare/csp-rollout.md for the broader rollout plan.
 -->
-<script>
-    try {
-      var t = localStorage.getItem('tkn-theme');
-      if (t !== 'light' && t !== 'dark') t = 'dark';
-      var cl = document.documentElement.classList;
-      if (t === 'light') { cl.add('theme-light'); cl.remove('dark'); }
-      else { cl.remove('theme-light'); cl.add('dark'); }
-    } catch (e) {}
-  </script>
+<script src="/shared/assets/js/island-theme-prepaint.js"></script>
 <!-- Floating-toggle click handler is external (no FOUC race to win). -->
 <script src="/shared/assets/js/island-theme-bootstrap.js"></script>
 <!-- React + ReactDOM are bundled into each island IIFE. No CDN dependency. -->
-<style>
-  /* Floating dark-mode toggle for island-rendered pages. Lives outside the
-     React tree so it works even if an island fails to hydrate. */
-  .tk-theme-fab {
-    position: fixed; right: 20px; bottom: 20px; z-index: 999;
-    width: 44px; height: 44px; border-radius: 50%;
-    background: rgb(16,25,36); color: #ECF4FA;
-    border: 1px solid rgb(36,52,70);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-    display: inline-flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: transform .15s ease, background .15s ease;
-  }
-  .tk-theme-fab:hover { transform: translateY(-1px); }
-  .theme-light .tk-theme-fab { background: #ffffff; color: #0A1F29; border-color: #E4EAF0; }
-</style>
 <button id="tk-theme-fab" class="tk-theme-fab" type="button" aria-label="Toggle dark mode">
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />

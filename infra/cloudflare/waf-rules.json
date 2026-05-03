@@ -1,0 +1,62 @@
+{
+  "$schema": "https://api.cloudflare.com/schemas/v4/zones/firewall_rules.json",
+  "_comment": "Source of truth for tokenomic.org WAF custom rules. Apply via infra/cloudflare/apply.sh. All rules carry the 'tkn-managed:' description prefix so apply.sh can delete-and-recreate without touching dashboard-authored rules.",
+
+  "rulesets": [
+    {
+      "phase": "http_request_firewall_custom",
+      "name": "tkn-managed: phase-7 edge defenses",
+      "rules": [
+        {
+          "description": "tkn-managed: block known scraper user agents",
+          "expression": "(lower(http.user_agent) contains \"semrushbot\") or (lower(http.user_agent) contains \"ahrefsbot\") or (lower(http.user_agent) contains \"mj12bot\") or (lower(http.user_agent) contains \"dotbot\") or (lower(http.user_agent) contains \"petalbot\") or (lower(http.user_agent) contains \"serpstatbot\") or (lower(http.user_agent) contains \"blexbot\") or (lower(http.user_agent) contains \"dataforseobot\") or (lower(http.user_agent) contains \"seekport\") or (lower(http.user_agent) contains \"barkrowler\") or (lower(http.user_agent) contains \"zoominfobot\") or (lower(http.user_agent) contains \"megaindex\") or (lower(http.user_agent) eq \"\") or (http.user_agent matches \"(?i)^(curl|wget|python-requests|go-http-client|libwww-perl|java/)\")",
+          "action": "block",
+          "_comment": "Empty UA + common library defaults are blocked at the edge. Real curl-from-CI traffic comes from the workers/api-worker -> api.cloudflare.com path, which is outbound and never hits this rule."
+        },
+
+        {
+          "description": "tkn-managed: geo-block sub-national OFAC zones",
+          "expression": "(ip.geoip.subdivision_1_iso_code in {\"UA-43\" \"UA-40\"}) or (ip.geoip.subdivision_2_iso_code in {\"UA-43\" \"UA-40\"}) or (cf.region_code in {\"UA-43\" \"UA-40\" \"UA-14-DNR\" \"UA-09-LNR\"})",
+          "action": "block",
+          "response": {
+            "status_code": 451,
+            "content_type": "text/plain",
+            "content": "Service unavailable in your region for legal compliance reasons."
+          },
+          "_comment": "Crimea (UA-43), Sevastopol (UA-40), so-called DNR/LNR. Country-level OFAC list (CU/IR/KP/SY) is enforced inside both Workers in workers/*/security.js as defense-in-depth."
+        },
+
+        {
+          "description": "tkn-managed: challenge suspicious POSTs to siwe verify",
+          "expression": "(http.request.method eq \"POST\") and (http.request.uri.path eq \"/api/siwe/verify\") and ((not http.request.headers[\"content-type\"][0] contains \"application/json\") or (http.request.body.size lt 64) or (http.request.body.size gt 8192))",
+          "action": "managed_challenge",
+          "_comment": "Real SIWE verify bodies are 200-800 bytes of JSON. Anything outside that envelope is almost certainly a probe; managed challenge keeps the false-positive rate low while killing botnets."
+        }
+      ]
+    }
+  ],
+
+  "rate_limits": [
+    {
+      "description": "tkn-managed: rate-limit /api/siwe/verify per ASN",
+      "match": {
+        "request": {
+          "methods": ["POST"],
+          "url_pattern": "tokenomic.org/api/siwe/verify"
+        }
+      },
+      "characteristics": ["ip.geoip.asnum", "http.request.uri.path"],
+      "period": 60,
+      "requests_per_period": 30,
+      "mitigation_timeout": 600,
+      "action": {
+        "mode": "block",
+        "response": {
+          "content_type": "application/json",
+          "body": "{\"error\":\"Too many SIWE verifications from this network. Try again later.\"}"
+        }
+      },
+      "_comment": "Per-ASN (not per-IP) so a flood from a botnet sharing carrier-grade NAT cannot hide behind shared IPs. 30 verifies/min/ASN = 1 verify every 2s — enough headroom for a coffee shop or campus to do a release demo, low enough to neutralise credential-stuffing-on-wallets attacks. Pairs with workers/api-worker/security.js#authRateLimitMiddleware which is per-IP at 5/min."
+    }
+  ]
+}

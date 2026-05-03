@@ -152,27 +152,30 @@ function adminUnauthorizedResponse(url) {
 
 // ---------- CSP / security headers ----------
 //
-// Single STRICT_CSP applied to every response. script-src is 'self' only —
-// no 'unsafe-inline', no 'unsafe-eval', no inline-script hashes. Every
-// inline script in the shipped templates has been moved to an external
-// file under /shared/assets/js/. style-src keeps 'unsafe-inline' because
-// the legacy Bootstrap-4 templates use inline style attributes (a CSS
-// surface, not a JS execution surface).
+// Single STRICT_CSP applied to every response. script-src is 'self' + a
+// small allowlist of audited CDNs — NO 'unsafe-inline', NO 'unsafe-eval',
+// and (Phase 7 follow-up) NO inline-script hashes either: the pre-paint
+// dark-mode IIFE that previously needed a 'sha256-…' allowance now lives
+// at /shared/assets/js/island-theme-prepaint.js. style-src still permits
+// 'unsafe-inline' because dozens of legacy Bootstrap-4 templates carry
+// inline style="…" attributes (CSS surface, not JS execution surface).
 //
-// CSP_REPORT_URL, when set, also emits a super-strict Report-Only header
-// (drops inline styles too) so we get violation telemetry as we tighten
-// the legacy stylesheets.
+// REPORT_ONLY_CSP is the *target* policy after the legacy template
+// rewrite — it drops 'unsafe-inline' from style-src too. We ship it as a
+// Report-Only header on every response so we collect violation reports
+// before flipping it to enforced. See infra/cloudflare/csp-rollout.md.
 
 const STRICT_CSP =
   "default-src 'self'; " +
-  // script-src is 'self' + a small allowlist of audited CDNs that host
-  // pinned third-party libraries (DOMPurify on cdnjs, ethers.js v5 on
-  // jsdelivr, Alpine.js on unpkg) + EXACTLY ONE sha256 inline-script
-  // hash for the pre-paint dark-mode bootstrap in
-  // _includes/island-bootstrap.html. NO 'unsafe-inline', NO
-  // 'unsafe-eval'. Touching the inline bootstrap requires updating
-  // this hash.
-  "script-src 'self' 'sha256-hitv+m7l2PVVQ7QWQvrrun3ogAe/v+9dwWzCgGk8DUY=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.googletagmanager.com; " +
+  // script-src is 'self' + an allowlist of audited CDNs that host pinned
+  // third-party libraries (DOMPurify on cdnjs, ethers.js v5 on jsdelivr,
+  // Alpine.js on unpkg, GTM for analytics). NO 'unsafe-inline', NO
+  // 'unsafe-eval', NO inline-script hashes — every inline script in the
+  // shipped templates has been moved to an external file under
+  // /shared/assets/js/. If you ever need to add an inline <script> back,
+  // see infra/cloudflare/csp-rollout.md for how to compute and document
+  // its sha256 hash.
+  "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.googletagmanager.com; " +
   "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
   "img-src 'self' data: blob: https:; " +
   "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
@@ -183,15 +186,22 @@ const STRICT_CSP =
   "form-action 'self'; " +
   "upgrade-insecure-requests";
 
+// Target policy — same as STRICT_CSP but with 'unsafe-inline' dropped from
+// style-src and the CDN allowance preserved (style-src 'self' + the two
+// stylesheet CDNs already used by the layouts). Shipped as Report-Only
+// until inline style attributes are migrated; see csp-rollout.md phase 3.
 const REPORT_ONLY_CSP =
   "default-src 'self'; " +
-  "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; " +
-  "style-src 'self'; " +     // tighter than enforced — gathers data
+  "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.googletagmanager.com; " +
+  "style-src 'self' https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
   "img-src 'self' data: blob: https:; " +
-  "font-src 'self' data:; " +
+  "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
+  "connect-src 'self' https://*.tokenomic.org https://*.workers.dev https://mainnet.base.org https://sepolia.base.org https://api.cloudflare.com https://relay.walletconnect.com wss://relay.walletconnect.com; " +
   "frame-ancestors 'none'; " +
   "object-src 'none'; " +
-  "base-uri 'self'";
+  "base-uri 'self'; " +
+  "form-action 'self'; " +
+  "upgrade-insecure-requests";
 
 function withSecurityHeaders(resp, url, env) {
   const h = new Headers(resp.headers);
@@ -207,11 +217,14 @@ function withSecurityHeaders(resp, url, env) {
   if (!h.has('Content-Security-Policy')) {
     h.set('Content-Security-Policy', STRICT_CSP);
   }
-  if (env && env.CSP_REPORT_URL) {
-    h.set(
-      'Content-Security-Policy-Report-Only',
-      REPORT_ONLY_CSP + '; report-uri ' + env.CSP_REPORT_URL,
-    );
-  }
+  // Always emit the Report-Only header so we collect the violation
+  // signal even before CSP_REPORT_URL is configured (browsers will fire
+  // `securitypolicyviolation` events the page can listen to). When
+  // CSP_REPORT_URL is set, append a report-uri so reports POST to the
+  // collector. See infra/cloudflare/csp-rollout.md for the rollout plan.
+  const reportOnly = (env && env.CSP_REPORT_URL)
+    ? REPORT_ONLY_CSP + '; report-uri ' + env.CSP_REPORT_URL
+    : REPORT_ONLY_CSP;
+  h.set('Content-Security-Policy-Report-Only', reportOnly);
   return new Response(resp.body, { status: resp.status, statusText: resp.statusText, headers: h });
 }
