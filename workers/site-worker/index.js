@@ -162,7 +162,12 @@ function adminUnauthorizedResponse(url) {
 
 const STRICT_CSP =
   "default-src 'self'; " +
-  "script-src 'self' https://cdnjs.cloudflare.com; " +
+  // script-src is 'self' + a small allowlist of audited CDNs that host
+  // pinned third-party libraries (DOMPurify on cdnjs, ethers.js v5 on
+  // jsdelivr, Alpine.js on unpkg). NO 'unsafe-inline', NO 'unsafe-eval',
+  // NO inline-script hashes — every inline script in the templates has
+  // been moved to /shared/assets/js/.
+  "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; " +
   "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
   "img-src 'self' data: blob: https:; " +
   "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
@@ -175,7 +180,7 @@ const STRICT_CSP =
 
 const REPORT_ONLY_CSP =
   "default-src 'self'; " +
-  "script-src 'self' https://cdnjs.cloudflare.com; " +
+  "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; " +
   "style-src 'self'; " +     // tighter than enforced — gathers data
   "img-src 'self' data: blob: https:; " +
   "font-src 'self' data:; " +

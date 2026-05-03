@@ -225,7 +225,12 @@
             '</div></div>';
         });
         html += '</div>';
-        slot.innerHTML = html;
+        // Sanitize via TKNSanitize when available — `html` interpolates
+        // values returned from on-chain reads (token names/URIs) which
+        // are attacker-controllable in principle even though the
+        // certificate contract is owner-gated. Defense-in-depth.
+        var sanitize = (window.TKNSanitize && window.TKNSanitize.html) ? window.TKNSanitize.html : function(s){return s;};
+        slot.innerHTML = sanitize(html);
       }).catch(function (err) {
         console.warn('On-chain cert load failed, falling back to legacy:', err);
         renderMyCertificatesLegacy(slot, assets);
