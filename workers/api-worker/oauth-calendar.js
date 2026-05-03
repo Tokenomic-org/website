@@ -104,7 +104,11 @@ async function decryptToken(env, blob) {
 // ────────────────────────────────────────────────────────────────────────────
 
 function stateSecret(env) {
-  return env.SIWE_SECRET || env.JWT_SECRET || 'dev-only-state-secret';
+  // Never fall back to a hardcoded value: a forgeable state would let an
+  // attacker bind their calendar to a victim's wallet via CSRF.
+  const s = env.SIWE_SECRET || env.JWT_SECRET;
+  if (!s) throw new Error('SIWE_SECRET or JWT_SECRET must be configured');
+  return s;
 }
 
 async function signState(env, payload) {
@@ -269,25 +273,49 @@ async function refreshAccessToken(env, provider, refreshToken) {
  * access token. Persists rotated refresh tokens transparently.
  */
 async function getAccessToken(env, wallet, provider) {
-  const row = await env.DB.prepare(
-    `SELECT id, refresh_token_enc, access_token_enc, expires_at, external_account_id, external_calendar_id, scope
-       FROM availability_providers
-      WHERE wallet = ? AND provider = ? AND status = 'connected'
-      ORDER BY id DESC LIMIT 1`
-  ).bind(lc(wallet), provider).first();
+  async function readRow() {
+    return env.DB.prepare(
+      `SELECT id, refresh_token_enc, access_token_enc, expires_at, external_account_id, external_calendar_id, scope
+         FROM availability_providers
+        WHERE wallet = ? AND provider = ? AND status = 'connected'
+        ORDER BY id DESC LIMIT 1`
+    ).bind(lc(wallet), provider).first();
+  }
+
+  let row = await readRow();
   if (!row) throw new Error(`No ${provider} connection for ${wallet}`);
 
   const expiresMs = row.expires_at ? Date.parse(row.expires_at) : 0;
   const stillValid = expiresMs && (expiresMs - Date.now() > 60_000);
   if (stillValid && row.access_token_enc) {
     try { return { token: await decryptToken(env, row.access_token_enc), row }; }
-    catch { /* re-refresh below */ }
+    catch { /* fall through to refresh */ }
   }
   if (!row.refresh_token_enc) {
     throw new Error(`Cannot refresh ${provider}: no refresh token on file`);
   }
+  const originalRefreshEnc = row.refresh_token_enc;
   const refresh = await decryptToken(env, row.refresh_token_enc);
-  const td = await refreshAccessToken(env, provider, refresh);
+
+  let td;
+  try {
+    td = await refreshAccessToken(env, provider, refresh);
+  } catch (err) {
+    // Race-condition recovery: if a concurrent request already rotated the
+    // refresh token, our copy is now stale and the provider returned
+    // invalid_grant. Re-read the row; if the stored refresh_token_enc has
+    // changed since we started, surface the freshly-cached access token.
+    const fresh = await readRow();
+    if (fresh && fresh.refresh_token_enc !== originalRefreshEnc && fresh.access_token_enc) {
+      const fExpMs = fresh.expires_at ? Date.parse(fresh.expires_at) : 0;
+      if (fExpMs && fExpMs - Date.now() > 60_000) {
+        try { return { token: await decryptToken(env, fresh.access_token_enc), row: fresh }; }
+        catch { /* fall through to throw */ }
+      }
+    }
+    throw err;
+  }
+
   const newAccessEnc = await encryptToken(env, td.access_token);
   // Some providers rotate refresh tokens — persist the new one if present.
   const newRefreshEnc = td.refresh_token
@@ -296,11 +324,15 @@ async function getAccessToken(env, wallet, provider) {
   const newExpires = td.expires_in
     ? new Date(Date.now() + (Number(td.expires_in) - 30) * 1000).toISOString()
     : null;
+  // Compare-and-swap on the original refresh token blob so a concurrent
+  // refresh that already won doesn't get overwritten with our (now stale)
+  // result. If 0 rows updated, the other writer already persisted; just
+  // return the access token we just minted (still valid for ~1h).
   await env.DB.prepare(
     `UPDATE availability_providers
         SET access_token_enc = ?, refresh_token_enc = ?, expires_at = ?, updated_at = datetime('now')
-      WHERE id = ?`
-  ).bind(newAccessEnc, newRefreshEnc, newExpires, row.id).run();
+      WHERE id = ? AND refresh_token_enc = ?`
+  ).bind(newAccessEnc, newRefreshEnc, newExpires, row.id, originalRefreshEnc).run();
   return { token: td.access_token, row };
 }
 
@@ -671,21 +703,22 @@ export function mountCalendarRoutes(app) {
     const code   = url.searchParams.get('code');
     const stateQ = url.searchParams.get('state');
     const errQ   = url.searchParams.get('error');
+    const allowedOrigin = c.env.PUBLIC_SITE_ORIGIN || '';
     if (errQ) {
-      return c.html(renderCallbackPage({ ok: false, message: `Provider error: ${errQ}` }));
+      return c.html(renderCallbackPage({ ok: false, message: `Provider error: ${errQ}`, allowedOrigin }));
     }
     if (!code || !stateQ) {
-      return c.html(renderCallbackPage({ ok: false, message: 'Missing code or state' }));
+      return c.html(renderCallbackPage({ ok: false, message: 'Missing code or state', allowedOrigin }));
     }
     const state = await verifyState(c.env, stateQ);
     if (!state || state.provider !== provider || !isHexAddress(state.wallet)) {
-      return c.html(renderCallbackPage({ ok: false, message: 'Invalid or expired state' }));
+      return c.html(renderCallbackPage({ ok: false, message: 'Invalid or expired state', allowedOrigin }));
     }
     let td;
     try {
       td = await exchangeCode(c.env, provider, code, callbackUrl(c, provider));
     } catch (e) {
-      return c.html(renderCallbackPage({ ok: false, message: e.message }));
+      return c.html(renderCallbackPage({ ok: false, message: e.message, allowedOrigin }));
     }
     const accessEnc  = td.access_token  ? await encryptToken(c.env, td.access_token)  : null;
     const refreshEnc = td.refresh_token ? await encryptToken(c.env, td.refresh_token) : null;
@@ -739,6 +772,7 @@ export function mountCalendarRoutes(app) {
       ok: true, provider,
       message: `${provider} connected successfully.`,
       returnTo: state.return_to || '/profile/',
+      allowedOrigin: c.env.PUBLIC_SITE_ORIGIN || '',
     }));
   });
 
@@ -846,6 +880,32 @@ export function mountCalendarRoutes(app) {
       }
     }
 
+    // Atomic check: verify the slot hasn't been taken in the gap between
+    // hold and confirm (or by a client that bypassed /hold entirely).
+    // Anything overlapping [start, end) on this consultant blocks.
+    const conflict = await c.env.DB.prepare(
+      `SELECT id FROM bookings
+        WHERE consultant_wallet = ?
+          AND status IN ('pending','confirmed')
+          AND booking_date IS NOT NULL AND ends_at IS NOT NULL
+          AND booking_date < ?
+          AND ends_at      > ?
+        LIMIT 1`
+    ).bind(consultant, end, start).first();
+    if (conflict) {
+      return c.json({ error: 'Slot is no longer available — please pick another time.' }, 409);
+    }
+    // Verify the hold (if any) belongs to this buyer. Missing hold is OK
+    // (client may have skipped /hold), but a hold owned by someone else is not.
+    if (c.env.RATE_LIMIT_KV) {
+      try {
+        const holder = await c.env.RATE_LIMIT_KV.get(`hold:${consultant}:${start}`);
+        if (holder && holder !== buyer) {
+          return c.json({ error: 'Slot is held by another buyer — try again shortly.' }, 409);
+        }
+      } catch { /* KV transient — fall through */ }
+    }
+
     const status = txHash ? 'confirmed' : 'pending';
     const res = await c.env.DB.prepare(
       `INSERT INTO bookings
@@ -941,7 +1001,7 @@ export function mountCalendarRoutes(app) {
 // Tiny self-contained HTML for OAuth callback (closes popup or redirects).
 // ────────────────────────────────────────────────────────────────────────────
 
-function renderCallbackPage({ ok, provider, message, returnTo }) {
+function renderCallbackPage({ ok, provider, message, returnTo, allowedOrigin }) {
   const safeMsg = String(message || '').replace(/[<>&"']/g, ch => ({
     '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'
   }[ch]));
@@ -965,11 +1025,16 @@ function renderCallbackPage({ ok, provider, message, returnTo }) {
 <script>
   try {
     if (window.opener) {
+      // Target the configured site origin so an attacker who tricks a
+      // victim into loading this callback in their popup cannot harvest
+      // the message. Falls back to the document's own origin (the popup
+      // and opener share an origin in the typical first-party flow).
+      var TARGET_ORIGIN = ${JSON.stringify(allowedOrigin || '')} || window.location.origin;
       window.opener.postMessage({
         type: 'tkn-oauth-callback',
         ok: ${ok ? 'true' : 'false'},
         provider: ${JSON.stringify(provider || null)}
-      }, '*');
+      }, TARGET_ORIGIN);
       setTimeout(function(){ window.close(); }, ${ok ? 800 : 4000});
     } else if (${ok ? 'true' : 'false'}) {
       setTimeout(function(){ location.href = ${JSON.stringify(safeReturn)}; }, 1200);

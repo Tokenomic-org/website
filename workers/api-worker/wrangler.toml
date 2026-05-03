@@ -66,6 +66,10 @@ ROLE_REGISTRY_CHAIN_ID       = "8453"
 #   CALENDLY_OAUTH_CLIENT_ID         Calendly OAuth app client id
 #   CALENDLY_OAUTH_CLIENT_SECRET     Calendly OAuth app client secret
 #   CALENDLY_WEBHOOK_SIGNING_KEY     HMAC key for verifying webhook deliveries
+#   PUBLIC_SITE_ORIGIN               (env var, not secret) e.g. https://tokenomic.org —
+#                                    OAuth callback page targets this origin in
+#                                    its postMessage. Defaults to the popup's own
+#                                    origin which is correct for first-party flows.
 
 [[kv_namespaces]]
 binding    = "COMMENTS_KV"
