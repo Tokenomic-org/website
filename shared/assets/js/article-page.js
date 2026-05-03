@@ -1,4 +1,13 @@
-var articleSlug = "{{ page.slug }}";
+// The slug is published by _layouts/article.html as a data-attribute on
+// <section class="article-detail" data-article-slug="..."> so this file
+// can stay 100% static (Liquid is not rendered for assets/js/*).
+var articleSlug = (function () {
+  var el = document.querySelector('[data-article-slug]');
+  if (el) return el.getAttribute('data-article-slug') || '';
+  // Last-resort: derive from URL (/articles/<slug>/).
+  var m = window.location.pathname.match(/\/articles\/([^\/]+)\/?$/);
+  return m ? m[1] : '';
+})();
 
 function formatCommentDate(isoStr) {
   var d = new Date(isoStr);
