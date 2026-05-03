@@ -225,8 +225,8 @@
                     </div>
                     <!--Connect Wallet Btn (desktop only)-->
                     <div class="wallet-btn-header">
-                        <a href="#" class="wallet-login-btn" onclick="TokenomicWallet.connect(); return false;"><span class="btn-title">Connect Wallet</span></a>
-                        <button type="button" class="wallet-account-pill" onclick="TokenomicWallet.toggleAccountDropdown(event); return false;" aria-haspopup="menu" aria-expanded="false">
+                        <a href="#" class="wallet-login-btn" data-tkn-action="connect"><span class="btn-title">Connect Wallet</span></a>
+                        <button type="button" class="wallet-account-pill" data-tkn-action="toggle-account" aria-haspopup="menu" aria-expanded="false">
                             <span class="wm-avatar"></span>
                             <span class="wallet-addr-text">Dashboard</span>
                             <span class="wm-caret"></span>
@@ -234,15 +234,15 @@
                         <div class="wallet-account-dropdown" role="menu" id="wallet-account-dropdown">
                             <div class="wm-net-label"><span><span class="wm-net-dot"></span><span class="wallet-network-label">Base</span></span><span class="wallet-network-id" style="opacity:0.6;">8453</span></div>
                             <a href="/dashboard/" role="menuitem"><span style="opacity:0.85;">📊</span> Dashboard</a>
-                            <button type="button" role="menuitem" onclick="TokenomicWallet.switchToNetwork('base'); return false;">
+                            <button type="button" role="menuitem" data-tkn-action="switch-base">
                                 <span style="opacity:0.85;">🔵</span> Switch to Base
                             </button>
-                            <button type="button" role="menuitem" onclick="TokenomicWallet.switchToNetwork('base-sepolia'); return false;">
+                            <button type="button" role="menuitem" data-tkn-action="switch-base-sepolia">
                                 <span style="opacity:0.85;">🧪</span> Switch to Base Sepolia
                             </button>
                             <a href="#" target="_blank" rel="noopener" role="menuitem" class="wallet-basescan-link"><span style="opacity:0.85;">🔗</span> View on Basescan</a>
                             <div class="wm-divider"></div>
-                            <button type="button" role="menuitem" class="wm-disconnect" onclick="TokenomicWallet.disconnect(); return false;">
+                            <button type="button" role="menuitem" class="wm-disconnect" data-tkn-action="disconnect">
                                 <span style="opacity:0.85;">⏏</span> Disconnect
                             </button>
                         </div>
@@ -264,9 +264,9 @@
             <div class="menu-outer"><!--Here Menu Will Come Automatically Via Javascript / Same Menu as in Header--></div>
             <!--Connect Wallet in Mobile Sidebar-->
             <div class="wallet-mobile-btn" style="padding:20px 25px;">
-                <a href="#" class="wallet-login-btn" onclick="TokenomicWallet.connect(); return false;"><span class="btn-title">Connect Wallet</span></a>
+                <a href="#" class="wallet-login-btn" data-tkn-action="connect"><span class="btn-title">Connect Wallet</span></a>
                 <a href="/dashboard/" class="wallet-logged-in-btn" style="display:none;margin-top:10px;"><span class="btn-title wallet-addr-text">Dashboard</span></a>
-                <a href="#" class="wallet-logged-in-btn wm-disconnect-mobile" style="display:none;margin-top:10px;background:rgba(239,68,68,0.15);color:#fecaca;" onclick="TokenomicWallet.disconnect(); return false;"><span class="btn-title">Disconnect</span></a>
+                <a href="#" class="wallet-logged-in-btn wm-disconnect-mobile" style="display:none;margin-top:10px;background:rgba(239,68,68,0.15);color:#fecaca;" data-tkn-action="disconnect"><span class="btn-title">Disconnect</span></a>
             </div>
             <!--Social Links-->
             <div class="social-links">

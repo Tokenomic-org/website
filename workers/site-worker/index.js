@@ -172,7 +172,7 @@ const STRICT_CSP =
   // _includes/island-bootstrap.html. NO 'unsafe-inline', NO
   // 'unsafe-eval'. Touching the inline bootstrap requires updating
   // this hash.
-  "script-src 'self' 'sha256-hitv+m7l2PVVQ7QWQvrrun3ogAe/v+9dwWzCgGk8DUY=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; " +
+  "script-src 'self' 'sha256-hitv+m7l2PVVQ7QWQvrrun3ogAe/v+9dwWzCgGk8DUY=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.googletagmanager.com; " +
   "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
   "img-src 'self' data: blob: https:; " +
   "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +

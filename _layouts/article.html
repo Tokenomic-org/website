@@ -45,7 +45,7 @@ layout: default
             <a href="https://www.facebook.com/sharer/sharer.php?u=https://tokenomic.org/articles/{{ page.slug }}" target="_blank" rel="noopener" class="share-btn facebook" title="Share on Facebook"><i class="fab fa-facebook-f"></i></a>
             <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://tokenomic.org/articles/{{ page.slug }}&title={{ page.title | url_encode }}" target="_blank" rel="noopener" class="share-btn linkedin" title="Share on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
             <a href="https://www.reddit.com/submit?url=https://tokenomic.org/articles/{{ page.slug }}&title={{ page.title | url_encode }}" target="_blank" rel="noopener" class="share-btn reddit" title="Share on Reddit"><i class="fab fa-reddit-alien"></i></a>
-            <button class="share-btn copy-link" title="Copy link" onclick="copyArticleLink(this)" style="position:relative;"><i class="fas fa-link"></i><span class="copy-tooltip">Copied!</span></button>
+            <button class="share-btn copy-link" title="Copy link" data-tkn-action="copy-article-link" style="position:relative;"><i class="fas fa-link"></i><span class="copy-tooltip">Copied!</span></button>
         </div>
 
         {% if page.author_specialty %}
@@ -78,7 +78,7 @@ layout: default
                     <input type="text" id="comment-author" placeholder="Your name" maxlength="50">
                 </div>
                 <textarea id="comment-text" placeholder="Share your thoughts on this article..." maxlength="2000"></textarea>
-                <button class="submit-btn" id="submit-comment" onclick="submitArticleComment()">Post Comment</button>
+                <button class="submit-btn" id="submit-comment" data-tkn-action="submit-article-comment">Post Comment</button>
                 <div class="form-msg" id="comment-msg"></div>
             </div>
             <ul class="comments-list" id="comments-list">

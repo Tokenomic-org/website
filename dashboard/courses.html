@@ -44,7 +44,7 @@ permalink: /my-courses/
                     </div>
                     <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
                     <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">Connect a Web3 wallet to access the Tokenomic Dashboard.</p>
-                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" data-tkn-action="connect">Login with Wallet</button>
                 </div>
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="coursesPage()">
@@ -168,11 +168,11 @@ permalink: /my-courses/
         <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:6px;">Course Thumbnail</label>
         <div class="thumb-drop"
              id="nc-thumb-drop"
-             onclick="document.getElementById('nc-thumb-input').click()"
-             ondragover="event.preventDefault();this.classList.add('drag-over')"
-             ondragleave="this.classList.remove('drag-over')"
-             ondrop="handleNcThumbDrop(event)">
-            <input type="file" id="nc-thumb-input" accept="image/*" style="display:none;" onchange="handleNcThumbSelect(event)">
+             data-tkn-action="picker:nc-thumb-input"
+             data-tkn-dz="over"
+             data-tkn-dz="leave"
+             data-tkn-action="drop:nc-thumb">
+            <input type="file" id="nc-thumb-input" accept="image/*" style="display:none;" data-tkn-action="filechg:nc-thumb">
             <template x-if="nc.thumbnailPreview">
                 <img :src="nc.thumbnailPreview" class="thumb-preview" alt="Thumbnail preview">
             </template>
@@ -437,11 +437,11 @@ permalink: /my-courses/
                     <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:6px;">Course Thumbnail</label>
                     <div class="thumb-drop"
                          id="edit-thumb-drop"
-                         onclick="document.getElementById('edit-thumb-input').click()"
-                         ondragover="event.preventDefault();this.classList.add('drag-over')"
-                         ondragleave="this.classList.remove('drag-over')"
-                         ondrop="handleEditThumbDrop(event)">
-                        <input type="file" id="edit-thumb-input" accept="image/*" style="display:none;" onchange="handleEditThumbSelect(event)">
+                         data-tkn-action="picker:edit-thumb-input"
+                         data-tkn-dz="over"
+                         data-tkn-dz="leave"
+                         data-tkn-action="drop:edit-thumb">
+                        <input type="file" id="edit-thumb-input" accept="image/*" style="display:none;" data-tkn-action="filechg:edit-thumb">
                         <template x-if="editThumbPreview">
                             <img :src="editThumbPreview" class="thumb-preview" alt="Thumbnail">
                         </template>
@@ -585,11 +585,11 @@ permalink: /my-courses/
                     <h5 style="margin:0 0 6px;font-size:0.95rem;">Course Images</h5>
                     <p style="color:#5a8299;font-size:0.82rem;margin-bottom:12px;">Upload images that accompany your course content (diagrams, screenshots, illustrations).</p>
                     <div class="media-upload-area"
-                         onclick="document.getElementById('media-upload-input').click()"
-                         ondragover="event.preventDefault();this.classList.add('drag-over')"
-                         ondragleave="this.classList.remove('drag-over')"
-                         ondrop="handleMediaDrop(event)">
-                        <input type="file" id="media-upload-input" accept="image/*" multiple style="display:none;" onchange="handleMediaSelect(event)">
+                         data-tkn-action="picker:media-upload-input"
+                         data-tkn-dz="over"
+                         data-tkn-dz="leave"
+                         data-tkn-action="drop:media">
+                        <input type="file" id="media-upload-input" accept="image/*" multiple style="display:none;" data-tkn-action="filechg:media">
                         <i class="fas fa-cloud-upload-alt" style="font-size:2rem;color:#d0d7de;display:block;margin-bottom:8px;"></i>
                         <p style="color:#5a8299;margin:0;font-size:0.85rem;">Click or drag images here to upload<br><small style="color:#9ca3af;">PNG, JPG, WebP — max 5MB each</small></p>
                     </div>

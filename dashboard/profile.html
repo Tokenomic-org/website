@@ -66,7 +66,7 @@ permalink: /profile/
                     </div>
                     <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
                     <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
-                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
+                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" data-tkn-action="connect">Login with Wallet</button>
                 </div>
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="profilePage()" x-init="init()">
@@ -142,17 +142,17 @@ permalink: /profile/
 .photo-status.loading { color: #5a8299; }
 </style>
 
-<input type="file" id="avatar-file-input" accept="image/*" style="display:none;" onchange="handleAvatarFileSelect(event)">
+<input type="file" id="avatar-file-input" accept="image/*" style="display:none;" data-tkn-action="avatar-file-select">
 
     <div class="row clearfix">
         <div class="col-lg-4 col-md-5 col-sm-12" style="margin-bottom:20px;">
             <div class="dash-card" style="text-align:center;padding-top:28px;">
                 <div class="avatar-upload-wrap"
                      id="avatar-drop-zone"
-                     onclick="document.getElementById('avatar-file-input').click()"
-                     ondragover="handleAvatarDragOver(event)"
-                     ondragleave="handleAvatarDragLeave(event)"
-                     ondrop="handleAvatarDrop(event)"
+                     data-tkn-action="avatar-pick"
+                     data-tkn-action="avatar-dragover"
+                     data-tkn-action="avatar-dragleave"
+                     data-tkn-action="avatar-drop"
                      title="Click or drag an image to upload your profile photo">
                     <div class="avatar-circle" id="avatar-circle">
                         <span x-text="profile.name.charAt(0)" id="avatar-initials"></span>
@@ -257,7 +257,7 @@ permalink: /profile/
             <div class="dash-card" style="margin-top:16px;" id="my-certificates-card">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
                     <h4 style="margin:0;"><i class="fas fa-certificate" style="color:#00C853;margin-right:8px;"></i>My Certificates</h4>
-                    <button type="button" class="theme-btn" style="background:transparent;border:1px solid #e8eef5;color:#5a8299;border-radius:8px;padding:6px 14px;font-size:0.78rem;" onclick="if(window.TokenomicUI)TokenomicUI.refresh();">
+                    <button type="button" class="theme-btn" style="background:transparent;border:1px solid #e8eef5;color:#5a8299;border-radius:8px;padding:6px 14px;font-size:0.78rem;" data-tkn-action="ui-refresh">
                         <i class="fas fa-sync-alt" style="margin-right:4px;"></i>Refresh
                     </button>
                 </div>
@@ -295,7 +295,7 @@ permalink: /profile/
                 </div>
                 <div style="background:#f8fafc;border:1px solid #e8eef5;border-radius:10px;padding:16px;margin-bottom:20px;">
                     <p style="color:#5a8299;font-size:0.82rem;margin-bottom:12px;">Sign a message with your wallet to prove ownership. This links your wallet to your Tokenomic account securely.</p>
-                    <button class="theme-btn btn-style-one" style="border-radius:8px;padding:8px 20px;font-size:0.85rem;" onclick="proveOwnership()">
+                    <button class="theme-btn btn-style-one" style="border-radius:8px;padding:8px 20px;font-size:0.85rem;" data-tkn-action="prove-ownership">
                         <i class="fas fa-signature" style="margin-right:6px;"></i>Sign Ownership Proof
                     </button>
                     <a id="basescan-link" href="#" target="_blank" rel="noopener" style="display:none;margin-left:12px;color:#ff6000;font-size:0.82rem;text-decoration:none;">
@@ -306,13 +306,13 @@ permalink: /profile/
                 <div id="creator-actions" style="display:none;">
                     <h5 style="margin-bottom:12px;font-size:0.95rem;"><i class="fas fa-coins" style="color:#00C853;margin-right:6px;"></i>Creator Actions</h5>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
-                        <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 20px;font-size:0.85rem;background:#00C853;border-color:#00C853;" onclick="tokenizeAssetAction()">
+                        <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 20px;font-size:0.85rem;background:#00C853;border-color:#00C853;" data-tkn-action="tokenize-asset">
                             <i class="fas fa-cube" style="margin-right:6px;"></i>Tokenize Course
                         </button>
-                        <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 20px;font-size:0.85rem;background:#ff6000;border-color:#ff6000;" onclick="claimRevenueAction()">
+                        <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 20px;font-size:0.85rem;background:#ff6000;border-color:#ff6000;" data-tkn-action="claim-revenue">
                             <i class="fas fa-hand-holding-usd" style="margin-right:6px;"></i>Claim Revenue
                         </button>
-                        <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 20px;font-size:0.85rem;background:#667eea;border-color:#667eea;" onclick="registerArticleAction()">
+                        <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 20px;font-size:0.85rem;background:#667eea;border-color:#667eea;" data-tkn-action="register-article">
                             <i class="fas fa-file-alt" style="margin-right:6px;"></i>Register Article
                         </button>
                     </div>
@@ -321,7 +321,7 @@ permalink: /profile/
                 <div id="learner-actions" style="display:none;">
                     <h5 style="margin-bottom:12px;font-size:0.95rem;"><i class="fas fa-award" style="color:#00C853;margin-right:6px;"></i>Learner Actions</h5>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
-                        <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 20px;font-size:0.85rem;background:#00C853;border-color:#00C853;" onclick="mintCertAction()">
+                        <button class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 20px;font-size:0.85rem;background:#00C853;border-color:#00C853;" data-tkn-action="mint-cert">
                             <i class="fas fa-certificate" style="margin-right:6px;"></i>Mint Certification NFT
                         </button>
                     </div>
