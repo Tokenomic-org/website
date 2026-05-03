@@ -27,6 +27,7 @@ import { secureHeaders } from 'hono/secure-headers';
 import { mountD1Routes } from './d1-routes.js';
 import { ChatRoom, mountChatRoutes } from './chat-room.js';
 import { mountSiweRoutes } from './siwe.js';
+import { mountCalendarRoutes } from './oauth-calendar.js';
 
 export { ChatRoom };
 
@@ -191,6 +192,10 @@ mountD1Routes(app);
 
 // Real-time chat over WebSocket Durable Objects
 mountChatRoutes(app);
+
+// Phase 4: Calendar OAuth (Google/Microsoft/Calendly), unified availability,
+// slot holds, booking confirmation with calendar write-through, Calendly webhook.
+mountCalendarRoutes(app);
 
 app.get('/api/comments/:slug', async (c) => {
   const slug = c.req.param('slug');

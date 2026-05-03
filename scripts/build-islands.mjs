@@ -16,6 +16,7 @@ const ISLANDS = [
   'ExpertsDirectory',
   'ArticlesHub',
   'StyleGuide',
+  'BookingWidget',
 ];
 
 const outDir = path.resolve('assets/islands/dist');

@@ -39,10 +39,23 @@ PLATFORM_TREASURY            = ""    # set via `wrangler secret put PLATFORM_TRE
 SUBSCRIPTION_MANAGER         = ""
 SUBSCRIPTION_CHAIN_ID        = "8453"   # 8453=base, 84532=base-sepolia
 # Secrets (set via `wrangler secret put …`):
-#   JWT_SECRET           HS256 key for legacy /api/auth/login JWTs
-#   SIWE_SECRET          (optional) dedicated HMAC key for SIWE cookies; falls back to JWT_SECRET
-#   CF_ACCOUNT_ID        Cloudflare account id for Stream API
-#   CF_STREAM_TOKEN      `Stream:Edit` API token
+#   JWT_SECRET                       HS256 key for legacy /api/auth/login JWTs
+#   SIWE_SECRET                      (optional) dedicated HMAC key for SIWE cookies; falls back to JWT_SECRET
+#   CF_ACCOUNT_ID                    Cloudflare account id for Stream API
+#   CF_STREAM_TOKEN                  `Stream:Edit` API token
+#
+# Phase 4 — Calendar OAuth (set in production via `wrangler secret put`,
+# in development via Replit Secrets which the worker reads at runtime):
+#   OAUTH_TOKEN_ENC_KEY              base64url-encoded 32 bytes — AES-GCM key
+#                                    used to encrypt refresh tokens at rest
+#   GOOGLE_OAUTH_CLIENT_ID           Google Cloud OAuth client id
+#   GOOGLE_OAUTH_CLIENT_SECRET       Google Cloud OAuth client secret
+#   MS_OAUTH_CLIENT_ID               Azure AD app (client) id
+#   MS_OAUTH_CLIENT_SECRET           Azure AD client secret
+#   MS_OAUTH_TENANT                  Azure AD tenant (or "common" for multi-tenant)
+#   CALENDLY_OAUTH_CLIENT_ID         Calendly OAuth app client id
+#   CALENDLY_OAUTH_CLIENT_SECRET     Calendly OAuth app client secret
+#   CALENDLY_WEBHOOK_SIGNING_KEY     HMAC key for verifying webhook deliveries
 
 [[kv_namespaces]]
 binding    = "COMMENTS_KV"

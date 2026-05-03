@@ -6,6 +6,8 @@ permalink: /expert/
 
 {% include header.html %}
 
+{% include island-bootstrap.html %}
+
 <link rel="stylesheet" href="/assets/css/expert-profile.css">
 
 <div id="ep-loading" class="ep-loading">
@@ -83,13 +85,14 @@ permalink: /expert/
                     <div class="ep-booking-card" id="ep-booking-card" style="display:none;">
                         <div class="ep-booking-header">
                             <div class="ep-booking-header-title">Book a Session</div>
-                            <div class="ep-booking-header-subtitle">Available for 1-on-1 consulting</div>
+                            <div class="ep-booking-header-subtitle">Pick a slot from the consultant's live calendar</div>
                         </div>
                         <div class="ep-booking-body">
-                            <div class="ep-pricing-options" id="ep-pricing-options"></div>
-                            <div class="ep-booking-cta">
-                                <a href="/dashboard-bookings/" class="ep-btn-book-full"><i class="fas fa-calendar-plus"></i> Book Session</a>
-                            </div>
+                            <!-- Phase 4: live calendar-backed BookingWidget. Falls back to
+                                 static rate cards when the consultant has no calendar
+                                 connected (handled inside the island). -->
+                            <div id="ep-booking-island-mount"></div>
+                            <div class="ep-pricing-options" id="ep-pricing-options" style="margin-top:14px;"></div>
                             <div class="ep-split-note" style="margin-top:12px;">
                                 <i class="fas fa-info-circle"></i>&nbsp;
                                 Revenue split: <strong>90/5/5</strong> &mdash; USDC on Base
@@ -331,6 +334,29 @@ function epSwitchTab(pane, btnEl) {
         /* ── Sidebar: booking card for consultants ──────── */
         if (expertType === 'consultant' && (expert.rate_30 || expert.rate_60)) {
             document.getElementById('ep-booking-card').style.display = 'block';
+
+            // Mount the calendar-backed BookingWidget island. Wallet address
+            // is required to query availability + write events.
+            try {
+                if (expert.wallet_address) {
+                    var mount = document.getElementById('ep-booking-island-mount');
+                    var defaultPrice = Number(expert.rate_30 || expert.rate_60 || 0);
+                    var defaultDuration = expert.rate_30 ? 30 : (expert.rate_60 ? 60 : 30);
+                    var island = document.createElement('div');
+                    island.setAttribute('data-island', 'BookingWidget');
+                    island.setAttribute('data-props', JSON.stringify({
+                        consultantWallet: expert.wallet_address,
+                        consultantName:   expert.name || expert.display_name || 'this consultant',
+                        defaultDuration:  defaultDuration,
+                        defaultPriceUsdc: defaultPrice,
+                    }));
+                    mount.appendChild(island);
+                    var s = document.createElement('script');
+                    s.defer = true;
+                    s.src = '/assets/islands/dist/BookingWidget.iife.js';
+                    document.body.appendChild(s);
+                }
+            } catch (e) { console.warn('BookingWidget mount failed:', e); }
             var optHtml = '';
             if (expert.rate_30) {
                 optHtml += '<div class="ep-pricing-option">' +

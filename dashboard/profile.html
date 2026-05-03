@@ -215,6 +215,125 @@ permalink: /profile/
                 <a href="/apply/?role=consultant" class="theme-btn btn-style-one" style="border-radius:8px;padding:10px 24px;display:inline-block;">Open consultant application →</a>
             </div>
 
+            <!-- Phase 4: Calendar OAuth integrations (Google/Outlook/Calendly). -->
+            <div class="dash-card" style="margin-top:16px;" id="calendar-integrations-card">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <h4 style="margin:0;"><i class="fas fa-calendar-alt" style="color:#ff6000;margin-right:8px;"></i>Calendar Integrations</h4>
+                    <span style="font-size:0.78rem;color:#5a8299;">For consultants — power your booking widget</span>
+                </div>
+                <p style="color:#5a8299;font-size:0.85rem;margin-bottom:14px;">
+                    Connect a calendar so learners can book real-time slots from your profile.
+                    Tokens are encrypted at rest. Disconnect any time.
+                </p>
+                <div id="tkn-calendar-providers-list" style="display:flex;flex-direction:column;gap:10px;">
+                    <div style="color:#5a8299;font-size:0.85rem;">Loading providers…</div>
+                </div>
+            </div>
+            <script>
+            (function(){
+              var PROVIDERS = [
+                { key:'google',    label:'Google Calendar', icon:'fab fa-google',     color:'#ea4335' },
+                { key:'microsoft', label:'Outlook',         icon:'fab fa-microsoft',  color:'#0078d4' },
+                { key:'calendly',  label:'Calendly',        icon:'far fa-calendar',   color:'#006bff' },
+              ];
+
+              function apiBase() {
+                return (window.TOKENOMIC_API_BASE || (window.__TKN_ENV && window.__TKN_ENV.API_BASE) || '').replace(/\/+$/, '');
+              }
+              function authHeader() {
+                var t = '';
+                try { t = localStorage.getItem('tkn-jwt') || localStorage.getItem('jwt') || ''; } catch(e){}
+                return (t && t !== 'null') ? { authorization: 'Bearer ' + t } : {};
+              }
+              async function loadStatus() {
+                var list = document.getElementById('tkn-calendar-providers-list');
+                if (!list) return;
+                try {
+                  var r = await fetch(apiBase() + '/api/calendar/connections', {
+                    headers: Object.assign({ accept: 'application/json' }, authHeader()),
+                    credentials: 'include',
+                  });
+                  if (r.status === 401) {
+                    list.innerHTML = '<div style="color:#5a8299;font-size:0.85rem;">Sign in with your wallet to manage calendar integrations.</div>';
+                    return;
+                  }
+                  var d = await r.json();
+                  render(d);
+                } catch(e) {
+                  list.innerHTML = '<div style="color:#c84a4a;font-size:0.82rem;">Failed to load: ' + (e.message || e) + '</div>';
+                }
+              }
+              function render(d) {
+                var list = document.getElementById('tkn-calendar-providers-list');
+                var configMap = {};
+                (d.providers || []).forEach(function(p){ configMap[p.provider] = !!p.configured; });
+                var connMap = {};
+                (d.connections || []).forEach(function(c){
+                  if (c.status === 'connected') connMap[c.provider] = c;
+                });
+                list.innerHTML = PROVIDERS.map(function(p){
+                  var configured = configMap[p.key];
+                  var connected  = !!connMap[p.key];
+                  var sub = configured
+                    ? (connected ? '<span style="color:#00C853;">● Connected</span>'
+                                 : '<span style="color:#5a8299;">Not connected</span>')
+                    : '<span style="color:#a06a00;">Not configured by admin</span>';
+                  var btn = !configured
+                    ? '<button type="button" disabled style="background:#e8eef5;color:#9aabb8;border:none;border-radius:8px;padding:8px 16px;font-size:0.82rem;cursor:not-allowed;">Unavailable</button>'
+                    : connected
+                      ? '<button type="button" data-action="disconnect" data-provider="'+p.key+'" style="background:transparent;color:#c84a4a;border:1px solid #c84a4a;border-radius:8px;padding:8px 16px;font-size:0.82rem;cursor:pointer;">Disconnect</button>'
+                      : '<button type="button" data-action="connect" data-provider="'+p.key+'" style="background:'+p.color+';color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.82rem;cursor:pointer;">Connect</button>';
+                  return '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:#f8fafc;border:1px solid #e8eef5;border-radius:10px;">'
+                       +   '<div><div style="font-weight:600;color:#001f29;font-size:0.92rem;"><i class="'+p.icon+'" style="color:'+p.color+';margin-right:8px;"></i>'+p.label+'</div>'
+                       +   '<div style="font-size:0.78rem;margin-top:2px;">'+sub+'</div></div>'
+                       +   btn
+                       + '</div>';
+                }).join('');
+                list.querySelectorAll('button[data-action]').forEach(function(b){
+                  b.addEventListener('click', function(){
+                    var p = b.getAttribute('data-provider');
+                    if (b.getAttribute('data-action') === 'connect') startConnect(p);
+                    else doDisconnect(p);
+                  });
+                });
+              }
+              function startConnect(provider) {
+                var url = apiBase() + '/api/oauth/' + provider + '/start?return_to=' + encodeURIComponent('/profile/');
+                // Browsers block opener-cookies for cross-origin redirects, so
+                // pass auth via a query token. The /start endpoint also accepts
+                // SIWE cookies; for the worker on *.workers.dev we forward Bearer.
+                var t = '';
+                try { t = localStorage.getItem('tkn-jwt') || ''; } catch(e){}
+                if (t) url += '&t=' + encodeURIComponent(t); // start endpoint reads cookie/JWT; query carries fallback
+                var w = window.open(url, 'tkn-oauth-' + provider, 'width=520,height=680');
+                if (!w) { alert('Please allow popups to connect a calendar.'); return; }
+                function onMsg(ev){
+                  if (!ev.data || ev.data.type !== 'tkn-oauth-callback') return;
+                  window.removeEventListener('message', onMsg);
+                  setTimeout(loadStatus, 400);
+                }
+                window.addEventListener('message', onMsg);
+              }
+              async function doDisconnect(provider) {
+                if (!confirm('Disconnect ' + provider + '? Your bookings stay, but new slots will not be calendar-backed.')) return;
+                try {
+                  var r = await fetch(apiBase() + '/api/oauth/' + provider + '/disconnect', {
+                    method: 'POST',
+                    headers: Object.assign({ accept: 'application/json' }, authHeader()),
+                    credentials: 'include',
+                  });
+                  if (!r.ok) throw new Error('HTTP ' + r.status);
+                  loadStatus();
+                } catch(e) {
+                  alert('Disconnect failed: ' + (e.message || e));
+                }
+              }
+              document.addEventListener('DOMContentLoaded', function(){ setTimeout(loadStatus, 800); });
+              window.addEventListener('tokenomic:wallet-connected', loadStatus);
+              window.addEventListener('tokenomic:siwe-signed', loadStatus);
+            })();
+            </script>
+
             <div class="dash-card" style="margin-top:16px;" id="wallet-summary-card">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
                     <h4 style="margin:0;"><i class="fas fa-wallet" style="color:#ff6000;margin-right:8px;"></i>Wallet</h4>
