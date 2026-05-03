@@ -29,7 +29,7 @@ import { ChatRoom, mountChatRoutes } from './chat-room.js';
 import { mountSiweRoutes } from './siwe.js';
 import { mountCalendarRoutes } from './oauth-calendar.js';
 import { mountAdminRoutes } from './admin-routes.js';
-import { mountReferralRoutes } from './referrals.js';
+import { mountReferralRoutes, handleInviteQueueBatch } from './referrals.js';
 
 export { ChatRoom };
 
@@ -488,4 +488,18 @@ app.onError((err, c) => {
   return c.json({ error: 'Internal error', message: err.message }, 500);
 });
 
-export default app;
+// Default export must remain a Hono app for `wrangler dev`. To wire the
+// Cloudflare Queue consumer alongside the fetch handler we export an
+// object instead, delegating fetch() to the Hono app and queue() to the
+// invite consumer in referrals.js.
+export default {
+  fetch: app.fetch.bind(app),
+  async queue(batch, env) {
+    if (batch?.queue === 'tkn-invites' || batch?.queue?.startsWith('tkn-invites')) {
+      return handleInviteQueueBatch(batch, env);
+    }
+    // Future queues land here. Default to acking unknown queues so we
+    // don't infinite-loop on poison messages.
+    for (const m of batch.messages) m.ack();
+  },
+};

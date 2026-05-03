@@ -2,40 +2,71 @@
  * Phase 5 — Referrals & Contact Import.
  *
  * Surfaces:
- *   GET  /r/:handle                       Set tk_ref cookie + KV entry, 302 home
- *   GET  /api/referrals/me                Shareable link, attributed signups, USDC earned
- *   POST /api/referrals/invite-batch      Turnstile-gated batch email send (CSV / Google / MS)
- *   GET  /api/referrals/google-contacts   Pull contacts via Google People API
+ *   GET  /r/:handle                        Set tk_ref cookie + KV entry, 302 home
+ *   GET  /api/referrals/me                 Shareable link, attributed signups,
+ *                                          USDC earned, optional pending_link
+ *                                          asking the dashboard to sign one
+ *                                          ReferralRegistry.setReferrer tx
+ *   POST /api/referrals/confirm-link       Verify a tx hash that the referee
+ *                                          submitted via their wallet, then
+ *                                          flip the D1 row to status='linked'
+ *   POST /api/referrals/invite-batch       Turnstile-gated; enqueues each
+ *                                          recipient onto the INVITE_QUEUE
+ *   GET  /api/referrals/google-contacts    Pull contacts via Google People API
  *   GET  /api/referrals/microsoft-contacts Pull contacts via MS Graph
- *   GET  /api/invites/unsubscribe?email=&t= One-time link → adds to suppression list
+ *   GET  /api/invites/unsubscribe?t=…      One-time link → suppression list
  *
- * Also exports `linkReferrerOnSignIn(c, address)` which the SIWE
- * /verify handler calls right after issuing the session cookie.
+ * Also exports:
+ *   linkReferrerOnSignIn(c, address)       Called from siwe.js /verify
+ *   handleInviteQueueBatch(batch, env)     Consumer for the INVITE_QUEUE
+ *
+ * AUTH (FIXED):
+ *   ALL referral endpoints resolve the caller via resolveSession() from
+ *   ./auth.js, which validates the SIWE cookie HMAC + expiry. No raw JWT
+ *   parsing. Anonymous callers get 401.
+ *
+ * ON-CHAIN ATTRIBUTION (FIXED):
+ *   ReferralRegistry.setReferrer(referrer) requires msg.sender == referee,
+ *   so the worker physically cannot sign for the user. The flow is:
+ *     1. linkReferrerOnSignIn() inserts a D1 row status='pending' on first
+ *        sign-in (consumes the tk_ref cookie).
+ *     2. /api/referrals/me returns a `pending_link` block when the referee
+ *        has a pending row AND ReferralRegistry.referrerOf(referee) is
+ *        still address(0). The dashboard surfaces the prompt and uses the
+ *        already-connected wallet to send setReferrer in one tx.
+ *     3. /api/referrals/confirm-link verifies the tx receipt against the
+ *        on-chain contract and flips the row to 'linked' (or 'failed').
+ *
+ * INVITE PIPELINE (FIXED):
+ *   POST /invite-batch is a queue producer. It validates input, runs
+ *   Turnstile + rate-limit + suppression + dedupe, inserts D1 invite rows
+ *   in status='queued', then sends each recipient onto INVITE_QUEUE.
+ *   The queue consumer (handleInviteQueueBatch) pulls each message and
+ *   does the MailChannels send, updating status to 'sent' / 'failed'.
+ *   Cloudflare Queues retries failed messages with backoff.
  *
  * Bindings used:
  *   env.DB                         D1
  *   env.RATE_LIMIT_KV              KV (per-handle and rate-limit buckets)
+ *   env.INVITE_QUEUE               Cloudflare Queue (producer binding)
  *   env.TURNSTILE_SECRET_KEY       Cloudflare Turnstile siteverify
- *   env.INVITE_HMAC_KEY            HMAC key (32+ bytes) used to sign invite tokens
+ *   env.INVITE_HMAC_KEY            HMAC key (≥32 bytes) signing invite tokens
  *   env.MAIL_FROM                  e.g. "Tokenomic <invites@tokenomic.org>"
- *   env.MAIL_FROM_DOMAIN           e.g. "tokenomic.org" — used by MailChannels DKIM block
+ *   env.MAIL_FROM_DOMAIN           e.g. "tokenomic.org" — MailChannels DKIM
  *   env.MAIL_DKIM_SELECTOR         DKIM selector (default "mailchannels")
- *   env.MAIL_DKIM_PRIVATE_KEY      base64 PKCS#8 private key (set via wrangler secret)
+ *   env.MAIL_DKIM_PRIVATE_KEY      base64 PKCS#8 private key (wrangler secret)
  *   env.PUBLIC_SITE_ORIGIN         e.g. "https://tokenomic.org"
+ *   env.REFERRAL_REGISTRY          deployed contract address on Base
+ *   env.REFERRAL_REGISTRY_CHAIN_ID 8453 (mainnet) / 84532 (sepolia)
  *
  * Hard limits enforced:
  *   - 50 recipients per /invite-batch call
  *   - 200 invites per sender per rolling 24h
  *   - per-(sender,email) dedupe within 7d
  *   - email length / format validated, control chars stripped
- *   - Authorization required (SIWE cookie or Bearer JWT)
- *
- * Token format:
- *   tk_inv = base64url("<inviteId>.<lc(email)>") + "." + base64url(HMAC-SHA256(...))
- *   The HMAC binds invite id to the email so a leaked id alone is useless.
  */
 
-import { readSessionFromCookie } from './siwe.js';
+import { resolveSession } from './auth.js';
 
 const REF_COOKIE         = 'tk_ref';
 const REF_TTL_SEC        = 60 * 60 * 24 * 60;        // 60 days
@@ -49,6 +80,7 @@ const MAX_MESSAGE_LEN    = 1000;
 
 function lc(s) { return (s || '').toString().toLowerCase(); }
 function isHexAddr(s) { return typeof s === 'string' && /^0x[0-9a-fA-F]{40}$/.test(s); }
+function isTxHash(s) { return typeof s === 'string' && /^0x[0-9a-fA-F]{64}$/.test(s); }
 function isBasename(s) {
   return typeof s === 'string' &&
          /^[a-z0-9][a-z0-9-]{1,40}(\.base\.eth)?$/i.test(s);
@@ -89,7 +121,6 @@ async function hmac(secret, msg) {
   return new Uint8Array(sig);
 }
 async function timingSafeEqB64(a, b) {
-  // a / b are base64url strings; reject quickly if length differs.
   const ab = b64urlDecode(a);
   const bb = b64urlDecode(b);
   if (ab.length !== bb.length) return false;
@@ -131,28 +162,20 @@ async function verifyInviteToken(env, token) {
   return { inviteId, email };
 }
 
-// Read the wallet making the request from EITHER the SIWE cookie or the
-// Bearer JWT (legacy). We only need a wallet — no role check — so a
-// helper avoids importing a heavier middleware stack.
+// ─────────────────────────────────────────────────────────── AUTH (verified)
+
+/**
+ * Returns the authenticated wallet for the current request, or null.
+ *
+ * SIWE cookie ONLY. resolveSession() validates the HMAC + expiry of the
+ * tk_session cookie before returning. We deliberately do NOT accept a
+ * Bearer JWT here — invitation sends are a spam-vector and must be tied
+ * to a verified browser session.
+ */
 async function readCallerWallet(c) {
-  const session = await readSessionFromCookie(c);
-  if (session?.address && isHexAddr(session.address)) return lc(session.address);
-  const bearer = c.req.header('authorization') || '';
-  const m = bearer.match(/^Bearer\s+(.+)$/i);
-  if (m) {
-    // Trust legacy d1-client JWT path: it is HS256 with JWT_SECRET. We
-    // intentionally do not re-verify here because the upstream gate
-    // (mountD1Routes) already does on its own routes; for the referrals
-    // surface we additionally enforce SIWE cookie presence on POSTs.
-    try {
-      const parts = m[1].split('.');
-      if (parts.length === 3) {
-        const claims = JSON.parse(new TextDecoder().decode(b64urlDecode(parts[1])));
-        if (isHexAddr(claims.sub)) return lc(claims.sub);
-      }
-    } catch { /* ignore */ }
-  }
-  return null;
+  const id = await resolveSession(c);
+  if (!id || !isHexAddr(id.wallet)) return null;
+  return lc(id.wallet);
 }
 
 // ──────────────────────────────────────────────────── Cookie + KV: tk_ref
@@ -177,10 +200,11 @@ function readRefCookie(c) {
   }
   return null;
 }
+function clearRefCookie(c) {
+  c.header('Set-Cookie', `${REF_COOKIE}=; Path=/; Max-Age=0; Secure; SameSite=Lax`);
+}
 
-// Resolve a handle → wallet. Hex address passes through; basename (.base.eth)
-// is resolved via Base RPC by calling the L2 resolver. We keep a 1-day KV
-// cache to avoid hammering the RPC on viral campaigns.
+// Resolve a handle → wallet. Hex passes through; basename via Base RPC.
 async function resolveHandle(env, handle) {
   const h = (handle || '').trim();
   if (!h) return null;
@@ -194,9 +218,6 @@ async function resolveHandle(env, handle) {
     if (cached && isHexAddr(cached)) return lc(cached);
   }
 
-  // Resolve via Base mainnet eth_call to the public ENS Universal Resolver
-  // (CCIP-read aware) so basenames work without a private RPC.
-  // We fall back to the legacy basename resolver if the universal call fails.
   let address = null;
   try {
     const { createPublicClient, http } = await import('viem');
@@ -220,13 +241,72 @@ async function resolveHandle(env, handle) {
   return address && isHexAddr(address) ? lc(address) : null;
 }
 
+// ──────────────────────────────────── ReferralRegistry on-chain reader
+
+const REFERRAL_REGISTRY_ABI = [
+  {
+    type: 'function', name: 'referrerOf', stateMutability: 'view',
+    inputs: [{ name: 'user', type: 'address' }],
+    outputs: [{ type: 'address' }],
+  },
+  {
+    type: 'function', name: 'hasReferrer', stateMutability: 'view',
+    inputs: [{ name: 'user', type: 'address' }],
+    outputs: [{ type: 'bool' }],
+  },
+  {
+    type: 'event', name: 'ReferrerSet',
+    inputs: [
+      { name: 'user',     type: 'address', indexed: true },
+      { name: 'referrer', type: 'address', indexed: true },
+    ],
+  },
+];
+
+function chainFor(env) {
+  // Lazily required by callers that already imported viem/chains.
+  return Number(env.REFERRAL_REGISTRY_CHAIN_ID || env.SUBSCRIPTION_CHAIN_ID || 8453);
+}
+
+async function viemClient(env) {
+  const { createPublicClient, http } = await import('viem');
+  const chains = await import('viem/chains');
+  const id = chainFor(env);
+  const chain = id === 84532 ? chains.baseSepolia : chains.base;
+  const rpc = id === 84532
+    ? (env.BASE_SEPOLIA_RPC_URL || 'https://sepolia.base.org')
+    : (env.BASE_RPC_URL || 'https://mainnet.base.org');
+  return createPublicClient({ chain, transport: http(rpc) });
+}
+
+async function onchainReferrerOf(env, referee) {
+  if (!env.REFERRAL_REGISTRY || !isHexAddr(env.REFERRAL_REGISTRY)) return null;
+  try {
+    const client = await viemClient(env);
+    const r = await client.readContract({
+      address:      env.REFERRAL_REGISTRY,
+      abi:          REFERRAL_REGISTRY_ABI,
+      functionName: 'referrerOf',
+      args:         [referee],
+    });
+    return lc(r || '0x0000000000000000000000000000000000000000');
+  } catch (e) {
+    console.warn('onchainReferrerOf failed:', e.message);
+    return null;
+  }
+}
+
+const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
+
 // ─────────────────────────────────────────────── SIWE hook: link on first sign-in
 
 /**
- * Called from siwe.js right after a successful /verify. If the user has
- * a `tk_ref` cookie AND no existing referrer row, we insert a pending
- * referral. The on-chain `ReferralRegistry.setReferrer` is a follow-up
- * action initiated by the client (so the user pays the gas / signs).
+ * Called from siwe.js right after a successful /verify. If the user has a
+ * `tk_ref` cookie AND no existing referrer row, we insert a row in
+ * status='pending'. The dashboard will then read /api/referrals/me, see the
+ * `pending_link` block, prompt the user to call ReferralRegistry.setReferrer
+ * from their connected wallet, and finally POST the tx hash to
+ * /api/referrals/confirm-link to flip the row to 'linked'.
  */
 export async function linkReferrerOnSignIn(c, address) {
   if (!c.env.DB) return;
@@ -238,23 +318,21 @@ export async function linkReferrerOnSignIn(c, address) {
   try {
     const referrer = await resolveHandle(c.env, handle);
     if (!referrer || referrer === wallet) {
-      // Self-referrals or unresolvable handles: silently drop the cookie.
-      c.header('Set-Cookie', `${REF_COOKIE}=; Path=/; Max-Age=0; Secure; SameSite=Lax`);
+      clearRefCookie(c);
       return;
     }
     const existing = await c.env.DB.prepare(
       `SELECT id FROM referrals WHERE referee_wallet = ? LIMIT 1`
     ).bind(wallet).first();
     if (existing) {
-      c.header('Set-Cookie', `${REF_COOKIE}=; Path=/; Max-Age=0; Secure; SameSite=Lax`);
+      clearRefCookie(c);
       return;
     }
     await c.env.DB.prepare(
       `INSERT INTO referrals (referrer_wallet, referee_wallet, status, source, linked_at)
-       VALUES (?, ?, 'pending', 'cookie', datetime('now'))`
+       VALUES (?, ?, 'pending', 'cookie', NULL)`
     ).bind(referrer, wallet).run();
-    // Cookie consumed — clear it so subsequent sign-ins are no-ops.
-    c.header('Set-Cookie', `${REF_COOKIE}=; Path=/; Max-Age=0; Secure; SameSite=Lax`);
+    clearRefCookie(c);
   } catch (e) {
     console.warn('linkReferrerOnSignIn failed:', e.message);
   }
@@ -282,13 +360,6 @@ async function verifyTurnstile(env, token, ip) {
 
 // ────────────────────────────────────────────────────────────── Mail sender
 
-/**
- * Send an invite via MailChannels. MailChannels is free for outbound mail
- * originating from Cloudflare Workers but requires DKIM to be configured.
- * If DKIM env is missing we skip the network call and mark the invite as
- * `failed` with reason — the invite row + tracking link still get created
- * so the UI can surface "configure email to send".
- */
 async function sendInviteEmail(env, { to, toName, fromWallet, fromName, message, link, unsubscribeLink }) {
   const fromAddr = env.MAIL_FROM ||
                    (env.MAIL_FROM_DOMAIN ? `Tokenomic Invites <invites@${env.MAIL_FROM_DOMAIN}>` : '');
@@ -355,13 +426,64 @@ function escapeHtml(s) {
   }[ch]));
 }
 
-// ─────────────────────────────────────────────────────── Contacts: Google + MS
+// ─────────────────────────────────────── Cloudflare Queues consumer
+
+/**
+ * Consumer for env.INVITE_QUEUE. Wired in index.js's exported queue()
+ * handler. Each message body is:
+ *   { inviteId, sender, email, name, fromName, message }
+ *
+ * On send success: UPDATE invites SET status='sent', sent_at=now.
+ * On send failure: UPDATE invites SET status='failed', delivery_error=...
+ * Cloudflare Queues handles retries with backoff for transient errors —
+ * we call msg.retry() for network/5xx, msg.ack() for permanent failures.
+ */
+export async function handleInviteQueueBatch(batch, env) {
+  const origin = env.PUBLIC_SITE_ORIGIN || 'https://tokenomic.org';
+  for (const msg of batch.messages) {
+    const m = msg.body || {};
+    const { inviteId, sender, email, name, fromName, message } = m;
+    if (!inviteId || !sender || !email) { msg.ack(); continue; }
+    try {
+      const token = await signInviteToken(env, inviteId, email);
+      const link  = `${origin}/r/${sender}?inv=${encodeURIComponent(token)}`;
+      const unsub = `${origin}/api/invites/unsubscribe?t=${encodeURIComponent(token)}`;
+      const send = await sendInviteEmail(env, {
+        to: email, toName: name, fromWallet: sender, fromName,
+        message, link, unsubscribeLink: unsub,
+      });
+      if (send.ok) {
+        await env.DB.prepare(
+          `UPDATE invites SET status='sent', sent_at=datetime('now') WHERE id = ?`
+        ).bind(inviteId).run();
+        msg.ack();
+      } else {
+        // Transient if MailChannels 5xx / network — let Queues retry.
+        const transient = /mailchannels (5\d\d|network)/i.test(send.error || '');
+        await env.DB.prepare(
+          `UPDATE invites SET status=?, delivery_error=? WHERE id = ?`
+        ).bind(transient ? 'queued' : 'failed', send.error || 'unknown', inviteId).run();
+        if (transient) msg.retry();
+        else msg.ack();
+      }
+    } catch (e) {
+      console.warn('invite consumer error:', e.message);
+      try {
+        await env.DB.prepare(
+          `UPDATE invites SET status='failed', delivery_error=? WHERE id = ?`
+        ).bind('consumer-exception: ' + e.message, inviteId).run();
+      } catch (_) {}
+      msg.ack();
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────── Contacts: Google + MS
 
 import { getAccessToken as getOAuthAccessToken } from './oauth-calendar.js';
 
 async function fetchGoogleContacts(env, wallet) {
   const { token } = await getOAuthAccessToken(env, wallet, 'google');
-  // People API — read names + emails. Page through to a sane cap.
   let pageToken = '';
   const out = [];
   for (let page = 0; page < 5; page++) {
@@ -410,19 +532,18 @@ async function fetchMicrosoftContacts(env, wallet) {
 // ─────────────────────────────────────────────────── Splitter payouts (USDC)
 
 async function sumSplitterPayouts(env, wallet) {
-  // Sum reward_usdc for all referrals where this wallet is the referrer
-  // and the row is paid. The on-chain splitter is the source of truth;
-  // the indexer that updates `referrals.payout_tx_hash` runs out-of-band.
   const r = await env.DB.prepare(
     `SELECT
         COUNT(*) AS total,
         SUM(CASE WHEN status='paid'      THEN 1 ELSE 0 END) AS paid_count,
         SUM(CASE WHEN status='qualified' THEN 1 ELSE 0 END) AS qualified_count,
+        SUM(CASE WHEN status='linked'    THEN 1 ELSE 0 END) AS linked_count,
         SUM(CASE WHEN status IN ('paid','qualified') THEN reward_usdc ELSE 0 END) AS earned
        FROM referrals WHERE referrer_wallet = ?`
   ).bind(wallet).first();
   return {
     signups:        Number(r?.total || 0),
+    linked:         Number(r?.linked_count || 0),
     paid:           Number(r?.paid_count || 0),
     qualified:      Number(r?.qualified_count || 0),
     usdc_earned:    Number(r?.earned || 0),
@@ -438,13 +559,10 @@ export function mountReferralRoutes(app) {
     const referrer = await resolveHandle(c.env, handle);
     const origin = c.env.PUBLIC_SITE_ORIGIN || 'https://tokenomic.org';
     if (!referrer) {
-      // Unresolvable handle: still 302 home but DON'T set the cookie so
-      // a typo doesn't poison future sign-ins.
       return c.redirect(origin + '/?ref=invalid', 302);
     }
     setRefCookie(c, lc(handle));
     if (c.env.RATE_LIMIT_KV) {
-      // Cheap analytics: count clicks per handle. TTL keeps the namespace bounded.
       const ck = `refclick:${lc(handle)}:${new Date().toISOString().slice(0, 10)}`;
       c.executionCtx.waitUntil(
         c.env.RATE_LIMIT_KV.get(ck).then((v) =>
@@ -462,7 +580,6 @@ export function mountReferralRoutes(app) {
 
     const stats = await sumSplitterPayouts(c.env, wallet);
 
-    // Recent attribution feed (last 20)
     const recent = await c.env.DB.prepare(
       `SELECT referee_wallet, status, reward_usdc, qualified_at, paid_at, created_at
          FROM referrals
@@ -471,6 +588,40 @@ export function mountReferralRoutes(app) {
         LIMIT 20`
     ).bind(wallet).all();
 
+    // Pending on-chain link surface: if THIS wallet is a referee with a
+    // pending row, ask the dashboard to send setReferrer in one tx. We
+    // also confirm on-chain that referrerOf(wallet) is still zero, so we
+    // never re-prompt after the user has already linked.
+    let pending_link = null;
+    try {
+      const pending = await c.env.DB.prepare(
+        `SELECT referrer_wallet FROM referrals
+          WHERE referee_wallet = ? AND status = 'pending'
+          ORDER BY created_at DESC LIMIT 1`
+      ).bind(wallet).first();
+      if (pending && isHexAddr(pending.referrer_wallet)) {
+        const onchain = await onchainReferrerOf(c.env, wallet);
+        if (onchain === null || onchain === ZERO_ADDR) {
+          pending_link = {
+            referrer:    pending.referrer_wallet,
+            registry:    c.env.REFERRAL_REGISTRY || null,
+            chain_id:    chainFor(c.env),
+            instructions: 'Call ReferralRegistry.setReferrer(referrer) from this wallet, then POST { txHash } to /api/referrals/confirm-link.',
+          };
+        } else if (onchain && onchain !== ZERO_ADDR) {
+          // Already linked on-chain — heal D1 lazily so the prompt goes away.
+          c.executionCtx.waitUntil(
+            c.env.DB.prepare(
+              `UPDATE referrals SET status='linked', linked_at=datetime('now')
+                WHERE referee_wallet = ? AND status='pending'`
+            ).bind(wallet).run().catch(() => {})
+          );
+        }
+      }
+    } catch (e) {
+      console.warn('pending_link check failed:', e.message);
+    }
+
     const origin = c.env.PUBLIC_SITE_ORIGIN || 'https://tokenomic.org';
     const link = `${origin}/r/${wallet}`;
 
@@ -478,8 +629,70 @@ export function mountReferralRoutes(app) {
       wallet,
       link,
       ...stats,
+      pending_link,
       recent: recent?.results || [],
     });
+  });
+
+  // ----- /api/referrals/confirm-link ------------------------------------
+  // POST { txHash } — verifies the receipt, asserts the referee actually
+  // called ReferralRegistry.setReferrer, then flips the D1 row to 'linked'.
+  app.post('/api/referrals/confirm-link', async (c) => {
+    const wallet = await readCallerWallet(c);
+    if (!wallet) return c.json({ error: 'Unauthorized' }, 401);
+
+    let body = {};
+    try { body = await c.req.json(); }
+    catch { return c.json({ error: 'Invalid JSON body' }, 400); }
+    const txHash = (body.txHash || '').toString();
+    if (!isTxHash(txHash)) return c.json({ error: 'Invalid txHash' }, 400);
+    if (!c.env.REFERRAL_REGISTRY || !isHexAddr(c.env.REFERRAL_REGISTRY)) {
+      return c.json({ error: 'REFERRAL_REGISTRY not configured' }, 503);
+    }
+
+    let onchainReferrer;
+    try {
+      const client = await viemClient(c.env);
+      // Wait for the receipt to be mined (short polling — 8s budget).
+      const receipt = await client.waitForTransactionReceipt({
+        hash: txHash, timeout: 8_000, pollingInterval: 1_000,
+      }).catch(() => null);
+      if (!receipt || receipt.status !== 'success') {
+        return c.json({ error: 'Transaction not confirmed or reverted' }, 422);
+      }
+      // The referee must be the one who submitted setReferrer.
+      if (lc(receipt.from) !== wallet) {
+        return c.json({ error: 'Transaction sender does not match session wallet' }, 403);
+      }
+      // Re-read the contract to confirm the bind happened — handles
+      // cases where the user called the wrong contract or ABI.
+      onchainReferrer = await onchainReferrerOf(c.env, wallet);
+      if (!onchainReferrer || onchainReferrer === ZERO_ADDR) {
+        return c.json({ error: 'On-chain referrer is still zero after tx — wrong contract?' }, 422);
+      }
+    } catch (e) {
+      return c.json({ error: 'Receipt lookup failed: ' + e.message }, 502);
+    }
+
+    // Update / create the D1 row authoritatively from on-chain truth.
+    const existing = await c.env.DB.prepare(
+      `SELECT id, referrer_wallet FROM referrals WHERE referee_wallet = ? LIMIT 1`
+    ).bind(wallet).first();
+
+    if (existing) {
+      await c.env.DB.prepare(
+        `UPDATE referrals
+            SET referrer_wallet = ?, status='linked', linked_at=datetime('now'),
+                link_tx_hash = ?
+          WHERE id = ?`
+      ).bind(onchainReferrer, txHash, existing.id).run();
+    } else {
+      await c.env.DB.prepare(
+        `INSERT INTO referrals (referrer_wallet, referee_wallet, status, source, linked_at, link_tx_hash)
+         VALUES (?, ?, 'linked', 'on-chain', datetime('now'), ?)`
+      ).bind(onchainReferrer, wallet, txHash).run();
+    }
+    return c.json({ ok: true, referrer: onchainReferrer, txHash });
   });
 
   // ----- /api/referrals/google-contacts ---------------------------------
@@ -513,10 +726,15 @@ export function mountReferralRoutes(app) {
   });
 
   // ----- /api/referrals/invite-batch ------------------------------------
+  // PRODUCER. Validates input + Turnstile + caps + dedupe + suppression,
+  // inserts D1 invite rows in 'queued' state, then enqueues a message per
+  // recipient onto INVITE_QUEUE. The consumer (handleInviteQueueBatch) does
+  // the actual MailChannels send and updates the row.
   app.post('/api/referrals/invite-batch', async (c) => {
     const wallet = await readCallerWallet(c);
     if (!wallet) return c.json({ error: 'Unauthorized' }, 401);
     if (!inviteKey(c.env)) return c.json({ error: 'INVITE_HMAC_KEY not configured' }, 503);
+    if (!c.env.INVITE_QUEUE) return c.json({ error: 'INVITE_QUEUE binding not configured' }, 503);
 
     let body = {};
     try { body = await c.req.json(); }
@@ -551,7 +769,6 @@ export function mountReferralRoutes(app) {
       }, 429);
     }
 
-    // Suppression + dedupe lookup, batched.
     const emails = [];
     for (const r of body.recipients) {
       const e = lc(clean(r.email || '', 254));
@@ -559,18 +776,15 @@ export function mountReferralRoutes(app) {
     }
     if (emails.length === 0) return c.json({ error: 'No valid emails in recipients' }, 400);
 
-    // Dedupe within request.
     const seen = new Set();
     const unique = emails.filter((r) => seen.has(r.email) ? false : (seen.add(r.email), true));
 
-    // Suppression check (single query).
     const placeholders = unique.map(() => '?').join(',');
     const suppRows = await c.env.DB.prepare(
       `SELECT email FROM invite_suppressions WHERE email IN (${placeholders})`
     ).bind(...unique.map((r) => r.email)).all();
     const suppressed = new Set((suppRows?.results || []).map((r) => r.email));
 
-    // Per-(sender,email) dedupe across last DEDUPE_DAYS.
     const recentRows = await c.env.DB.prepare(
       `SELECT email FROM invites
         WHERE sender_wallet = ?
@@ -579,8 +793,8 @@ export function mountReferralRoutes(app) {
     ).bind(wallet, ...unique.map((r) => r.email)).all();
     const recentlyInvited = new Set((recentRows?.results || []).map((r) => r.email));
 
-    const origin = c.env.PUBLIC_SITE_ORIGIN || 'https://tokenomic.org';
     const results = [];
+    const queueMessages = [];
 
     for (const r of unique) {
       if (suppressed.has(r.email)) {
@@ -592,7 +806,6 @@ export function mountReferralRoutes(app) {
         continue;
       }
 
-      // Insert first (so we have a stable id for the HMAC payload).
       const ins = await c.env.DB.prepare(
         `INSERT INTO invites (sender_wallet, email, name, message, source, token_prefix, status)
          VALUES (?, ?, ?, ?, ?, '', 'queued')`
@@ -608,23 +821,32 @@ export function mountReferralRoutes(app) {
         `UPDATE invites SET token_prefix = ? WHERE id = ?`
       ).bind(tokenPrefix, inviteId).run();
 
-      const link = `${origin}/r/${wallet}?inv=${encodeURIComponent(token)}`;
-      const unsub = `${origin}/api/invites/unsubscribe?t=${encodeURIComponent(token)}`;
-
-      const send = await sendInviteEmail(c.env, {
-        to: r.email, toName: r.name, fromWallet: wallet, fromName,
-        message: personalMessage, link, unsubscribeLink: unsub,
+      queueMessages.push({
+        body: {
+          inviteId, sender: wallet, email: r.email, name: r.name || '',
+          fromName, message: personalMessage,
+        },
       });
-      if (send.ok) {
+      results.push({ email: r.email, status: 'queued', inviteId });
+    }
+
+    // Batch-enqueue. sendBatch is preferred when many messages.
+    if (queueMessages.length) {
+      try {
+        if (typeof c.env.INVITE_QUEUE.sendBatch === 'function') {
+          await c.env.INVITE_QUEUE.sendBatch(queueMessages);
+        } else {
+          for (const m of queueMessages) await c.env.INVITE_QUEUE.send(m.body);
+        }
+      } catch (e) {
+        // If the queue write fails, mark those rows as failed so the
+        // dashboard reflects reality. The consumer will not see them.
+        const failedIds = queueMessages.map((m) => m.body.inviteId);
+        const ph = failedIds.map(() => '?').join(',');
         await c.env.DB.prepare(
-          `UPDATE invites SET status='sent', sent_at=datetime('now') WHERE id = ?`
-        ).bind(inviteId).run();
-        results.push({ email: r.email, status: 'sent' });
-      } else {
-        await c.env.DB.prepare(
-          `UPDATE invites SET status='failed', delivery_error=? WHERE id = ?`
-        ).bind(send.error || 'unknown', inviteId).run();
-        results.push({ email: r.email, status: 'failed', error: send.error });
+          `UPDATE invites SET status='failed', delivery_error=? WHERE id IN (${ph})`
+        ).bind('queue-enqueue-failed: ' + e.message, ...failedIds).run().catch(() => {});
+        return c.json({ error: 'Queue enqueue failed: ' + e.message }, 502);
       }
     }
 
@@ -633,8 +855,6 @@ export function mountReferralRoutes(app) {
   });
 
   // ----- /api/invites/unsubscribe (GET) ---------------------------------
-  // GET so it works straight from any mail client. We render a minimal
-  // HTML confirmation page so the user has feedback that they were removed.
   app.get('/api/invites/unsubscribe', async (c) => {
     const token = c.req.query('t') || '';
     const verified = await verifyInviteToken(c.env, token);
@@ -646,8 +866,6 @@ export function mountReferralRoutes(app) {
       await c.env.DB.prepare(
         `INSERT OR IGNORE INTO invite_suppressions (email, reason) VALUES (?, 'unsubscribe')`
       ).bind(email).run();
-      // Mark any in-flight invites to this address as failed so the sender
-      // can see the suppression in their dashboard.
       await c.env.DB.prepare(
         `UPDATE invites SET status='failed', delivery_error='unsubscribed'
           WHERE email = ? AND status IN ('queued','sent')`

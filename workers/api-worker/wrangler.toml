@@ -79,6 +79,27 @@ ROLE_REGISTRY_CHAIN_ID       = "8453"
 #   MAIL_FROM_DOMAIN                 e.g. "tokenomic.org" — used for MailChannels DKIM block
 #   MAIL_DKIM_SELECTOR               DKIM selector (default "mailchannels")
 #   MAIL_DKIM_PRIVATE_KEY            base64 PKCS#8 private key (set via wrangler secret)
+#   REFERRAL_REGISTRY                deployed ReferralRegistry address on the active chain.
+#                                    When unset, the on-chain link prompt is suppressed
+#                                    and /api/referrals/confirm-link returns 503.
+REFERRAL_REGISTRY                = ""
+REFERRAL_REGISTRY_CHAIN_ID       = "8453"   # 8453=base mainnet, 84532=base sepolia
+
+# Phase 5 — Cloudflare Queue for outbound invite email delivery. The
+# producer (POST /api/referrals/invite-batch) enqueues one message per
+# recipient; the consumer (handleInviteQueueBatch in referrals.js,
+# wired via the top-level queue() export in index.js) does the
+# MailChannels send and updates the D1 invite row.
+[[queues.producers]]
+binding    = "INVITE_QUEUE"
+queue      = "tkn-invites"
+
+[[queues.consumers]]
+queue                 = "tkn-invites"
+max_batch_size        = 10
+max_batch_timeout     = 5
+max_retries           = 5
+dead_letter_queue     = "tkn-invites-dlq"
 
 [[kv_namespaces]]
 binding    = "COMMENTS_KV"

@@ -21,8 +21,9 @@
 -- Idempotent column add. SQLite does not support `IF NOT EXISTS` on
 -- ALTER TABLE ADD COLUMN; rerunning surfaces a "duplicate column" error
 -- which is safe to ignore.
-ALTER TABLE referrals ADD COLUMN linked_at TEXT;
-ALTER TABLE referrals ADD COLUMN source    TEXT;     -- 'cookie' | 'invite' | 'manual'
+ALTER TABLE referrals ADD COLUMN linked_at    TEXT;
+ALTER TABLE referrals ADD COLUMN source       TEXT;     -- 'cookie' | 'invite' | 'manual' | 'on-chain'
+ALTER TABLE referrals ADD COLUMN link_tx_hash TEXT;     -- ReferralRegistry.setReferrer tx hash
 
 -- One referee can only have one referrer (mirrors ReferralRegistry).
 CREATE UNIQUE INDEX IF NOT EXISTS idx_referrals_referee_unique
