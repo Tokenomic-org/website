@@ -14,17 +14,9 @@
  *      still flip themes.
  */
 (function () {
-  // (1) pre-paint dark/light selection
-  try {
-    var t = localStorage.getItem('tkn-theme');
-    if (t !== 'light' && t !== 'dark') t = 'dark';
-    var c = document.documentElement.classList;
-    if (t === 'light') { c.add('theme-light'); c.remove('dark'); }
-    else { c.remove('theme-light'); c.add('dark'); }
-  } catch (e) {}
-
-  // (2) wire the floating toggle button. defer until DOM ready since
-  // the <button id="tk-theme-fab"> sits below this script in the HTML.
+  // Pre-paint theme selection now lives in the single hashed inline
+  // bootstrap inside _includes/island-bootstrap.html (the only inline
+  // script in the codebase). This file only wires the floating toggle.
   function wireFab() {
     var btn = document.getElementById('tk-theme-fab');
     if (!btn) return;

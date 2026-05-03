@@ -67,21 +67,20 @@
       .then(function (r) { return r.json(); })
       .then(function (j) {
         var tbody = document.querySelector('#routes-table tbody');
-        tbody.innerHTML = '';
+        clear(tbody);
         var rows = (j && j.data) || [];
         if (!rows.length) {
-          tbody.innerHTML = '<tr><td colspan="5" class="muted">No traffic in window.</td></tr>';
+          tbody.appendChild(emptyRow(5, 'No traffic in window.'));
           return;
         }
         rows.forEach(function (r) {
-          var tr = document.createElement('tr');
-          tr.innerHTML =
-            '<td>' + (r.route || '\u2014') + '</td>' +
-            '<td>' + fmt(r.requests) + '</td>' +
-            '<td>' + ms(r.avg_latency_ms) + '</td>' +
-            '<td>' + ms(r.p95_latency_ms) + '</td>' +
-            '<td>' + fmt(r.errors_5xx) + '</td>';
-          tbody.appendChild(tr);
+          tbody.appendChild(rowOf([
+            r.route || '\u2014',
+            fmt(r.requests),
+            ms(r.avg_latency_ms),
+            ms(r.p95_latency_ms),
+            fmt(r.errors_5xx),
+          ]));
         });
       })
       .catch(function () {});
@@ -90,25 +89,50 @@
       .then(function (r) { return r.json(); })
       .then(function (j) {
         var tbody = document.querySelector('#errors-table tbody');
-        tbody.innerHTML = '';
+        clear(tbody);
         var rows = (j && j.data) || [];
         if (!rows.length) {
-          tbody.innerHTML = '<tr><td colspan="6" class="muted">No errors in window. Nice.</td></tr>';
+          tbody.appendChild(emptyRow(6, 'No errors in window. Nice.'));
           return;
         }
         rows.forEach(function (r) {
-          var tr = document.createElement('tr');
-          tr.innerHTML =
-            '<td class="muted">' + new Date(r.timestamp).toLocaleTimeString() + '</td>' +
-            '<td>' + (r.route || '\u2014') + '</td>' +
-            '<td>' + (r.method || '') + '</td>' +
-            '<td>' + Math.round(r.status || 0) + '</td>' +
-            '<td>' + (r.country || 'XX') + '</td>' +
-            '<td>' + ms(r.latency_ms) + '</td>';
+          var tr = rowOf([
+            new Date(r.timestamp).toLocaleTimeString(),
+            r.route || '\u2014',
+            r.method || '',
+            String(Math.round(r.status || 0)),
+            r.country || 'XX',
+            ms(r.latency_ms),
+          ]);
+          // First cell gets the muted class to match the prior visual.
+          if (tr.firstChild) tr.firstChild.className = 'muted';
           tbody.appendChild(tr);
         });
       })
       .catch(function () {});
+  }
+
+  // ---- safe DOM helpers (Phase 7 / Round 6 — replaces innerHTML row
+  // construction so attacker-controllable telemetry fields like route,
+  // method, country can never inject HTML into the admin page).
+  function clear(node) { while (node && node.firstChild) node.removeChild(node.firstChild); }
+  function rowOf(cells) {
+    var tr = document.createElement('tr');
+    cells.forEach(function (text) {
+      var td = document.createElement('td');
+      td.textContent = text == null ? '' : String(text);
+      tr.appendChild(td);
+    });
+    return tr;
+  }
+  function emptyRow(span, text) {
+    var tr = document.createElement('tr');
+    var td = document.createElement('td');
+    td.colSpan = span;
+    td.className = 'muted';
+    td.textContent = text;
+    tr.appendChild(td);
+    return tr;
   }
 
   document.getElementById('refresh').addEventListener('click', loadAll);

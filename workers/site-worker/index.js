@@ -33,6 +33,9 @@ const GEO_BLOCKED = new Set(['CU', 'IR', 'KP', 'SY']);
 // API endpoints they call are independently gated; this is a defense-
 // in-depth at the static-asset layer so anonymous users can't read the
 // admin templates either.
+// /admin/observability/ is the spec path — it serves a redirect to the
+// real page below /dashboard/admin/. The redirect itself is harmless to
+// expose, but we still gate /dashboard/admin/* underneath.
 const ADMIN_PATH_PREFIX = '/dashboard/admin';
 
 export default {
@@ -164,10 +167,12 @@ const STRICT_CSP =
   "default-src 'self'; " +
   // script-src is 'self' + a small allowlist of audited CDNs that host
   // pinned third-party libraries (DOMPurify on cdnjs, ethers.js v5 on
-  // jsdelivr, Alpine.js on unpkg). NO 'unsafe-inline', NO 'unsafe-eval',
-  // NO inline-script hashes — every inline script in the templates has
-  // been moved to /shared/assets/js/.
-  "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; " +
+  // jsdelivr, Alpine.js on unpkg) + EXACTLY ONE sha256 inline-script
+  // hash for the pre-paint dark-mode bootstrap in
+  // _includes/island-bootstrap.html. NO 'unsafe-inline', NO
+  // 'unsafe-eval'. Touching the inline bootstrap requires updating
+  // this hash.
+  "script-src 'self' 'sha256-hitv+m7l2PVVQ7QWQvrrun3ogAe/v+9dwWzCgGk8DUY=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; " +
   "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
   "img-src 'self' data: blob: https:; " +
   "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +

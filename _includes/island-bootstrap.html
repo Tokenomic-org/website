@@ -1,11 +1,22 @@
 <!-- Tokenomic island bootstrap -->
 <link rel="stylesheet" href="/assets/islands/dist/tailwind.css" />
 <!--
-  Pre-paint theme class + floating toggle handler. External so the strict
-  site-worker CSP can stay at script-src 'self' with NO inline-script
-  hash. The synchronous script tag in <head> wins the FOUC race because
-  it blocks first paint just like the previous inline IIFE.
+  Phase 7 — single hashed inline bootstrap (architecture spec):
+  one tiny pre-paint dark-mode IIFE whose sha256 is allow-listed in
+  STRICT_SCRIPT_SRC. Inline because external scripts cannot reliably
+  win the FOUC race. Body MUST match the hash byte-for-byte; touch
+  it and you must regenerate sha256-… in workers/site-worker/index.js.
 -->
+<script>
+    try {
+      var t = localStorage.getItem('tkn-theme');
+      if (t !== 'light' && t !== 'dark') t = 'dark';
+      var cl = document.documentElement.classList;
+      if (t === 'light') { cl.add('theme-light'); cl.remove('dark'); }
+      else { cl.remove('theme-light'); cl.add('dark'); }
+    } catch (e) {}
+  </script>
+<!-- Floating-toggle click handler is external (no FOUC race to win). -->
 <script src="/shared/assets/js/island-theme-bootstrap.js"></script>
 <!-- React + ReactDOM are bundled into each island IIFE. No CDN dependency. -->
 <style>
