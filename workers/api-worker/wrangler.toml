@@ -18,6 +18,14 @@ head_sampling_rate = 1
 binding = "ANALYTICS"
 dataset = "tokenomic_api_requests"
 
+# Phase 7 — Cron Trigger for the error-spike alerter. Runs every 5
+# minutes; the handler in workers/api-worker/index.js#scheduled queries
+# Workers Analytics Engine for recent 5xx counts and pages OPS_ALERT_EMAIL
+# via MailChannels when the threshold is breached. Debounced via KV so a
+# single incident pages once per 30 minutes.
+[triggers]
+crons = ["*/5 * * * *"]
+
 [vars]
 # First-party origins only. Multi-tenant wildcards (https://*.pages.dev,
 # https://*.replit.dev, https://*.repl.co, https://*.workers.dev) must NEVER
@@ -138,6 +146,22 @@ ENROLLMENT_D1_FALLBACK           = "unset-only"
 #                              "Alerts → <addr>".
 ANALYTICS_ENGINE_DATASET         = "tokenomic_api_requests"
 OPS_ALERT_EMAIL                  = ""
+# Phase 7 — error-spike alerter (workers/api-worker/alerts.js).
+#   ALERT_THRESHOLD_5XX_5M  Default 25. Above this many 5xx responses in
+#                           a 5-minute window the alerter pages OPS_ALERT_EMAIL
+#                           via MailChannels and stamps a 30-min debounce
+#                           into RATE_LIMIT_KV so the same incident
+#                           doesn't re-page on every Cron tick.
+#   MAIL_FROM               From address on alert emails. Must be on a
+#                           DKIM-configured domain.
+#   DEV_MODE                "1" to also trust *.replit.dev / *.repl.co
+#                           as credentialed CORS origins. Never set on
+#                           production deploys.
+#   CSP_REPORT_URL          (site-worker) URL for CSP violation reports
+#                           during the legacy-template rewrite phase.
+ALERT_THRESHOLD_5XX_5M           = "25"
+MAIL_FROM                        = "alerts@tokenomic.org"
+DEV_MODE                         = ""
 
 [[r2_buckets]]
 binding     = "R2_BUCKET"

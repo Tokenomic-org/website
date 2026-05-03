@@ -39,15 +39,58 @@ export default {
 
     // Fall through to static assets.
     const resp = await env.ASSETS.fetch(request);
-    return withSecurityHeaders(resp, url);
+    return withSecurityHeaders(resp, url, env);
   }
 };
 
-// Phase 7 — security headers on every static response. CSP is permissive
-// here (the legacy Bootstrap-4 templates inline scripts and styles) but
-// the strict CSP is enforced on the API worker which holds all the
-// sensitive surface. HSTS / X-Frame / Referrer-Policy are still tight.
-function withSecurityHeaders(resp, url) {
+// Phase 7 — strict-by-default security headers on every static response.
+//
+// Two CSP headers are emitted:
+//   1. Content-Security-Policy            — STRICT, enforced. Permits
+//      'self' for scripts (no unsafe-inline, no unsafe-eval) plus the
+//      one hashed inline bootstrap from _includes/island-bootstrap.html
+//      and the cdnjs origin we use for DOMPurify (SRI-pinned). Allows
+//      'unsafe-inline' on STYLE only because the legacy Bootstrap-4
+//      theme inlines style attributes everywhere; that's a stylesheet
+//      surface, not a JS execution surface, so the XSS reach is small.
+//   2. Content-Security-Policy-Report-Only — SUPER-STRICT. Same script
+//      restrictions, also disallows inline styles. We collect violation
+//      reports during the legacy-template rewrite phase and promote
+//      this to enforced once it stops firing.
+//
+// Reports go to the configured CSP_REPORT_URL if set; otherwise the
+// header is omitted (a CSP without report-uri is just noise).
+const STRICT_SCRIPT_SRC =
+  "'self' " +
+  // Hash for the dark-mode bootstrap inlined in island-bootstrap.html.
+  "'sha256-Zr4y0bbYsmCNxuPfW3Fz7Pp/kF2OqaiI8RB/5G3YN+I=' " +
+  // DOMPurify (SRI-pinned in dom-purify-loader.js).
+  "https://cdnjs.cloudflare.com";
+
+const STRICT_CSP =
+  "default-src 'self'; " +
+  "script-src "  + STRICT_SCRIPT_SRC + "; " +
+  "style-src 'self' 'unsafe-inline'; " +
+  "img-src 'self' data: blob: https:; " +
+  "font-src 'self' data:; " +
+  "connect-src 'self' https://*.tokenomic.org https://*.workers.dev https://mainnet.base.org https://sepolia.base.org https://api.cloudflare.com https://relay.walletconnect.com wss://relay.walletconnect.com; " +
+  "frame-ancestors 'none'; " +
+  "object-src 'none'; " +
+  "base-uri 'self'; " +
+  "form-action 'self'; " +
+  "upgrade-insecure-requests";
+
+const REPORT_ONLY_CSP =
+  "default-src 'self'; " +
+  "script-src "  + STRICT_SCRIPT_SRC + "; " +
+  "style-src 'self'; " +     // tighter than enforced — gathers data
+  "img-src 'self' data: blob: https:; " +
+  "font-src 'self' data:; " +
+  "frame-ancestors 'none'; " +
+  "object-src 'none'; " +
+  "base-uri 'self'";
+
+function withSecurityHeaders(resp, url, env) {
   const h = new Headers(resp.headers);
   h.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   h.set('X-Frame-Options', 'DENY');
@@ -58,23 +101,13 @@ function withSecurityHeaders(resp, url) {
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=(), payment=(self), usb=(), interest-cohort=()'
   );
-  // Loose CSP — frame-ancestors 'none' is the high-value protection here
-  // because the rest of the legacy theme inlines style="…" attributes
-  // and would break under a strict policy. Tightening is queued for a
-  // future template-rewrite pass.
   if (!h.has('Content-Security-Policy')) {
+    h.set('Content-Security-Policy', STRICT_CSP);
+  }
+  if (env && env.CSP_REPORT_URL) {
     h.set(
-      'Content-Security-Policy',
-      "default-src 'self' https: data: blob:; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; " +
-      "style-src 'self' 'unsafe-inline' https:; " +
-      "img-src 'self' data: blob: https:; " +
-      "font-src 'self' data: https:; " +
-      "connect-src 'self' https: wss:; " +
-      "frame-ancestors 'none'; " +
-      "object-src 'none'; " +
-      "base-uri 'self'; " +
-      "upgrade-insecure-requests"
+      'Content-Security-Policy-Report-Only',
+      REPORT_ONLY_CSP + '; report-uri ' + env.CSP_REPORT_URL,
     );
   }
   return new Response(resp.body, { status: resp.status, statusText: resp.statusText, headers: h });

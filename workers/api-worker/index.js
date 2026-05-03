@@ -39,6 +39,7 @@ import {
   authRateLimitMiddleware,
 } from './security.js';
 import { analyticsMiddleware, mountObservabilityRoutes } from './observability.js';
+import { checkErrorSpikes } from './alerts.js';
 
 export { ChatRoom };
 
@@ -60,23 +61,34 @@ app.use('*', logger());
 // credentialed (cookie) cross-origin calls and exfiltrate authenticated
 // responses. Operators can add staging/preview origins via the
 // ALLOWED_ORIGINS env var (comma-separated, supports `https://*.your.tld`).
+// Production defaults are first-party-only. Multi-tenant preview platforms
+// (replit.dev, repl.co) are NEVER trusted for credentialed requests in
+// production because any other tenant could host an attacker page on the
+// same parent domain. Operators opt them in for dev workspaces by setting
+// DEV_MODE="1" or by adding explicit entries to ALLOWED_ORIGINS.
 const DEFAULT_ALLOWED_ORIGINS = [
   'https://tokenomic.org',
   'https://www.tokenomic.org',
   'https://*.tokenomic.org',
   'http://localhost:5000',
   'http://127.0.0.1:5000',
-  // Replit dev/preview environments. Wildcard is safe here because each
-  // dev URL is bound to one user's authenticated workspace and CSRF still
-  // gates mutating requests on Origin match.
+];
+// Dev-only previews. Gated behind DEV_MODE so prod can never reflect them
+// to a credentialed CORS response. Each entry is still wildcard-matched
+// against the request Origin via the same originIsAllowed() helper.
+const DEV_ALLOWED_ORIGINS = [
   'https://*.replit.dev',
   'https://*.repl.co',
   'https://*.kirk.replit.dev',
   'https://*.picard.replit.dev',
 ];
 function buildAllowList(env) {
-  return (env.ALLOWED_ORIGINS || DEFAULT_ALLOWED_ORIGINS.join(','))
+  const fromEnv = (env.ALLOWED_ORIGINS || DEFAULT_ALLOWED_ORIGINS.join(','))
     .split(',').map((s) => s.trim()).filter(Boolean);
+  if (env.DEV_MODE === '1' || env.DEV_MODE === 'true') {
+    return fromEnv.concat(DEV_ALLOWED_ORIGINS);
+  }
+  return fromEnv;
 }
 function originIsAllowed(reqOrigin, allowList) {
   if (!reqOrigin) return false;
@@ -537,5 +549,27 @@ export default {
     // Future queues land here. Default to acking unknown queues so we
     // don't infinite-loop on poison messages.
     for (const m of batch.messages) m.ack();
+  },
+  // Phase 7 — Cron Trigger entry point. Wired in wrangler.toml as a
+  // 5-minute schedule. Currently the only consumer is the error-spike
+  // alerter; new scheduled jobs should branch on event.cron here.
+  async scheduled(event, env, ctx) {
+    try {
+      const result = await checkErrorSpikes(env, ctx);
+      // No console.error on a no-op — Cron logs would be noisy.
+      if (result && result.fired) {
+        // Emit a single audit row so we can correlate the email later.
+        if (env.DB) {
+          ctx.waitUntil(env.DB.prepare(
+            `INSERT INTO audit_log (actor_wallet, action, target_type, target_id, metadata)
+             VALUES ('system', 'alert.5xx-spike', 'observability', ?, ?)`
+          ).bind(event.cron || 'cron', JSON.stringify(result)).run().catch(() => {}));
+        }
+      }
+    } catch (e) {
+      // Cron must never throw — Cloudflare retries failed scheduled
+      // events and we don't want to amplify a downstream outage.
+      console.error('[cron] checkErrorSpikes failed:', e.message);
+    }
   },
 };
