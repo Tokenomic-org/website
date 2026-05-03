@@ -49,6 +49,25 @@ permalink: /referrals/
         <div class="dashboard-content" style="display:none;">
           <div x-data="referralsPage()" x-init="init()">
 
+            <!-- Pending on-chain link banner -->
+            <div x-show="me.pending_link" x-cloak style="background:linear-gradient(135deg,#ff6000 0%,#c84800 100%);border-radius:12px;padding:20px 24px;margin-bottom:16px;color:#fff;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:240px;">
+                  <h4 style="color:#fff;margin:0 0 4px;">Confirm your referrer on-chain</h4>
+                  <p style="color:rgba(255,255,255,0.92);font-size:0.88rem;margin:0;">
+                    You arrived through a referrer (<code style="background:rgba(0,0,0,0.18);padding:1px 6px;border-radius:4px;font-size:0.82rem;" x-text="me.pending_link && me.pending_link.referrer ? (me.pending_link.referrer.slice(0,8) + '…' + me.pending_link.referrer.slice(-6)) : ''"></code>). One quick wallet signature permanently links the relationship via <code style="background:rgba(0,0,0,0.18);padding:1px 6px;border-radius:4px;font-size:0.82rem;">ReferralRegistry</code> so they earn 5% on your future activity.
+                  </p>
+                  <p x-show="linkError" style="color:#fff;background:rgba(0,0,0,0.25);padding:8px 12px;border-radius:6px;font-size:0.82rem;margin:10px 0 0;" x-text="linkError"></p>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <button class="dash-btn" style="background:#fff;color:#0A0F1A;padding:10px 18px;font-weight:600;border:none;border-radius:8px;" :disabled="linking" @click="confirmReferrerOnChain()">
+                    <span x-show="!linking">Confirm on-chain</span>
+                    <span x-show="linking" x-text="linkingStep || 'Working…'"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <!-- Hero card -->
             <div style="background:linear-gradient(135deg,#0A0F1A 0%,#1a2744 100%);border-radius:12px;padding:24px 28px;margin-bottom:24px;color:#fff;">
               <h4 style="color:#fff;margin:0 0 6px;">Earn 5% USDC on every referred sale</h4>
@@ -197,6 +216,9 @@ function referralsPage() {
     personalMessage: '',
     turnstileSiteKey: (window.__TKN_ENV && window.__TKN_ENV.TURNSTILE_SITE_KEY) || '',
     turnstileToken: '',
+    linking: false,
+    linkingStep: '',
+    linkError: '',
 
     async init() {
       try {
@@ -206,6 +228,62 @@ function referralsPage() {
         var r = await fetch(API + '/api/referrals/me', { headers: headers, credentials: 'include' });
         if (r.ok) this.me = await r.json();
       } catch (e) { console.warn('referrals/me failed', e); }
+    },
+
+    async confirmReferrerOnChain() {
+      this.linkError = '';
+      const pl = this.me && this.me.pending_link;
+      if (!pl || !pl.referrer || !pl.registry) {
+        this.linkError = 'No pending link to confirm.';
+        return;
+      }
+      if (!window.ethereum) {
+        this.linkError = 'No injected wallet detected. Connect a wallet (MetaMask, Rabby, Coinbase) and retry.';
+        return;
+      }
+      this.linking = true;
+      try {
+        // Switch chain if needed.
+        const wantChainHex = '0x' + Number(pl.chain_id).toString(16);
+        try {
+          this.linkingStep = 'Switching chain…';
+          await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: wantChainHex }] });
+        } catch (e) {
+          if (e && e.code === 4902) {
+            this.linkError = 'Add Base to your wallet first, then retry.';
+            this.linking = false; return;
+          }
+          // Other errors (user already on chain, etc.) can be ignored.
+        }
+        // Encode setReferrer(address) selector + 32-byte arg.
+        const selector = '0xa18a7bfc'; // keccak256("setReferrer(address)").slice(0,10)
+        const arg = pl.referrer.toLowerCase().replace(/^0x/, '').padStart(64, '0');
+        const data = selector + arg;
+        this.linkingStep = 'Awaiting signature…';
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const from = (accounts && accounts[0]) || '';
+        const txHash = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{ from, to: pl.registry, data, value: '0x0' }],
+        });
+        this.linkingStep = 'Confirming…';
+        var jwt = localStorage.getItem('tkn-jwt') || localStorage.getItem('jwt') || '';
+        var headers = { 'content-type': 'application/json', 'accept': 'application/json' };
+        if (jwt && jwt !== 'null') headers['authorization'] = 'Bearer ' + jwt;
+        const r = await fetch(API + '/api/referrals/confirm-link', {
+          method: 'POST', headers, credentials: 'include',
+          body: JSON.stringify({ txHash }),
+        });
+        const data2 = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data2.error || ('HTTP ' + r.status));
+        // Re-fetch /me — pending_link will clear and `linked` count will bump.
+        await this.init();
+      } catch (e) {
+        this.linkError = e.message || String(e);
+      } finally {
+        this.linking = false;
+        this.linkingStep = '';
+      }
     },
 
     copyLink() {

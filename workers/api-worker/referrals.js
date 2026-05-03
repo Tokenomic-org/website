@@ -328,11 +328,47 @@ export async function linkReferrerOnSignIn(c, address) {
       clearRefCookie(c);
       return;
     }
+    // If the user arrived via an invite link, source = 'invite'.
+    let source = 'cookie';
+    let inviteId = 0;
+    let inviteEmail = '';
+    try {
+      const raw = c.req.header('cookie') || '';
+      for (const part of raw.split(/;\s*/)) {
+        if (part.startsWith('tk_inv=')) {
+          const dec = decodeURIComponent(part.slice('tk_inv='.length));
+          const colon = dec.indexOf(':');
+          if (colon > 0) {
+            inviteId = Number(dec.slice(0, colon));
+            inviteEmail = dec.slice(colon + 1);
+            if (Number.isFinite(inviteId) && inviteId > 0) source = 'invite';
+          }
+          break;
+        }
+      }
+    } catch (_) { /* ignore */ }
+
     await c.env.DB.prepare(
       `INSERT INTO referrals (referrer_wallet, referee_wallet, status, source, linked_at)
-       VALUES (?, ?, 'pending', 'cookie', NULL)`
-    ).bind(referrer, wallet).run();
+       VALUES (?, ?, 'pending', ?, NULL)`
+    ).bind(referrer, wallet, source).run();
+
+    // Atomically mark the invite as accepted (one-time consumption).
+    if (inviteId && inviteEmail) {
+      try {
+        await c.env.DB.prepare(
+          `UPDATE invites
+              SET status = 'accepted',
+                  accepted_wallet = ?,
+                  accepted_at = datetime('now')
+            WHERE id = ? AND email = ? AND accepted_wallet IS NULL`
+        ).bind(wallet, inviteId, inviteEmail).run();
+      } catch (_) { /* best-effort */ }
+    }
+
     clearRefCookie(c);
+    // Always clear the invite cookie too — successful link consumes both.
+    c.header('Set-Cookie', 'tk_inv=; Path=/; Max-Age=0; Secure; SameSite=Lax');
   } catch (e) {
     console.warn('linkReferrerOnSignIn failed:', e.message);
   }
@@ -554,6 +590,10 @@ async function sumSplitterPayouts(env, wallet) {
 
 export function mountReferralRoutes(app) {
   // ----- /r/:handle ------------------------------------------------------
+  // Optional `?inv=<token>` carries a one-time, HMAC-signed invite token.
+  // We verify the token, mark the invite row clicked, and stash the
+  // (inviteId,email) tuple in a tk_inv cookie so linkReferrerOnSignIn()
+  // can flip the row to 'accepted' atomically with the SIWE link.
   app.get('/r/:handle', async (c) => {
     const handle = c.req.param('handle');
     const referrer = await resolveHandle(c.env, handle);
@@ -562,6 +602,39 @@ export function mountReferralRoutes(app) {
       return c.redirect(origin + '/?ref=invalid', 302);
     }
     setRefCookie(c, lc(handle));
+
+    const invToken = c.req.query('inv') || '';
+    if (invToken) {
+      const verified = await verifyInviteToken(c.env, invToken);
+      if (verified && c.env.DB) {
+        const { inviteId, email } = verified;
+        // Confirm the row exists, is not already accepted, and matches the email.
+        const row = await c.env.DB.prepare(
+          `SELECT id, status, email, accepted_wallet
+             FROM invites WHERE id = ? LIMIT 1`
+        ).bind(inviteId).first();
+        if (row && lc(row.email) === lc(email) && !row.accepted_wallet) {
+          // One-time semantics: mark clicked the FIRST time only. Repeat
+          // clicks of the same link are tolerated but never re-promote
+          // status (status='accepted' is set in linkReferrerOnSignIn).
+          c.executionCtx.waitUntil(
+            c.env.DB.prepare(
+              `UPDATE invites
+                  SET status = CASE WHEN status='queued' THEN 'clicked'
+                                    WHEN status='sent'   THEN 'clicked'
+                                    ELSE status END,
+                      clicked_at = COALESCE(clicked_at, datetime('now'))
+                WHERE id = ?`
+            ).bind(inviteId).run().catch(() => {})
+          );
+          // Stash for SIWE consumption.
+          c.header('Set-Cookie',
+            `tk_inv=${encodeURIComponent(String(inviteId) + ':' + lc(email))}; Path=/; Max-Age=${60 * 60 * 24 * 14}; SameSite=Lax; Secure`
+          );
+        }
+      }
+    }
+
     if (c.env.RATE_LIMIT_KV) {
       const ck = `refclick:${lc(handle)}:${new Date().toISOString().slice(0, 10)}`;
       c.executionCtx.waitUntil(
