@@ -636,8 +636,43 @@ function articlesPage() {
             if (!file) return;
             var reader = new FileReader();
             var self = this;
-            reader.onload = function(e) { self.draft.featured_image = e.target.result; };
+            reader.onload = function(e) {
+                // Local preview is the data URL — instant feedback.
+                self.draft.featured_image = e.target.result;
+                // Phase 6: push the cover to Cloudflare Images for CDN
+                // delivery + automatic variants. We persist the resulting
+                // URL on the article row through the new
+                // /api/articles/:id/cover endpoint when the draft has an
+                // id (i.e. has been saved at least once). The upload is
+                // best-effort — failure leaves the data-URL preview in
+                // place.
+                self.uploadArticleCover(file);
+            };
             reader.readAsDataURL(file);
+        },
+        uploadArticleCover(blob) {
+            var self = this;
+            if (!self.draft || !self.draft.id) return; // need server-assigned id
+            var apiBase = (window.TOKENOMIC_API_BASE || 'https://tokenomic-api.guillaumelauzier.workers.dev').replace(/\/+$/,'');
+            var headers = { 'Content-Type': 'application/json' };
+            try { var tok = window.TokenomicSupabase && TokenomicSupabase.getToken && TokenomicSupabase.getToken(); if (tok) headers.Authorization = 'Bearer ' + tok; } catch(_) {}
+            fetch(apiBase + '/api/content/images/direct-upload', { method:'POST', headers: headers, credentials:'include' })
+                .then(function(r){ return r.json(); })
+                .then(function(d){
+                    if (!d.uploadURL) throw new Error('cf-images-unavailable');
+                    var fd = new FormData(); fd.append('file', blob, blob.name || 'cover.png');
+                    return fetch(d.uploadURL, { method:'POST', body: fd })
+                        .then(function(rr){ return rr.json(); })
+                        .then(function(cf){
+                            if (!cf.success) throw new Error('cf-upload-failed');
+                            var variantUrl = cf.result.variants && cf.result.variants[0];
+                            return fetch(apiBase + '/api/articles/' + self.draft.id + '/cover', {
+                                method:'POST', headers: headers, credentials:'include',
+                                body: JSON.stringify({ url: variantUrl })
+                            });
+                        });
+                })
+                .catch(function(e){ console.warn('CF Images cover upload skipped:', e.message); });
         },
         get filteredArticles() { return this.filter==='all' ? this.articles : this.articles.filter(a=>a.status===this.filter); },
         publishedArticles(){ return this.articles.filter(a=>a.status==='published'&&a.traffic); },

@@ -334,7 +334,10 @@ async function r2Put(env, key, body, opts = {}) {
   });
 }
 
-function buildSignedR2Url(c, key, ttlSec = 3600) {
+function buildSignedR2Url(c, key, ttlSec = 300) {
+  // Default TTL is 5 minutes for protected assets. Avatar / public-ish
+  // assets pass a longer ttl explicitly. Cap at 24h so a leaked URL
+  // expires within a day even when callers ask for more.
   const exp = Math.floor(Date.now() / 1000) + Math.max(60, Math.min(ttlSec, 24 * 3600));
   return signR2Get(c.env, key, exp).then(sig => {
     if (!sig) return null;
@@ -564,7 +567,11 @@ export function mountContentRoutes(app) {
     const buf = safeB64ToBytes(body.base64);
     if (!buf) return jsonError(c, 400, 'Invalid base64 payload');
     if (buf.length > 10 * 1024 * 1024) return jsonError(c, 413, 'Max 10MB');
-    const key = `${kind}/${auth.wallet}/${basename}`;
+    // Phase 6 R2 layout: pluralized prefixes so the bucket browses cleanly
+    // (avatars/, certificates/, course-assets/, misc/).
+    const prefixMap = { avatar: 'avatars', certificate: 'certificates', 'course-asset': 'course-assets', misc: 'misc' };
+    const prefix = prefixMap[kind] || 'misc';
+    const key = `${prefix}/${auth.wallet}/${basename}`;
     await r2Put(c.env, key, buf, { contentType: ct });
     const sha = await sha256Hex(buf);
     if (c.env.DB) {
@@ -683,7 +690,7 @@ export function mountContentRoutes(app) {
 
     let url = null;
     if (r2Available(c.env)) {
-      const key = `avatar/${auth.wallet}/profile.${ext}`;
+      const key = `avatars/${auth.wallet}/profile.${ext}`;
       await r2Put(c.env, key, buf, { contentType: ct });
       if (c.env.DB) {
         try {
@@ -727,6 +734,50 @@ export function mountContentRoutes(app) {
     return c.json({ ok: true, url });
   });
 
+  /**
+   * Mint a fresh signed GET URL for an R2 object the caller already
+   * owns. Used by the dashboard / email links to refresh the 5-minute
+   * certificate URL without re-issuing the certificate. Authorization
+   * checks the r2_objects.owner_wallet column so a learner can only
+   * refresh URLs for their own assets.
+   */
+  app.get('/api/content/r2/refresh-url', async (c) => {
+    const auth = await requireAuthLocal(c);
+    if (auth.error) return auth.error;
+    const key = c.req.query('key');
+    if (!key) return jsonError(c, 400, 'key required');
+    if (!c.env.DB) return jsonError(c, 503, 'Database not configured');
+    const row = await c.env.DB.prepare(
+      'SELECT owner_wallet, kind FROM r2_objects WHERE r2_key = ?'
+    ).bind(key).first();
+    if (!row) return jsonError(c, 404, 'Object not found');
+    const isOwner = lc(row.owner_wallet) === auth.wallet;
+    if (!isOwner && !(await isAdmin(c.env, auth.wallet))) return jsonError(c, 403, 'Not your object');
+    const url = await buildSignedR2Url(c, key, 5 * 60);
+    if (!url) return jsonError(c, 503, 'Signing key not configured');
+    return c.json({ ok: true, url, exp_sec: 300 });
+  });
+
+  // ────────────── Article cover image
+
+  app.post('/api/articles/:id/cover', async (c) => {
+    const auth = await requireAuthLocal(c);
+    if (auth.error) return auth.error;
+    if (!c.env.DB) return jsonError(c, 503, 'Database not configured');
+    const id = Number(c.req.param('id'));
+    if (!Number.isFinite(id) || id <= 0) return jsonError(c, 400, 'Bad article id');
+    const article = await c.env.DB.prepare('SELECT id, author_wallet FROM articles WHERE id = ?').bind(id).first();
+    if (!article) return jsonError(c, 404, 'Article not found');
+    if (lc(article.author_wallet) !== auth.wallet && !(await isAdmin(c.env, auth.wallet))) {
+      return jsonError(c, 403, 'Not your article');
+    }
+    let body = {}; try { body = await c.req.json(); } catch { return jsonError(c, 400, 'Invalid JSON'); }
+    const url = String(body.url || '').slice(0, 500);
+    if (!url) return jsonError(c, 400, 'url required');
+    await c.env.DB.prepare('UPDATE articles SET image_url = ? WHERE id = ?').bind(url, id).run();
+    return c.json({ ok: true, url });
+  });
+
   // ────────────── Issue certificate (PDF + email + log)
 
   app.post('/api/courses/:id/issue-certificate', async (c) => {
@@ -764,7 +815,7 @@ export function mountContentRoutes(app) {
     let pdfUrl = null;
     let r2Key = null;
     if (r2Available(c.env)) {
-      r2Key = `certificate/${studentWallet}/${gate.course.id}-${sha.slice(0,12)}.pdf`;
+      r2Key = `certificates/${studentWallet}/${gate.course.id}-${sha.slice(0,12)}.pdf`;
       await r2Put(c.env, r2Key, pdf, { contentType: 'application/pdf' });
       if (c.env.DB) {
         try {
@@ -774,7 +825,11 @@ export function mountContentRoutes(app) {
           `).bind(r2Key, studentWallet, pdf.length, sha).run();
         } catch (_) {}
       }
-      pdfUrl = await buildSignedR2Url(c, r2Key, 30 * 24 * 3600);
+      // Phase 6: protected assets (certificate PDFs) get a SHORT 5-minute
+      // signed GET URL. The dashboard / email link should call
+      // /api/content/r2/refresh-url to mint a fresh URL on demand instead
+      // of caching a long-lived link in the recipient's mailbox.
+      pdfUrl = await buildSignedR2Url(c, r2Key, 5 * 60);
     }
 
     // Send email if we have a recipient + mail configured.

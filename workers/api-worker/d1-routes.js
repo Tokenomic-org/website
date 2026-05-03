@@ -769,16 +769,43 @@ export function mountD1Routes(app) {
   }
 
   // Public list of modules for a course.
+  //
+  // Phase 6 hardening: `video_uid` is the Cloudflare Stream identifier and
+  // must NOT leak to anonymous / non-owner callers — anyone holding a UID
+  // could embed an unsigned iframe and bypass the enrollment-gated signed
+  // playback flow. We therefore strip the column for public callers and
+  // expose only `has_video: boolean`. Owners and admins still receive the
+  // raw UID so the dashboard editor can manage modules.
   app.get('/api/courses/:id/modules', async (c) => {
     const r = dbReady(c); if (r) return r;
     const id = Number(c.req.param('id'));
     if (!Number.isFinite(id) || id <= 0) return c.json({ error: 'Bad id' }, 400);
-    const exists = await c.env.DB.prepare('SELECT id FROM courses WHERE id = ?').bind(id).first();
-    if (!exists) return c.json({ error: 'Course not found' }, 404);
+    const course = await c.env.DB.prepare('SELECT id, educator_wallet FROM courses WHERE id = ?').bind(id).first();
+    if (!course) return c.json({ error: 'Course not found' }, 404);
+    const opt = await getOptionalAuth(c);
+    const callerWallet = opt && opt.wallet ? lc(opt.wallet) : null;
+    let isPrivileged = false;
+    if (callerWallet) {
+      if (lc(course.educator_wallet) === callerWallet) isPrivileged = true;
+      else {
+        const adminEnv = (c.env.ADMIN_WALLETS || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+        if (adminEnv.includes(callerWallet)) isPrivileged = true;
+        else {
+          const p = await c.env.DB.prepare('SELECT roles FROM profiles WHERE wallet_address = ?').bind(callerWallet).first();
+          try { if (p && Array.isArray(JSON.parse(p.roles || '[]')) && JSON.parse(p.roles).includes('admin')) isPrivileged = true; } catch (_) {}
+        }
+      }
+    }
     const { results } = await c.env.DB.prepare(
       'SELECT id, course_id, position, title, body_md, video_uid, duration_minutes, created_at, updated_at FROM modules WHERE course_id = ? ORDER BY position ASC, id ASC'
     ).bind(id).all();
-    return c.json({ items: results || [], count: (results || []).length });
+    const items = (results || []).map(m => {
+      const has_video = !!m.video_uid;
+      if (isPrivileged) return Object.assign({}, m, { has_video });
+      const { video_uid, ...rest } = m;
+      return Object.assign({}, rest, { has_video });
+    });
+    return c.json({ items, count: items.length });
   });
 
   // Append a new module.

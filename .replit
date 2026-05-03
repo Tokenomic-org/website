@@ -31,5 +31,4 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "bundle exec jekyll build && node server.js"
-waitForPort = 5000
+args = "bundle exec jekyll build && node scripts/rebuild-dashboard-site.js && node server.js"

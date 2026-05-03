@@ -184,34 +184,43 @@ permalink: /course/
       var body = document.createElement('div');
       body.className = 'cp2-mod-body';
       var html = '';
-      if (m.video_uid) {
-        // Phase 6: signed playback. We render a lightweight placeholder and
-        // ask the worker for an enrollment-gated signed token; on 403 we
-        // show a paywall CTA, on success we mount the iframe with the
-        // signed embed URL so the unsigned UID never leaks to the page.
-        html += '<div class="cp2-mod-video-slot" data-mid="' + (m.id || '') + '" data-uid="' + m.video_uid + '" style="width:100%;aspect-ratio:16/9;background:#0A0F1A;border-radius:8px;margin-top:12px;display:flex;align-items:center;justify-content:center;color:#5a8299;font-size:0.85rem;">Loading video…</div>';
+      // Phase 6: signed playback only. The public modules endpoint no
+      // longer exposes video_uid, so we ONLY know `has_video` here. The
+      // module id is the sole input to the enrollment-gated playback
+      // endpoint — no UID is ever embedded in the DOM, and we never fall
+      // back to an unsigned iframe even on transient API errors.
+      if (m.has_video || m.video_uid) {
+        html += '<div class="cp2-mod-video-slot" data-mid="' + (m.id || '') + '" style="width:100%;aspect-ratio:16/9;background:#0A0F1A;border-radius:8px;margin-top:12px;display:flex;align-items:center;justify-content:center;color:#5a8299;font-size:0.85rem;">Loading video…</div>';
       }
       html += '<div class="cp2-mod-md">' + renderModuleMd(m.body_md) + '</div>';
       body.innerHTML = html;
       wrap.appendChild(head);
       wrap.appendChild(body);
       host.appendChild(wrap);
-      // Resolve the signed embed lazily on first expand to avoid burning a
-      // CF Stream token mint per module on initial load.
       head.addEventListener('click', function once() {
         var slot = body.querySelector('.cp2-mod-video-slot');
         if (!slot || slot.dataset.loaded) return;
         slot.dataset.loaded = '1';
-        loadSignedPlayback(slot, slot.dataset.mid, slot.dataset.uid);
+        loadSignedPlayback(slot, slot.dataset.mid);
       });
     });
   }
 
-  function loadSignedPlayback(slot, moduleId, uid) {
+  function showPlaybackError(slot, headline, sub) {
+    slot.style.background = 'linear-gradient(135deg,#0A0F1A,#1a2332)';
+    slot.style.color = '#fff';
+    slot.style.flexDirection = 'column';
+    slot.style.gap = '10px';
+    slot.style.padding = '20px';
+    slot.style.textAlign = 'center';
+    slot.innerHTML = '<div style="font-weight:600;font-size:1rem;">' + headline + '</div>'
+      + (sub ? '<div style="font-size:0.8rem;opacity:0.8;">' + sub + '</div>' : '');
+  }
+
+  function loadSignedPlayback(slot, moduleId) {
     var apiBase = (window.TOKENOMIC_API_BASE || 'https://tokenomic-api.guillaumelauzier.workers.dev').replace(/\/+$/,'');
     if (!moduleId) {
-      // No module id from the API yet → fall back to the legacy unsigned URL.
-      slot.outerHTML = '<iframe class="cp2-mod-video" src="' + streamEmbedSrc(uid) + '" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen></iframe>';
+      showPlaybackError(slot, 'Video unavailable', 'Module identifier missing from server response.');
       return;
     }
     fetch(apiBase + '/api/content/lessons/' + encodeURIComponent(moduleId) + '/playback', {
@@ -225,17 +234,21 @@ permalink: /course/
         slot.style.flexDirection = 'column';
         slot.style.gap = '10px';
         slot.innerHTML = '<div style="font-weight:600;">🔒 Enrollment required</div>'
-          + '<a href="#enroll" class="dash-btn dash-btn-primary" style="background:#f97316;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:0.85rem;">Enroll to watch</a>';
+          + '<a href="#enroll" style="background:#f97316;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:0.85rem;">Enroll to watch</a>';
         return;
       }
-      if (res.data && res.data.embed) {
+      if (res.status >= 200 && res.status < 300 && res.data && res.data.embed) {
         slot.outerHTML = '<iframe class="cp2-mod-video" src="' + res.data.embed
           + '" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen></iframe>';
-      } else {
-        slot.outerHTML = '<iframe class="cp2-mod-video" src="' + streamEmbedSrc(uid) + '" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen></iframe>';
+        return;
       }
+      // Any other failure (auth, server error, missing CF binding) — show
+      // a clean error rather than degrading to an unsigned embed, which
+      // would defeat the enrollment gate entirely.
+      showPlaybackError(slot, 'Video unavailable',
+        (res.data && res.data.error) ? res.data.error : 'Please sign in and try again.');
     }).catch(function() {
-      slot.outerHTML = '<iframe class="cp2-mod-video" src="' + streamEmbedSrc(uid) + '" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen></iframe>';
+      showPlaybackError(slot, 'Video unavailable', 'Network error while loading playback token.');
     });
   }
 

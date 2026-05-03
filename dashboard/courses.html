@@ -390,6 +390,27 @@ permalink: /my-courses/
             <button class="dash-btn dash-btn-primary" @click="viewMode='learn'">View My Courses</button>
         </div>
     </template>
+
+    <!-- Phase 6: educator-side issuance UI. Owners can mint a signed PDF
+         certificate (R2-backed, emailed to the learner) for any wallet
+         that has completed one of their courses. -->
+    <div class="dash-card" style="margin-top:20px;border:1px dashed #cbd5e0;">
+        <h5 style="margin:0 0 8px;color:#0A0F1A;font-size:0.95rem;"><i class="fas fa-stamp" style="color:#f97316;margin-right:6px;"></i>Issue a certificate (educator)</h5>
+        <p style="font-size:0.78rem;color:#5a8299;margin:0 0 10px;">Enter the course and the learner's wallet. We'll generate a signed PDF, store it in R2, log it on-chain-ready, and email the learner if they have a profile email.</p>
+        <div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px;align-items:end;">
+            <div><label style="display:block;color:#5a8299;font-size:0.75rem;margin-bottom:3px;">Course</label>
+                <select x-model="certIssueCourseId" class="dash-input" style="font-size:0.82rem;">
+                    <option value="">Select course…</option>
+                    <template x-for="c in courses.filter(function(c){ return isOwner(c); })" :key="c.id"><option :value="c.id" x-text="c.title"></option></template>
+                </select>
+            </div>
+            <div><label style="display:block;color:#5a8299;font-size:0.75rem;margin-bottom:3px;">Learner wallet</label>
+                <input x-model="certIssueWallet" class="dash-input" placeholder="0x…" maxlength="42" style="font-family:monospace;font-size:0.82rem;" />
+            </div>
+            <button type="button" class="dash-btn dash-btn-primary" :disabled="certIssueBusy || !certIssueCourseId || !certIssueWallet" @click="issueCertificate()" style="font-size:0.82rem;padding:9px 16px;"><span x-text="certIssueBusy ? 'Issuing…' : 'Issue Certificate'"></span></button>
+        </div>
+        <p x-show="certIssueMsg" x-text="certIssueMsg" :style="certIssueMsg.indexOf('✓')===0 ? 'color:#10b981;' : 'color:#ef4444;'" style="font-size:0.78rem;margin:8px 0 0;"></p>
+    </div>
 </div>
 
 <!-- ==================== EDIT COURSE MODAL ==================== -->
@@ -475,8 +496,12 @@ permalink: /my-courses/
                             <div class="col-md-8"><label style="display:block;color:#5a8299;font-size:0.8rem;margin-bottom:3px;">Module Title <span style="color:#e53e3e;">*</span></label><input x-model="nm.title" class="dash-input" placeholder="e.g. Introduction to Smart Contracts" maxlength="200" /></div>
                             <div class="col-md-4"><label style="display:block;color:#5a8299;font-size:0.8rem;margin-bottom:3px;">Duration (min)</label><input x-model="nm.duration_minutes" type="number" class="dash-input" placeholder="e.g. 45" min="0" /></div>
                         </div>
-                        <div style="margin-bottom:10px;"><label style="display:block;color:#5a8299;font-size:0.8rem;margin-bottom:3px;">Cloudflare Stream Video UID <small style="color:#9ca3af;">(optional)</small></label>
-                            <input x-model="nm.video_uid" class="dash-input" placeholder="abc123def456…" maxlength="100" style="font-family:monospace;font-size:0.82rem;" />
+                        <div style="margin-bottom:10px;"><label style="display:block;color:#5a8299;font-size:0.8rem;margin-bottom:3px;">Lesson Video <small style="color:#9ca3af;">(optional)</small></label>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <input x-model="nm.video_uid" class="dash-input" placeholder="Stream UID — paste or click 'Upload'" maxlength="100" style="font-family:monospace;font-size:0.82rem;flex:1;" />
+                                <button type="button" class="dash-btn dash-btn-outline" :disabled="streamUploadBusy" @click="requestStreamUpload()" style="padding:7px 12px;font-size:0.78rem;white-space:nowrap;"><i class="fas fa-cloud-upload-alt" style="margin-right:4px;"></i><span x-text="streamUploadBusy ? 'Working…' : 'Upload to Stream'"></span></button>
+                            </div>
+                            <p x-show="streamUploadHint" x-text="streamUploadHint" style="font-size:0.72rem;color:#5a8299;margin:6px 0 0;"></p>
                         </div>
                         <div style="margin-bottom:10px;">
                             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
@@ -634,9 +659,123 @@ function coursesPage() {
         certs: [
             {id:1,course:'Introduction to DeFi',level:'Beginner',date:'Mar 28, 2026',wallet:'0x7a3B...f4E2',certId:'TKN-CERT-2026-0412',contractAddr:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'}
         ],
+        // Phase 6 — Stream direct-upload + Issue Certificate state
+        streamUploadBusy: false, streamUploadHint: '',
+        certIssueCourseId: '', certIssueWallet: '', certIssueBusy: false, certIssueMsg: '',
 
         init() { this.loadCourses(); },
 
+        // Phase 6: ask the worker for a one-time Cloudflare Stream
+        // direct-creator-upload URL, then PUT the chosen file straight
+        // to Cloudflare. The returned UID is dropped into the module
+        // form. The webhook will flip the module to "ready" once
+        // transcoding completes.
+        requestStreamUpload() {
+            var self = this;
+            self.streamUploadBusy = true; self.streamUploadHint = '';
+            var apiBase = (window.TOKENOMIC_API_BASE || 'https://tokenomic-api.guillaumelauzier.workers.dev').replace(/\/+$/,'');
+            var headers = { 'Content-Type': 'application/json' };
+            try { var tok = window.TokenomicSupabase && TokenomicSupabase.getToken && TokenomicSupabase.getToken(); if (tok) headers.Authorization = 'Bearer ' + tok; } catch(_) {}
+            fetch(apiBase + '/api/content/stream/upload-url', { method:'POST', headers: headers, credentials:'include',
+                body: JSON.stringify({ moduleId: self.editModuleId || null, maxDurationSeconds: 7200 })
+            }).then(function(r){ return r.json().then(function(d){ return { status:r.status, data:d }; }); })
+              .then(function(res) {
+                  self.streamUploadBusy = false;
+                  if (res.status !== 200 || !res.data || !res.data.uploadURL) {
+                      self.streamUploadHint = (res.data && res.data.error) || 'Stream not configured on the server. Paste a UID instead.';
+                      return;
+                  }
+                  // Open a hidden file picker; uploaded file goes straight to CF.
+                  var input = document.createElement('input'); input.type='file'; input.accept='video/*';
+                  input.onchange = function(ev) {
+                      var file = ev.target.files && ev.target.files[0]; if (!file) return;
+                      self.streamUploadBusy = true;
+                      self.streamUploadHint = 'Uploading ' + file.name + ' to Cloudflare Stream…';
+                      var fd = new FormData(); fd.append('file', file);
+                      fetch(res.data.uploadURL, { method:'POST', body: fd })
+                          .then(function(r2){ if (!r2.ok) throw new Error('Upload failed: ' + r2.status); return r2; })
+                          .then(function() {
+                              self.nm.video_uid = res.data.uid;
+                              if (self.editModuleId) self.em.video_uid = res.data.uid;
+                              self.streamUploadHint = '✓ Uploaded. UID stored — Cloudflare will finish transcoding shortly.';
+                              self.streamUploadBusy = false;
+                          })
+                          .catch(function(e){ self.streamUploadBusy = false; self.streamUploadHint = 'Upload failed: ' + e.message; });
+                  };
+                  input.click();
+              })
+              .catch(function(e){ self.streamUploadBusy = false; self.streamUploadHint = 'Network error: ' + (e.message||e); });
+        },
+
+        // Phase 6: educator-driven certificate issuance. Calls the worker
+        // endpoint that mints a PDF, stores it in R2, logs it in
+        // certificates_issued, and (if email exists) sends the learner a
+        // notification with a 5-minute signed download link.
+        issueCertificate() {
+            var self = this;
+            if (!self.certIssueCourseId || !self.certIssueWallet) return;
+            if (!/^0x[a-fA-F0-9]{40}$/.test(self.certIssueWallet.trim())) {
+                self.certIssueMsg = 'Please enter a valid 0x… wallet address.'; return;
+            }
+            self.certIssueBusy = true; self.certIssueMsg = '';
+            var apiBase = (window.TOKENOMIC_API_BASE || 'https://tokenomic-api.guillaumelauzier.workers.dev').replace(/\/+$/,'');
+            var headers = { 'Content-Type': 'application/json' };
+            try { var tok = window.TokenomicSupabase && TokenomicSupabase.getToken && TokenomicSupabase.getToken(); if (tok) headers.Authorization = 'Bearer ' + tok; } catch(_) {}
+            fetch(apiBase + '/api/courses/' + encodeURIComponent(self.certIssueCourseId) + '/issue-certificate', {
+                method:'POST', headers: headers, credentials:'include',
+                body: JSON.stringify({ student_wallet: self.certIssueWallet.trim().toLowerCase() })
+            }).then(function(r){ return r.json().then(function(d){ return { status:r.status, data:d }; }); })
+              .then(function(res){
+                  self.certIssueBusy = false;
+                  if (res.status >= 200 && res.status < 300) {
+                      self.certIssueMsg = '✓ Certificate issued. Email: ' + (res.data.email || 'skipped') + (res.data.url ? ' · PDF: ' + res.data.url : '');
+                      self.showToast('Certificate issued!', 'success');
+                  } else {
+                      self.certIssueMsg = (res.data && res.data.error) ? res.data.error : ('Failed (HTTP ' + res.status + ')');
+                  }
+              })
+              .catch(function(e){ self.certIssueBusy = false; self.certIssueMsg = 'Network error: ' + (e.message||e); });
+        },
+
+        // Phase 6 thumbnail uploader. Tries CF Images first via the worker
+        // (one-shot direct upload + persist), then falls back to the
+        // local Express endpoint that writes to /assets/images/courses/.
+        uploadCourseThumbnail(course, dataUrl) {
+            var self = this;
+            var apiBase = (window.TOKENOMIC_API_BASE || 'https://tokenomic-api.guillaumelauzier.workers.dev').replace(/\/+$/,'');
+            var headers = { 'Content-Type': 'application/json' };
+            try { var tok = window.TokenomicSupabase && TokenomicSupabase.getToken && TokenomicSupabase.getToken(); if (tok) headers.Authorization = 'Bearer ' + tok; } catch(_) {}
+            // Step 1: ask worker for a one-time CF Images upload URL.
+            fetch(apiBase + '/api/content/images/direct-upload', { method:'POST', headers: headers, credentials:'include' })
+                .then(function(r){ return r.json().then(function(d){ return { status:r.status, data:d }; }); })
+                .then(function(res) {
+                    if (res.status !== 200 || !res.data || !res.data.uploadURL) throw new Error('cf-images-unavailable');
+                    // Step 2: upload the data URL as multipart/form-data to CF.
+                    return fetch(dataUrl).then(function(r){ return r.blob(); }).then(function(blob) {
+                        var fd = new FormData(); fd.append('file', blob, 'thumb.png');
+                        return fetch(res.data.uploadURL, { method:'POST', body: fd })
+                            .then(function(rr){ return rr.json(); })
+                            .then(function(cfRes){
+                                if (!cfRes.success) throw new Error('cf-upload-failed');
+                                var cfId = cfRes.result.id;
+                                // Step 3: persist on the course row + cf_images table.
+                                return fetch(apiBase + '/api/courses/' + course.id + '/thumbnail-image',
+                                    { method:'POST', headers: headers, credentials:'include',
+                                      body: JSON.stringify({ image_id: cfId, variant: 'public' }) });
+                            })
+                            .then(function(r){ return r.json(); })
+                            .then(function(td){ if (td.url) course.thumbnailUrl = td.url; });
+                    });
+                })
+                .catch(function() {
+                    // Fallback: legacy Express endpoint.
+                    fetch('/api/courses/'+course.id+'/thumbnail', {
+                        method:'POST', headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({ thumbnail: dataUrl })
+                    }).then(function(r){ return r.json(); })
+                      .then(function(td){ if (td.url) course.thumbnailUrl = td.url; });
+                });
+        },
         slugify(text) {
             return text.toLowerCase().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').replace(/^-+|-+$/g,'').substring(0,80);
         },
@@ -730,13 +869,12 @@ function coursesPage() {
                 var course = data.course;
                 self.courses.unshift(course);
                 self.computeStats(); self.filterCourses();
-                // Upload thumbnail if present
+                // Upload thumbnail if present. Phase 6: prefer the worker's
+                // Cloudflare Images flow (CDN-hosted, automatic variants);
+                // fall back to the legacy local Express endpoint if CF
+                // Images isn't configured on the worker.
                 if (self.nc.thumbnailData && course.id) {
-                    fetch('/api/courses/'+course.id+'/thumbnail', {
-                        method:'POST', headers:{'Content-Type':'application/json'},
-                        body: JSON.stringify({ thumbnail: self.nc.thumbnailData })
-                    }).then(function(r){ return r.json(); })
-                    .then(function(td){ if (td.url) course.thumbnailUrl = td.url; });
+                    self.uploadCourseThumbnail(course, self.nc.thumbnailData);
                 }
                 self.nc = { title:'', slug:'', level:'beginner', priceUSDC:0, description:'', visibility:'public', specialization:'', prerequisites:'', whatYouLearn:'', estimatedHours:'', thumbnailData:'', thumbnailPreview:'' };
                 var ncThumb = document.getElementById('nc-thumb-drop');
