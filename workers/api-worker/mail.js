@@ -21,7 +21,6 @@
  * attempt to email_log so the dashboard can surface it.
  */
 
-import { isHexAddr } from './referrals.js';
 
 function escHtml(s) {
   return String(s == null ? '' : s)

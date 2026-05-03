@@ -369,8 +369,26 @@ export function mountContentRoutes(app) {
     const courseId = courseRaw != null ? Number(courseRaw) : null;
     const moduleId = moduleRaw != null ? Number(moduleRaw) : null;
 
-    // If a courseId is supplied, verify ownership.
-    if (courseId) {
+    // Authorization: if a moduleId was supplied, resolve it to its
+    // owning course and enforce that the caller is the educator (or
+    // admin) for THAT course. Without this check, any authenticated
+    // user could bind their Stream upload to another educator's
+    // module — the webhook would then write modules.video_uid for a
+    // module they do not own (IDOR).
+    if (moduleId) {
+      if (!c.env.DB) return jsonError(c, 503, 'Database not configured');
+      const mrow = await c.env.DB.prepare('SELECT id, course_id FROM modules WHERE id = ?').bind(moduleId).first();
+      if (!mrow) return jsonError(c, 404, 'Module not found');
+      // The course gate enforces educator/admin ownership.
+      const mGate = await loadCourseOwned(c, mrow.course_id);
+      if (mGate.fail) return mGate.fail;
+      // If both moduleId AND courseId were supplied, they must match.
+      if (courseId && Number(courseId) !== Number(mrow.course_id)) {
+        return jsonError(c, 400, 'moduleId does not belong to courseId');
+      }
+    }
+    // If only a courseId is supplied, verify ownership directly.
+    if (courseId && !moduleId) {
       const gate = await loadCourseOwned(c, courseId);
       if (gate.fail) return gate.fail;
     }
@@ -543,14 +561,13 @@ export function mountContentRoutes(app) {
       return c.json({ error: 'Enrollment required', paywalled: true, course_id: m.course_id }, 403);
     }
 
-    // Mint a Stream signed token for this UID.
+    // Mint a Stream signed token for this UID. Phase 6: NEVER fall
+    // back to an unsigned iframe URL — that would defeat the
+    // enrollment-gated playback guarantee. If the Stream binding is
+    // not configured we surface a 503 so the dashboard can show a
+    // clean "playback unavailable" state without leaking the UID.
     if (!c.env.CF_ACCOUNT_ID || !c.env.CF_STREAM_TOKEN) {
-      // No Stream API access — return the unsigned iframe URL as a graceful fallback.
-      const sub = c.env.STREAM_CUSTOMER_SUBDOMAIN;
-      return c.json({
-        ok: true, reason, signed: false,
-        embed: sub ? `https://${sub}/${m.video_uid}/iframe` : null,
-      });
+      return jsonError(c, 503, 'Cloudflare Stream not configured (CF_ACCOUNT_ID / CF_STREAM_TOKEN missing).');
     }
     const exp = Math.floor(Date.now() / 1000) + 3600;
     const r = await callCfApi(c.env, `/stream/${m.video_uid}/token`, {
