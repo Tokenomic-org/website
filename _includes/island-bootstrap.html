@@ -1,18 +1,12 @@
 <!-- Tokenomic island bootstrap -->
 <link rel="stylesheet" href="/assets/islands/dist/tailwind.css" />
-<script>
-  // Flash-free dark-mode bootstrap. Reads tkn-theme from localStorage and
-  // applies it before first paint so Tailwind dark variants are correct.
-  (function () {
-    try {
-      var t = localStorage.getItem('tkn-theme');
-      if (t !== 'light' && t !== 'dark') t = 'dark';
-      var c = document.documentElement.classList;
-      if (t === 'light') { c.add('theme-light'); c.remove('dark'); }
-      else { c.remove('theme-light'); c.add('dark'); }
-    } catch (e) {}
-  })();
-</script>
+<!--
+  Pre-paint theme class + floating toggle handler. External so the strict
+  site-worker CSP can stay at script-src 'self' with NO inline-script
+  hash. The synchronous script tag in <head> wins the FOUC race because
+  it blocks first paint just like the previous inline IIFE.
+-->
+<script src="/shared/assets/js/island-theme-bootstrap.js"></script>
 <!-- React + ReactDOM are bundled into each island IIFE. No CDN dependency. -->
 <style>
   /* Floating dark-mode toggle for island-rendered pages. Lives outside the
@@ -34,17 +28,3 @@
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
   </svg>
 </button>
-<script>
-  (function () {
-    var btn = document.getElementById('tk-theme-fab');
-    if (!btn) return;
-    btn.addEventListener('click', function () {
-      var c = document.documentElement.classList;
-      var nowLight = !c.contains('theme-light');
-      if (nowLight) { c.add('theme-light'); c.remove('dark'); }
-      else { c.remove('theme-light'); c.add('dark'); }
-      try { localStorage.setItem('tkn-theme', nowLight ? 'light' : 'dark'); } catch (e) {}
-      try { window.dispatchEvent(new CustomEvent('tkn-theme', { detail: nowLight ? 'light' : 'dark' })); } catch (e) {}
-    });
-  })();
-</script>

@@ -50,5 +50,24 @@
     "title": "Aboneler tam makaleyi okuyabilir.",
     "body": "Tüm kütüphanenin kilidini açmak için Base üzerinden USDC ile abone olun.",
     "cta": "Abone ol"
+  },
+  "creator": {
+    "role": { "educator": "Eğitmen", "consultant": "Danışman" },
+    "nav": { "open": "Menüyü aç", "main_dashboard": "Ana panel" },
+    "splash": {
+      "verifying": "Oturumunuz doğrulanıyor…",
+      "signin_title": "Giriş gerekli",
+      "signin_subtitle": "Çalışma alanına erişmek için cüzdanınızı bağlayın ve giriş yapın.",
+      "not_role_title": "{role} değilsiniz",
+      "not_role_subtitle": "Cüzdanınız henüz {role} rolüne sahip değil. Bu çalışma alanını açmak için profilinizden başvurun.",
+      "have_roles": "Mevcut:",
+      "apply_cta": "{role} olmak için başvur"
+    },
+    "sections": {
+      "courses": "Kurslar", "lessons": "Dersler", "students": "Öğrenciler",
+      "certificates": "Sertifikalar", "articles": "Makaleler", "communities": "Topluluklar",
+      "analytics": "Analitik", "revenue": "Gelir", "settings": "Ayarlar",
+      "services": "Hizmetler", "availability": "Müsaitlik", "bookings": "Rezervasyonlar"
+    }
   }
 }

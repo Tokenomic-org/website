@@ -50,5 +50,24 @@
     "title": "Los suscriptores pueden leer el artículo completo.",
     "body": "Suscríbete con USDC en Base para desbloquear toda la biblioteca.",
     "cta": "Suscribirme"
+  },
+  "creator": {
+    "role": { "educator": "Educador", "consultant": "Consultor" },
+    "nav": { "open": "Abrir navegación", "main_dashboard": "Panel principal" },
+    "splash": {
+      "verifying": "Verificando tu sesión…",
+      "signin_title": "Inicio de sesión requerido",
+      "signin_subtitle": "Conecta tu wallet e inicia sesión para acceder al panel.",
+      "not_role_title": "No eres {role}",
+      "not_role_subtitle": "Tu wallet aún no tiene el rol de {role}. Solicítalo desde tu perfil para desbloquear este panel.",
+      "have_roles": "Tienes:",
+      "apply_cta": "Solicitar ser {role}"
+    },
+    "sections": {
+      "courses": "Cursos", "lessons": "Lecciones", "students": "Estudiantes",
+      "certificates": "Certificados", "articles": "Artículos", "communities": "Comunidades",
+      "analytics": "Analítica", "revenue": "Ingresos", "settings": "Ajustes",
+      "services": "Servicios", "availability": "Disponibilidad", "bookings": "Reservas"
+    }
   }
 }

@@ -33,37 +33,58 @@ import SharedArticles    from './shared/Articles.jsx';
 import SharedCommunities from './shared/Communities.jsx';
 import SharedSettings    from './shared/Settings.jsx';
 
+// Lightweight wrapper around the global i18n runtime loaded by the
+// footer (window.TKNI18n). Falls back to the supplied English default
+// if the runtime isn't initialized yet (e.g. during SSR snapshots).
+function t(key, fallback) {
+  if (typeof window !== 'undefined' && window.TKNI18n && typeof window.TKNI18n.t === 'function') {
+    return window.TKNI18n.t(key, fallback);
+  }
+  return fallback;
+}
+
+// Section labels resolve against window.TKNI18n at render time so the
+// EN/TR/ES toggle in the footer reflows the sidebar without a reload.
 const SECTIONS = {
   educator: [
-    { id: 'courses',      label: 'Courses',       href: '/dashboard/educator/',              Component: EducatorCourses },
-    { id: 'lessons',      label: 'Lessons',       href: '/dashboard/educator/lessons/',      Component: EducatorLessons },
-    { id: 'students',     label: 'Students',      href: '/dashboard/educator/students/',     Component: EducatorStudents },
-    { id: 'certificates', label: 'Certificates',  href: '/dashboard/educator/certificates/', Component: EducatorCertificates },
-    { id: 'articles',     label: 'Articles',      href: '/dashboard/educator/articles/',     Component: SharedArticles },
-    { id: 'communities',  label: 'Communities',   href: '/dashboard/educator/communities/',  Component: SharedCommunities },
-    { id: 'analytics',    label: 'Analytics',     href: '/dashboard/educator/analytics/',    Component: EducatorAnalytics },
-    { id: 'revenue',      label: 'Revenue',       href: '/dashboard/educator/revenue/',      Component: EducatorRevenue },
-    { id: 'settings',     label: 'Settings',      href: '/dashboard/educator/settings/',     Component: SharedSettings },
+    { id: 'courses',      labelKey: 'creator.sections.courses',      labelEn: 'Courses',      href: '/dashboard/educator/',              Component: EducatorCourses },
+    { id: 'lessons',      labelKey: 'creator.sections.lessons',      labelEn: 'Lessons',      href: '/dashboard/educator/lessons/',      Component: EducatorLessons },
+    { id: 'students',     labelKey: 'creator.sections.students',     labelEn: 'Students',     href: '/dashboard/educator/students/',     Component: EducatorStudents },
+    { id: 'certificates', labelKey: 'creator.sections.certificates', labelEn: 'Certificates', href: '/dashboard/educator/certificates/', Component: EducatorCertificates },
+    { id: 'articles',     labelKey: 'creator.sections.articles',     labelEn: 'Articles',     href: '/dashboard/educator/articles/',     Component: SharedArticles },
+    { id: 'communities',  labelKey: 'creator.sections.communities',  labelEn: 'Communities',  href: '/dashboard/educator/communities/',  Component: SharedCommunities },
+    { id: 'analytics',    labelKey: 'creator.sections.analytics',    labelEn: 'Analytics',    href: '/dashboard/educator/analytics/',    Component: EducatorAnalytics },
+    { id: 'revenue',      labelKey: 'creator.sections.revenue',      labelEn: 'Revenue',      href: '/dashboard/educator/revenue/',      Component: EducatorRevenue },
+    { id: 'settings',     labelKey: 'creator.sections.settings',     labelEn: 'Settings',     href: '/dashboard/educator/settings/',     Component: SharedSettings },
   ],
   consultant: [
-    { id: 'services',     label: 'Services',      href: '/dashboard/consultant/',             Component: ConsultantServices },
-    { id: 'availability', label: 'Availability',  href: '/dashboard/consultant/availability/', Component: ConsultantAvailability },
-    { id: 'bookings',     label: 'Bookings',      href: '/dashboard/consultant/bookings/',    Component: ConsultantBookings },
-    { id: 'articles',     label: 'Articles',      href: '/dashboard/consultant/articles/',    Component: SharedArticles },
-    { id: 'communities',  label: 'Communities',   href: '/dashboard/consultant/communities/', Component: SharedCommunities },
-    { id: 'revenue',      label: 'Revenue',       href: '/dashboard/consultant/revenue/',     Component: EducatorRevenue },
-    { id: 'analytics',    label: 'Analytics',     href: '/dashboard/consultant/analytics/',   Component: EducatorAnalytics },
-    { id: 'settings',     label: 'Settings',      href: '/dashboard/consultant/settings/',    Component: SharedSettings },
+    { id: 'services',     labelKey: 'creator.sections.services',     labelEn: 'Services',     href: '/dashboard/consultant/',             Component: ConsultantServices },
+    { id: 'availability', labelKey: 'creator.sections.availability', labelEn: 'Availability', href: '/dashboard/consultant/availability/', Component: ConsultantAvailability },
+    { id: 'bookings',     labelKey: 'creator.sections.bookings',     labelEn: 'Bookings',     href: '/dashboard/consultant/bookings/',    Component: ConsultantBookings },
+    { id: 'articles',     labelKey: 'creator.sections.articles',     labelEn: 'Articles',     href: '/dashboard/consultant/articles/',    Component: SharedArticles },
+    { id: 'communities',  labelKey: 'creator.sections.communities',  labelEn: 'Communities',  href: '/dashboard/consultant/communities/', Component: SharedCommunities },
+    { id: 'revenue',      labelKey: 'creator.sections.revenue',      labelEn: 'Revenue',      href: '/dashboard/consultant/revenue/',     Component: EducatorRevenue },
+    { id: 'analytics',    labelKey: 'creator.sections.analytics',    labelEn: 'Analytics',    href: '/dashboard/consultant/analytics/',   Component: EducatorAnalytics },
+    { id: 'settings',     labelKey: 'creator.sections.settings',     labelEn: 'Settings',     href: '/dashboard/consultant/settings/',    Component: SharedSettings },
   ],
 };
 
-const ROLE_LABEL = { educator: 'Educator', consultant: 'Consultant' };
+const ROLE_LABEL_KEY = { educator: 'creator.role.educator', consultant: 'creator.role.consultant' };
+const ROLE_LABEL_EN  = { educator: 'Educator', consultant: 'Consultant' };
+function roleLabel(role) { return t(ROLE_LABEL_KEY[role], ROLE_LABEL_EN[role]); }
 
 export default function CreatorShell({ role = 'educator', section = '' }) {
-  const sections = SECTIONS[role] || SECTIONS.educator;
+  const sectionsRaw = SECTIONS[role] || SECTIONS.educator;
+  const sections = sectionsRaw.map((s) => ({ ...s, label: t(s.labelKey, s.labelEn) }));
   const active = sections.find((s) => s.id === section) || sections[0];
   const [me, setMe] = useState({ loading: true, error: null, data: null });
   const [drawer, setDrawer] = useState(false);
+  // Re-render when the user toggles the language so SECTIONS labels reflow.
+  const [, setLocaleTick] = useState(0);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.TKNI18n || !window.TKNI18n.onChange) return;
+    return window.TKNI18n.onChange(() => setLocaleTick((n) => n + 1));
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -80,13 +101,15 @@ export default function CreatorShell({ role = 'educator', section = '' }) {
     return () => { cancelled = true; };
   }, []);
 
-  if (me.loading) return <Splash subtitle="Verifying your session…" />;
+  if (me.loading) return <Splash subtitle={t('creator.splash.verifying', 'Verifying your session…')} />;
 
   if (me.error?.status === 401 || (!me.data?.wallet)) {
     return (
-      <Splash title="Sign in required"
-        subtitle="Connect your wallet and sign in to access the workbench.">
-        <Button onClick={() => (window.location.href = '/dashboard/')}>Connect wallet</Button>
+      <Splash title={t('creator.splash.signin_title', 'Sign in required')}
+        subtitle={t('creator.splash.signin_subtitle', 'Connect your wallet and sign in to access the workbench.')}>
+        <Button onClick={() => (window.location.href = '/dashboard/')}>
+          {t('wallet.connect', 'Connect wallet')}
+        </Button>
       </Splash>
     );
   }
@@ -94,13 +117,17 @@ export default function CreatorShell({ role = 'educator', section = '' }) {
   const roles = me.data?.roles || [];
   const allowed = roles.includes(role) || roles.includes('admin');
   if (!allowed) {
+    const label = roleLabel(role);
     return (
-      <Splash title={`Not a ${ROLE_LABEL[role]}`}
-        subtitle={`Your wallet doesn't hold the ${role} role yet. Apply from your profile to unlock this workbench.`}
+      <Splash title={t('creator.splash.not_role_title', 'Not a {role}').replace('{role}', label)}
+        subtitle={t('creator.splash.not_role_subtitle',
+          "Your wallet doesn't hold the {role} role yet. Apply from your profile to unlock this workbench.").replace(/\{role\}/g, role)}
         accent="danger">
-        <div className="text-xs text-muted mt-2">Have: {roles.join(', ') || 'learner'}</div>
+        <div className="text-xs text-muted mt-2">
+          {t('creator.splash.have_roles', 'Have:')} {roles.join(', ') || 'learner'}
+        </div>
         <Button className="mt-3" variant="outline" onClick={() => (window.location.href = '/profile/#consultant-registration')}>
-          Apply to become a {ROLE_LABEL[role]}
+          {t('creator.splash.apply_cta', 'Apply to become a {role}').replace('{role}', label)}
         </Button>
       </Splash>
     );
@@ -115,15 +142,15 @@ export default function CreatorShell({ role = 'educator', section = '' }) {
       <header className="border-b border-border bg-surface sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <button className="md:hidden -ml-1 p-2" aria-label="Open navigation" onClick={() => setDrawer(true)}>
+            <button className="md:hidden -ml-1 p-2" aria-label={t('creator.nav.open', 'Open navigation')} onClick={() => setDrawer(true)}>
               <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
             </button>
             <a href="/" className="font-bold tracking-tight">Tokenomic</a>
-            <Badge variant="brand">{ROLE_LABEL[role]}</Badge>
+            <Badge variant="brand">{roleLabel(role)}</Badge>
           </div>
           <div className="flex items-center gap-3 text-xs text-muted">
             <span className="font-mono hidden sm:inline">{wallet.slice(0, 6)}…{wallet.slice(-4)}</span>
-            <a href="/dashboard/" className="text-brand hover:underline">Main dashboard</a>
+            <a href="/dashboard/" className="text-brand hover:underline">{t('creator.nav.main_dashboard', 'Main dashboard')}</a>
           </div>
         </div>
       </header>

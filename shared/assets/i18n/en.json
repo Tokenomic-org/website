@@ -50,5 +50,24 @@
     "title": "Subscribers can read the full article.",
     "body": "Subscribe with USDC on Base to unlock the full library.",
     "cta": "Become a subscriber"
+  },
+  "creator": {
+    "role": { "educator": "Educator", "consultant": "Consultant" },
+    "nav": { "open": "Open navigation", "main_dashboard": "Main dashboard" },
+    "splash": {
+      "verifying": "Verifying your session…",
+      "signin_title": "Sign in required",
+      "signin_subtitle": "Connect your wallet and sign in to access the workbench.",
+      "not_role_title": "Not a {role}",
+      "not_role_subtitle": "Your wallet doesn't hold the {role} role yet. Apply from your profile to unlock this workbench.",
+      "have_roles": "Have:",
+      "apply_cta": "Apply to become a {role}"
+    },
+    "sections": {
+      "courses": "Courses", "lessons": "Lessons", "students": "Students",
+      "certificates": "Certificates", "articles": "Articles", "communities": "Communities",
+      "analytics": "Analytics", "revenue": "Revenue", "settings": "Settings",
+      "services": "Services", "availability": "Availability", "bookings": "Bookings"
+    }
   }
 }
