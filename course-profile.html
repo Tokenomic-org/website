@@ -185,13 +185,57 @@ permalink: /course/
       body.className = 'cp2-mod-body';
       var html = '';
       if (m.video_uid) {
-        html += '<iframe class="cp2-mod-video" src="' + streamEmbedSrc(m.video_uid) + '" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen></iframe>';
+        // Phase 6: signed playback. We render a lightweight placeholder and
+        // ask the worker for an enrollment-gated signed token; on 403 we
+        // show a paywall CTA, on success we mount the iframe with the
+        // signed embed URL so the unsigned UID never leaks to the page.
+        html += '<div class="cp2-mod-video-slot" data-mid="' + (m.id || '') + '" data-uid="' + m.video_uid + '" style="width:100%;aspect-ratio:16/9;background:#0A0F1A;border-radius:8px;margin-top:12px;display:flex;align-items:center;justify-content:center;color:#5a8299;font-size:0.85rem;">Loading video…</div>';
       }
       html += '<div class="cp2-mod-md">' + renderModuleMd(m.body_md) + '</div>';
       body.innerHTML = html;
       wrap.appendChild(head);
       wrap.appendChild(body);
       host.appendChild(wrap);
+      // Resolve the signed embed lazily on first expand to avoid burning a
+      // CF Stream token mint per module on initial load.
+      head.addEventListener('click', function once() {
+        var slot = body.querySelector('.cp2-mod-video-slot');
+        if (!slot || slot.dataset.loaded) return;
+        slot.dataset.loaded = '1';
+        loadSignedPlayback(slot, slot.dataset.mid, slot.dataset.uid);
+      });
+    });
+  }
+
+  function loadSignedPlayback(slot, moduleId, uid) {
+    var apiBase = (window.TOKENOMIC_API_BASE || 'https://tokenomic-api.guillaumelauzier.workers.dev').replace(/\/+$/,'');
+    if (!moduleId) {
+      // No module id from the API yet → fall back to the legacy unsigned URL.
+      slot.outerHTML = '<iframe class="cp2-mod-video" src="' + streamEmbedSrc(uid) + '" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen></iframe>';
+      return;
+    }
+    fetch(apiBase + '/api/content/lessons/' + encodeURIComponent(moduleId) + '/playback', {
+      credentials: 'include'
+    }).then(function(r) {
+      return r.json().then(function(d) { return { status: r.status, data: d }; });
+    }).then(function(res) {
+      if (res.status === 403 && res.data && res.data.paywalled) {
+        slot.style.background = 'linear-gradient(135deg,#0A0F1A,#1a2332)';
+        slot.style.color = '#fff';
+        slot.style.flexDirection = 'column';
+        slot.style.gap = '10px';
+        slot.innerHTML = '<div style="font-weight:600;">🔒 Enrollment required</div>'
+          + '<a href="#enroll" class="dash-btn dash-btn-primary" style="background:#f97316;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:0.85rem;">Enroll to watch</a>';
+        return;
+      }
+      if (res.data && res.data.embed) {
+        slot.outerHTML = '<iframe class="cp2-mod-video" src="' + res.data.embed
+          + '" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen></iframe>';
+      } else {
+        slot.outerHTML = '<iframe class="cp2-mod-video" src="' + streamEmbedSrc(uid) + '" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen></iframe>';
+      }
+    }).catch(function() {
+      slot.outerHTML = '<iframe class="cp2-mod-video" src="' + streamEmbedSrc(uid) + '" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen></iframe>';
     });
   }
 

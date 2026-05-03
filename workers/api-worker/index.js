@@ -30,6 +30,7 @@ import { mountSiweRoutes } from './siwe.js';
 import { mountCalendarRoutes } from './oauth-calendar.js';
 import { mountAdminRoutes } from './admin-routes.js';
 import { mountReferralRoutes, handleInviteQueueBatch } from './referrals.js';
+import { mountContentRoutes } from './content-infra.js';
 
 export { ChatRoom };
 
@@ -208,6 +209,13 @@ mountAdminRoutes(app);
 // (Google People + MS Graph), Turnstile-gated batch invites via MailChannels,
 // HMAC-signed unsubscribe links.
 mountReferralRoutes(app);
+
+// Phase 6: Content infrastructure — Cloudflare Stream signed playback
+// gated by enrollment / on-chain CourseAccess1155.balanceOf, R2 storage
+// for avatars + certificate PDFs (HMAC-signed GETs), Cloudflare Images
+// direct creator uploads for thumbnails / article covers, MailChannels
+// transactional email helper with DKIM + email_log audit trail.
+mountContentRoutes(app);
 
 app.get('/api/comments/:slug', async (c) => {
   const slug = c.req.param('slug');

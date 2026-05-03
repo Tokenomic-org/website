@@ -85,6 +85,39 @@ ROLE_REGISTRY_CHAIN_ID       = "8453"
 REFERRAL_REGISTRY                = ""
 REFERRAL_REGISTRY_CHAIN_ID       = "8453"   # 8453=base mainnet, 84532=base sepolia
 
+# Phase 6 — Content infrastructure (Stream signed playback, R2, CF Images).
+#
+# Public vars:
+#   COURSE_ACCESS_1155            ERC-1155 access NFT contract on Base. The
+#                                 signed-playback endpoint reads
+#                                 balanceOf(wallet, on_chain_course_id) > 0 to
+#                                 grant lesson access. When unset, falls back
+#                                 to the D1 `enrollments` table.
+#   COURSE_ACCESS_CHAIN_ID        Chain id (8453 mainnet, 84532 sepolia).
+#   CF_IMAGES_DELIVERY_HASH       Account hash from imagedelivery.net URLs.
+#                                 Used to build variant URLs for persisted
+#                                 image_ids (https://imagedelivery.net/<hash>/<id>/<variant>).
+#
+# Secrets (set via `wrangler secret put`):
+#   CF_API_TOKEN                  combined Stream:Edit + Images:Edit token
+#                                 (or use the per-product tokens below)
+#   CF_STREAM_TOKEN               `Stream:Edit` API token
+#   CF_IMAGES_TOKEN               `Images:Edit` API token
+#   STREAM_WEBHOOK_SIGNING_SECRET HMAC secret published by CF Stream when
+#                                 you register the webhook URL. Verifies
+#                                 the `Webhook-Signature` header on /api/content/stream/webhook.
+#   R2_URL_SIGNING_KEY            (optional) ≥32-byte secret used to sign
+#                                 short-lived R2 GET URLs. Falls back to
+#                                 SIWE_SECRET / JWT_SECRET when unset.
+COURSE_ACCESS_1155               = ""
+COURSE_ACCESS_CHAIN_ID           = "8453"
+CF_IMAGES_DELIVERY_HASH          = ""
+
+[[r2_buckets]]
+binding     = "R2_BUCKET"
+bucket_name = "tokenomic-content"
+preview_bucket_name = "tokenomic-content-preview"
+
 # Phase 5 — Cloudflare Queue for outbound invite email delivery. The
 # producer (POST /api/referrals/invite-batch) enqueues one message per
 # recipient; the consumer (handleInviteQueueBatch in referrals.js,

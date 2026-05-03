@@ -607,14 +607,29 @@ function processAvatarFile(file) {
         var wallet = (typeof TokenomicWallet !== 'undefined' && TokenomicWallet.account) ? TokenomicWallet.account : '';
 
         if (wallet) {
-            fetch('/api/profile/upload-photo', {
+            // Phase 6: prefer the Worker R2-backed endpoint (/api/profile/avatar
+            // at apiBase). Falls back to the legacy Express filesystem endpoint
+            // when the Worker is not configured (local dev without R2).
+            var base = apiBase();
+            var primary = base ? (base + '/api/profile/avatar') : '/api/profile/upload-photo';
+            fetch(primary, {
                 method: 'POST',
+                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ photo: dataUrl, wallet: wallet })
             })
-            .then(function(r) { return r.json(); })
+            .then(function(r) {
+                if (!r.ok && base && primary !== '/api/profile/upload-photo') {
+                    return fetch('/api/profile/upload-photo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ photo: dataUrl, wallet: wallet })
+                    }).then(function(r2) { return r2.json(); });
+                }
+                return r.json();
+            })
             .then(function(data) {
-                if (data.success) {
+                if (data && (data.success || data.ok) && data.url) {
                     try { localStorage.setItem('tkn_profile_photo', JSON.stringify({ url: data.url, updated: Date.now() })); } catch(e) {}
                     setPhotoStatus('Photo saved!', 'success');
                 } else {
