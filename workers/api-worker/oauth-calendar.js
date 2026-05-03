@@ -887,6 +887,20 @@ export function mountCalendarRoutes(app) {
     const conn = (provs || []).map(r => r.provider);
     const primary = ['google', 'microsoft', 'calendly'].find(p => conn.includes(p)) || null;
 
+    // Verify the hold (if any) belongs to this buyer BEFORE we touch the
+    // consultant's calendar — otherwise a losing buyer would create an
+    // orphan event for a booking that never lands in D1. Missing hold is
+    // tolerated (client may have skipped /hold); a hold owned by someone
+    // else is rejected.
+    if (c.env.RATE_LIMIT_KV) {
+      try {
+        const holder = await c.env.RATE_LIMIT_KV.get(`hold:${consultant}:${start}`);
+        if (holder && holder !== buyer) {
+          return c.json({ error: 'Slot is held by another buyer — try again shortly.' }, 409);
+        }
+      } catch { /* KV transient — fall through */ }
+    }
+
     let externalEventId = null, meetingUrl = null;
     if (primary && primary !== 'calendly') {
       try {
@@ -902,17 +916,6 @@ export function mountCalendarRoutes(app) {
         // Don't fail the booking — record it locally and surface a warning.
         console.warn('createCalendarEvent failed:', e.message);
       }
-    }
-
-    // Verify the hold (if any) belongs to this buyer. Missing hold is OK
-    // (client may have skipped /hold), but a hold owned by someone else is not.
-    if (c.env.RATE_LIMIT_KV) {
-      try {
-        const holder = await c.env.RATE_LIMIT_KV.get(`hold:${consultant}:${start}`);
-        if (holder && holder !== buyer) {
-          return c.json({ error: 'Slot is held by another buyer — try again shortly.' }, 409);
-        }
-      } catch { /* KV transient — fall through */ }
     }
 
     // Atomic insert: a single statement performs the overlap check and the
