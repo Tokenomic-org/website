@@ -1,0 +1,125 @@
+name: Accessibility & Performance
+
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: a11y-perf-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install npm deps
+        run: npm ci
+
+      - name: Build islands + Jekyll
+        env:
+          WC_PROJECT_ID: ""
+          BASE_RPC_URL: "https://mainnet.base.org"
+          BASE_SEPOLIA_RPC_URL: "https://sepolia.base.org"
+          JEKYLL_ENV: production
+        run: npm run build
+
+      - name: Upload _site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: _site/
+          retention-days: 1
+          if-no-files-found: error
+
+  axe:
+    name: axe-core (a11y)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Download _site artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: _site
+
+      - name: Serve _site/ on :8080
+        run: |
+          npx --yes serve _site -l 8080 --no-clipboard >serve.log 2>&1 &
+          echo $! > serve.pid
+          npx --yes wait-on http://localhost:8080 -t 60000
+
+      - name: Run axe-core on key pages
+        env:
+          AXE_BASE_URL: http://localhost:8080
+        run: node scripts/ci-axe.mjs
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f serve.pid ]; then kill "$(cat serve.pid)" || true; fi
+
+      - name: Upload server log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: axe-serve-log
+          path: serve.log
+          if-no-files-found: ignore
+
+  lighthouse:
+    name: Lighthouse CI (perf / a11y / best-practices)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Download _site artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: _site
+
+      - name: Install Lighthouse CI
+        run: npm install --no-save @lhci/cli@0.13.x
+
+      - name: Run Lighthouse CI
+        run: npx lhci autorun --config=./.lighthouserc.json
+
+      - name: Upload LHCI report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: .lighthouseci/
+          if-no-files-found: ignore

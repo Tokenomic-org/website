@@ -80,6 +80,15 @@ it's faster to do both up front.
   close.
 - Run axe-core (`npx @axe-core/cli http://localhost:5000/<page>`) before
   shipping any new island. Zero serious / critical violations is the bar.
+- CI enforces this: the **Accessibility & Performance** workflow
+  (`.github/workflows/a11y-perf.yml`) builds `_site/`, serves it, and runs
+  `@axe-core/cli` against `/courses/`, `/communities/`, `/experts/`,
+  `/articles/`, and every `/dashboard/*` page via `scripts/ci-axe.mjs`.
+  Any serious or critical violation fails the build.
+- The same workflow runs Lighthouse CI (`.lighthouserc.json`) with budgets:
+  performance ≥ 0.85, accessibility = 1.0, best-practices ≥ 0.90. If you
+  intentionally regress a budget, raise it in the config in the same PR
+  and explain why in the commit body.
 
 ## Smart contracts
 
