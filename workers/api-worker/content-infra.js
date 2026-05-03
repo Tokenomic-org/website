@@ -581,8 +581,10 @@ export function mountContentRoutes(app) {
     // enrollment-gated playback guarantee. If the Stream binding is
     // not configured we surface a 503 so the dashboard can show a
     // clean "playback unavailable" state without leaking the UID.
-    if (!c.env.CF_ACCOUNT_ID || !c.env.CF_STREAM_TOKEN) {
-      return jsonError(c, 503, 'Cloudflare Stream not configured (CF_ACCOUNT_ID / CF_STREAM_TOKEN missing).');
+    // Accept either a Stream-scoped token or the combined CF_API_TOKEN
+    // (callCfApi already prefers CF_API_TOKEN when both are present).
+    if (!c.env.CF_ACCOUNT_ID || !(c.env.CF_STREAM_TOKEN || c.env.CF_API_TOKEN)) {
+      return jsonError(c, 503, 'Cloudflare Stream not configured (CF_ACCOUNT_ID + CF_STREAM_TOKEN or CF_API_TOKEN required).');
     }
     const exp = Math.floor(Date.now() / 1000) + 3600;
     const r = await callCfApi(c.env, `/stream/${m.video_uid}/token`, {

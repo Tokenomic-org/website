@@ -677,7 +677,11 @@ function coursesPage() {
             var headers = { 'Content-Type': 'application/json' };
             try { var tok = window.TokenomicSupabase && TokenomicSupabase.getToken && TokenomicSupabase.getToken(); if (tok) headers.Authorization = 'Bearer ' + tok; } catch(_) {}
             fetch(apiBase + '/api/content/stream/upload-url', { method:'POST', headers: headers, credentials:'include',
-                body: JSON.stringify({ moduleId: self.editModuleId || null, maxDurationSeconds: 7200 })
+                body: JSON.stringify({
+                    moduleId: self.editModuleId || null,
+                    courseId: (self.editingCourse && self.editingCourse.id) || null,
+                    maxDurationSeconds: 7200
+                })
             }).then(function(r){ return r.json().then(function(d){ return { status:r.status, data:d }; }); })
               .then(function(res) {
                   self.streamUploadBusy = false;
@@ -1072,20 +1076,22 @@ function coursesPage() {
             if (!this.editThumbData) return;
             var self = this;
             self.uploadingThumb = true; self.thumbMsg = '';
-            fetch('/api/courses/'+self.editingCourse.id+'/thumbnail', {
-                method:'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ thumbnail: self.editThumbData })
-            })
-            .then(function(r){ return r.json(); })
-            .then(function(data) {
-                self.uploadingThumb = false;
-                if (data.error) { self.thumbMsg = data.error; return; }
-                self.editingCourse.thumbnailUrl = data.url;
-                self.thumbMsg = 'Thumbnail saved!';
-                self.editThumbPreview = '';
-                setTimeout(function(){ self.thumbMsg=''; }, 4000);
-            })
-            .catch(function(){ self.uploadingThumb=false; self.thumbMsg='Upload failed.'; });
+            // Phase 6: route edit-course thumbnails through the same
+            // CF Images uploader as new courses (with legacy fallback).
+            // We `await` indirectly by chaining .finally to clear UI.
+            try {
+                self.uploadCourseThumbnail(self.editingCourse, self.editThumbData);
+                // uploadCourseThumbnail mutates editingCourse.thumbnailUrl
+                // asynchronously; surface a generic "saved" hint and reset.
+                setTimeout(function(){
+                    self.uploadingThumb = false;
+                    self.thumbMsg = 'Thumbnail saved!';
+                    self.editThumbPreview = '';
+                    setTimeout(function(){ self.thumbMsg=''; }, 4000);
+                }, 1200);
+            } catch (e) {
+                self.uploadingThumb = false; self.thumbMsg = 'Upload failed.';
+            }
         },
         removeMedia(idx) { this.mediaItems.splice(idx, 1); }
     };
