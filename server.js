@@ -7,7 +7,7 @@ var ethers = require('ethers');
 
 var app = express();
 var PORT = process.env.PORT || 5000;
-var ADMIN_EMAIL = 'guillaumelauzier@gmail.com';
+var ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
 var ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 
 var pool = new Pool({ connectionString: process.env.DATABASE_URL });

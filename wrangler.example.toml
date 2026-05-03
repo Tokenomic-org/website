@@ -34,12 +34,14 @@ head_sampling_rate = 1
 ALLOWED_ORIGINS              = "https://tokenomic.org,https://www.tokenomic.org,https://*.tokenomic.org,https://tokenomic.guillaumelauzier.workers.dev,http://localhost:5000,http://127.0.0.1:5000"
 MAX_COMMENT_LEN              = "4000"
 REQUIRE_WALLET               = "false"
-CF_ACCOUNT_ID                = "c016d64a9a4f4a2900fb3385bd08144f"
 STREAM_CUSTOMER_SUBDOMAIN    = ""    # e.g. customer-abc123.cloudflarestream.com (set after first Stream upload)
 STREAM_MAX_DURATION_SECONDS  = "21600"
 STREAM_ALLOWED_ORIGINS       = "https://tokenomic.org,https://tokenomic.guillaumelauzier.workers.dev"
-# Secret (set via `wrangler secret put CF_STREAM_TOKEN --env api-worker`):
+# Secrets (NEVER commit values — set via wrangler secret put):
+#   CF_ACCOUNT_ID     Cloudflare account id (treated as a secret to avoid
+#                     account enumeration and targeted abuse). See SECRETS.md.
 #   CF_STREAM_TOKEN   API token with `Stream:Edit` permission
+#   CF_API_TOKEN      (optional) combined Stream:Edit + Images:Edit token
 
 [[env.api-worker.kv_namespaces]]
 binding    = "COMMENTS_KV"
