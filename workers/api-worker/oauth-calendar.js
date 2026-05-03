@@ -490,6 +490,30 @@ async function createCalendarEvent(env, wallet, provider, eventInput) {
   return { externalEventId: null, meetingUrl: null };
 }
 
+/**
+ * Best-effort compensating delete used when a booking insert loses an
+ * overlap race after we already created the calendar event. Failures
+ * are non-fatal — the orphaned event will at worst show on the
+ * consultant's calendar until they remove it manually.
+ */
+async function deleteCalendarEvent(env, wallet, provider, externalEventId) {
+  if (!externalEventId) return;
+  const { token, row } = await getAccessToken(env, wallet, provider);
+  if (provider === 'google') {
+    const calId = row.external_calendar_id || 'primary';
+    await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events/${encodeURIComponent(externalEventId)}?sendUpdates=all`,
+      { method: 'DELETE', headers: { authorization: `Bearer ${token}` } }
+    );
+  } else if (provider === 'microsoft') {
+    await fetch(
+      `https://graph.microsoft.com/v1.0/me/events/${encodeURIComponent(externalEventId)}`,
+      { method: 'DELETE', headers: { authorization: `Bearer ${token}` } }
+    );
+  }
+  // Calendly events are not created programmatically, so nothing to delete.
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // Unified availability — merge busy across providers, emit free slots
 // ────────────────────────────────────────────────────────────────────────────
@@ -880,21 +904,6 @@ export function mountCalendarRoutes(app) {
       }
     }
 
-    // Atomic check: verify the slot hasn't been taken in the gap between
-    // hold and confirm (or by a client that bypassed /hold entirely).
-    // Anything overlapping [start, end) on this consultant blocks.
-    const conflict = await c.env.DB.prepare(
-      `SELECT id FROM bookings
-        WHERE consultant_wallet = ?
-          AND status IN ('pending','confirmed')
-          AND booking_date IS NOT NULL AND ends_at IS NOT NULL
-          AND booking_date < ?
-          AND ends_at      > ?
-        LIMIT 1`
-    ).bind(consultant, end, start).first();
-    if (conflict) {
-      return c.json({ error: 'Slot is no longer available — please pick another time.' }, 409);
-    }
     // Verify the hold (if any) belongs to this buyer. Missing hold is OK
     // (client may have skipped /hold), but a hold owned by someone else is not.
     if (c.env.RATE_LIMIT_KV) {
@@ -906,19 +915,47 @@ export function mountCalendarRoutes(app) {
       } catch { /* KV transient — fall through */ }
     }
 
+    // Atomic insert: a single statement performs the overlap check and the
+    // write together via INSERT ... SELECT ... WHERE NOT EXISTS, so two
+    // concurrent confirms for the same slot can never both succeed even
+    // if their reads interleave. SQLite/D1 serializes writes against the
+    // same DB, and INSERT-SELECT executes the WHERE NOT EXISTS subquery
+    // and the row write inside the same write transaction.
     const status = txHash ? 'confirmed' : 'pending';
+    const timeSlot = new Date(start).toISOString().slice(11, 16);
     const res = await c.env.DB.prepare(
       `INSERT INTO bookings
          (consultant_wallet, client_wallet, client_name, topic,
           booking_date, time_slot, duration, price_usdc, status,
           provider, external_event_id, meeting_url, ends_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        WHERE NOT EXISTS (
+          SELECT 1 FROM bookings
+           WHERE consultant_wallet = ?
+             AND status IN ('pending','confirmed')
+             AND booking_date IS NOT NULL AND ends_at IS NOT NULL
+             AND booking_date < ?
+             AND ends_at      > ?
+        )`
     ).bind(
       consultant, buyer, cname, topic,
-      start, new Date(start).toISOString().slice(11, 16),
-      durMin, price, status,
-      primary, externalEventId, meetingUrl, end
+      start, timeSlot, durMin, price, status,
+      primary, externalEventId, meetingUrl, end,
+      // overlap-check params:
+      consultant, end, start
     ).run();
+    const inserted = res.meta && (res.meta.changes || res.meta.changed_db) ? res.meta.changes : 0;
+    if (!inserted) {
+      // The write was rejected by the WHERE NOT EXISTS guard — another
+      // confirm landed first. If we already wrote a calendar event, try
+      // to roll it back so we don't leave an orphaned meeting on the
+      // consultant's calendar.
+      if (externalEventId && primary && primary !== 'calendly') {
+        try { await deleteCalendarEvent(c.env, consultant, primary, externalEventId); }
+        catch (e) { console.warn('Compensating calendar delete failed:', e.message); }
+      }
+      return c.json({ error: 'Slot is no longer available — please pick another time.' }, 409);
+    }
     const id = res.meta && res.meta.last_row_id;
     const row = await c.env.DB.prepare('SELECT * FROM bookings WHERE id = ?').bind(id).first();
 
