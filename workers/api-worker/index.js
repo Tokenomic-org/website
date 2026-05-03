@@ -31,6 +31,8 @@ import { mountCalendarRoutes } from './oauth-calendar.js';
 import { mountAdminRoutes } from './admin-routes.js';
 import { mountReferralRoutes, handleInviteQueueBatch } from './referrals.js';
 import { mountContentRoutes } from './content-infra.js';
+import { mountEducatorRoutes } from './educator-routes.js';
+import { mountConsultantRoutes } from './consultant-routes.js';
 
 export { ChatRoom };
 
@@ -216,6 +218,11 @@ mountReferralRoutes(app);
 // direct creator uploads for thumbnails / article covers, MailChannels
 // transactional email helper with DKIM + email_log audit trail.
 mountContentRoutes(app);
+
+// Phase 3b: Educator + Consultant workbench JSON APIs. Each mount adds its
+// own role-gated /api/educator/* and /api/consultant/* routes.
+mountEducatorRoutes(app);
+mountConsultantRoutes(app);
 
 app.get('/api/comments/:slug', async (c) => {
   const slug = c.req.param('slug');

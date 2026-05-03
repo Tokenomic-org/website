@@ -22,9 +22,12 @@ export default defineConfig({
     cssCodeSplit: false,
     lib: {
       entry: path.resolve(__dirname, `apps/web/src/islands/${ISLAND}.jsx`),
-      name: `TknIsland_${ISLAND}`,
+      // Island name may include a subdirectory (e.g. "dashboards/CreatorShell").
+      // Strip the path prefix for the IIFE global + output filename so the
+      // built bundle still lives at assets/islands/dist/<basename>.iife.js.
+      name: `TknIsland_${ISLAND.split('/').pop().replace(/[^A-Za-z0-9_]/g, '_')}`,
       formats: ['iife'],
-      fileName: () => `${ISLAND}.iife.js`,
+      fileName: () => `${ISLAND.split('/').pop()}.iife.js`,
     },
     rollupOptions: {
       output: { inlineDynamicImports: true },

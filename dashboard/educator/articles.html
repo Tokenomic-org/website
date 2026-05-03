@@ -1,0 +1,37 @@
+---
+layout: null
+permalink: /dashboard/educator/articles/
+title: Educator · Articles
+---
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8">
+    <title>Educator · Articles · Tokenomic</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="shortcut icon" href="/assets/images/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="/assets/islands/dist/tailwind.css" />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('tkn-theme');
+          if (t !== 'light' && t !== 'dark') t = 'dark';
+          var c = document.documentElement.classList;
+          if (t === 'light') { c.add('theme-light'); c.remove('dark'); }
+          else { c.remove('theme-light'); c.add('dark'); }
+        } catch (e) {}
+      })();
+    </script>
+    <style>html,body{margin:0;padding:0;background:rgb(8,15,24);}</style>
+</head>
+<body>
+    <!--
+        Phase 3b educator workbench. CreatorShell verifies the SIWE session,
+        gates by requireRole('educator'), and renders the requested section
+        ('articles') with the shared sidebar/topbar shell.
+    -->
+    <div data-island="CreatorShell" data-props='{"role":"educator","section":"articles"}'></div>
+    <script defer src="/assets/islands/dist/CreatorShell.iife.js"></script>
+</body>
+</html>

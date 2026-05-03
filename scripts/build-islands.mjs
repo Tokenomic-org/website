@@ -18,6 +18,7 @@ const ISLANDS = [
   'StyleGuide',
   'BookingWidget',
   'AdminConsole',
+  'dashboards/CreatorShell',
 ];
 
 const outDir = path.resolve('assets/islands/dist');
