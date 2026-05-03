@@ -135,10 +135,18 @@ function inviteKey(env) {
   return k;
 }
 
-async function signInviteToken(env, inviteId, email) {
+/**
+ * Token payload format: `<inviteId>.<lc(email)>.<lc(senderWallet)>`
+ *
+ * The sender is bound into the signed payload so an attacker who learns a
+ * valid token cannot present it on /r/<otherHandle>?inv=<token> and steal
+ * the referrer credit. /r/:handle enforces senderWallet == resolveHandle(:handle).
+ */
+async function signInviteToken(env, inviteId, email, sender) {
   const key = inviteKey(env);
   if (!key) throw new Error('INVITE_HMAC_KEY not configured');
-  const payload = `${inviteId}.${lc(email)}`;
+  if (!isHexAddr(sender)) throw new Error('signInviteToken: invalid sender');
+  const payload = `${inviteId}.${lc(email)}.${lc(sender)}`;
   const sig = await hmac(key, payload);
   return b64url(new TextEncoder().encode(payload)) + '.' + b64url(sig);
 }
@@ -154,12 +162,13 @@ async function verifyInviteToken(env, token) {
   catch { return null; }
   const expectedSig = b64url(await hmac(key, payload));
   if (!(await timingSafeEqB64(sigB64, expectedSig))) return null;
-  const i = payload.indexOf('.');
-  if (i <= 0) return null;
-  const inviteId = Number(payload.slice(0, i));
-  const email    = payload.slice(i + 1);
-  if (!Number.isFinite(inviteId) || !isEmail(email)) return null;
-  return { inviteId, email };
+  const parts = payload.split('.');
+  if (parts.length !== 3) return null;
+  const inviteId = Number(parts[0]);
+  const email    = parts[1];
+  const sender   = parts[2];
+  if (!Number.isFinite(inviteId) || !isEmail(email) || !isHexAddr(sender)) return null;
+  return { inviteId, email, sender: lc(sender) };
 }
 
 // ─────────────────────────────────────────────────────────── AUTH (verified)
@@ -180,15 +189,23 @@ async function readCallerWallet(c) {
 
 // ──────────────────────────────────────────────────── Cookie + KV: tk_ref
 
+/**
+ * Append (NOT replace) a Set-Cookie header. Hono's c.header() defaults to
+ * replace semantics, which silently clobbered the SIWE session cookie when
+ * /verify chained tk_session → linkReferrerOnSignIn → tk_ref/tk_inv writes.
+ * Always go through this helper so multiple cookies coexist on one response.
+ */
+function appendSetCookie(c, value) {
+  c.header('Set-Cookie', value, { append: true });
+}
 function setRefCookie(c, value) {
-  const attrs = [
+  appendSetCookie(c, [
     `${REF_COOKIE}=${encodeURIComponent(value)}`,
     'Path=/',
     `Max-Age=${REF_TTL_SEC}`,
     'SameSite=Lax',
     'Secure',
-  ].join('; ');
-  c.header('Set-Cookie', attrs);
+  ].join('; '));
 }
 function readRefCookie(c) {
   const raw = c.req.header('cookie') || '';
@@ -201,7 +218,16 @@ function readRefCookie(c) {
   return null;
 }
 function clearRefCookie(c) {
-  c.header('Set-Cookie', `${REF_COOKIE}=; Path=/; Max-Age=0; Secure; SameSite=Lax`);
+  appendSetCookie(c, `${REF_COOKIE}=; Path=/; Max-Age=0; Secure; SameSite=Lax`);
+}
+function clearInviteCookie(c) {
+  appendSetCookie(c, 'tk_inv=; Path=/; Max-Age=0; Secure; SameSite=Lax');
+}
+function setInviteCookie(c, inviteId, email) {
+  appendSetCookie(c,
+    `tk_inv=${encodeURIComponent(String(inviteId) + ':' + lc(email))}; ` +
+    `Path=/; Max-Age=${60 * 60 * 24 * 14}; SameSite=Lax; Secure`
+  );
 }
 
 // Resolve a handle → wallet. Hex passes through; basename via Base RPC.
@@ -367,8 +393,7 @@ export async function linkReferrerOnSignIn(c, address) {
     }
 
     clearRefCookie(c);
-    // Always clear the invite cookie too — successful link consumes both.
-    c.header('Set-Cookie', 'tk_inv=; Path=/; Max-Age=0; Secure; SameSite=Lax');
+    clearInviteCookie(c);
   } catch (e) {
     console.warn('linkReferrerOnSignIn failed:', e.message);
   }
@@ -481,7 +506,7 @@ export async function handleInviteQueueBatch(batch, env) {
     const { inviteId, sender, email, name, fromName, message } = m;
     if (!inviteId || !sender || !email) { msg.ack(); continue; }
     try {
-      const token = await signInviteToken(env, inviteId, email);
+      const token = await signInviteToken(env, inviteId, email, sender);
       const link  = `${origin}/r/${sender}?inv=${encodeURIComponent(token)}`;
       const unsub = `${origin}/api/invites/unsubscribe?t=${encodeURIComponent(token)}`;
       const send = await sendInviteEmail(env, {
@@ -606,17 +631,21 @@ export function mountReferralRoutes(app) {
     const invToken = c.req.query('inv') || '';
     if (invToken) {
       const verified = await verifyInviteToken(c.env, invToken);
-      if (verified && c.env.DB) {
+      // Bind: the token's signed sender MUST equal the referrer derived
+      // from :handle. Otherwise an attacker could replay a valid token
+      // under /r/<otherHandle> to mis-attribute the referee.
+      if (verified && verified.sender === referrer && c.env.DB) {
         const { inviteId, email } = verified;
-        // Confirm the row exists, is not already accepted, and matches the email.
         const row = await c.env.DB.prepare(
-          `SELECT id, status, email, accepted_wallet
+          `SELECT id, status, email, accepted_wallet, sender_wallet
              FROM invites WHERE id = ? LIMIT 1`
         ).bind(inviteId).first();
-        if (row && lc(row.email) === lc(email) && !row.accepted_wallet) {
-          // One-time semantics: mark clicked the FIRST time only. Repeat
-          // clicks of the same link are tolerated but never re-promote
-          // status (status='accepted' is set in linkReferrerOnSignIn).
+        if (row &&
+            lc(row.email) === lc(email) &&
+            lc(row.sender_wallet) === verified.sender &&
+            !row.accepted_wallet) {
+          // One-time clicked-at; repeat clicks tolerated, status never
+          // demoted; final 'accepted' transition happens in linkReferrerOnSignIn.
           c.executionCtx.waitUntil(
             c.env.DB.prepare(
               `UPDATE invites
@@ -627,10 +656,7 @@ export function mountReferralRoutes(app) {
                 WHERE id = ?`
             ).bind(inviteId).run().catch(() => {})
           );
-          // Stash for SIWE consumption.
-          c.header('Set-Cookie',
-            `tk_inv=${encodeURIComponent(String(inviteId) + ':' + lc(email))}; Path=/; Max-Age=${60 * 60 * 24 * 14}; SameSite=Lax; Secure`
-          );
+          setInviteCookie(c, inviteId, email);
         }
       }
     }
@@ -888,7 +914,7 @@ export function mountReferralRoutes(app) {
         results.push({ email: r.email, status: 'failed', error: 'db-insert-failed' });
         continue;
       }
-      const token = await signInviteToken(c.env, inviteId, r.email);
+      const token = await signInviteToken(c.env, inviteId, r.email, wallet);
       const tokenPrefix = token.slice(0, 16);
       await c.env.DB.prepare(
         `UPDATE invites SET token_prefix = ? WHERE id = ?`
