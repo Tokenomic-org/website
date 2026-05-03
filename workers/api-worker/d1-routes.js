@@ -953,7 +953,18 @@ export function mountD1Routes(app) {
     if (cat) { where.push('category = ?'); binds.push(cat); }
     const author = c.req.query('author');
     if (isHexAddress(author)) { where.push('author_wallet = ?'); binds.push(lc(author)); }
-    const sql = `SELECT * FROM articles WHERE ${where.join(' AND ')} ORDER BY published_at DESC, created_at DESC LIMIT 200`;
+    // Paywall: never include `body` in list responses. The full body is
+    // only ever served by /api/articles/:slug after subscription /
+    // authorship checks. Returning `body` here would let an anonymous
+    // caller exfiltrate paid content via the public list endpoint.
+    const sql = `
+      SELECT id, slug, title, excerpt, category,
+             author_wallet, author_name, author_avatar,
+             image_url, reading_time, status, published_at, created_at
+      FROM articles
+      WHERE ${where.join(' AND ')}
+      ORDER BY published_at DESC, created_at DESC
+      LIMIT 200`;
     const { results } = await c.env.DB.prepare(sql).bind(...binds).all();
     return c.json({ items: results || [], count: (results || []).length });
   });
