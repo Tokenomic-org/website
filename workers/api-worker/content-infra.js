@@ -362,8 +362,12 @@ export function mountContentRoutes(app) {
     if (auth.error) return auth.error;
     let body = {};
     try { body = await c.req.json(); } catch {}
-    const courseId = body.course_id != null ? Number(body.course_id) : null;
-    const moduleId = body.module_id != null ? Number(body.module_id) : null;
+    // Accept both snake_case (worker convention) and camelCase (the
+    // dashboard frontend convention) for backwards/forwards compat.
+    const courseRaw = body.course_id != null ? body.course_id : body.courseId;
+    const moduleRaw = body.module_id != null ? body.module_id : body.moduleId;
+    const courseId = courseRaw != null ? Number(courseRaw) : null;
+    const moduleId = moduleRaw != null ? Number(moduleRaw) : null;
 
     // If a courseId is supplied, verify ownership.
     if (courseId) {
@@ -506,18 +510,32 @@ export function mountContentRoutes(app) {
       if (lc(course.educator_wallet) === wallet) { allowed = true; reason = 'owner'; }
       else if (await isAdmin(c.env, wallet))     { allowed = true; reason = 'admin'; }
       else {
-        // Precedence: on-chain CourseAccess1155 balance is the source of
-        // truth when configured. We ALWAYS fall back to the D1 enrollments
-        // row when on-chain returns false OR null — a learner who paid
-        // through the legacy off-chain flow (or whose mint is still pending
-        // confirmation) must still be able to view the lesson.
+        // Phase 6 access policy. On-chain CourseAccess1155.balanceOf is
+        // the canonical source of truth. The D1 enrollments fallback is
+        // gated by a feature flag because the production target is
+        // strictly on-chain:
+        //   ENROLLMENT_D1_FALLBACK = 'always'  → fall back when on-chain
+        //                                         is false OR null
+        //   ENROLLMENT_D1_FALLBACK = 'unset-only' (default) → fall back
+        //                                         only when on-chain is
+        //                                         null (binding missing /
+        //                                         course not yet bridged).
+        //                                         A definitive on-chain
+        //                                         `false` denies access.
+        //   ENROLLMENT_D1_FALLBACK = 'never'   → strict on-chain only.
+        const policy = String(c.env.ENROLLMENT_D1_FALLBACK || 'unset-only').toLowerCase();
         const onchain = await hasOnChainAccess(c.env, wallet, course.on_chain_course_id);
         if (onchain === true) { allowed = true; reason = 'on-chain-balance'; }
-        else {
-          const enr = await c.env.DB.prepare(
-            'SELECT id FROM enrollments WHERE course_id = ? AND student_wallet = ? LIMIT 1'
-          ).bind(m.course_id, wallet).first();
-          if (enr) { allowed = true; reason = onchain === null ? 'enrolled-d1' : 'enrolled-d1-fallback'; }
+        else if (policy === 'never') {
+          // strict mode — deny unless on-chain says yes.
+        } else {
+          const shouldFallback = policy === 'always' || (policy === 'unset-only' && onchain === null);
+          if (shouldFallback) {
+            const enr = await c.env.DB.prepare(
+              'SELECT id FROM enrollments WHERE course_id = ? AND student_wallet = ? LIMIT 1'
+            ).bind(m.course_id, wallet).first();
+            if (enr) { allowed = true; reason = onchain === null ? 'enrolled-d1' : 'enrolled-d1-fallback'; }
+          }
         }
       }
     }
@@ -721,9 +739,22 @@ export function mountContentRoutes(app) {
     const gate = await loadCourseOwned(c, c.req.param('id'));
     if (gate.fail) return gate.fail;
     let body = {}; try { body = await c.req.json(); } catch { return jsonError(c, 400, 'Invalid JSON'); }
-    const url = String(body.url || '').slice(0, 500);
-    const cfImageId = String(body.cf_image_id || '').slice(0, 80);
-    if (!url) return jsonError(c, 400, 'url required');
+    // Two acceptable inputs:
+    //   1) `url` — caller already has a CF Images variant URL. We just
+    //      persist it.
+    //   2) `image_id` (+ optional `variant`, default 'public') — we
+    //      synthesize the canonical CF Images delivery URL using the
+    //      account's CF_IMAGES_DELIVERY_HASH var, so the frontend never
+    //      has to know the hash.
+    let url = String(body.url || '').slice(0, 500);
+    const cfImageId = String(body.cf_image_id || body.image_id || '').slice(0, 80);
+    const variant = String(body.variant || 'public').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40) || 'public';
+    if (!url && cfImageId) {
+      const hash = c.env.CF_IMAGES_DELIVERY_HASH;
+      if (!hash) return jsonError(c, 503, 'CF_IMAGES_DELIVERY_HASH not configured — pass `url` instead.');
+      url = `https://imagedelivery.net/${hash}/${cfImageId}/${variant}`;
+    }
+    if (!url) return jsonError(c, 400, 'Provide either `url` or `image_id`');
     await c.env.DB.prepare('UPDATE courses SET thumbnail_url = ?, updated_at = datetime(\'now\') WHERE id = ?')
       .bind(url, gate.course.id).run();
     if (cfImageId && c.env.DB) {
@@ -866,7 +897,16 @@ export function mountContentRoutes(app) {
         ).run();
       } catch (_) {}
     }
-    return c.json({ ok: true, pdf_url: pdfUrl, sha256: sha, email_status: emailStatus });
+    // Response contract: expose both naming conventions so existing
+    // dashboard callers (`url`, `email`) and any future scripts using the
+    // documented worker fields (`pdf_url`, `email_status`) both work.
+    return c.json({
+      ok: true,
+      url: pdfUrl, pdf_url: pdfUrl,
+      r2_key: r2Key,
+      sha256: sha,
+      email: emailStatus, email_status: emailStatus,
+    });
   });
 
   // ────────────── Send "course published" notification (admin/educator)

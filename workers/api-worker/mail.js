@@ -10,8 +10,11 @@
  * Required env (production):
  *   MAIL_FROM                e.g. "Tokenomic <hello@tokenomic.org>"
  *   MAIL_FROM_DOMAIN         "tokenomic.org"
- *   MAIL_DKIM_SELECTOR       e.g. "mailchannels"
- *   MAIL_DKIM_PRIVATE_KEY    base64 PKCS#8 RSA private key
+ *   MAILCHANNELS_DKIM_SELECTOR     e.g. "mailchannels"
+ *   MAILCHANNELS_DKIM_PRIVATE_KEY  base64 PKCS#8 RSA private key
+ *
+ * Legacy `MAIL_DKIM_SELECTOR` / `MAIL_DKIM_PRIVATE_KEY` are still
+ * accepted as a fallback to avoid breaking existing deployments.
  *
  * The helper degrades gracefully when these are missing: returns
  * { ok: false, error: 'mail-not-configured' } and the caller logs the
@@ -63,10 +66,12 @@ export async function sendEmail(env, opts) {
   if (!isValidEmail(fromEmail)) return { ok: false, error: 'mail-invalid-from' };
 
   const dkimDomain = env.MAIL_FROM_DOMAIN || (fromEmail.split('@')[1] || 'tokenomic.org');
-  const dkim = env.MAIL_DKIM_PRIVATE_KEY ? {
+  const dkimKey = env.MAILCHANNELS_DKIM_PRIVATE_KEY || env.MAIL_DKIM_PRIVATE_KEY;
+  const dkimSel = env.MAILCHANNELS_DKIM_SELECTOR || env.MAIL_DKIM_SELECTOR || 'mailchannels';
+  const dkim = dkimKey ? {
     dkim_domain:      dkimDomain,
-    dkim_selector:    env.MAIL_DKIM_SELECTOR || 'mailchannels',
-    dkim_private_key: env.MAIL_DKIM_PRIVATE_KEY,
+    dkim_selector:    dkimSel,
+    dkim_private_key: dkimKey,
   } : null;
 
   // Without DKIM AND without the SPF chain set up at the recipient's side,

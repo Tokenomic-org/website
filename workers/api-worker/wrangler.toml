@@ -112,6 +112,9 @@ REFERRAL_REGISTRY_CHAIN_ID       = "8453"   # 8453=base mainnet, 84532=base sepo
 COURSE_ACCESS_1155               = ""
 COURSE_ACCESS_CHAIN_ID           = "8453"
 CF_IMAGES_DELIVERY_HASH          = ""
+# Phase 6 — Playback gating policy (see content-infra.js):
+#   "unset-only" (default) | "always" | "never"
+ENROLLMENT_D1_FALLBACK           = "unset-only"
 
 [[r2_buckets]]
 binding     = "R2_BUCKET"
