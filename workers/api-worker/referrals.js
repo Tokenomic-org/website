@@ -131,7 +131,8 @@ async function timingSafeEqB64(a, b) {
 
 function inviteKey(env) {
   const k = env.INVITE_HMAC_KEY;
-  if (!k || k.length < 16) return null;
+  // Spec requires ≥32 bytes (256 bits) of entropy for HMAC-SHA-256.
+  if (!k || k.length < 32) return null;
   return k;
 }
 
