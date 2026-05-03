@@ -197,6 +197,92 @@ ${txHash ? 'On-chain mint: https://basescan.org/tx/' + txHash : ''}
   return { subject, text, html };
 }
 
+/**
+ * Welcome email — sent on first SIWE sign-in for a new wallet.
+ */
+export function tplWelcome({ name, dashboardUrl }) {
+  const link = dashboardUrl || 'https://tokenomic.org/dashboard/';
+  const subject = `Welcome to Tokenomic`;
+  const text =
+`Welcome${name ? ', ' + name : ''}!
+
+Tokenomic is on-chain learning on Base. Get started from your dashboard:
+${link}
+
+— Tokenomic`;
+  const html = `<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0A0F1A">
+    <h2 style="color:#0A0F1A;margin:0 0 12px">Welcome${name ? ', ' + escHtml(name) : ''} 👋</h2>
+    <p>You just joined <strong>Tokenomic</strong> — on-chain learning on Base. Browse courses, follow experts, or publish your own content.</p>
+    <p style="margin:24px 0"><a href="${escHtml(link)}" style="background:#ff6000;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Open dashboard →</a></p>
+    ${FOOTER}
+  </div>`;
+  return { subject, text, html };
+}
+
+/**
+ * Cohort / community invite email.
+ */
+export function tplInvite({ inviterName, communityName, acceptUrl }) {
+  const subject = `${inviterName || 'Someone'} invited you to ${communityName || 'a Tokenomic community'}`;
+  const text =
+`${inviterName || 'A Tokenomic member'} invited you to join "${communityName}".
+
+Accept the invite:
+${acceptUrl}
+
+— Tokenomic`;
+  const html = `<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0A0F1A">
+    <h2 style="color:#0A0F1A;margin:0 0 12px">You've been invited</h2>
+    <p><strong>${escHtml(inviterName || 'A Tokenomic member')}</strong> invited you to join <strong>${escHtml(communityName || 'their community')}</strong>.</p>
+    <p style="margin:24px 0"><a href="${escHtml(acceptUrl)}" style="background:#ff6000;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Accept invite →</a></p>
+    ${FOOTER}
+  </div>`;
+  return { subject, text, html };
+}
+
+/**
+ * Calendly booking confirmation — sent after the Calendly webhook fires.
+ */
+export function tplBookingConfirmed({ expertName, startTime, joinUrl, cancelUrl }) {
+  const subject = `Your booking with ${expertName || 'your expert'} is confirmed`;
+  const when = startTime ? new Date(startTime).toUTCString() : 'the scheduled time';
+  const text =
+`Your session with ${expertName || 'your expert'} is confirmed for ${when}.
+
+Join: ${joinUrl || '(link in your calendar invite)'}
+${cancelUrl ? 'Reschedule / cancel: ' + cancelUrl : ''}
+
+— Tokenomic`;
+  const html = `<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0A0F1A">
+    <h2 style="color:#0A0F1A;margin:0 0 12px">Booking confirmed ✅</h2>
+    <p>Your session with <strong>${escHtml(expertName || 'your expert')}</strong> is locked in for <strong>${escHtml(when)}</strong>.</p>
+    ${joinUrl ? `<p style="margin:20px 0"><a href="${escHtml(joinUrl)}" style="background:#ff6000;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Join meeting →</a></p>` : ''}
+    ${cancelUrl ? `<p style="font-size:13px;color:#5a8299">Need to change it? <a href="${escHtml(cancelUrl)}" style="color:#ff6000">Reschedule or cancel</a>.</p>` : ''}
+    ${FOOTER}
+  </div>`;
+  return { subject, text, html };
+}
+
+/**
+ * One-click unsubscribe confirmation.
+ */
+export function tplUnsubscribe({ email, resubscribeUrl }) {
+  const subject = `You've been unsubscribed`;
+  const text =
+`We've removed ${email || 'this address'} from Tokenomic transactional emails.
+
+Changed your mind? ${resubscribeUrl || 'Visit https://tokenomic.org/settings/notifications'}
+
+— Tokenomic`;
+  const html = `<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0A0F1A">
+    <h2 style="color:#0A0F1A;margin:0 0 12px">You've been unsubscribed</h2>
+    <p>We've removed <strong>${escHtml(email || 'this address')}</strong> from Tokenomic transactional emails. You'll still receive critical security and billing notifications.</p>
+    ${resubscribeUrl ? `<p style="margin:24px 0"><a href="${escHtml(resubscribeUrl)}" style="background:#ff6000;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Resubscribe →</a></p>` : ''}
+    ${FOOTER}
+  </div>`;
+  return { subject, text, html };
+}
+
 export function tplCoursePublished({ courseTitle, courseSlug, educatorName }) {
   const link = `https://tokenomic.org/course/?slug=${encodeURIComponent(courseSlug)}`;
   const subject = `“${courseTitle}” is live on Tokenomic`;

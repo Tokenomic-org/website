@@ -692,23 +692,59 @@ export function mountContentRoutes(app) {
     const id = String(body.id || '').slice(0, 80);
     if (!id) return jsonError(c, 400, 'id required');
     const kind = ['thumbnail', 'article-cover', 'avatar', 'misc'].includes(body.kind) ? body.kind : 'misc';
+    // Phase 6: standardise on three named CF Images variants —
+    //   `card`   ~ list/catalog cards (e.g. 480×270),
+    //   `hero`   ~ full-width hero banners (e.g. 1600×900),
+    //   `avatar` ~ square profile photos (e.g. 256×256).
+    // Operators must create these three variants in the Cloudflare
+    // Images dashboard. When the delivery hash is configured we
+    // pre-compute all three URLs so callers (and the dashboard
+    // renderer) never have to know the hash.
     const hash = c.env.CF_IMAGES_DELIVERY_HASH || '';
-    const variants = hash
-      ? ['public', 'thumb', 'cover'].map(v => `https://imagedelivery.net/${hash}/${id}/${v}`)
-      : [];
+    const VARIANT_NAMES = ['card', 'hero', 'avatar'];
+    const variantMap = {};
+    if (hash) {
+      for (const v of VARIANT_NAMES) {
+        variantMap[v] = `https://imagedelivery.net/${hash}/${id}/${v}`;
+      }
+    }
+    const variants = Object.values(variantMap);
     if (c.env.DB) {
       try {
         await c.env.DB.prepare(`
           INSERT OR REPLACE INTO cf_images (cf_image_id, owner_wallet, kind, variants, meta)
           VALUES (?, ?, ?, ?, ?)
-        `).bind(id, auth.wallet, kind, JSON.stringify(variants), JSON.stringify(body.meta || {})).run();
+        `).bind(id, auth.wallet, kind, JSON.stringify(variantMap), JSON.stringify(body.meta || {})).run();
       } catch (_) {}
     }
-    const primary = variants[0] || `https://imagedelivery.net/_/${id}/public`;
-    return c.json({ ok: true, id, variants, url: primary });
+    // Pick a sensible primary variant per asset kind.
+    const primaryByKind = { thumbnail: 'card', 'article-cover': 'hero', avatar: 'avatar', misc: 'card' };
+    const primary = variantMap[primaryByKind[kind]] || variants[0] || `https://imagedelivery.net/_/${id}/public`;
+    return c.json({ ok: true, id, variants, variantMap, url: primary });
   });
 
-  // ────────────── Profile avatar
+  /**
+   * Public avatar resolver. Looks up the most recent avatar object for
+   * the wallet, mints a 5-minute signed R2 URL, and 302-redirects.
+   * Storing this stable endpoint URL in `profiles.avatar_url` means
+   * renderers never see an expired signature.
+   */
+  app.get('/api/avatars/:wallet', async (c) => {
+    const wallet = lc(c.req.param('wallet') || '');
+    if (!isHexAddr(wallet)) return jsonError(c, 400, 'Bad wallet');
+    if (!c.env.DB) return jsonError(c, 503, 'Database not configured');
+    const row = await c.env.DB.prepare(
+      "SELECT r2_key FROM r2_objects WHERE owner_wallet = ? AND kind = 'avatar' ORDER BY rowid DESC LIMIT 1"
+    ).bind(wallet).first();
+    if (!row) return jsonError(c, 404, 'No avatar');
+    if (!r2Available(c.env)) return jsonError(c, 503, 'R2 not configured');
+    const signed = await buildSignedR2Url(c, row.r2_key, 5 * 60);
+    if (!signed) return jsonError(c, 503, 'Signing not configured');
+    // 302 so the signed URL never gets cached at the CDN level.
+    return c.redirect(signed, 302);
+  });
+
+  // ────────────── Profile avatar (writer)
 
   app.post('/api/profile/avatar', async (c) => {
     const auth = await requireAuthLocal(c);
@@ -723,19 +759,26 @@ export function mountContentRoutes(app) {
     if (!buf) return jsonError(c, 400, 'Invalid base64 image data');
     if (buf.length > 5 * 1024 * 1024) return jsonError(c, 413, 'Max 5MB');
 
+    // Phase 6 hardening: avatars are persisted as a STABLE URL pointing
+    // at the public /api/avatars/:wallet redirect endpoint below — that
+    // endpoint mints a fresh short-lived signed R2 URL on every read.
+    // Storing a long-lived signed URL directly in profiles.avatar_url
+    // would silently break renderers when the signature expires.
     let url = null;
+    let r2Key = null;
     if (r2Available(c.env)) {
-      const key = `avatars/${auth.wallet}/profile.${ext}`;
-      await r2Put(c.env, key, buf, { contentType: ct });
+      r2Key = `avatars/${auth.wallet}/profile.${ext}`;
+      await r2Put(c.env, r2Key, buf, { contentType: ct });
       if (c.env.DB) {
         try {
           await c.env.DB.prepare(`
             INSERT OR REPLACE INTO r2_objects (r2_key, owner_wallet, kind, content_type, size_bytes, visibility)
             VALUES (?, ?, 'avatar', ?, ?, 'public')
-          `).bind(key, auth.wallet, ct, buf.length).run();
+          `).bind(r2Key, auth.wallet, ct, buf.length).run();
         } catch (_) {}
       }
-      url = await buildSignedR2Url(c, key, 7 * 24 * 3600);
+      const origin = new URL(c.req.url).origin;
+      url = `${origin}/api/avatars/${auth.wallet}`;
     }
     if (!url) return jsonError(c, 503, 'No avatar storage configured');
 
