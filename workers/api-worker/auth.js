@@ -118,21 +118,25 @@ export function requireRole(roleOrRoles) {
     const id = await resolveSession(c);
     if (!id) return c.json({ error: 'Sign in required' }, 401);
 
-    // Admin gate: STRICT allowlist match. The on-chain DEFAULT_ADMIN_ROLE
-    // is intentionally not sufficient — see resolveSession() for rationale.
-    if (adminWanted && !id.isAdmin) {
-      return c.json(
-        { error: 'Forbidden — wallet is not in ADMIN_WALLETS allowlist',
-          required: ['admin'], have: id.roles },
-        403,
-      );
-    }
-    let granted = adminWanted && id.isAdmin;
-    if (!granted) {
-      for (const r of id.roles) if (wantedSet.has(r)) { granted = true; break; }
-    }
+    // Admin authority stays STRICT: resolveSession() only ever adds 'admin'
+    // from the env allowlist (never from on-chain), so a plain role-set
+    // intersection is already the strict check. Crucially the intersection
+    // must consider EVERY wanted role — gates like
+    // requireRole(['educator', 'admin']) or requireRole(['learner', …,
+    // 'admin']) list 'admin' as an *additional* way in, not a requirement.
+    let granted = false;
+    for (const r of id.roles) if (wantedSet.has(r)) { granted = true; break; }
 
     if (!granted) {
+      // Admin-only route: keep the specific allowlist message, which is the
+      // actionable one for an operator debugging their own access.
+      if (adminWanted && wantedSet.size === 1) {
+        return c.json(
+          { error: 'Forbidden — wallet is not in ADMIN_WALLETS allowlist',
+            required: ['admin'], have: id.roles },
+          403,
+        );
+      }
       return c.json(
         {
           error: 'Forbidden — missing required role',

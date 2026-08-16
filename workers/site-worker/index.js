@@ -105,7 +105,14 @@ async function checkAdmin(request, env) {
     return false;
   }
   try {
-    const probe = await fetch(apiBase.replace(/\/$/, '') + '/api/auth/me', {
+    // Probe /admin/me, NOT /api/auth/me. Both return a roles[] array, but
+    // /api/auth/me also honours the legacy `profiles.roles` JSON column,
+    // so a wallet whose D1 row lists "admin" would clear this gate and be
+    // served the admin markup while every real admin API still rejected
+    // it. /admin/me is the strict endpoint: it 403s unless the wallet is
+    // in the env ADMIN_WALLETS allowlist, which auth.js documents as the
+    // sole source of admin authority. It also needs no DB binding.
+    const probe = await fetch(apiBase.replace(/\/$/, '') + '/admin/me', {
       method: 'GET',
       headers: {
         cookie,
@@ -117,7 +124,8 @@ async function checkAdmin(request, env) {
     });
     if (!probe.ok) return false;
     const j = await probe.json().catch(() => ({}));
-    const roles = (j && (j.roles || (j.user && j.user.roles))) || [];
+    if (!j || j.ok !== true || j.isAdmin !== true) return false;
+    const roles = j.roles || [];
     return Array.isArray(roles) && roles.indexOf('admin') >= 0;
   } catch (_) {
     return false;
@@ -175,15 +183,17 @@ const STRICT_CSP =
   // /shared/assets/js/. If you ever need to add an inline <script> back,
   // see infra/cloudflare/csp-rollout.md for how to compute and document
   // its sha256 hash.
-  "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.googletagmanager.com; " +
+  "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.googletagmanager.com https://maps.googleapis.com; " +
   "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
   "img-src 'self' data: blob: https:; " +
   "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
-  "connect-src 'self' https://*.tokenomic.org https://*.workers.dev https://mainnet.base.org https://sepolia.base.org https://api.cloudflare.com https://relay.walletconnect.com wss://relay.walletconnect.com; " +
+  "connect-src 'self' https://*.tokenomic.org https://*.workers.dev https://mainnet.base.org https://sepolia.base.org https://api.cloudflare.com https://relay.walletconnect.com wss://relay.walletconnect.com https://maps.googleapis.com; " +
   "frame-ancestors 'none'; " +
   "object-src 'none'; " +
   "base-uri 'self'; " +
-  "form-action 'self'; " +
+  // The contact form (_includes/contact_3.html) posts to Formspree, so
+  // 'self' alone silently blocks every submission at the browser.
+  "form-action 'self' https://formspree.io; " +
   "upgrade-insecure-requests";
 
 // Target policy — same as STRICT_CSP but with 'unsafe-inline' dropped from
@@ -192,15 +202,17 @@ const STRICT_CSP =
 // until inline style attributes are migrated; see csp-rollout.md phase 3.
 const REPORT_ONLY_CSP =
   "default-src 'self'; " +
-  "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.googletagmanager.com; " +
+  "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://www.googletagmanager.com https://maps.googleapis.com; " +
   "style-src 'self' https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
   "img-src 'self' data: blob: https:; " +
   "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
-  "connect-src 'self' https://*.tokenomic.org https://*.workers.dev https://mainnet.base.org https://sepolia.base.org https://api.cloudflare.com https://relay.walletconnect.com wss://relay.walletconnect.com; " +
+  "connect-src 'self' https://*.tokenomic.org https://*.workers.dev https://mainnet.base.org https://sepolia.base.org https://api.cloudflare.com https://relay.walletconnect.com wss://relay.walletconnect.com https://maps.googleapis.com; " +
   "frame-ancestors 'none'; " +
   "object-src 'none'; " +
   "base-uri 'self'; " +
-  "form-action 'self'; " +
+  // The contact form (_includes/contact_3.html) posts to Formspree, so
+  // 'self' alone silently blocks every submission at the browser.
+  "form-action 'self' https://formspree.io; " +
   "upgrade-insecure-requests";
 
 function withSecurityHeaders(resp, url, env) {

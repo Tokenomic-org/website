@@ -147,15 +147,23 @@ app.use('*', async (c, next) => {
 
 app.use('*', async (c, next) => {
   const allowList = buildAllowList(c.env);
-  // Resolve a single allowed origin (no wildcard reflection) so the SIWE
-  // cookie flow can run with credentials. The browser refuses
-  // `Access-Control-Allow-Origin: *` together with credentials.
-  const reqOrigin = c.req.header('origin') || '';
-  const allowOrigin = originIsAllowed(reqOrigin, allowList) ? reqOrigin : '';
   const handler = cors({
-    // For non-browser requests (no Origin) we still echo `*`, but those
-    // requests cannot send cookies anyway, so credentials are moot.
-    origin: allowOrigin || (reqOrigin ? null : '*'),
+    // Resolve a single allowed origin (no wildcard reflection) so the SIWE
+    // cookie flow can run with credentials. The browser refuses
+    // `Access-Control-Allow-Origin: *` together with credentials.
+    //
+    // This MUST be the function form. Passing a bare `null` as the option
+    // makes Hono treat it as an array and call `null.includes(origin)`,
+    // turning every request from a non-allowlisted origin into a 500.
+    // Returning a falsy value from the resolver is the supported way to
+    // decline: Hono then simply omits Access-Control-Allow-Origin and the
+    // browser blocks the read, which is exactly the intended outcome.
+    origin: (reqOrigin) => {
+      // For non-browser requests (no Origin) we still echo `*`, but those
+      // requests cannot send cookies anyway, so credentials are moot.
+      if (!reqOrigin) return '*';
+      return originIsAllowed(reqOrigin, allowList) ? reqOrigin : null;
+    },
     credentials: true,
     allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization', 'X-Wallet'],

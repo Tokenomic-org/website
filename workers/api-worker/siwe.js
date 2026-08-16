@@ -30,6 +30,7 @@
 
 import { verifyMessage } from 'viem';
 import { linkReferrerOnSignIn } from './referrals.js';
+import { b64urlEncode, b64urlDecode } from './base64url.js';
 
 const SESSION_COOKIE = 'tk_session';
 const SESSION_TTL_SEC = 60 * 60 * 24 * 7;          // 7 days
@@ -47,19 +48,7 @@ function clientIp(c) {
          c.req.header('x-forwarded-for') ||
          '0.0.0.0';
 }
-function b64url(bytes) {
-  const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
-  let s = '';
-  for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]);
-  return btoa(s).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-}
-function b64urlDecode(str) {
-  const s = str.replace(/-/g, '+').replace(/_/g, '/') + '=='.slice((str.length + 3) % 4);
-  const bin = atob(s);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
+const b64url = b64urlEncode;
 async function hmacKey(secret) {
   return crypto.subtle.importKey(
     'raw',

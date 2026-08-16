@@ -4,7 +4,15 @@ Google Map
 -------------------------------------------- */ 
 window.onload = MapLoadScript;
 function GmapInit() {
+      // The Maps API is a third-party script: it can fail to load (network
+      // error, ad blocker, revoked key, CSP). Without this guard the very
+      // first `google.maps.MapTypeId` read below throws an uncaught
+      // ReferenceError on every page that includes this file, which then
+      // aborts the rest of the load handler. Degrade to "no map" instead.
+      if (typeof google === 'undefined' || !google.maps) return;
+      if (typeof $ === 'undefined') return;
       Gmap = $('.map-canvas');
+      if (!Gmap.length) return;
       Gmap.each(function() {
         var $this           = $(this),
             lat             = '',

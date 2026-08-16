@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "main": "index.js",
+  "scripts": {
+    "test": "node --test test/auth.test.mjs"
+  },
   "dependencies": {
     "hono": "^4.0.0",
     "viem": "^2.21.0"

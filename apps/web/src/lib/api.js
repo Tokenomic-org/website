@@ -66,7 +66,22 @@ export async function api(path, opts = {}) {
 
   if (!opts.method || opts.method === 'GET') {
     inflight.set(key, promise);
-    promise.finally(() => setTimeout(() => inflight.delete(key), 30_000));
+    // The two-argument .then() handles the rejected case itself, so the
+    // derived promise settles fulfilled and never surfaces as an
+    // "Uncaught (in promise)" error. That mattered: the previous
+    // `promise.finally(...)` produced a derived promise that re-threw the
+    // original rejection with no handler attached, so every failed GET
+    // logged an uncaught error even though callers all wrap their await
+    // in try/catch. `promise` itself is returned untouched, so caller
+    // error handling and this bookkeeping stay independent.
+    promise.then(
+      // Success: hold the entry so repeat GETs within 30s are deduped.
+      () => setTimeout(() => inflight.delete(key), 30_000),
+      // Failure: evict immediately. Retaining a rejected promise made every
+      // identical GET replay the same failure for 30s, so one dropped
+      // request left the UI stuck until the window elapsed.
+      () => { inflight.delete(key); },
+    );
   }
   return promise;
 }
