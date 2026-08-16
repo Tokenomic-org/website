@@ -17,6 +17,7 @@ permalink: /courses/
 .courses-hero p { color:rgba(255,255,255,0.78); font-size:16px; max-width:560px; margin:0 auto; line-height:1.6; }
 </style>
 
+<main>
 <section class="courses-hero">
     <div class="auto-container">
         <h1>Tokenomic Courses</h1>
@@ -24,6 +25,10 @@ permalink: /courses/
     </div>
 </section>
 
+<!-- sr-only: the catalog's own card titles are <h3> (see CoursesCatalog.jsx),
+     so without this the document skips straight from <h1> to <h3>. -->
+<h2 class="sr-only">All courses</h2>
 <div data-island="CoursesCatalog"></div>
+</main>
 
 <script defer src="/assets/islands/dist/CoursesCatalog.iife.js"></script>

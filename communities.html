@@ -17,6 +17,7 @@ permalink: /communities/
 .communities-hero p  { color:rgba(255,255,255,0.78); font-size:16px; max-width:580px; margin:0 auto; line-height:1.6; }
 </style>
 
+<main>
 <section class="communities-hero">
     <div class="auto-container">
         <h1>Communities</h1>
@@ -24,6 +25,11 @@ permalink: /communities/
     </div>
 </section>
 
+<!-- sr-only: the catalog's own card titles are <h3> (see
+     CommunitiesCatalog.jsx), so without this the document skips straight
+     from <h1> to <h3>. -->
+<h2 class="sr-only">All communities</h2>
 <div data-island="CommunitiesCatalog"></div>
+</main>
 
 <script defer src="/assets/islands/dist/CommunitiesCatalog.iife.js"></script>
