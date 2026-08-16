@@ -17,6 +17,7 @@ permalink: /experts/
 .experts-hero p  { color:rgba(255,255,255,0.78); font-size:16px; max-width:640px; margin:0 auto; line-height:1.6; }
 </style>
 
+<main>
 <section class="experts-hero">
     <div class="auto-container">
         <h1>Find Experts &amp; Consultants</h1>
@@ -24,6 +25,11 @@ permalink: /experts/
     </div>
 </section>
 
+<!-- sr-only: the island's own card titles are <h3> (see
+     ExpertsDirectory.jsx), so without this the document skips straight
+     from <h1> to <h3>. -->
+<h2 class="sr-only">Experts and consultants</h2>
 <div data-island="ExpertsDirectory"></div>
+</main>
 
 <script defer src="/assets/islands/dist/ExpertsDirectory.iife.js"></script>
