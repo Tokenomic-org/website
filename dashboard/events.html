@@ -75,7 +75,7 @@ permalink: /events/
             <button class="dash-btn dash-btn-outline" @click="reload()" :disabled="loading">
                 <span x-show="!loading">Refresh</span><span x-show="loading">Loading…</span>
             </button>
-            <button class="dash-btn dash-btn-primary" @click="showCreate = !showCreate">
+            <button class="dash-btn dash-btn-primary" aria-label="Toggle the new event form" @click="showCreate = !showCreate">
                 <span x-text="showCreate ? 'Close' : '+ New Event'"></span>
             </button>
         </div>
@@ -108,12 +108,12 @@ permalink: /events/
                 <input type="number" min="1" max="100000" class="form-control" x-model="nf.capacity" placeholder="50" />
             </div>
             <div class="col-md-6" style="margin-bottom:10px;">
-                <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Starts at *</label>
-                <input type="datetime-local" class="form-control" x-model="nf.starts_at_local" />
+                <label for="nf-starts-at" style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Starts at *</label>
+                <input id="nf-starts-at" type="datetime-local" class="form-control" x-model="nf.starts_at_local" />
             </div>
             <div class="col-md-6" style="margin-bottom:10px;">
-                <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Ends at</label>
-                <input type="datetime-local" class="form-control" x-model="nf.ends_at_local" />
+                <label for="nf-ends-at" style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Ends at</label>
+                <input id="nf-ends-at" type="datetime-local" class="form-control" x-model="nf.ends_at_local" />
             </div>
             <div class="col-md-6" style="margin-bottom:10px;">
                 <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Location</label>
@@ -128,16 +128,16 @@ permalink: /events/
                 <input type="url" class="form-control" x-model="nf.cover_url" maxlength="500" placeholder="https://…" />
             </div>
             <div class="col-md-3" style="margin-bottom:10px;">
-                <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Visibility</label>
-                <select class="form-control" x-model="nf.visibility">
+                <label for="nf-visibility" style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Visibility</label>
+                <select id="nf-visibility" class="form-control" x-model="nf.visibility">
                     <option value="public">Public</option>
                     <option value="unlisted">Unlisted</option>
                     <option value="private">Private</option>
                 </select>
             </div>
             <div class="col-md-3" style="margin-bottom:10px;">
-                <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Timezone (IANA)</label>
-                <input type="text" class="form-control" x-model="nf.timezone" maxlength="64" />
+                <label for="nf-timezone" style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Timezone (IANA)</label>
+                <input id="nf-timezone" type="text" class="form-control" x-model="nf.timezone" maxlength="64" />
             </div>
             <div class="col-md-12" style="margin-bottom:10px;">
                 <label style="display:block;font-size:0.8rem;color:#5a8299;margin-bottom:4px;">Description (markdown)</label>

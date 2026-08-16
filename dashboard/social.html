@@ -162,8 +162,8 @@ permalink: /social/
                         <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="tiktok" style="accent-color:#010101;" /> <span style="color:#010101;font-weight:600;font-size:0.85rem;">TikTok</span></label>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-3 col-sm-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Date</label><input x-model="newPost.date" type="date" class="dash-input" /></div>
-                <div class="col-lg-3 col-md-3 col-sm-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Time</label><input x-model="newPost.time" type="time" class="dash-input" /></div>
+                <div class="col-lg-3 col-md-3 col-sm-6"><label for="newpost-date" style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Date</label><input id="newpost-date" x-model="newPost.date" type="date" class="dash-input" /></div>
+                <div class="col-lg-3 col-md-3 col-sm-6"><label for="newpost-time" style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Time</label><input id="newpost-time" x-model="newPost.time" type="time" class="dash-input" /></div>
             </div>
             <div style="display:flex;gap:8px;">
                 <button class="dash-btn dash-btn-primary" @click="schedulePost()">Schedule</button>
