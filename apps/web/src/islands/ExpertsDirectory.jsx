@@ -124,7 +124,7 @@ function ExpertsDirectory() {
           <Card className="text-center py-16">
             <CardContent>
               <h3 className="text-xl font-semibold mb-2">{t('experts.empty_title', 'No experts found')}</h3>
-              <p className="text-muted mb-4">{t('experts.empty_body_prefix', 'Adjust the filters or apply at')} <a href="/apply/" className="text-brand">/apply</a> {t('experts.empty_body_suffix', 'to be listed.')}</p>
+              <p className="text-muted mb-4">{t('experts.empty_body_prefix', 'Adjust the filters or apply at')} <a href="/apply/" className="text-brand underline">/apply</a> {t('experts.empty_body_suffix', 'to be listed.')}</p>
               <Button variant="outline" onClick={() => setState({ q: '', tab: 'all' })}>{t('experts.clear', 'Clear filters')}</Button>
             </CardContent>
           </Card>

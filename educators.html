@@ -52,7 +52,10 @@ permalink: /experts/
     cursor: pointer; transition: all 0.2s;
 }
 .expert-tabs .tab-btn:hover { border-color: #ff6000; color: #fff; }
-.expert-tabs .tab-btn.active { background: #ff6000; color: #fff; border-color: #ff6000; }
+/* #fff on solid #ff6000 is 3.03:1 (fails WCAG AA) -- same fix as the header
+   wallet button: keep the accent background, switch the label to the
+   site's dark-navy brand token (#0A0F1A), which clears 6.3:1. */
+.expert-tabs .tab-btn.active { background: #ff6000; color: #0A0F1A; border-color: #ff6000; }
 .expert-section { display: none; }
 .expert-section.active { display: block; }
 </style>

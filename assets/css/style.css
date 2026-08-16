@@ -5791,7 +5791,10 @@ img.lazy-image.loaded{
         position: relative;
         display: block;
         width:100%;
-        color:#ffffff;
+        /* #fff on #ff4646 is 3.37:1 (fails WCAG AA). Background is
+           untouched; label switches to the dark-navy brand token, which
+           clears 5.7:1. */
+        color:#0A0F1A;
         background: #ff4646;
         font-weight: 600;
         text-transform: uppercase;
@@ -5809,11 +5812,14 @@ img.lazy-image.loaded{
         display: block;
         padding-top: 15px;
         text-align: center;
-        color: #5b5daf;
+        /* #5b5daf on the footer's #000e22 panel is 3.34:1 (fails WCAG AA).
+           #7476bb is the minimal hue-preserving lightening that clears
+           4.66:1. */
+        color: #7476bb;
 }
 
 .main-footer .get-link a{
-        color: #5b5daf;
+        color: #7476bb;
     -webkit-transition: all 300ms ease;
     -ms-transition: all 300ms ease;
     -o-transition: all 300ms ease;
