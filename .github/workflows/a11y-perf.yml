@@ -68,6 +68,15 @@ jobs:
           name: site
           path: _site
 
+      # Playwright ships a browser matched to its own version. The previous
+      # @axe-core/cli path drove Chrome through a separately-versioned
+      # chromedriver, which drifted out of sync with the runner's Chrome and
+      # made every page fail to scan. See scripts/ci-axe.mjs.
+      - name: Install axe-core + Playwright browser
+        run: |
+          npm install --no-save playwright axe-core
+          npx playwright install --with-deps chromium
+
       - name: Serve _site/ on :8080
         run: |
           npx --yes serve _site -l 8080 --no-clipboard >serve.log 2>&1 &
