@@ -16,6 +16,8 @@
  *   GET  /api/chat/:communityId/ws?ticket=...           -> WS upgrade, forwarded to the DO
  */
 
+import { b64urlDecode } from './base64url.js';
+
 function lc(s) { return (s || '').toString().toLowerCase(); }
 function isHexAddress(s) { return typeof s === 'string' && /^0x[0-9a-fA-F]{40}$/.test(s); }
 
@@ -150,14 +152,6 @@ async function requireAuthRaw(c) {
   }
   if (!isHexAddress(payload.wallet)) return { error: c.json({ error: 'Invalid token' }, 401) };
   return { wallet: lc(payload.wallet) };
-}
-
-function b64urlDecode(str) {
-  const s = str.replace(/-/g, '+').replace(/_/g, '/') + '=='.slice((str.length + 3) % 4);
-  const bin = atob(s);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
 }
 
 export function mountChatRoutes(app) {

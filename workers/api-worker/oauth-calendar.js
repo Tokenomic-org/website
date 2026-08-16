@@ -20,6 +20,7 @@
 
 import { readSessionFromCookie } from './siwe.js';
 import { sendEmail, logEmail, tplBookingConfirmed } from './mail.js';
+import { b64urlEncode, b64urlDecode } from './base64url.js';
 
 // ────────────────────────────────────────────────────────────────────────────
 // helpers
@@ -31,20 +32,6 @@ function isHexAddress(s) {
 function lc(s) { return (s || '').toString().toLowerCase(); }
 function nowSec() { return Math.floor(Date.now() / 1000); }
 
-function b64urlEncode(bytes) {
-  const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
-  let s = '';
-  for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]);
-  return btoa(s).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
-}
-function b64urlDecode(str) {
-  const s = String(str || '').replace(/-/g, '+').replace(/_/g, '/')
-    + '=='.slice((String(str || '').length + 3) % 4);
-  const bin = atob(s);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
 async function hmac(secret, data) {
   const key = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(secret),

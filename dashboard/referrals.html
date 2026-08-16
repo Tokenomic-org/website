@@ -19,11 +19,11 @@ permalink: /referrals/
             <div class="sidebar-section-label">Main</div>
             <a href="/dashboard/" class="dash-nav-item"><span class="flaticon-home-1"></span> Dashboard</a>
             <a href="/communities/" class="dash-nav-item"><span class="flaticon-user-3"></span> Communities</a>
-            <a href="/my-courses/" class="dash-nav-item"><span class="flaticon-notebook"></span> Courses</a>
+            <a href="/dashboard/courses/" class="dash-nav-item"><span class="flaticon-notebook"></span> Courses</a>
             <a href="/events/" class="dash-nav-item"><span class="flaticon-calendar"></span> Events</a>
             <div class="sidebar-section-label">Finance</div>
-            <a href="/revenue/" class="dash-nav-item"><span class="flaticon-money"></span> Revenue</a>
-            <a href="/bookings/" class="dash-nav-item"><span class="flaticon-calendar"></span> Bookings</a>
+            <a href="/dashboard/wallet/" class="dash-nav-item"><span class="flaticon-money"></span> Wallet</a>
+            <a href="/dashboard/bookings/" class="dash-nav-item"><span class="flaticon-calendar"></span> Bookings</a>
             <div class="sidebar-section-label">Content</div>
             <a href="/chat/" class="dash-nav-item"><span class="flaticon-speech-bubble"></span> Chat</a>
             <a href="/articles/" class="dash-nav-item"><span class="flaticon-edit"></span> Articles</a>
@@ -31,7 +31,7 @@ permalink: /referrals/
             <a href="/referrals/" class="dash-nav-item active"><span class="flaticon-share"></span> Referrals</a>
             <div class="sidebar-section-label">Progress</div>
             <a href="/leaderboard/" class="dash-nav-item"><span class="flaticon-trophy"></span> Leaderboard</a>
-            <a href="/profile/" class="dash-nav-item"><span class="flaticon-user-3"></span> Profile</a>
+            <a href="/dashboard/profile/" class="dash-nav-item"><span class="flaticon-user-3"></span> Profile</a>
           </nav>
         </div>
       </div>
@@ -42,7 +42,7 @@ permalink: /referrals/
             <span class="flaticon-share" style="color:#ff6000;font-size:2rem;"></span>
           </div>
           <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
-          <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">Sign in with your wallet to get your shareable referral link, see attributed signups, and invite contacts.</p>
+          <p style="color:#4f7287;margin-bottom:24px;max-width:400px;">Sign in with your wallet to get your shareable referral link, see attributed signups, and invite contacts.</p>
           <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" data-tkn-action="connect">Login with Wallet</button>
         </div>
 
@@ -71,11 +71,11 @@ permalink: /referrals/
             <!-- Hero card -->
             <div style="background:linear-gradient(135deg,#0A0F1A 0%,#1a2744 100%);border-radius:12px;padding:24px 28px;margin-bottom:24px;color:#fff;">
               <h4 style="color:#fff;margin:0 0 6px;">Earn 5% USDC on every referred sale</h4>
-              <p style="color:#8899A6;font-size:0.9rem;margin:0 0 16px;">Your link sets a 60-day attribution cookie. On the referee's first sign-in, the wallet is permanently linked to you on-chain via <code style="background:rgba(255,255,255,0.1);padding:1px 6px;border-radius:4px;font-size:0.85rem;">ReferralRegistry</code>. Every paid action they take routes 5% to your wallet via the splitter.</p>
+              <p style="color:#646f79;font-size:0.9rem;margin:0 0 16px;">Your link sets a 60-day attribution cookie. On the referee's first sign-in, the wallet is permanently linked to you on-chain via <code style="background:rgba(255,255,255,0.1);padding:1px 6px;border-radius:4px;font-size:0.85rem;">ReferralRegistry</code>. Every paid action they take routes 5% to your wallet via the splitter.</p>
               <div style="display:flex;gap:8px;align-items:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 14px;flex-wrap:wrap;">
                 <span style="color:#ff6000;font-weight:600;font-size:0.85rem;">YOUR LINK:</span>
                 <code style="flex:1;color:#fff;font-size:0.88rem;word-break:break-all;min-width:200px;" x-text="me.link || 'Loading…'"></code>
-                <button class="dash-btn dash-btn-primary" style="padding:6px 16px;font-size:0.82rem;" @click="copyLink()" x-text="copied ? '✓ Copied' : 'Copy'"></button>
+                <button class="dash-btn dash-btn-primary" style="padding:6px 16px;font-size:0.82rem;" aria-label="Copy your referral link" @click="copyLink()" x-text="copied ? '✓ Copied' : 'Copy'"></button>
               </div>
               <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
                 <a :href="'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Join me on Tokenomic — tokenomics courses, expert consults, on-chain communities. ') + encodeURIComponent(me.link || '')" target="_blank" rel="noopener" class="dash-btn dash-btn-outline" style="padding:6px 14px;font-size:0.78rem;color:#fff;border-color:rgba(255,255,255,0.3);"><i class="fab fa-twitter"></i> Share to X</a>
@@ -103,7 +103,7 @@ permalink: /referrals/
             <!-- Invite by email -->
             <div class="dash-card" style="margin-bottom:24px;">
               <h4 style="margin:0 0 4px;">Invite contacts</h4>
-              <p style="color:#5a8299;font-size:0.85rem;margin:0 0 16px;">Drop a CSV (must contain <code>email</code> and optional <code>name</code> columns), or pull from Google / Outlook. Each invite carries your referral link.</p>
+              <p style="color:#4f7287;font-size:0.85rem;margin:0 0 16px;">Drop a CSV (must contain <code>email</code> and optional <code>name</code> columns), or pull from Google / Outlook. Each invite carries your referral link.</p>
 
               <!-- Source picker -->
               <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
@@ -121,10 +121,10 @@ permalink: /referrals/
                 <input type="file" accept=".csv,text/csv" x-ref="csvInput" @change="handleFile($event.target.files[0])" style="display:none;" />
                 <div style="font-size:2rem;color:#ccd6dd;margin-bottom:8px;">⬆</div>
                 <div style="color:#0A0F1A;font-weight:600;">Drop a CSV here, or click to choose</div>
-                <div style="color:#5a8299;font-size:0.82rem;margin-top:4px;">Up to <span x-text="MAX_RECIPIENTS"></span> emails per send</div>
+                <div style="color:#4f7287;font-size:0.82rem;margin-top:4px;">Up to <span x-text="MAX_RECIPIENTS"></span> emails per send</div>
               </div>
 
-              <div x-show="loading" style="text-align:center;color:#5a8299;padding:20px;">Loading contacts…</div>
+              <div x-show="loading" style="text-align:center;color:#4f7287;padding:20px;">Loading contacts…</div>
               <div x-show="loadError" style="background:#fff5f5;border:1px solid #fed7d7;color:#c53030;padding:12px;border-radius:8px;margin-top:12px;font-size:0.85rem;" x-text="loadError"></div>
 
               <!-- Preview list -->
@@ -142,7 +142,7 @@ permalink: /referrals/
                       <input type="checkbox" x-model="c.selected" :disabled="c.bad" style="accent-color:#ff6000;" />
                       <div style="flex:1;min-width:0;">
                         <div style="font-weight:600;color:#0A0F1A;font-size:0.88rem;" x-text="c.name || c.email"></div>
-                        <div style="color:#5a8299;font-size:0.78rem;" x-text="c.email"></div>
+                        <div style="color:#4f7287;font-size:0.78rem;" x-text="c.email"></div>
                       </div>
                       <span x-show="c.bad" style="color:#d69e2e;font-size:0.75rem;" x-text="c.bad"></span>
                     </label>
@@ -160,7 +160,7 @@ permalink: /referrals/
                     <span x-show="!sending">Send invitations (<span x-text="selectedCount()"></span>)</span>
                     <span x-show="sending">Sending…</span>
                   </button>
-                  <span x-show="sendResult" style="font-size:0.85rem;color:#5a8299;" x-text="sendResult"></span>
+                  <span x-show="sendResult" style="font-size:0.85rem;color:#4f7287;" x-text="sendResult"></span>
                 </div>
               </div>
             </div>
@@ -168,7 +168,7 @@ permalink: /referrals/
             <!-- Recent attribution -->
             <div class="dash-card">
               <h4 style="margin:0 0 12px;">Recent attribution</h4>
-              <div x-show="me.recent && me.recent.length === 0" style="color:#8899A6;text-align:center;padding:24px;">No referrals yet — share your link to get started.</div>
+              <div x-show="me.recent && me.recent.length === 0" style="color:#646f79;text-align:center;padding:24px;">No referrals yet — share your link to get started.</div>
               <div x-show="me.recent && me.recent.length > 0" style="overflow-x:auto;">
                 <table class="dash-table" style="width:100%;">
                   <thead><tr><th>Referee</th><th>Status</th><th>Reward (USDC)</th><th>Linked</th></tr></thead>
@@ -178,7 +178,7 @@ permalink: /referrals/
                         <td><span class="wallet-pill" style="padding:3px 8px;font-size:0.7rem;" x-text="r.referee_wallet ? (r.referee_wallet.slice(0,6) + '…' + r.referee_wallet.slice(-4)) : '—'"></span></td>
                         <td><span class="dash-badge" :class="r.status==='paid' ? 'dash-badge-success' : r.status==='qualified' ? 'dash-badge-info' : 'dash-badge-warning'" x-text="r.status"></span></td>
                         <td x-text="(Number(r.reward_usdc) || 0).toFixed(2)"></td>
-                        <td style="font-size:0.78rem;color:#5a8299;" x-text="(r.created_at || '').slice(0,10)"></td>
+                        <td style="font-size:0.78rem;color:#4f7287;" x-text="(r.created_at || '').slice(0,10)"></td>
                       </tr>
                     </template>
                   </tbody>

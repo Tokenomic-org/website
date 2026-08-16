@@ -67,6 +67,7 @@
  */
 
 import { resolveSession } from './auth.js';
+import { b64urlEncode, b64urlDecode } from './base64url.js';
 
 const REF_COOKIE         = 'tk_ref';
 const REF_TTL_SEC        = 60 * 60 * 24 * 60;        // 60 days
@@ -99,19 +100,7 @@ function clientIp(c) {
          c.req.header('x-forwarded-for') || '0.0.0.0';
 }
 
-function b64url(bytes) {
-  const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
-  let s = '';
-  for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]);
-  return btoa(s).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-}
-function b64urlDecode(str) {
-  const s = str.replace(/-/g, '+').replace(/_/g, '/') + '=='.slice((str.length + 3) % 4);
-  const bin = atob(s);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
+const b64url = b64urlEncode;
 async function hmac(secret, msg) {
   const key = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(secret),
@@ -439,9 +428,9 @@ async function sendInviteEmail(env, { to, toName, fromWallet, fromName, message,
 <p style="margin:0 0 16px;line-height:1.5;">
   <strong>${escapeHtml(fromName || fromWallet)}</strong> thinks you'd find Tokenomic useful — a marketplace for tokenomics courses, expert consultations, and on-chain communities.
 </p>
-${safeMsg ? `<blockquote style="border-left:3px solid #ff6000;padding:8px 16px;margin:0 0 16px;color:#5a8299;">${escapeHtml(safeMsg)}</blockquote>` : ''}
+${safeMsg ? `<blockquote style="border-left:3px solid #ff6000;padding:8px 16px;margin:0 0 16px;color:#4f7287;">${escapeHtml(safeMsg)}</blockquote>` : ''}
 <p style="margin:0 0 24px;"><a href="${link}" style="display:inline-block;background:#ff6000;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Accept invitation</a></p>
-<p style="font-size:12px;color:#8899A6;margin:24px 0 0;">If this isn't for you, <a href="${unsubscribeLink}" style="color:#8899A6;">unsubscribe</a>. We won't email you again.</p>
+<p style="font-size:12px;color:#646f79;margin:24px 0 0;">If this isn't for you, <a href="${unsubscribeLink}" style="color:#646f79;">unsubscribe</a>. We won't email you again.</p>
 </body></html>`.trim();
   const text = [
     `${fromName || fromWallet} invited you to Tokenomic.`,
@@ -987,5 +976,5 @@ function unsubPage(msg) {
 .card{background:#1a2744;border-radius:12px;padding:40px;max-width:480px;text-align:center;}
 h1{color:#ff6000;margin:0 0 16px;}p{color:#cbd5e1;line-height:1.5;}a{color:#ff6000;}</style></head>
 <body><div class="card"><h1>Tokenomic</h1><p>${escapeHtml(msg)}</p>
-<p style="margin-top:24px;font-size:12px;color:#8899A6;"><a href="https://tokenomic.org">Return to tokenomic.org</a></p></div></body></html>`;
+<p style="margin-top:24px;font-size:12px;color:#646f79;"><a href="https://tokenomic.org">Return to tokenomic.org</a></p></div></body></html>`;
 }

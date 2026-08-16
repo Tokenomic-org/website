@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "hardhat test",
+    "test:workers": "node --test workers/api-worker/test/auth.test.mjs",
     "build:web3": "esbuild shared/assets/js/web3-bundle-src.js --bundle --minify --format=esm --target=es2020 --outfile=shared/assets/js/web3-bundle.js --define:process.env.WC_PROJECT_ID=\"'$WC_PROJECT_ID'\" --define:process.env.BASE_RPC_URL=\"'${BASE_RPC_URL:-https://mainnet.base.org}'\" --define:process.env.BASE_SEPOLIA_RPC_URL=\"'${BASE_SEPOLIA_RPC_URL:-https://sepolia.base.org}'\"",
     "build:islands:css": "tailwindcss -c tailwind.config.js -i apps/web/src/styles/tailwind.css -o assets/islands/dist/tailwind.css --minify",
     "build:islands:js": "node scripts/build-islands.mjs",

@@ -19,11 +19,11 @@ permalink: /apply/
                         <div class="sidebar-section-label">Main</div>
                         <a href="/dashboard/" class="dash-nav-item"><span class="flaticon-home-1"></span> Dashboard</a>
                         <a href="/communities/" data-dash="communities" class="dash-nav-item"><span class="flaticon-user-3"></span> Communities</a>
-                        <a href="/my-courses/" data-dash="courses" class="dash-nav-item"><span class="flaticon-notebook"></span> Courses</a>
+                        <a href="/dashboard/courses/" data-dash="courses" class="dash-nav-item"><span class="flaticon-notebook"></span> Courses</a>
                         <a href="/events/" data-dash="events" class="dash-nav-item"><span class="flaticon-calendar"></span> Events</a>
                         <div class="sidebar-section-label">Finance</div>
-                        <a href="/revenue/" data-dash="revenue" class="dash-nav-item"><span class="flaticon-money"></span> Revenue</a>
-                        <a href="/bookings/" data-dash="bookings" class="dash-nav-item"><span class="flaticon-calendar"></span> Bookings</a>
+                        <a href="/dashboard/wallet/" data-dash="revenue" class="dash-nav-item"><span class="flaticon-money"></span> Wallet</a>
+                        <a href="/dashboard/bookings/" data-dash="bookings" class="dash-nav-item"><span class="flaticon-calendar"></span> Bookings</a>
                         <div class="sidebar-section-label">Content</div>
                         <a href="/chat/" data-dash="chat" class="dash-nav-item"><span class="flaticon-speech-bubble"></span> Chat</a>
                         <a href="/articles/" data-dash="articles" class="dash-nav-item"><span class="flaticon-edit"></span> Articles</a>
@@ -31,7 +31,7 @@ permalink: /apply/
                         <div class="sidebar-section-label">Progress</div>
                         <a href="/leaderboard/" data-dash="leaderboard" class="dash-nav-item"><span class="flaticon-trophy"></span> Leaderboard</a>
                         <a href="/apply/" class="dash-nav-item active"><span class="flaticon-suitcase"></span> Apply</a>
-                        <a href="/profile/" data-dash="profile" class="dash-nav-item"><span class="flaticon-user-3"></span> Profile</a>
+                        <a href="/dashboard/profile/" data-dash="profile" class="dash-nav-item"><span class="flaticon-user-3"></span> Profile</a>
                     </nav>
                 </div>
             </div>
@@ -41,7 +41,7 @@ permalink: /apply/
                         <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
                     </div>
                     <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
-                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">Sign in with a Web3 wallet to apply for the Educator or Consultant role on Tokenomic.</p>
+                    <p style="color:#4f7287;margin-bottom:24px;max-width:400px;">Sign in with a Web3 wallet to apply for the Educator or Consultant role on Tokenomic.</p>
                     <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" onclick="TokenomicWallet.connect()">Login with Wallet</button>
                 </div>
 
@@ -49,7 +49,7 @@ permalink: /apply/
                     <div x-data="applyPage()" x-init="init()">
                         <div style="margin-bottom:18px;">
                             <h2 style="margin-bottom:4px;">Become an Educator or Consultant</h2>
-                            <p style="color:#5a8299;">Submit your credentials below. An admin reviews each application and grants the role on approval. Learners always have access without an application.</p>
+                            <p style="color:#4f7287;">Submit your credentials below. An admin reviews each application and grants the role on approval. Learners always have access without an application.</p>
                         </div>
 
                         <!-- My applications list -->
@@ -67,9 +67,9 @@ permalink: /apply/
                                                       'dash-badge-danger':  a.status==='rejected'
                                                   }"
                                                   x-text="a.status"></span>
-                                            <small style="color:#5a8299;" x-text="formatDate(a.created_at)"></small>
+                                            <small style="color:#4f7287;" x-text="formatDate(a.created_at)"></small>
                                         </div>
-                                        <div style="color:#5a8299;font-size:0.9rem;" x-text="(a.bio || '').slice(0, 200) + ((a.bio||'').length > 200 ? '…' : '')"></div>
+                                        <div style="color:#4f7287;font-size:0.9rem;" x-text="(a.bio || '').slice(0, 200) + ((a.bio||'').length > 200 ? '…' : '')"></div>
                                         <template x-if="a.status === 'rejected' && a.admin_feedback">
                                             <div style="margin-top:8px;padding:10px 12px;background:#fff5f0;border-left:3px solid #ff6000;font-size:0.9rem;">
                                                 <strong style="color:#0A0F1A;">Admin feedback:</strong>
@@ -87,30 +87,30 @@ permalink: /apply/
                             <template x-if="alreadyHasRole">
                                 <div style="padding:14px 18px;background:#eafff4;border-left:3px solid #00a651;margin-bottom:14px;">
                                     <strong>You already have the <span x-text="form.role_requested"></span> role.</strong>
-                                    <span style="color:#5a8299;">No need to apply again.</span>
+                                    <span style="color:#4f7287;">No need to apply again.</span>
                                 </div>
                             </template>
                             <div style="display:flex;flex-direction:column;gap:14px;">
                                 <div>
-                                    <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:6px;">Which role are you applying for?</label>
+                                    <label style="display:block;color:#4f7287;font-size:0.85rem;margin-bottom:6px;">Which role are you applying for?</label>
                                     <div style="display:flex;gap:10px;flex-wrap:wrap;">
                                         <label style="cursor:pointer;padding:10px 18px;border:2px solid #eef2f6;border-radius:8px;flex:1;min-width:200px;"
                                                :style="form.role_requested==='educator' ? 'border-color:#ff6000;background:#fff5f0;' : ''">
                                             <input type="radio" x-model="form.role_requested" value="educator" style="margin-right:8px;" />
                                             <strong>Educator</strong>
-                                            <div style="color:#5a8299;font-size:0.85rem;">Publish courses &amp; articles, run a community.</div>
+                                            <div style="color:#4f7287;font-size:0.85rem;">Publish courses &amp; articles, run a community.</div>
                                         </label>
                                         <label style="cursor:pointer;padding:10px 18px;border:2px solid #eef2f6;border-radius:8px;flex:1;min-width:200px;"
                                                :style="form.role_requested==='consultant' ? 'border-color:#ff6000;background:#fff5f0;' : ''">
                                             <input type="radio" x-model="form.role_requested" value="consultant" style="margin-right:8px;" />
                                             <strong>Consultant</strong>
-                                            <div style="color:#5a8299;font-size:0.85rem;">Take 1:1 bookings paid in USDC.</div>
+                                            <div style="color:#4f7287;font-size:0.85rem;">Take 1:1 bookings paid in USDC.</div>
                                         </label>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">
+                                    <label style="display:block;color:#4f7287;font-size:0.85rem;margin-bottom:4px;">
                                         Bio &amp; rationale <span style="color:#ff6000;">*</span>
                                         <span style="float:right;" :style="form.bio.length < 200 ? 'color:#ff6000;' : 'color:#00a651;'">
                                             <span x-text="form.bio.length"></span> / 200+ chars
@@ -121,7 +121,7 @@ permalink: /apply/
                                 </div>
 
                                 <div>
-                                    <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Areas of expertise (up to 8)</label>
+                                    <label style="display:block;color:#4f7287;font-size:0.85rem;margin-bottom:4px;">Areas of expertise (up to 8)</label>
                                     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
                                         <template x-for="(tag, i) in form.expertise" :key="i">
                                             <span style="background:#fff5f0;color:#ff6000;padding:4px 10px;border-radius:14px;font-size:0.85rem;display:inline-flex;gap:6px;align-items:center;">
@@ -136,28 +136,28 @@ permalink: /apply/
 
                                 <div class="row clearfix">
                                     <div class="col-md-6">
-                                        <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Sample work URL</label>
+                                        <label style="display:block;color:#4f7287;font-size:0.85rem;margin-bottom:4px;">Sample work URL</label>
                                         <input x-model="form.sample_url" class="dash-input" placeholder="Article, course, repo, talk…" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Portfolio / website</label>
+                                        <label style="display:block;color:#4f7287;font-size:0.85rem;margin-bottom:4px;">Portfolio / website</label>
                                         <input x-model="form.portfolio_url" class="dash-input" placeholder="https://…" />
                                     </div>
                                 </div>
 
                                 <div class="row clearfix" x-show="form.role_requested === 'consultant'">
                                     <div class="col-md-6">
-                                        <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Hourly rate (USDC)</label>
+                                        <label style="display:block;color:#4f7287;font-size:0.85rem;margin-bottom:4px;">Hourly rate (USDC)</label>
                                         <input x-model.number="form.hourly_rate_usdc" type="number" min="0" class="dash-input" placeholder="150" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Availability</label>
+                                        <label style="display:block;color:#4f7287;font-size:0.85rem;margin-bottom:4px;">Availability</label>
                                         <input x-model="form.availability" class="dash-input" placeholder="e.g. Weekday evenings UTC" />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Credentials (optional)</label>
+                                    <label style="display:block;color:#4f7287;font-size:0.85rem;margin-bottom:4px;">Credentials (optional)</label>
                                     <input x-model="form.credentials" class="dash-input" placeholder="Degrees, prior employers, certifications…" />
                                 </div>
 
@@ -171,7 +171,7 @@ permalink: /apply/
                                         <span x-show="!submitting">Submit application</span>
                                         <span x-show="submitting">Submitting…</span>
                                     </button>
-                                    <small style="color:#5a8299;margin-left:14px;">Reviewed by an admin within ~48h.</small>
+                                    <small style="color:#4f7287;margin-left:14px;">Reviewed by an admin within ~48h.</small>
                                 </div>
                             </div>
                         </div>

@@ -21,7 +21,7 @@
 }
 @keyframes ep-spin { to { transform: rotate(360deg); } }
 .ep-loading p {
-    color: #8899a6;
+    color: #646f79;
     font-size: 0.9rem;
     margin: 0;
 }
@@ -30,7 +30,7 @@
     padding: 100px 20px;
 }
 .ep-not-found h2 { color: #001f29; margin-bottom: 12px; }
-.ep-not-found p { color: #5a8299; margin-bottom: 28px; }
+.ep-not-found p { color: #4f7287; margin-bottom: 28px; }
 
 /* ── HERO ─────────────────────────────────────────── */
 .ep-hero {
@@ -324,7 +324,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: #8899a6;
+    color: #646f79;
     margin: 20px 0 10px;
 }
 
@@ -342,7 +342,7 @@
     padding: 10px 16px;
     border: none;
     background: transparent;
-    color: #5a8299;
+    color: #4f7287;
     font-size: 0.86rem;
     font-weight: 600;
     border-radius: 11px;
@@ -394,7 +394,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #8899a6;
+    color: #646f79;
     font-size: 1.4rem;
 }
 .ep-course-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
@@ -409,7 +409,7 @@
     text-overflow: ellipsis;
 }
 .ep-course-desc {
-    color: #5a8299;
+    color: #4f7287;
     font-size: 0.82rem;
     line-height: 1.4;
     margin-bottom: 10px;
@@ -422,7 +422,7 @@
     display: flex;
     gap: 14px;
     font-size: 0.78rem;
-    color: #8899a6;
+    color: #646f79;
 }
 .ep-course-meta span {
     display: inline-flex;
@@ -474,7 +474,7 @@
 }
 .ep-article-date {
     font-size: 0.78rem;
-    color: #8899a6;
+    color: #646f79;
     flex-shrink: 0;
 }
 
@@ -518,7 +518,7 @@
     flex-shrink: 0;
 }
 .ep-review-author { font-weight: 700; color: #001f29; font-size: 0.9rem; }
-.ep-review-role { font-size: 0.75rem; color: #8899a6; }
+.ep-review-role { font-size: 0.75rem; color: #646f79; }
 .ep-review-stars { color: #f59e0b; font-size: 0.85rem; letter-spacing: 1px; }
 .ep-review-text { color: #4a6070; font-size: 0.88rem; line-height: 1.6; }
 .ep-review-date { color: #c5d1da; font-size: 0.75rem; margin-top: 10px; }
@@ -558,12 +558,12 @@
     flex-shrink: 0;
 }
 .ep-community-name { font-weight: 700; font-size: 0.9rem; color: #001f29; margin-bottom: 2px; }
-.ep-community-members { font-size: 0.78rem; color: #5a8299; }
+.ep-community-members { font-size: 0.78rem; color: #4f7287; }
 
 .ep-empty-tab {
     text-align: center;
     padding: 40px 20px;
-    color: #8899a6;
+    color: #646f79;
     font-size: 0.9rem;
 }
 
@@ -621,7 +621,7 @@
 }
 .ep-pricing-option-note {
     font-size: 0.75rem;
-    color: #8899a6;
+    color: #646f79;
     margin-top: 2px;
 }
 .ep-pricing-option-price {
@@ -663,7 +663,7 @@
     justify-content: center;
     gap: 6px;
     font-size: 0.75rem;
-    color: #8899a6;
+    color: #646f79;
     text-align: center;
 }
 .ep-split-note strong { color: #001f29; }

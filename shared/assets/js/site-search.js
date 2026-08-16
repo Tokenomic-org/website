@@ -212,7 +212,7 @@
                 html += '</a></li>';
             }
             if (results.length > 10) {
-                html += '<li class="search-message" style="font-size:13px;color:#5a8299;">Showing 10 of ' + results.length + ' results</li>';
+                html += '<li class="search-message" style="font-size:13px;color:#4f7287;">Showing 10 of ' + results.length + ' results</li>';
             }
             container.innerHTML = html;
         });
@@ -300,8 +300,8 @@
         '#results-container .sr-badge-course { background: #F7931A; color: #fff; }' +
         '#results-container .sr-badge-community { background: #9C27B0; color: #fff; }' +
         '#results-container .sr-title { display: block; color: #fff; font-size: 16px; font-weight: 600; line-height: 1.4; margin-top: 4px; }' +
-        '#results-container .sr-author { display: block; color: #5a8299; font-size: 12px; margin-top: 4px; }' +
-        '#results-container .search-message { padding: 16px; color: #5a8299; font-size: 14px; text-align: center; }';
+        '#results-container .sr-author { display: block; color: #4f7287; font-size: 12px; margin-top: 4px; }' +
+        '#results-container .search-message { padding: 16px; color: #4f7287; font-size: 14px; text-align: center; }';
     document.head.appendChild(style);
 
     if (document.readyState === 'loading') {

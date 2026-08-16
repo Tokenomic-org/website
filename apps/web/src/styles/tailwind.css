@@ -27,7 +27,7 @@ html.theme-light, .theme-light {
   --tk-surface:   255 255 255;
   --tk-surface-2: 244 247 250;
   --tk-fg:         10  31  41;
-  --tk-muted:      90 130 153;
+  --tk-muted:      79 114 135;    /* #4F7287 — 5.14:1 on white (AA) */
   --tk-border:    228 234 240;
   --tk-brand:     247 147  26;
   --tk-brand-fg:  255 255 255;
@@ -65,4 +65,26 @@ html.theme-light, .theme-light {
   outline: 2px solid rgb(var(--tk-brand));
   outline-offset: 2px;
   border-radius: 6px;
+}
+
+/* ------------------------------------------------------------------
+ * `.text-muted` collision guard.
+ *
+ * Bootstrap 4 (loaded on every legacy page) ships
+ * `.text-muted { color:#6c757d!important }`, and the site stylesheet
+ * darkens that to #656d75 so it clears AA on Bootstrap's LIGHT
+ * surfaces. Tailwind emits a utility of the exact same name, so those
+ * light-surface rules were also landing on island content — which
+ * renders on DARK surfaces (#0f1823 / #101924 / #16212f), where a
+ * darker grey is precisely backwards. It pushed island muted text from
+ * ~6.9:1 down to ~3.4:1.
+ *
+ * Scoping by the island root keeps each context on its own token:
+ * specificity (0,2,0) beats the bare `.text-muted` (0,1,0), so this
+ * wins over both Bootstrap and the site override regardless of load
+ * order, and it follows --tk-muted through the light/dark theme swap.
+ * ------------------------------------------------------------------ */
+[data-island] .text-muted,
+[data-island].text-muted {
+  color: rgb(var(--tk-muted)) !important;
 }

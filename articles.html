@@ -17,6 +17,7 @@ permalink: /articles/
 .articles-hero p  { color:rgba(255,255,255,0.78); font-size:16px; max-width:580px; margin:0 auto; line-height:1.6; }
 </style>
 
+<main>
 <section class="articles-hero">
     <div class="auto-container">
         <h1>Articles</h1>
@@ -24,6 +25,11 @@ permalink: /articles/
     </div>
 </section>
 
+<!-- sr-only: ArticlesHub.jsx already has its own <h2> section headings,
+     but only when it has content to group; the empty/loading state jumps
+     straight to <h3>, so this covers that gap too. -->
+<h2 class="sr-only">All articles</h2>
 <div data-island="ArticlesHub"></div>
+</main>
 
 <script defer src="/assets/islands/dist/ArticlesHub.iife.js"></script>

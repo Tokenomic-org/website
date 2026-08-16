@@ -23,17 +23,17 @@ permalink: /social/
                         <a href="/communities/" data-dash="communities" class="dash-nav-item">
                             <span class="flaticon-user-3"></span> Communities
                         </a>
-                        <a href="/my-courses/" data-dash="courses" class="dash-nav-item">
+                        <a href="/dashboard/courses/" data-dash="courses" class="dash-nav-item">
                             <span class="flaticon-notebook"></span> Courses
                         </a>
                         <a href="/events/" data-dash="events" class="dash-nav-item">
                             <span class="flaticon-calendar"></span> Events
                         </a>
                         <div class="sidebar-section-label">Finance</div>
-                        <a href="/revenue/" data-dash="revenue" class="dash-nav-item">
-                            <span class="flaticon-money"></span> Revenue
+                        <a href="/dashboard/wallet/" data-dash="revenue" class="dash-nav-item">
+                            <span class="flaticon-money"></span> Wallet
                         </a>
-                        <a href="/bookings/" data-dash="bookings" class="dash-nav-item">
+                        <a href="/dashboard/bookings/" data-dash="bookings" class="dash-nav-item">
                             <span class="flaticon-calendar"></span> Bookings
                         </a>
                         <div class="sidebar-section-label">Content</div>
@@ -53,7 +53,7 @@ permalink: /social/
                         <a href="/leaderboard/" data-dash="leaderboard" class="dash-nav-item">
                             <span class="flaticon-trophy"></span> Leaderboard
                         </a>
-                        <a href="/profile/" data-dash="profile" class="dash-nav-item">
+                        <a href="/dashboard/profile/" data-dash="profile" class="dash-nav-item">
                             <span class="flaticon-user-3"></span> Profile
                         </a>
                     </nav>
@@ -65,7 +65,7 @@ permalink: /social/
                         <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
                     </div>
                     <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
-                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
+                    <p style="color:#4f7287;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access the Tokenomic Dashboard. We support MetaMask, Rabby, and other Ethereum wallets on Base chain.</p>
                     <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" data-tkn-action="connect">Login with Wallet</button>
                 </div>
                 <div class="dashboard-content" style="display:none;">
@@ -77,14 +77,14 @@ permalink: /social/
         </div>
         <div>
             <p style="color:#fff;font-size:0.95rem;margin:0 0 6px;font-weight:600;">This page is for posting on Tokenomic's official social media channels.</p>
-            <p style="color:#8899A6;font-size:0.85rem;margin:0;line-height:1.5;">Content you create here will be published to <strong style="color:#ccc;">@tknmic</strong> across all platforms. Post analytics (views, likes, shares, comments) are tracked per post below. This is not connected to your personal social media accounts.</p>
+            <p style="color:#646f79;font-size:0.85rem;margin:0;line-height:1.5;">Content you create here will be published to <strong style="color:#ccc;">@tknmic</strong> across all platforms. Post analytics (views, likes, shares, comments) are tracked per post below. This is not connected to your personal social media accounts.</p>
         </div>
     </div>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
         <div>
             <h4 style="margin:0 0 4px;color:#0A0F1A;">Tokenomic Social Channels</h4>
-            <p style="color:#5a8299;margin:0;font-size:0.85rem;">Manage and schedule content across Tokenomic's official profiles</p>
+            <p style="color:#4f7287;margin:0;font-size:0.85rem;">Manage and schedule content across Tokenomic's official profiles</p>
         </div>
         <button class="dash-btn dash-btn-primary" @click="showComposer=!showComposer">+ New Post</button>
     </div>
@@ -95,7 +95,7 @@ permalink: /social/
                 <div style="padding:16px 12px;border:1px solid #e8ecef;border-radius:10px;text-align:center;transition:all 0.2s;background:#fff;">
                     <i class="fab fa-facebook" style="font-size:1.5rem;color:#1877F2;margin-bottom:8px;display:block;"></i>
                     <div style="font-size:0.75rem;font-weight:600;color:#0A0F1A;">Facebook</div>
-                    <div style="font-size:0.7rem;color:#5a8299;">@tknmic</div>
+                    <div style="font-size:0.7rem;color:#4f7287;">@tknmic</div>
                 </div>
             </a>
         </div>
@@ -104,7 +104,7 @@ permalink: /social/
                 <div style="padding:16px 12px;border:1px solid #e8ecef;border-radius:10px;text-align:center;transition:all 0.2s;background:#fff;">
                     <i class="fab fa-twitter" style="font-size:1.5rem;color:#1DA1F2;margin-bottom:8px;display:block;"></i>
                     <div style="font-size:0.75rem;font-weight:600;color:#0A0F1A;">Twitter / X</div>
-                    <div style="font-size:0.7rem;color:#5a8299;">@tknmic</div>
+                    <div style="font-size:0.7rem;color:#4f7287;">@tknmic</div>
                 </div>
             </a>
         </div>
@@ -113,7 +113,7 @@ permalink: /social/
                 <div style="padding:16px 12px;border:1px solid #e8ecef;border-radius:10px;text-align:center;transition:all 0.2s;background:#fff;">
                     <i class="fab fa-linkedin" style="font-size:1.5rem;color:#0077B5;margin-bottom:8px;display:block;"></i>
                     <div style="font-size:0.75rem;font-weight:600;color:#0A0F1A;">LinkedIn</div>
-                    <div style="font-size:0.7rem;color:#5a8299;">tknmic</div>
+                    <div style="font-size:0.7rem;color:#4f7287;">tknmic</div>
                 </div>
             </a>
         </div>
@@ -122,7 +122,7 @@ permalink: /social/
                 <div style="padding:16px 12px;border:1px solid #e8ecef;border-radius:10px;text-align:center;transition:all 0.2s;background:#fff;">
                     <i class="fab fa-instagram" style="font-size:1.5rem;color:#E1306C;margin-bottom:8px;display:block;"></i>
                     <div style="font-size:0.75rem;font-weight:600;color:#0A0F1A;">Instagram</div>
-                    <div style="font-size:0.7rem;color:#5a8299;">@tknmic</div>
+                    <div style="font-size:0.7rem;color:#4f7287;">@tknmic</div>
                 </div>
             </a>
         </div>
@@ -131,7 +131,7 @@ permalink: /social/
                 <div style="padding:16px 12px;border:1px solid #e8ecef;border-radius:10px;text-align:center;transition:all 0.2s;background:#fff;">
                     <i class="fab fa-youtube" style="font-size:1.5rem;color:#FF0000;margin-bottom:8px;display:block;"></i>
                     <div style="font-size:0.75rem;font-weight:600;color:#0A0F1A;">YouTube</div>
-                    <div style="font-size:0.7rem;color:#5a8299;">@tknmic</div>
+                    <div style="font-size:0.7rem;color:#4f7287;">@tknmic</div>
                 </div>
             </a>
         </div>
@@ -140,7 +140,7 @@ permalink: /social/
                 <div style="padding:16px 12px;border:1px solid #e8ecef;border-radius:10px;text-align:center;transition:all 0.2s;background:#fff;">
                     <i class="fab fa-tiktok" style="font-size:1.5rem;color:#010101;margin-bottom:8px;display:block;"></i>
                     <div style="font-size:0.75rem;font-weight:600;color:#0A0F1A;">TikTok</div>
-                    <div style="font-size:0.7rem;color:#5a8299;">@tknmic</div>
+                    <div style="font-size:0.7rem;color:#4f7287;">@tknmic</div>
                 </div>
             </a>
         </div>
@@ -149,10 +149,10 @@ permalink: /social/
     <div x-show="showComposer" x-transition class="dash-card">
         <h4>Compose Post for @tknmic</h4>
         <div style="display:flex;flex-direction:column;gap:14px;">
-            <div><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Content</label><textarea x-model="newPost.content" class="dash-input" rows="4" placeholder="Write your post for Tokenomic's social channels..."></textarea></div>
+            <div><label style="display:block;color:#4f7287;font-size:0.85rem;margin-bottom:4px;">Content</label><textarea x-model="newPost.content" class="dash-input" rows="4" placeholder="Write your post for Tokenomic's social channels..."></textarea></div>
             <div class="row clearfix">
                 <div class="col-md-6">
-                    <label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Publish to</label>
+                    <label style="display:block;color:#4f7287;font-size:0.85rem;margin-bottom:4px;">Publish to</label>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;">
                         <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="facebook" style="accent-color:#1877F2;" /> <span style="color:#1877F2;font-weight:600;font-size:0.85rem;">Facebook</span></label>
                         <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="twitter" style="accent-color:#1DA1F2;" /> <span style="color:#1DA1F2;font-weight:600;font-size:0.85rem;">Twitter</span></label>
@@ -162,8 +162,8 @@ permalink: /social/
                         <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="tiktok" style="accent-color:#010101;" /> <span style="color:#010101;font-weight:600;font-size:0.85rem;">TikTok</span></label>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-3 col-sm-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Date</label><input x-model="newPost.date" type="date" class="dash-input" /></div>
-                <div class="col-lg-3 col-md-3 col-sm-6"><label style="display:block;color:#5a8299;font-size:0.85rem;margin-bottom:4px;">Time</label><input x-model="newPost.time" type="time" class="dash-input" /></div>
+                <div class="col-lg-3 col-md-3 col-sm-6"><label for="newpost-date" style="display:block;color:#4f7287;font-size:0.85rem;margin-bottom:4px;">Date</label><input id="newpost-date" x-model="newPost.date" type="date" class="dash-input" /></div>
+                <div class="col-lg-3 col-md-3 col-sm-6"><label for="newpost-time" style="display:block;color:#4f7287;font-size:0.85rem;margin-bottom:4px;">Time</label><input id="newpost-time" x-model="newPost.time" type="time" class="dash-input" /></div>
             </div>
             <div style="display:flex;gap:8px;">
                 <button class="dash-btn dash-btn-primary" @click="schedulePost()">Schedule</button>
@@ -190,12 +190,12 @@ permalink: /social/
                         <p style="margin:0 0 8px;color:#0A0F1A;font-size:0.92rem;line-height:1.5;" x-text="post.content"></p>
                         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
                             <template x-for="p in post.platforms" :key="p">
-                                <span style="display:inline-flex;align-items:center;gap:3px;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;background:#f0f2f5;color:#5a8299;">
+                                <span style="display:inline-flex;align-items:center;gap:3px;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;background:#f0f2f5;color:#4f7287;">
                                     <i class="fab" :class="'fa-'+p" style="font-size:0.7rem;"></i>
                                     <span x-text="p.charAt(0).toUpperCase()+p.slice(1)"></span>
                                 </span>
                             </template>
-                            <span style="font-size:0.78rem;color:#8899A6;margin-left:6px;" x-text="post.scheduled_at ? 'Scheduled: '+post.scheduled_at : 'Posted immediately'"></span>
+                            <span style="font-size:0.78rem;color:#646f79;margin-left:6px;" x-text="post.scheduled_at ? 'Scheduled: '+post.scheduled_at : 'Posted immediately'"></span>
                         </div>
                     </div>
                     <div style="flex-shrink:0;">
@@ -204,30 +204,30 @@ permalink: /social/
                 </div>
                 <template x-if="post.status==='published' && post.analytics">
                     <div style="display:flex;gap:20px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #f0f2f5;">
-                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#5a8299;" title="Views">
-                            <i class="fas fa-eye" style="color:#8899A6;font-size:0.75rem;"></i>
+                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#4f7287;" title="Views">
+                            <i class="fas fa-eye" style="color:#646f79;font-size:0.75rem;"></i>
                             <span x-text="post.analytics.views.toLocaleString()"></span>
-                            <span style="color:#8899A6;">views</span>
+                            <span style="color:#646f79;">views</span>
                         </div>
-                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#5a8299;" title="Likes">
+                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#4f7287;" title="Likes">
                             <i class="fas fa-heart" style="color:#e53e3e;font-size:0.75rem;"></i>
                             <span x-text="post.analytics.likes.toLocaleString()"></span>
-                            <span style="color:#8899A6;">likes</span>
+                            <span style="color:#646f79;">likes</span>
                         </div>
-                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#5a8299;" title="Shares">
+                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#4f7287;" title="Shares">
                             <i class="fas fa-retweet" style="color:#1DA1F2;font-size:0.75rem;"></i>
                             <span x-text="post.analytics.shares.toLocaleString()"></span>
-                            <span style="color:#8899A6;">shares</span>
+                            <span style="color:#646f79;">shares</span>
                         </div>
-                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#5a8299;" title="Comments">
+                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#4f7287;" title="Comments">
                             <i class="fas fa-comment" style="color:#0077B5;font-size:0.75rem;"></i>
                             <span x-text="post.analytics.comments.toLocaleString()"></span>
-                            <span style="color:#8899A6;">comments</span>
+                            <span style="color:#646f79;">comments</span>
                         </div>
-                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#5a8299;" title="Engagement Rate">
+                        <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:#4f7287;" title="Engagement Rate">
                             <i class="fas fa-chart-line" style="color:#38a169;font-size:0.75rem;"></i>
                             <span x-text="post.analytics.engagement+'%'"></span>
-                            <span style="color:#8899A6;">engagement</span>
+                            <span style="color:#646f79;">engagement</span>
                         </div>
                     </div>
                 </template>
@@ -239,7 +239,7 @@ permalink: /social/
                 </template>
             </div>
         </template>
-        <div x-show="filteredPosts().length===0" style="text-align:center;padding:40px 20px;color:#8899A6;">
+        <div x-show="filteredPosts().length===0" style="text-align:center;padding:40px 20px;color:#646f79;">
             <p>No posts found for this filter.</p>
         </div>
     </div>

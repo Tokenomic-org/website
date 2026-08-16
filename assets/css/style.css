@@ -250,7 +250,7 @@ figure{
         display:block;
         font-size: 14px;
         line-height: 30px;
-        color: #5a8299;
+        color: #4f7287;
         font-weight: 700;
         padding: 13px 40px;
         background: none;
@@ -4295,7 +4295,7 @@ img.lazy-image.loaded{
         line-height:30px;
         padding:15px 30px;
         cursor:pointer;
-        color:#5a8299;
+        color:#4f7287;
         font-weight:700;
         font-size:16px;
         display:inline-block;
@@ -5791,7 +5791,10 @@ img.lazy-image.loaded{
         position: relative;
         display: block;
         width:100%;
-        color:#ffffff;
+        /* #fff on #ff4646 is 3.37:1 (fails WCAG AA). Background is
+           untouched; label switches to the dark-navy brand token, which
+           clears 5.7:1. */
+        color:#0A0F1A;
         background: #ff4646;
         font-weight: 600;
         text-transform: uppercase;
@@ -5809,11 +5812,14 @@ img.lazy-image.loaded{
         display: block;
         padding-top: 15px;
         text-align: center;
-        color: #5b5daf;
+        /* #5b5daf on the footer's #000e22 panel is 3.34:1 (fails WCAG AA).
+           #7476bb is the minimal hue-preserving lightening that clears
+           4.66:1. */
+        color: #7476bb;
 }
 
 .main-footer .get-link a{
-        color: #5b5daf;
+        color: #7476bb;
     -webkit-transition: all 300ms ease;
     -ms-transition: all 300ms ease;
     -o-transition: all 300ms ease;
@@ -11073,7 +11079,7 @@ img.lazy-image.loaded{
 .news-block-five .post-meta{
         padding-top: 15px;
         font-size:15px;
-        color: #5a8299;
+        color: #4f7287;
         line-height:24px;       
 }
 
@@ -11088,7 +11094,7 @@ img.lazy-image.loaded{
 }
 
 .news-block-five .post-meta li a{
-        color: #5a8299; 
+        color: #4f7287; 
 }
 
 .news-block-five .post-meta li a:hover{
@@ -11711,12 +11717,12 @@ img.lazy-image.loaded{
 
 .sidebar .tweets-box .feed .text{
         font-size: 12px;
-        color: #5a8299;
+        color: #4f7287;
         line-height: 22px;
 }
 
 .sidebar .tweets-box .feed .text a{
-        color: #5a8299;
+        color: #4f7287;
 }
 
 .sidebar .tweets-box .feed .date{
@@ -11882,7 +11888,7 @@ img.lazy-image.loaded{
         text-align:center;
         font-size:12px;
         font-weight: 400;
-        color:#5a8299;
+        color:#4f7287;
         text-transform:uppercase;
         border-radius:15px;
         transition:all 300ms ease;
@@ -12004,7 +12010,7 @@ img.lazy-image.loaded{
         position: relative;
         font-size: 12px;
         line-height: 24px;
-        color: #5a8299;
+        color: #4f7287;
 }
 
 .sidebar .recent-posts .post-date .icon{
@@ -12036,7 +12042,7 @@ img.lazy-image.loaded{
         min-height: 48px;
         line-height: 46px;
         text-align: center;
-        color: #5a8299;
+        color: #4f7287;
         border: 1px solid rgba(0,0,0,0.10);
         border-radius: 2px;
         margin: 0 5px 0 0;
@@ -12053,7 +12059,7 @@ img.lazy-image.loaded{
         font-size:14px;
         height:46px;
         min-width:46px;
-        color:#5a8299;
+        color:#4f7287;
         font-weight:400;
         text-align:center;
         -webkit-transition:all 300ms ease;
@@ -12159,7 +12165,7 @@ img.lazy-image.loaded{
 .news-post-detail .post-meta{
         padding-top: 15px;
         font-size:15px;
-        color: #5a8299;
+        color: #4f7287;
         line-height:24px;       
 }
 
@@ -12174,7 +12180,7 @@ img.lazy-image.loaded{
 }
 
 .news-post-detail .post-meta li a{
-        color: #5a8299; 
+        color: #4f7287; 
 }
 
 .news-post-detail .post-meta li a:hover{
@@ -12213,7 +12219,7 @@ img.lazy-image.loaded{
         position: absolute;
         left: 0;
         top: 0;
-        color: #5a8299;
+        color: #4f7287;
 }
 
 .news-post-detail .text-block.no-border{
@@ -12455,7 +12461,7 @@ img.lazy-image.loaded{
 }
 
 .related-post .related-meta li a{
-        color: #5a8299; 
+        color: #4f7287; 
 }
 
 .related-post .related-meta li a:hover{
@@ -12465,7 +12471,7 @@ img.lazy-image.loaded{
 
 .related-post .related-meta li .icon{
         padding-right: 5px;
-        color: #5a8299;
+        color: #4f7287;
 }
 
 .related-post .lower .text{
@@ -12503,7 +12509,7 @@ img.lazy-image.loaded{
         font-size: 12px;
         text-transform: uppercase;
         font-weight: 700;
-        color: #5a8299;
+        color: #4f7287;
 }
 
 .news-post-detail .author-box h3{
@@ -12603,7 +12609,7 @@ img.lazy-image.loaded{
         position: relative;
         padding: 0;
         font-size: 14px;
-        color: #5a8299;
+        color: #4f7287;
 }
 
 .comments-area .comment-box .reply-link{
@@ -12621,7 +12627,7 @@ img.lazy-image.loaded{
         border: 2px solid rgba(0,0,0,0.07);
         font-size: 14px;
         font-family: 'Karla', sans-serif;
-        color:#5a8299;
+        color:#4f7287;
         font-weight: 700;
         text-transform: capitalize;
         border-radius: 20px;
@@ -13167,3 +13173,15 @@ img.lazy-image.loaded{
 .header-style-one .other-links .link-box a {
   color: #ffffff;
 }
+
+/* --------------------------------------------------------------------------
+   Accessibility: muted-grey contrast (WCAG 2.1 AA, 4.5:1)
+   --------------------------------------------------------------------------
+   Bootstrap ships `.text-muted { color:#6c757d!important }`. That clears AA
+   on white (4.69:1) but not on our light-grey surfaces such as the #efefef
+   tab strip, where it lands at 4.07:1. Darkening the same hue to #656d75
+   gives 4.57:1 on #efefef and 5.35:1 on white. `!important` is required to
+   beat Bootstrap's own utility, and this rule must stay after bootstrap.css
+   in the cascade (see _layouts/default.html).
+   -------------------------------------------------------------------------- */
+.text-muted { color: #656d75 !important; }

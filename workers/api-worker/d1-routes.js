@@ -46,6 +46,7 @@ import { verifyMessage } from 'viem';
 import { readSessionFromCookie } from './siwe.js';
 import { isSubscriptionActive } from './subscription.js';
 import { sendEmail, logEmail, tplWelcome } from './mail.js';
+import { b64urlEncode, b64urlDecode } from './base64url.js';
 
 // ---------- helpers ----------
 
@@ -69,19 +70,7 @@ function dbReady(c) {
 
 // ---------- JWT (HS256 over Web Crypto) ----------
 
-function b64url(buf) {
-  const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
-  let s = '';
-  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
-  return btoa(s).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-}
-function b64urlDecode(str) {
-  const s = str.replace(/-/g, '+').replace(/_/g, '/') + '=='.slice((str.length + 3) % 4);
-  const bin = atob(s);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
+const b64url = b64urlEncode;
 async function hmacKey(secret) {
   return crypto.subtle.importKey(
     'raw',

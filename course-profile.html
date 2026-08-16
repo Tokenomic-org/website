@@ -23,10 +23,10 @@ permalink: /course/
 .cp2-meta i { color: #f97316; margin-right: 6px; }
 .cp2-buy { background: #fff; color: #0A0F1A; border-radius: 12px; padding: 24px; }
 .cp2-price { font-size: 2.4rem; font-weight: 800; color: #f97316; line-height: 1; margin-bottom: 4px; }
-.cp2-price small { font-size: 0.95rem; color: #5a8299; font-weight: 600; margin-left: 6px; }
+.cp2-price small { font-size: 0.95rem; color: #4f7287; font-weight: 600; margin-left: 6px; }
 .cp2-buy-btn { display: block; width: 100%; background: #f97316; color: #fff; text-align: center; padding: 14px; border-radius: 10px; text-decoration: none; font-weight: 700; margin-top: 16px; border: none; cursor: pointer; font-size: 1rem; }
 .cp2-buy-btn:hover { background: #ea6510; color: #fff; }
-.cp2-buy-note { color: #5a8299; font-size: 0.82rem; margin-top: 10px; text-align: center; }
+.cp2-buy-note { color: #4f7287; font-size: 0.82rem; margin-top: 10px; text-align: center; }
 .cp2-body { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
 @media (max-width: 768px) { .cp2-body { grid-template-columns: 1fr; } }
 .cp2-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 16px; }
@@ -37,14 +37,14 @@ permalink: /course/
 .cp2-edu { display: flex; align-items: center; gap: 12px; }
 .cp2-edu-avatar { width: 48px; height: 48px; border-radius: 50%; background: #f97316; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; }
 .cp2-edu-name { font-weight: 700; color: #0A0F1A; }
-.cp2-edu-role { color: #5a8299; font-size: 0.85rem; }
+.cp2-edu-role { color: #4f7287; font-size: 0.85rem; }
 .cp2-mod { border:1px solid #e8eef3; border-radius:10px; margin-bottom:10px; background:#fff; }
 .cp2-mod-head { display:flex; align-items:center; gap:14px; padding:14px 16px; cursor:pointer; user-select:none; }
 .cp2-mod-head:hover { background:#fafbfc; }
 .cp2-mod-num { width:32px; height:32px; border-radius:8px; background:#f97316; color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .cp2-mod-title { flex:1; font-weight:600; color:#0A0F1A; min-width:0; }
-.cp2-mod-meta { color:#5a8299; font-size:0.82rem; }
-.cp2-mod-toggle { color:#5a8299; font-size:0.85rem; transition:transform 0.2s; }
+.cp2-mod-meta { color:#4f7287; font-size:0.82rem; }
+.cp2-mod-toggle { color:#4f7287; font-size:0.85rem; transition:transform 0.2s; }
 .cp2-mod.open .cp2-mod-toggle { transform: rotate(180deg); }
 .cp2-mod-body { display:none; padding:0 16px 18px; border-top:1px solid #f0f2f5; }
 .cp2-mod.open .cp2-mod-body { display:block; }
@@ -57,7 +57,7 @@ permalink: /course/
 .cp2-mod-md code { background:#f1f5f9; padding:1px 5px; border-radius:4px; font-size:0.88em; }
 .cp2-mod-md pre code { background:transparent; padding:0; }
 .cp2-mod-md a { color:#f97316; text-decoration:underline; }
-.cp2-mod-md blockquote { border-left:3px solid #f97316; padding:6px 14px; color:#5a8299; margin:0.8em 0; background:#f8fafb; }
+.cp2-mod-md blockquote { border-left:3px solid #f97316; padding:6px 14px; color:#4f7287; margin:0.8em 0; background:#f8fafb; }
 .cp2-mod-md img { max-width:100%; border-radius:8px; }
 .cp2-mod-md table { border-collapse:collapse; margin:0.8em 0; }
 .cp2-mod-md th, .cp2-mod-md td { border:1px solid #e2e8f0; padding:6px 10px; }
@@ -104,7 +104,7 @@ permalink: /course/
         </div>
 
         <div class="cp2-card" id="cp2-modules-card" style="display:none;">
-          <h3><i class="fas fa-list-ol" style="color:#f97316;"></i> Course Modules <small id="cp2-modules-count" style="color:#5a8299;font-weight:500;font-size:0.9rem;"></small></h3>
+          <h3><i class="fas fa-list-ol" style="color:#f97316;"></i> Course Modules <small id="cp2-modules-count" style="color:#4f7287;font-weight:500;font-size:0.9rem;"></small></h3>
           <div id="cp2-modules" class="cp2-modules"></div>
         </div>
       </div>
@@ -190,7 +190,7 @@ permalink: /course/
       // endpoint — no UID is ever embedded in the DOM, and we never fall
       // back to an unsigned iframe even on transient API errors.
       if (m.has_video || m.video_uid) {
-        html += '<div class="cp2-mod-video-slot" data-mid="' + (m.id || '') + '" style="width:100%;aspect-ratio:16/9;background:#0A0F1A;border-radius:8px;margin-top:12px;display:flex;align-items:center;justify-content:center;color:#5a8299;font-size:0.85rem;">Loading video…</div>';
+        html += '<div class="cp2-mod-video-slot" data-mid="' + (m.id || '') + '" style="width:100%;aspect-ratio:16/9;background:#0A0F1A;border-radius:8px;margin-top:12px;display:flex;align-items:center;justify-content:center;color:#4f7287;font-size:0.85rem;">Loading video…</div>';
       }
       html += '<div class="cp2-mod-md">' + renderModuleMd(m.body_md) + '</div>';
       body.innerHTML = html;
@@ -326,10 +326,10 @@ permalink: /course/
       '<div class="cp2-edu-role">Educator</div></div>';
 
     var stats = '';
-    stats += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5;"><span style="color:#5a8299;">Price</span><strong>' + (price > 0 ? '$' + price + ' USDC' : 'Free') + '</strong></div>';
-    stats += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5;"><span style="color:#5a8299;">Modules</span><strong>' + (course.modules_count || 0) + '</strong></div>';
-    stats += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5;"><span style="color:#5a8299;">Hours</span><strong>' + (course.estimated_hours || 0) + 'h</strong></div>';
-    stats += '<div style="display:flex;justify-content:space-between;padding:8px 0;"><span style="color:#5a8299;">Enrolled</span><strong>' + (course.enrolled_count || 0) + '</strong></div>';
+    stats += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5;"><span style="color:#4f7287;">Price</span><strong>' + (price > 0 ? '$' + price + ' USDC' : 'Free') + '</strong></div>';
+    stats += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5;"><span style="color:#4f7287;">Modules</span><strong>' + (course.modules_count || 0) + '</strong></div>';
+    stats += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5;"><span style="color:#4f7287;">Hours</span><strong>' + (course.estimated_hours || 0) + 'h</strong></div>';
+    stats += '<div style="display:flex;justify-content:space-between;padding:8px 0;"><span style="color:#4f7287;">Enrolled</span><strong>' + (course.enrolled_count || 0) + '</strong></div>';
     document.getElementById('cp2-stats').innerHTML = stats;
 
     // Render modules below "What you'll learn".

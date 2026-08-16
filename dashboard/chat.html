@@ -19,11 +19,11 @@ permalink: /chat/
                         <div class="sidebar-section-label">Main</div>
                         <a href="/dashboard/" class="dash-nav-item"><span class="flaticon-home-1"></span> Dashboard</a>
                         <a href="/communities/" data-dash="communities" class="dash-nav-item"><span class="flaticon-user-3"></span> Communities</a>
-                        <a href="/my-courses/" data-dash="courses" class="dash-nav-item"><span class="flaticon-notebook"></span> Courses</a>
+                        <a href="/dashboard/courses/" data-dash="courses" class="dash-nav-item"><span class="flaticon-notebook"></span> Courses</a>
                         <a href="/events/" data-dash="events" class="dash-nav-item"><span class="flaticon-calendar"></span> Events</a>
                         <div class="sidebar-section-label">Finance</div>
-                        <a href="/revenue/" data-dash="revenue" class="dash-nav-item"><span class="flaticon-money"></span> Revenue</a>
-                        <a href="/bookings/" data-dash="bookings" class="dash-nav-item"><span class="flaticon-calendar"></span> Bookings</a>
+                        <a href="/dashboard/wallet/" data-dash="revenue" class="dash-nav-item"><span class="flaticon-money"></span> Wallet</a>
+                        <a href="/dashboard/bookings/" data-dash="bookings" class="dash-nav-item"><span class="flaticon-calendar"></span> Bookings</a>
                         <div class="sidebar-section-label">Content</div>
                         <a href="/chat/" data-dash="chat" class="dash-nav-item active"><span class="flaticon-speech-bubble"></span> Chat</a>
                         <a href="/articles/" data-dash="articles" class="dash-nav-item"><span class="flaticon-edit"></span> Articles</a>
@@ -33,7 +33,7 @@ permalink: /chat/
                         </a>
                         <div class="sidebar-section-label">Progress</div>
                         <a href="/leaderboard/" data-dash="leaderboard" class="dash-nav-item"><span class="flaticon-trophy"></span> Leaderboard</a>
-                        <a href="/profile/" data-dash="profile" class="dash-nav-item"><span class="flaticon-user-3"></span> Profile</a>
+                        <a href="/dashboard/profile/" data-dash="profile" class="dash-nav-item"><span class="flaticon-user-3"></span> Profile</a>
                     </nav>
                 </div>
             </div>
@@ -44,18 +44,18 @@ permalink: /chat/
                         <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
                     </div>
                     <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
-                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access community chat.</p>
+                    <p style="color:#4f7287;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to access community chat.</p>
                     <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" data-tkn-action="connect">Login with Wallet</button>
                 </div>
 
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="chatPage()" x-init="init()">
 
-                        <div x-show="loading" style="background:#fff;border-radius:12px;padding:60px;text-align:center;color:#5a8299;">Loading channels…</div>
+                        <div x-show="loading" style="background:#fff;border-radius:12px;padding:60px;text-align:center;color:#4f7287;">Loading channels…</div>
 
                         <div x-show="!loading && channels.length === 0" style="background:#fff;border-radius:12px;padding:60px;text-align:center;">
                             <h4 style="color:#0A0F1A;margin-bottom:8px;">No communities yet</h4>
-                            <p style="color:#5a8299;margin-bottom:18px;">There are no public communities to chat in. Browse the directory or create one.</p>
+                            <p style="color:#4f7287;margin-bottom:18px;">There are no public communities to chat in. Browse the directory or create one.</p>
                             <a href="/communities/" class="theme-btn btn-style-one" style="border-radius:8px;padding:12px 28px;">Browse communities</a>
                         </div>
 
@@ -71,7 +71,7 @@ permalink: /chat/
                                                 <div style="display:flex;justify-content:space-between;align-items:center;">
                                                     <strong style="font-size:0.9rem;" x-text="'#' + ch.name"></strong>
                                                 </div>
-                                                <small style="color:#5a8299;" x-text="ch.description ? ch.description.slice(0,60) : ''"></small>
+                                                <small style="color:#4f7287;" x-text="ch.description ? ch.description.slice(0,60) : ''"></small>
                                             </div>
                                         </template>
                                     </div>
@@ -83,22 +83,22 @@ permalink: /chat/
                                     <div x-show="activeChannel" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #f0f2f5;">
                                         <div>
                                             <h5 style="margin:0;" x-text="activeChannel ? '#' + activeChannel.name : ''"></h5>
-                                            <small style="color:#5a8299;" x-text="activeChannel && activeChannel.description ? activeChannel.description : ''"></small>
+                                            <small style="color:#4f7287;" x-text="activeChannel && activeChannel.description ? activeChannel.description : ''"></small>
                                         </div>
                                         <span :class="connState === 'open' ? 'dash-badge dash-badge-success' : 'dash-badge dash-badge-warning'"
                                               x-text="connStateLabel"></span>
                                     </div>
 
                                     <div style="flex:1;overflow-y:auto;padding:8px 0;" id="chatMessages">
-                                        <div x-show="loadingHistory" style="text-align:center;color:#5a8299;padding:20px;">Loading history…</div>
-                                        <div x-show="!loadingHistory && messages.length === 0" style="text-align:center;color:#5a8299;padding:30px;">No messages yet — say hello.</div>
+                                        <div x-show="loadingHistory" style="text-align:center;color:#4f7287;padding:20px;">Loading history…</div>
+                                        <div x-show="!loadingHistory && messages.length === 0" style="text-align:center;color:#4f7287;padding:30px;">No messages yet — say hello.</div>
                                         <template x-for="msg in messages" :key="msg.id">
                                             <div style="margin-bottom:14px;">
                                                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
                                                     <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:#fff;background:#ff6000;"
                                                          x-text="(msg.display_name || msg.author_wallet || '?').charAt(msg.display_name ? 0 : 2).toUpperCase()"></div>
                                                     <strong style="font-size:0.85rem;" x-text="msg.display_name || shortAddr(msg.author_wallet)"></strong>
-                                                    <small style="color:#5a8299;" x-text="formatTime(msg.created_at)"></small>
+                                                    <small style="color:#4f7287;" x-text="formatTime(msg.created_at)"></small>
                                                 </div>
                                                 <p style="margin:0 0 0 36px;color:#0A0F1A;font-size:0.9rem;white-space:pre-wrap;word-break:break-word;" x-text="msg.body"></p>
                                             </div>

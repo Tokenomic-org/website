@@ -49,7 +49,11 @@
     font-weight:600;
     border-radius:30px;
     background:#ff6000;
-    color:#fff;
+    /* #fff on #ff6000 is 3.03:1 (fails WCAG AA's 4.5:1) — the brand accent
+       itself stays untouched; only the label switches to the site's own
+       dark-navy token (#0A0F1A, the platform's second brand color) which
+       clears 6.3:1 with headroom, including on the #e55500 hover state. */
+    color:#0A0F1A;
     text-decoration:none;
     white-space:nowrap;
     letter-spacing:0.5px;
@@ -221,7 +225,7 @@
                 <div class="other-links clearfix">
                     <!--Search Btn-->
                     <div class="search-btn">
-                        <button type="button" class="theme-btn search-toggler"><span class="icon flaticon-loupe-2"></span></button>
+                        <button type="button" class="theme-btn search-toggler" aria-label="Open search"><span class="icon flaticon-loupe-2" aria-hidden="true"></span></button>
                     </div>
                     <!--Connect Wallet Btn (desktop only)-->
                     <div class="wallet-btn-header">
