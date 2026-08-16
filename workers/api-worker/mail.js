@@ -155,7 +155,7 @@ export async function logEmail(env, { recipient, template, subject, status, erro
 
 // ─────────────────────────────────────────────── Templates
 
-const FOOTER = `<hr style="border:none;border-top:1px solid #e8eef5;margin:32px 0 16px"><p style="color:#5a8299;font-size:12px;margin:0">Tokenomic — On-chain learning on Base. <a href="https://tokenomic.org" style="color:#ff6000">tokenomic.org</a></p>`;
+const FOOTER = `<hr style="border:none;border-top:1px solid #e8eef5;margin:32px 0 16px"><p style="color:#4f7287;font-size:12px;margin:0">Tokenomic — On-chain learning on Base. <a href="https://tokenomic.org" style="color:#ff6000">tokenomic.org</a></p>`;
 
 export function tplEnrollmentConfirmation({ courseTitle, courseSlug, learnerName }) {
   const link = `https://tokenomic.org/course/?slug=${encodeURIComponent(courseSlug)}`;
@@ -191,7 +191,7 @@ ${txHash ? 'On-chain mint: https://basescan.org/tx/' + txHash : ''}
     <h2 style="color:#0A0F1A;margin:0 0 12px">🎓 Certificate ready</h2>
     <p>Congratulations${learnerName ? ', ' + escHtml(learnerName) : ''}! You completed <strong>${escHtml(courseTitle)}</strong>.</p>
     <p style="margin:24px 0"><a href="${escHtml(pdfUrl)}" style="background:#00C853;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Download PDF certificate →</a></p>
-    ${txHash ? `<p style="font-size:13px;color:#5a8299">On-chain mint: <a href="https://basescan.org/tx/${escHtml(txHash)}" style="color:#ff6000">${escHtml(txHash.slice(0,10))}…</a></p>` : ''}
+    ${txHash ? `<p style="font-size:13px;color:#4f7287">On-chain mint: <a href="https://basescan.org/tx/${escHtml(txHash)}" style="color:#ff6000">${escHtml(txHash.slice(0,10))}…</a></p>` : ''}
     ${FOOTER}
   </div>`;
   return { subject, text, html };
@@ -257,7 +257,7 @@ ${cancelUrl ? 'Reschedule / cancel: ' + cancelUrl : ''}
     <h2 style="color:#0A0F1A;margin:0 0 12px">Booking confirmed ✅</h2>
     <p>Your session with <strong>${escHtml(expertName || 'your expert')}</strong> is locked in for <strong>${escHtml(when)}</strong>.</p>
     ${joinUrl ? `<p style="margin:20px 0"><a href="${escHtml(joinUrl)}" style="background:#ff6000;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Join meeting →</a></p>` : ''}
-    ${cancelUrl ? `<p style="font-size:13px;color:#5a8299">Need to change it? <a href="${escHtml(cancelUrl)}" style="color:#ff6000">Reschedule or cancel</a>.</p>` : ''}
+    ${cancelUrl ? `<p style="font-size:13px;color:#4f7287">Need to change it? <a href="${escHtml(cancelUrl)}" style="color:#ff6000">Reschedule or cancel</a>.</p>` : ''}
     ${FOOTER}
   </div>`;
   return { subject, text, html };

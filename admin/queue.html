@@ -30,18 +30,18 @@ permalink: /admin/queue/
                         <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
                     </div>
                     <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
-                    <p style="color:#5a8299;margin-bottom:24px;max-width:400px;">Sign in with the admin wallet to access the review queue.</p>
+                    <p style="color:#4f7287;margin-bottom:24px;max-width:400px;">Sign in with the admin wallet to access the review queue.</p>
                     <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" data-tkn-action="connect">Login with Wallet</button>
                 </div>
 
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="adminQueue()" x-init="init()">
 
-                        <div x-show="!loaded" style="text-align:center;padding:40px;color:#5a8299;">Loading queue…</div>
+                        <div x-show="!loaded" style="text-align:center;padding:40px;color:#4f7287;">Loading queue…</div>
 
                         <div x-show="loaded && !isAdmin" class="dash-card" style="text-align:center;padding:40px;">
                             <h3>Admin only</h3>
-                            <p style="color:#5a8299;">This wallet does not have admin access.</p>
+                            <p style="color:#4f7287;">This wallet does not have admin access.</p>
                         </div>
 
                         <div x-show="loaded && isAdmin">
@@ -56,7 +56,7 @@ permalink: /admin/queue/
                                     <button @click="active = t.key"
                                             :style="active === t.key
                                                 ? 'border:0;background:none;padding:10px 16px;border-bottom:3px solid #ff6000;color:#0A0F1A;font-weight:700;'
-                                                : 'border:0;background:none;padding:10px 16px;border-bottom:3px solid transparent;color:#5a8299;'">
+                                                : 'border:0;background:none;padding:10px 16px;border-bottom:3px solid transparent;color:#4f7287;'">
                                         <span x-text="t.label"></span>
                                         <span style="margin-left:6px;background:#fff5f0;color:#ff6000;border-radius:10px;padding:2px 8px;font-size:0.75rem;font-weight:700;"
                                               x-text="counts[t.key] || 0"></span>
@@ -66,7 +66,7 @@ permalink: /admin/queue/
 
                             <!-- Applications -->
                             <div x-show="active === 'applications'">
-                                <div x-show="!items.applications || !items.applications.length" class="dash-card" style="text-align:center;color:#5a8299;padding:30px;">No pending applications.</div>
+                                <div x-show="!items.applications || !items.applications.length" class="dash-card" style="text-align:center;color:#4f7287;padding:30px;">No pending applications.</div>
                                 <template x-for="a in items.applications" :key="a.id">
                                     <div class="dash-card" style="margin-bottom:14px;">
                                         <div style="display:flex;gap:14px;justify-content:space-between;flex-wrap:wrap;">
@@ -74,10 +74,10 @@ permalink: /admin/queue/
                                                 <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
                                                     <strong x-text="a.role_requested === 'consultant' ? 'Consultant' : 'Educator'"></strong>
                                                     <code style="background:#f5f7fa;padding:2px 6px;border-radius:4px;font-size:0.8rem;" x-text="shortAddr(a.applicant_wallet)"></code>
-                                                    <small style="color:#5a8299;" x-text="formatDate(a.created_at)"></small>
+                                                    <small style="color:#4f7287;" x-text="formatDate(a.created_at)"></small>
                                                 </div>
-                                                <p style="color:#5a8299;white-space:pre-wrap;" x-text="a.bio"></p>
-                                                <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:0.85rem;color:#5a8299;margin-top:6px;">
+                                                <p style="color:#4f7287;white-space:pre-wrap;" x-text="a.bio"></p>
+                                                <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:0.85rem;color:#4f7287;margin-top:6px;">
                                                     <span x-show="a.expertise"><strong>Expertise:</strong> <span x-text="prettyJson(a.expertise)"></span></span>
                                                     <span x-show="safeUrl(a.sample_url)"><strong>Sample:</strong> <a :href="safeUrl(a.sample_url)" target="_blank" rel="noopener noreferrer" x-text="a.sample_url"></a></span>
                                                     <span x-show="safeUrl(a.portfolio_url)"><strong>Portfolio:</strong> <a :href="safeUrl(a.portfolio_url)" target="_blank" rel="noopener noreferrer" x-text="a.portfolio_url"></a></span>
@@ -98,12 +98,12 @@ permalink: /admin/queue/
                             <!-- Content tabs (courses / communities / articles) share a layout -->
                             <template x-for="kind in ['courses','communities','articles']" :key="kind">
                                 <div x-show="active === kind">
-                                    <div x-show="!items[kind] || !items[kind].length" class="dash-card" style="text-align:center;color:#5a8299;padding:30px;">No pending <span x-text="kind"></span>.</div>
+                                    <div x-show="!items[kind] || !items[kind].length" class="dash-card" style="text-align:center;color:#4f7287;padding:30px;">No pending <span x-text="kind"></span>.</div>
                                     <template x-for="row in items[kind]" :key="row.id">
                                         <div class="dash-card" style="margin-bottom:14px;display:flex;gap:14px;justify-content:space-between;flex-wrap:wrap;">
                                             <div style="flex:1;min-width:280px;">
                                                 <strong x-text="row.title || row.name"></strong>
-                                                <div style="color:#5a8299;font-size:0.85rem;margin-top:4px;">
+                                                <div style="color:#4f7287;font-size:0.85rem;margin-top:4px;">
                                                     <code style="background:#f5f7fa;padding:2px 6px;border-radius:4px;" x-text="shortAddr(row.educator_wallet || row.author_wallet)"></code>
                                                     · slug <code x-text="row.slug"></code>
                                                     · submitted <span x-text="formatDate(row.submitted_at || row.created_at)"></span>
@@ -124,7 +124,7 @@ permalink: /admin/queue/
                              style="position:fixed;inset:0;background:rgba(10,15,26,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
                             <div style="background:#fff;border-radius:12px;padding:28px;max-width:520px;width:100%;">
                                 <h4 style="margin-bottom:8px;">Reject this <span x-text="rejecting.kind"></span></h4>
-                                <p style="color:#5a8299;font-size:0.9rem;">The applicant will see this feedback. Be specific so they can improve and resubmit.</p>
+                                <p style="color:#4f7287;font-size:0.9rem;">The applicant will see this feedback. Be specific so they can improve and resubmit.</p>
                                 <textarea x-model="rejecting.feedback" class="dash-input" rows="5" placeholder="Reason (≥10 characters)…" style="margin-top:10px;"></textarea>
                                 <div x-show="rejecting.error" style="color:#900;margin-top:8px;font-size:0.9rem;" x-text="rejecting.error"></div>
                                 <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">

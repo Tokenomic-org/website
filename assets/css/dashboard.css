@@ -53,7 +53,7 @@
 
 .dashboard-sidebar .sidebar-brand .brand-sub {
     font-size: 0.65rem;
-    color: rgba(255,255,255,0.35);
+    color: rgba(255,255,255,0.46);
     text-transform: uppercase;
     letter-spacing: 1.5px;
     font-weight: 500;
@@ -129,7 +129,7 @@
     padding: 16px 14px 6px;
     font-size: 0.65rem;
     font-weight: 600;
-    color: rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.46);
     text-transform: uppercase;
     letter-spacing: 1.5px;
 }
@@ -163,7 +163,7 @@
     border-radius: 20px;
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 0.78rem;
-    color: #5a8299;
+    color: #4f7287;
     border: 1px solid rgba(0,0,0,0.06);
 }
 
@@ -231,7 +231,7 @@
 
 .dash-stat .stat-lbl {
     font-size: 0.78rem !important;
-    color: #8899A6 !important;
+    color: #646f79 !important;
     font-weight: 500 !important;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -248,7 +248,7 @@
     padding: 10px 14px !important;
     font-size: 0.72rem !important;
     font-weight: 600 !important;
-    color: #8899A6 !important;
+    color: #646f79 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.8px !important;
     border-bottom: 1px solid #E8ECF0 !important;
@@ -304,7 +304,7 @@
 
 .dash-badge-muted {
     background: #F0F2F5 !important;
-    color: #8899A6 !important;
+    color: #646f79 !important;
 }
 
 .dash-btn {
@@ -395,7 +395,7 @@ textarea.dash-input {
 }
 
 #tkn-login-gate p {
-    color: #8899A6 !important;
+    color: #646f79 !important;
     font-size: 0.9rem !important;
     line-height: 1.6;
 }
@@ -455,7 +455,7 @@ textarea.dash-input {
 
 .quick-action-card .qa-desc {
     font-size: 0.72rem;
-    color: #8899A6;
+    color: #646f79;
     font-weight: 400;
     white-space: nowrap;
     overflow: hidden;
@@ -493,7 +493,7 @@ textarea.dash-input {
 
 .split-segment .split-label {
     font-size: 0.78rem;
-    color: #8899A6;
+    color: #646f79;
     font-weight: 500;
 }
 

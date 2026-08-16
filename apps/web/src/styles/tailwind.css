@@ -27,7 +27,7 @@ html.theme-light, .theme-light {
   --tk-surface:   255 255 255;
   --tk-surface-2: 244 247 250;
   --tk-fg:         10  31  41;
-  --tk-muted:      90 130 153;
+  --tk-muted:      79 114 135;    /* #4F7287 — 5.14:1 on white (AA) */
   --tk-border:    228 234 240;
   --tk-brand:     247 147  26;
   --tk-brand-fg:  255 255 255;

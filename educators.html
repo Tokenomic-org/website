@@ -81,7 +81,7 @@ permalink: /experts/
             </div>
             <div id="educators-grid" class="row clearfix">
                 <div class="col-12 text-center" id="educators-loading">
-                    <p style="color:#5a8299;padding:40px 0;">Loading educators...</p>
+                    <p style="color:#4f7287;padding:40px 0;">Loading educators...</p>
                 </div>
             </div>
         </div>
@@ -93,7 +93,7 @@ permalink: /experts/
             </div>
             <div id="consultants-grid" class="row clearfix">
                 <div class="col-12 text-center" id="consultants-loading">
-                    <p style="color:#5a8299;padding:40px 0;">Loading consultants...</p>
+                    <p style="color:#4f7287;padding:40px 0;">Loading consultants...</p>
                 </div>
             </div>
         </div>
@@ -127,13 +127,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (educatorsLoading) educatorsLoading.remove();
 
     if (!educators || educators.length === 0) {
-        educatorsGrid.innerHTML = '<div class="col-12 text-center"><p style="color:#5a8299;padding:40px 0;">No approved educators yet. Check back soon.</p></div>';
+        educatorsGrid.innerHTML = '<div class="col-12 text-center"><p style="color:#4f7287;padding:40px 0;">No approved educators yet. Check back soon.</p></div>';
     } else {
         educators.forEach(function(edu) {
             const avatarHtml = renderAvatar(edu.display_name, edu.avatar_url, 'linear-gradient(135deg,#ff6000,#ff8f00)');
             const communityBadges = edu.communities && edu.communities.length > 0
                 ? edu.communities.map(function(c){return '<span style="display:inline-block;background:#e8f4f8;color:#001f29;font-size:0.75rem;padding:3px 10px;border-radius:12px;margin:2px;">' + c.name + ' (' + c.members_count + ' members)</span>'}).join(' ')
-                : '<span style="color:#5a8299;font-size:0.8rem;">No active communities</span>';
+                : '<span style="color:#4f7287;font-size:0.8rem;">No active communities</span>';
 
             const card = document.createElement('div');
             card.className = 'col-lg-4 col-md-6 col-sm-12';
@@ -144,11 +144,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                     avatarHtml +
                     '<div>' +
                         '<h4 style="margin:0 0 2px;font-size:1.1rem;color:#001f29;">' + edu.display_name + '</h4>' +
-                        '<span style="color:#5a8299;font-size:0.82rem;display:block;margin-bottom:2px;">' + (edu.specialty || 'DeFi Educator') + '</span>' +
+                        '<span style="color:#4f7287;font-size:0.82rem;display:block;margin-bottom:2px;">' + (edu.specialty || 'DeFi Educator') + '</span>' +
                         '<span style="color:#ff6000;font-size:0.74rem;letter-spacing:0.2px;">tokenomic.org/expert/' + profileSlug + '</span>' +
                     '</div>' +
                 '</div>' +
-                '<p style="color:#5a8299;font-size:0.9rem;margin-bottom:16px;flex-grow:1;">' + (edu.bio || '') + '</p>' +
+                '<p style="color:#4f7287;font-size:0.9rem;margin-bottom:16px;flex-grow:1;">' + (edu.bio || '') + '</p>' +
                 '<div style="margin-bottom:12px;">' + communityBadges + '</div>' +
                 '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #eef2f5;padding-top:12px;">' +
                     '<span style="color:#001f29;font-weight:600;font-size:0.85rem;">' + (edu.xp || 0) + ' XP</span>' +
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (consultantsLoading) consultantsLoading.remove();
 
     if (!consultants || consultants.length === 0) {
-        consultantsGrid.innerHTML = '<div class="col-12 text-center"><p style="color:#5a8299;padding:40px 0;">No approved consultants yet. Check back soon.</p></div>';
+        consultantsGrid.innerHTML = '<div class="col-12 text-center"><p style="color:#4f7287;padding:40px 0;">No approved consultants yet. Check back soon.</p></div>';
     } else {
         consultants.forEach(function(con) {
             const avatarHtml = renderAvatar(con.display_name, con.avatar_url, 'linear-gradient(135deg,#3301c6,#01ccdd)');
@@ -180,18 +180,18 @@ document.addEventListener('DOMContentLoaded', async function() {
                     avatarHtml +
                     '<div>' +
                         '<h4 style="margin:0 0 2px;font-size:1.1rem;color:#001f29;">' + con.display_name + '</h4>' +
-                        '<span style="color:#5a8299;font-size:0.82rem;display:block;margin-bottom:2px;">' + (con.specialty || 'DeFi Consultant') + '</span>' +
+                        '<span style="color:#4f7287;font-size:0.82rem;display:block;margin-bottom:2px;">' + (con.specialty || 'DeFi Consultant') + '</span>' +
                         '<span style="color:#667eea;font-size:0.74rem;letter-spacing:0.2px;">tokenomic.org/expert/' + conSlug + '</span>' +
                     '</div>' +
                 '</div>' +
-                '<p style="color:#5a8299;font-size:0.9rem;margin-bottom:16px;flex-grow:1;">' + (con.bio || '') + '</p>' +
+                '<p style="color:#4f7287;font-size:0.9rem;margin-bottom:16px;flex-grow:1;">' + (con.bio || '') + '</p>' +
                 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
-                    '<div><span style="color:#ff8f00;font-size:1rem;">' + stars + '</span> <span style="color:#5a8299;font-size:0.8rem;">' + (con.rating || 0) + '/5 (' + (con.sessions || 0) + ' sessions)</span></div>' +
+                    '<div><span style="color:#ff8f00;font-size:1rem;">' + stars + '</span> <span style="color:#4f7287;font-size:0.8rem;">' + (con.rating || 0) + '/5 (' + (con.sessions || 0) + ' sessions)</span></div>' +
                 '</div>' +
                 '<div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafb;border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
-                    '<div><span style="color:#5a8299;font-size:0.8rem;">30 min</span><br><strong style="color:#00a651;">$' + (con.rate_30 || 0) + '</strong></div>' +
-                    '<div style="border-left:1px solid #e0e6ea;padding-left:16px;"><span style="color:#5a8299;font-size:0.8rem;">60 min</span><br><strong style="color:#00a651;">$' + (con.rate_60 || 0) + '</strong></div>' +
-                    '<div style="border-left:1px solid #e0e6ea;padding-left:16px;"><span style="color:#5a8299;font-size:0.8rem;">USDC on Base</span><br><strong style="color:#001f29;font-size:0.8rem;">90/5/5 split</strong></div>' +
+                    '<div><span style="color:#4f7287;font-size:0.8rem;">30 min</span><br><strong style="color:#00a651;">$' + (con.rate_30 || 0) + '</strong></div>' +
+                    '<div style="border-left:1px solid #e0e6ea;padding-left:16px;"><span style="color:#4f7287;font-size:0.8rem;">60 min</span><br><strong style="color:#00a651;">$' + (con.rate_60 || 0) + '</strong></div>' +
+                    '<div style="border-left:1px solid #e0e6ea;padding-left:16px;"><span style="color:#4f7287;font-size:0.8rem;">USDC on Base</span><br><strong style="color:#001f29;font-size:0.8rem;">90/5/5 split</strong></div>' +
                 '</div>' +
                 '<span class="theme-btn btn-style-one" style="text-align:center;padding:10px 20px;font-size:0.85rem;border-radius:8px;display:block;">View Profile & Book</span>' +
             '</a>';

@@ -25,7 +25,7 @@
                     credentials: 'include',
                   });
                   if (r.status === 401) {
-                    list.innerHTML = '<div style="color:#5a8299;font-size:0.85rem;">Sign in with your wallet to manage calendar integrations.</div>';
+                    list.innerHTML = '<div style="color:#4f7287;font-size:0.85rem;">Sign in with your wallet to manage calendar integrations.</div>';
                     return;
                   }
                   var d = await r.json();
@@ -47,7 +47,7 @@
                   var connected  = !!connMap[p.key];
                   var sub = configured
                     ? (connected ? '<span style="color:#00C853;">● Connected</span>'
-                                 : '<span style="color:#5a8299;">Not connected</span>')
+                                 : '<span style="color:#4f7287;">Not connected</span>')
                     : '<span style="color:#a06a00;">Not configured by admin</span>';
                   var btn = !configured
                     ? '<button type="button" disabled style="background:#e8eef5;color:#9aabb8;border:none;border-radius:8px;padding:8px 16px;font-size:0.82rem;cursor:not-allowed;">Unavailable</button>'
@@ -396,7 +396,7 @@ async function loadAssetsList() {
     if (totalEl) totalEl.textContent = summary.totalAssets;
 
     if (summary.totalAssets === 0) {
-        container.innerHTML = '<div style="text-align:center;padding:24px;color:#5a8299;font-size:0.85rem;">' +
+        container.innerHTML = '<div style="text-align:center;padding:24px;color:#4f7287;font-size:0.85rem;">' +
             '<i class="fas fa-box-open" style="font-size:2rem;margin-bottom:10px;display:block;opacity:0.4;"></i>' +
             'No assets registered yet. ' +
             (TokenomicAssets.isCreator() ? 'Tokenize a course or register an article to start.' : 'Complete a course to earn a certification NFT.') +
@@ -415,7 +415,7 @@ async function loadAssetsList() {
         } else if (asset.status === 'pending_contract') {
             statusBadge = '<span style="background:rgba(255,152,0,0.1);color:#FF9800;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:600;">Pending Contract</span>';
         } else {
-            statusBadge = '<span style="background:rgba(90,130,153,0.1);color:#5a8299;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:600;">Registered</span>';
+            statusBadge = '<span style="background:rgba(90,130,153,0.1);color:#4f7287;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:600;">Registered</span>';
         }
 
         var txLink = '';
@@ -428,22 +428,22 @@ async function loadAssetsList() {
             '<i class="fas ' + icon + '" style="color:#fff;font-size:0.85rem;"></i></div>' +
             '<div style="flex:1;min-width:0;">' +
             '<div style="font-weight:600;font-size:0.88rem;color:#001f29;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (asset.title || 'Untitled') + '</div>' +
-            '<div style="font-size:0.75rem;color:#5a8299;">' + new Date(asset.created_at).toLocaleDateString() + txLink + '</div>' +
+            '<div style="font-size:0.75rem;color:#4f7287;">' + new Date(asset.created_at).toLocaleDateString() + txLink + '</div>' +
             '</div>' +
             '<div>' + statusBadge + '</div>' +
             '</div>';
     }
 
     if (assets.courses && assets.courses.length > 0) {
-        html += '<div style="font-size:0.78rem;color:#5a8299;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;margin-top:8px;">Courses (' + assets.courses.length + ')</div>';
+        html += '<div style="font-size:0.78rem;color:#4f7287;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;margin-top:8px;">Courses (' + assets.courses.length + ')</div>';
         assets.courses.forEach(function(a) { html += renderAssetRow(a, 'fa-book', '#ff6000'); });
     }
     if (assets.certifications && assets.certifications.length > 0) {
-        html += '<div style="font-size:0.78rem;color:#5a8299;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;margin-top:8px;">Certifications (' + assets.certifications.length + ')</div>';
+        html += '<div style="font-size:0.78rem;color:#4f7287;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;margin-top:8px;">Certifications (' + assets.certifications.length + ')</div>';
         assets.certifications.forEach(function(a) { html += renderAssetRow(a, 'fa-certificate', '#00C853'); });
     }
     if (assets.articles && assets.articles.length > 0) {
-        html += '<div style="font-size:0.78rem;color:#5a8299;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;margin-top:8px;">Articles (' + assets.articles.length + ')</div>';
+        html += '<div style="font-size:0.78rem;color:#4f7287;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;margin-top:8px;">Articles (' + assets.articles.length + ')</div>';
         assets.articles.forEach(function(a) { html += renderAssetRow(a, 'fa-file-alt', '#667eea'); });
     }
 
@@ -476,12 +476,12 @@ function renderContractStatus() {
             : '<span style="width:8px;height:8px;border-radius:50%;background:#FF9800;display:inline-block;"></span>';
         var statusText = c.data.deployed ? 'Deployed' : 'Not Deployed';
         var addrText = c.data.address
-            ? '<span style="font-family:monospace;font-size:0.72rem;color:#5a8299;">' + c.data.address.slice(0,6) + '...' + c.data.address.slice(-4) + '</span>'
+            ? '<span style="font-family:monospace;font-size:0.72rem;color:#4f7287;">' + c.data.address.slice(0,6) + '...' + c.data.address.slice(-4) + '</span>'
             : '';
         html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e8eef5;border-radius:8px;">' +
             statusDot +
             '<div style="flex:1;"><div style="font-size:0.85rem;font-weight:500;color:#001f29;">' + c.label + '</div>' +
-            '<div style="font-size:0.75rem;color:#5a8299;">' + statusText + ' ' + addrText + '</div></div></div>';
+            '<div style="font-size:0.75rem;color:#4f7287;">' + statusText + ' ' + addrText + '</div></div></div>';
     });
     container.innerHTML = html;
 }

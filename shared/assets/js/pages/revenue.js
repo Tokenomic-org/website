@@ -32,13 +32,13 @@ function revenuePage() {
             this.trendChart=new Chart(t,{type:'line',data:{labels:d.labels,datasets:[
                 {label:'Gross Revenue',data:d.gross,borderColor:'#ff6000',backgroundColor:gradient,fill:true,tension:0.4,borderWidth:2,pointBackgroundColor:'#ff6000',pointRadius:4,pointHoverRadius:6},
                 {label:'Your Share (90%)',data:d.share,borderColor:'#00a651',borderDash:[5,5],tension:0.4,borderWidth:2,pointRadius:0}
-            ]},options:{responsive:true,interaction:{intersect:false,mode:'index'},plugins:{legend:{labels:{color:'#5a8299',usePointStyle:true}},tooltip:{backgroundColor:'#001f29',titleColor:'#fff',bodyColor:'#fff',padding:12,cornerRadius:8,displayColors:true}},scales:{y:{ticks:{color:'#5a8299',callback:function(v){return '$'+v}},grid:{color:'rgba(0,0,0,0.05)'}},x:{ticks:{color:'#5a8299'},grid:{display:false}}}}});
+            ]},options:{responsive:true,interaction:{intersect:false,mode:'index'},plugins:{legend:{labels:{color:'#4f7287',usePointStyle:true}},tooltip:{backgroundColor:'#001f29',titleColor:'#fff',bodyColor:'#fff',padding:12,cornerRadius:8,displayColors:true}},scales:{y:{ticks:{color:'#4f7287',callback:function(v){return '$'+v}},grid:{color:'rgba(0,0,0,0.05)'}},x:{ticks:{color:'#4f7287'},grid:{display:false}}}}});
         },
         renderCharts() {
             this.updateChart();
             if(this.sourceChart) this.sourceChart.destroy();
             const s=document.getElementById('revenueSourceChart');
-            if(s) this.sourceChart=new Chart(s,{type:'doughnut',data:{labels:['Courses','Consultations','Events','Sponsorships'],datasets:[{data:[1450,875,350,1750],backgroundColor:['#F7931A','#00C853','#2196F3','#FF8F00'],borderWidth:0,hoverOffset:8}]},options:{responsive:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#8899A6',padding:12,usePointStyle:true,font:{family:'Inter'}}}}}});
+            if(s) this.sourceChart=new Chart(s,{type:'doughnut',data:{labels:['Courses','Consultations','Events','Sponsorships'],datasets:[{data:[1450,875,350,1750],backgroundColor:['#F7931A','#00C853','#2196F3','#FF8F00'],borderWidth:0,hoverOffset:8}]},options:{responsive:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#646f79',padding:12,usePointStyle:true,font:{family:'Inter'}}}}}});
             const sd=document.getElementById('splitDoughnut');
             if(sd){new Chart(sd,{type:'doughnut',data:{labels:['Educator (90%)','Treasury (5%)','Rewards (5%)'],datasets:[{data:[90,5,5],backgroundColor:['#00C853','#F7931A','#2196F3'],borderWidth:2,borderColor:'#fff',hoverOffset:6}]},options:{responsive:true,cutout:'60%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#0A0F1A',padding:10,cornerRadius:8,titleFont:{family:'Inter'},bodyFont:{family:'Inter'}}}}});}
         },
@@ -79,7 +79,7 @@ function revenuePage() {
                     slot.textContent = 'Loading…';
                     var list = await window.TokenomicAssets.getEducatorCourses(a);
                     if (!list.length){ slot.innerHTML='<em>No courses registered yet. Publish one from the Courses tab.</em>'; return; }
-                    var html = '<table style="width:100%;border-collapse:collapse;font-size:0.88rem;"><thead><tr style="text-align:left;color:#5a8299;border-bottom:1px solid #e8eef5;"><th style="padding:6px 4px;">#</th><th>Price</th><th>Active</th><th>Metadata</th></tr></thead><tbody>';
+                    var html = '<table style="width:100%;border-collapse:collapse;font-size:0.88rem;"><thead><tr style="text-align:left;color:#4f7287;border-bottom:1px solid #e8eef5;"><th style="padding:6px 4px;">#</th><th>Price</th><th>Active</th><th>Metadata</th></tr></thead><tbody>';
                     list.forEach(function(c){
                       html += '<tr style="border-bottom:1px solid #f0f4fa;"><td style="padding:8px 4px;">'+c.courseId+'</td><td>'+c.priceFormatted+' USDC</td><td>'+(c.active?'<span style="color:#00C853;">●</span> live':'<span style="color:#999;">○</span> off')+'</td><td><a href="'+c.ipfsUrl+'" target="_blank" rel="noopener">IPFS</a></td></tr>';
                     });
@@ -91,7 +91,7 @@ function revenuePage() {
                     slot.textContent = 'Loading…';
                     var sales = await window.TokenomicAssets.getEducatorSales(a);
                     if (!sales.length){ slot.innerHTML='<em>No sales yet.</em>'; return; }
-                    var html = '<table style="width:100%;border-collapse:collapse;font-size:0.86rem;"><thead><tr style="text-align:left;color:#5a8299;border-bottom:1px solid #e8eef5;"><th style="padding:6px 4px;">Course</th><th>Buyer</th><th>You earned</th><th>Cert</th><th>Tx</th></tr></thead><tbody>';
+                    var html = '<table style="width:100%;border-collapse:collapse;font-size:0.86rem;"><thead><tr style="text-align:left;color:#4f7287;border-bottom:1px solid #e8eef5;"><th style="padding:6px 4px;">Course</th><th>Buyer</th><th>You earned</th><th>Cert</th><th>Tx</th></tr></thead><tbody>';
                     sales.slice(0,25).forEach(function(s){
                       var b = s.buyer.slice(0,6)+'…'+s.buyer.slice(-4);
                       var certCell = (s.certificateTokenId && s.certificateTokenId !== '0')
@@ -111,7 +111,7 @@ function revenuePage() {
                       var est = await window.TokenomicAssets.estimateActionGas('withdraw', {});
                       var gasMsg = est && est.message ? est.message : 'You will pay the gas for this withdrawal on Base.';
                       if (!confirm(gasMsg + '\n\nProceed with the withdrawal?')) {
-                        status.innerHTML = '<span style="color:#5a8299;">Cancelled.</span>';
+                        status.innerHTML = '<span style="color:#4f7287;">Cancelled.</span>';
                         return;
                       }
                       status.innerHTML = 'Submitting transaction… (you pay the gas)';
