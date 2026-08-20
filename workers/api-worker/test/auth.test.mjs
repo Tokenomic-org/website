@@ -267,3 +267,117 @@ test('SIWE verify rejects a signature from the wrong key', async () => {
   }), env, CTX);
   assert.equal(res.status, 401);
 });
+
+// ───────────────────────────────────────────── 4. rate limiting
+
+// These share one env per test so the KV bucket actually accumulates —
+// makeEnv() hands out a fresh mock KV each call, which would otherwise reset
+// the counter on every request and make the limit untestable.
+
+async function callWith(env, path, { wallet, method = 'GET', body } = {}) {
+  const headers = { origin: 'https://tokenomic.org' };
+  if (wallet) headers.cookie = await cookieFor(wallet);
+  if (body !== undefined) headers['content-type'] = 'application/json';
+  return app.fetch(new Request('https://x.test' + path, {
+    method, headers, ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  }), env, CTX);
+}
+
+test('upload routes reject once the per-wallet limit is spent', async () => {
+  const env = makeEnv();
+  const post = () => callWith(env, '/api/profile/avatar', {
+    wallet: PLAIN, method: 'POST', body: { photo: 'not-a-data-url' },
+  });
+
+  // /api/profile/avatar is capped at 10/min. The first ten get past the
+  // limiter (and then fail validation on the bogus data URL, which is fine —
+  // we are asserting the limiter, not the handler).
+  for (let i = 0; i < 10; i++) {
+    const res = await post();
+    assert.notEqual(res.status, 429, `request ${i + 1} should not have been limited`);
+  }
+
+  const limited = await post();
+  assert.equal(limited.status, 429, '11th upload in the window must be rejected');
+  assert.equal((await limited.json()).error, 'Rate limit exceeded');
+  assert.ok(limited.headers.get('retry-after'), 'a 429 must tell the client when to retry');
+});
+
+test('rate-limit headers count down and never go negative', async () => {
+  const env = makeEnv();
+  const seen = [];
+  for (let i = 0; i < 12; i++) {
+    const res = await callWith(env, '/api/profile/avatar', {
+      wallet: PLAIN, method: 'POST', body: { photo: 'x' },
+    });
+    seen.push(Number(res.headers.get('x-ratelimit-remaining')));
+  }
+  assert.equal(seen[0], 9, 'first request should report 9 of 10 left');
+  assert.ok(seen.every((n) => Number.isFinite(n) && n >= 0), 'remaining must never go negative');
+  for (let i = 1; i < seen.length; i++) {
+    assert.ok(seen[i] <= seen[i - 1], `remaining must be monotonic (index ${i})`);
+  }
+});
+
+test('mutation limiter guards role routes but leaves reads alone', async () => {
+  const env = makeEnv();
+
+  // GETs must pass through untouched however many arrive — the middleware
+  // only counts POST/PATCH/PUT/DELETE.
+  for (let i = 0; i < 70; i++) {
+    const res = await callWith(env, '/api/me/profile', { wallet: PLAIN });
+    assert.notEqual(res.status, 429, `read ${i + 1} must never be rate limited`);
+  }
+
+  // Mutations on the same prefix share a 60/min per-wallet budget.
+  for (let i = 0; i < 60; i++) {
+    const res = await callWith(env, '/api/me/profile', {
+      wallet: PLAIN, method: 'PATCH', body: { display_name: 'x' },
+    });
+    assert.notEqual(res.status, 429, `mutation ${i + 1} should be within budget`);
+  }
+  const over = await callWith(env, '/api/me/profile', {
+    wallet: PLAIN, method: 'PATCH', body: { display_name: 'x' },
+  });
+  assert.equal(over.status, 429, '61st mutation in the window must be rejected');
+});
+
+test('one wallet cannot spend another wallet key budget', async () => {
+  const env = makeEnv();
+  const spend = (wallet) => callWith(env, '/api/profile/avatar', {
+    wallet, method: 'POST', body: { photo: 'x' },
+  });
+
+  for (let i = 0; i < 11; i++) await spend(PLAIN);
+  assert.equal((await spend(PLAIN)).status, 429, 'guard: PLAIN should be exhausted');
+
+  const other = await spend(EDU);
+  assert.notEqual(other.status, 429, 'a different wallet must have its own budget');
+});
+
+// ───────────────────────────────────────────── 5. error-message hygiene
+
+test('availability failures return a generic message, not exception text', async () => {
+  // A D1 binding that is present but fails on use, so the handler gets past
+  // its `!c.env.DB` 503 guard and into the catch. Before the fix that catch
+  // returned `{ error: e.message }`, spilling the query detail to the caller.
+  const boom = new Error('D1_ERROR: no such table: calendar_accounts');
+  const env = makeEnv({ DB: { prepare() { throw boom; }, batch() { throw boom; }, exec() { throw boom; } } });
+  const res = await callWith(env, `/api/availability/${PLAIN}`, { wallet: PLAIN });
+
+  assert.notEqual(res.status, 404, 'guard: the route must exist, or this asserts nothing');
+  assert.equal(res.status, 400);
+  const body = await res.json();
+  assert.equal(body.error, 'Could not load availability');
+  assert.ok(!('message' in body), 'must not attach an exception message');
+});
+
+test('the global error handler does not leak exception text', async () => {
+  // app.onError previously returned `message: err.message` alongside the
+  // generic error string, which defeated the point of the generic string.
+  const src = await import('node:fs/promises')
+    .then((fs) => fs.readFile(new URL('../index.js', import.meta.url), 'utf8'));
+  const onError = src.slice(src.indexOf('app.onError('));
+  assert.ok(!/message:\s*err\.message/.test(onError.slice(0, 400)),
+    'app.onError must not echo err.message to the client');
+});

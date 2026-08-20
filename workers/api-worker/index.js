@@ -23,9 +23,10 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { rateLimit, clientIp, mutationRateLimiter } from './rate-limit.js';
 import { mountD1Routes } from './d1-routes.js';
 import { ChatRoom, mountChatRoutes } from './chat-room.js';
-import { mountSiweRoutes } from './siwe.js';
+import { mountSiweRoutes, readSessionFromCookie } from './siwe.js';
 import { mountCalendarRoutes } from './oauth-calendar.js';
 import { mountAdminRoutes } from './admin-routes.js';
 import { mountReferralRoutes, handleInviteQueueBatch } from './referrals.js';
@@ -173,41 +174,9 @@ app.use('*', async (c, next) => {
   return handler(c, next);
 });
 
-const memoryBuckets = new Map();
-async function rateLimit(c, key, limit = 10, windowSec = 60) {
-  const now = Date.now();
-  const windowMs = windowSec * 1000;
-  const bucketKey = `rl:${key}`;
-
-  if (c.env.RATE_LIMIT_KV) {
-    try {
-      const raw = await c.env.RATE_LIMIT_KV.get(bucketKey);
-      let bucket = raw ? JSON.parse(raw) : { count: 0, reset: now + windowMs };
-      if (now > bucket.reset) bucket = { count: 0, reset: now + windowMs };
-      bucket.count += 1;
-      const remaining = Math.max(0, limit - bucket.count);
-      c.executionCtx.waitUntil(
-        c.env.RATE_LIMIT_KV.put(bucketKey, JSON.stringify(bucket), { expirationTtl: windowSec + 5 })
-      );
-      return { ok: bucket.count <= limit, limit, remaining, reset: bucket.reset };
-    } catch (e) {
-      console.warn('KV rate limit failed, falling back to memory:', e.message);
-    }
-  }
-
-  let bucket = memoryBuckets.get(bucketKey);
-  if (!bucket || now > bucket.reset) bucket = { count: 0, reset: now + windowMs };
-  bucket.count += 1;
-  memoryBuckets.set(bucketKey, bucket);
-  return { ok: bucket.count <= limit, limit, remaining: Math.max(0, limit - bucket.count), reset: bucket.reset };
-}
-
-function clientIp(c) {
-  return c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'anon';
-}
-
-// Phase 7 — auth-endpoint burst limiter. Mounted after rateLimit/clientIp
-// are defined; runs only on /api/auth/*, /api/siwe/verify, /admin/login.
+// Phase 7 — auth-endpoint burst limiter. Runs only on /api/auth/*,
+// /api/siwe/verify, /admin/login. rateLimit/clientIp now live in
+// ./rate-limit.js so route modules outside this file can reach them too.
 app.use('*', authRateLimitMiddleware(rateLimit, clientIp));
 
 function escapeForStorage(s, maxLen) {
@@ -239,6 +208,20 @@ mountChatRoutes(app);
 // Phase 4: Calendar OAuth (Google/Microsoft/Calendly), unified availability,
 // slot holds, booking confirmation with calendar write-through, Calendly webhook.
 mountCalendarRoutes(app);
+
+// Write-volume backstops for the role-gated surfaces. These sit in front of
+// the mounts below because Hono only applies middleware registered before
+// the routes it guards. Reads pass straight through; only POST/PATCH/PUT/
+// DELETE are counted, keyed by signed-in wallet where one resolves so a
+// shared NAT cannot exhaust one user's budget.
+//
+// The ceiling is deliberately generous — this catches a compromised session
+// or a client retry loop, it is not a throttle on normal use.
+const mutationLimiterOpts = { resolveWallet: readSessionFromCookie, limit: 60, windowSec: 60 };
+app.use('/admin/*', mutationRateLimiter({ scope: 'admin-write', ...mutationLimiterOpts }));
+app.use('/api/educator/*', mutationRateLimiter({ scope: 'educator-write', ...mutationLimiterOpts }));
+app.use('/api/consultant/*', mutationRateLimiter({ scope: 'consultant-write', ...mutationLimiterOpts }));
+app.use('/api/me/*', mutationRateLimiter({ scope: 'learner-write', ...mutationLimiterOpts }));
 
 // Phase 3a: SIWE-aware admin console JSON API. Mounted under /admin/*; every
 // route is gated by requireRole('admin') which checks the SIWE cookie, the
@@ -546,8 +529,11 @@ app.post('/stream/:uid/json-meta', async (c) => {
 
 app.notFound((c) => c.json({ error: 'Not found', path: c.req.path }, 404));
 app.onError((err, c) => {
+  // Log the real error server-side, but never echo its message to the
+  // client: exception strings routinely carry table names, binding names,
+  // upstream URLs and query fragments.
   console.error('Unhandled error:', err);
-  return c.json({ error: 'Internal error', message: err.message }, 500);
+  return c.json({ error: 'Internal error' }, 500);
 });
 
 // Default export must remain a Hono app for `wrangler dev`. To wire the
