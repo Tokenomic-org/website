@@ -1,6 +1,6 @@
 # Tokenomic — System Architecture
 
-Last updated: 2026-05-03 (Phase 7).
+Last updated: 2026-08-17.
 
 ## One-page diagram
 
@@ -25,7 +25,7 @@ Last updated: 2026-05-03 (Phase 7).
               │                     │           │                      │
               │  ┌──────────────────▼─┐ ┌───────▼────────┐ ┌───────────▼─────────┐
               │  │ Cloudflare D1       │ │ Cloudflare KV  │ │ Base L2 RPC         │
-              │  │ (8 tables: profiles,│ │ (comments,     │ │ (mainnet.base.org)  │
+              │  │ (30 tables: profiles│ │ (comments,     │ │ (mainnet.base.org)  │
               │  │  courses, articles, │ │  rate limits,  │ └─────────────────────┘
               │  │  bookings, …)       │ │  stream meta)  │
               │  └─────────────────────┘ └────────────────┘
@@ -95,7 +95,7 @@ Last updated: 2026-05-03 (Phase 7).
 | Phase | Theme | Notable additions |
 |-------|-------|-------------------|
 | 0 | SIWE + cookie sessions | `siwe.js`, HMAC-signed `tk_session` cookie |
-| 1 | Smart-contract suite | 6 contracts on Base, 100% line coverage |
+| 1 | Smart-contract suite | 6 contracts, unit-tested under Hardhat (**not yet deployed** — see below) |
 | 2 | React islands + design system | `apps/web/src/islands/*`, `packages/ui` |
 | 3a | Admin console | `admin-routes.js`, audit log, role registry reader |
 | 3b | Creator workbenches | educator + consultant dashboards |
@@ -104,6 +104,39 @@ Last updated: 2026-05-03 (Phase 7).
 | 5 | Referrals + invites | Turnstile, MailChannels DKIM, Cloudflare Queues |
 | 6 | Content infra | signed Stream playback, R2 PDFs, CF Images |
 | 7 | Polish & launch | i18n (EN/TR/ES), CSP/HSTS, geo-block, AE observability, docs |
+
+## D1 schema (where the table count comes from)
+
+Migrations live in `workers/api-worker/migrations/*.sql` and are the source of
+truth for the diagram's table count. Regenerate it with:
+
+```sh
+grep -rhoiE 'CREATE TABLE +(IF NOT EXISTS +)?[a-zA-Z0-9_]+' \
+  workers/api-worker/migrations/*.sql | awk '{print tolower($NF)}' | sort -u | wc -l
+```
+
+As of this update: **9 migration files, 31 `CREATE TABLE` statements, 30
+distinct tables** — `audit_log` is declared twice (`0002_roles_and_approval.sql`
+and `0007_audit_log_phase3a.sql`), both guarded by `IF NOT EXISTS`, so the
+later definition is a no-op against an already-migrated database.
+
+Two migrations also share the `0008` prefix (`0008_creator_workbenches.sql` and
+`0008_phase5_referrals_invites.sql`). They touch disjoint tables so ordering
+between them does not currently matter, but the numbering is ambiguous and the
+next migration should not reuse a prefix.
+
+## Smart contracts — built vs. deployed
+
+The Phase 1 suite (`RoleRegistry`, `ReferralRegistry`, `SplitsManager`,
+`CourseAccess1155`, `CertificateNFT`, `SubscriptionManager`) exists under
+`contracts/` and is unit-tested under `test/*.test.js`, but **it is not
+deployed to any network**: there is no `deployments/` directory, and no
+addresses are configured in `.env.example` or any `wrangler.toml`.
+
+The live purchase path in `shared/assets/js/web3-assets.js` still runs on the
+legacy `TokenomicMarket` / `TokenomicCertificate` pair that the Phase 1 suite
+was written to replace. Treat the on-chain rows in the table above as the
+*intended* split, not the shipped one, until that migration lands.
 
 ## Local-dev shim
 

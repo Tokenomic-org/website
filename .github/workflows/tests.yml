@@ -1,0 +1,118 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  workers:
+    name: API worker (auth / CORS / roles)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: workers/api-worker/package-lock.json
+
+      # The suite imports `hono` and `viem/accounts`. Both are declared in
+      # workers/api-worker/package.json, so install there rather than at the
+      # repo root: the root tree only resolves `hono` through an accidental
+      # transitive hoist (@wagmi/connectors -> porto -> hono), which would
+      # break this suite on an unrelated dependency bump. Installing the
+      # worker's own lockfile also keeps this job independent of the much
+      # larger root install.
+      - name: Install api-worker deps
+        working-directory: workers/api-worker
+        run: npm ci
+
+      # Runs the same root script a developer runs locally. It needs no root
+      # node_modules — `node --test` resolves the imports from the worker's
+      # own install above.
+      - name: Run auth / CORS / role tests
+        run: |
+          set -o pipefail
+          npm run test:workers 2>&1 | tee workers-test.log
+
+      # `node --test` exits 0 when it runs no tests at all, so a suite that
+      # silently stopped being discovered would look green. Require that
+      # tests actually ran and that none failed.
+      - name: Assert the suite actually ran
+        run: |
+          if ! grep -qE '^# pass [1-9][0-9]*$' workers-test.log; then
+            echo "::error::Worker suite reported no passing tests — it did not actually run."
+            exit 1
+          fi
+          echo "Passing assertions: $(grep -oE '^# pass [0-9]+' workers-test.log)"
+
+      - name: Upload test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workers-test-log
+          path: workers-test.log
+          if-no-files-found: ignore
+
+  contracts:
+    name: Contracts (Hardhat)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      # Cache the solc binary Hardhat downloads from binaries.soliditylang.org
+      # so the compile step does not re-fetch it on every run.
+      - name: Cache solc compilers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/hardhat-nodejs
+          key: hardhat-solc-${{ runner.os }}-${{ hashFiles('hardhat.config.js') }}
+          restore-keys: hardhat-solc-${{ runner.os }}-
+
+      # Kept as its own step so a solc download failure is distinguishable
+      # from an actual compile error or a test failure.
+      - name: Compile contracts
+        run: npx hardhat compile
+
+      - name: Run contract tests
+        run: |
+          set -o pipefail
+          npx hardhat test 2>&1 | tee hardhat-test.log
+
+      # Mocha exits 0 when it runs zero tests, so gate on a real passing count
+      # rather than on the exit code alone.
+      - name: Assert the suite actually ran
+        run: |
+          if ! grep -qE '[1-9][0-9]* passing' hardhat-test.log; then
+            echo "::error::Hardhat reported no passing tests — the suite did not actually run."
+            exit 1
+          fi
+          echo "Passing assertions: $(grep -oE '[0-9]+ passing' hardhat-test.log)"
+
+      - name: Upload test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hardhat-test-log
+          path: hardhat-test.log
+          if-no-files-found: ignore
