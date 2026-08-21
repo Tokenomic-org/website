@@ -16,7 +16,8 @@
     "deploy:contracts": "hardhat run scripts/deploy.js --network base",
     "deploy:contracts:testnet": "hardhat run scripts/deploy.js --network base-sepolia",
     "compile": "hardhat compile",
-    "coverage": "hardhat coverage"
+    "coverage": "hardhat coverage",
+    "test:server": "node --test test/server-auth.test.mjs"
   },
   "keywords": [],
   "author": "",
