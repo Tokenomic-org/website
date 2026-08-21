@@ -29,6 +29,7 @@
 
 import { sendEmail, logEmail, tplEnrollmentConfirmation, tplCertificateIssued, tplCoursePublished } from './mail.js';
 import { readSessionFromCookie } from './siwe.js';
+import { enforceRateLimit } from './rate-limit.js';
 
 // ─────────────────────────────────────────── helpers
 
@@ -360,6 +361,10 @@ export function mountContentRoutes(app) {
   app.post('/api/content/stream/upload-url', async (c) => {
     const auth = await requireAuthLocal(c);
     if (auth.error) return auth.error;
+    // Issuing a creator URL is cheap for us but hands out an upload slot on
+    // Cloudflare Stream, so cap the issuance rate per wallet.
+    const limited = await enforceRateLimit(c, `${auth.wallet}:stream-upload-url`, 20, 60);
+    if (limited) return limited;
     let body = {};
     try { body = await c.req.json(); } catch {}
     // Accept both snake_case (worker convention) and camelCase (the
@@ -611,6 +616,10 @@ export function mountContentRoutes(app) {
   app.post('/api/content/r2/put', async (c) => {
     const auth = await requireAuthLocal(c);
     if (auth.error) return auth.error;
+    // Heaviest endpoint in the file: proxies the file bytes themselves into
+    // R2, so it gets the tightest ceiling.
+    const limited = await enforceRateLimit(c, `${auth.wallet}:r2-put`, 10, 60);
+    if (limited) return limited;
     if (!r2Available(c.env)) return jsonError(c, 503, 'R2 not configured');
     let body = {}; try { body = await c.req.json(); } catch { return jsonError(c, 400, 'Invalid JSON'); }
     const kind = ['avatar', 'course-asset', 'misc'].includes(body.kind) ? body.kind : 'misc';
@@ -671,6 +680,8 @@ export function mountContentRoutes(app) {
   app.post('/api/content/images/direct-upload', async (c) => {
     const auth = await requireAuthLocal(c);
     if (auth.error) return auth.error;
+    const limited = await enforceRateLimit(c, `${auth.wallet}:images-direct-upload`, 20, 60);
+    if (limited) return limited;
     if (!c.env.CF_ACCOUNT_ID || !(c.env.CF_IMAGES_TOKEN || c.env.CF_API_TOKEN)) {
       return jsonError(c, 503, 'Cloudflare Images not configured');
     }
@@ -705,6 +716,10 @@ export function mountContentRoutes(app) {
   app.post('/api/content/images/persist', async (c) => {
     const auth = await requireAuthLocal(c);
     if (auth.error) return auth.error;
+    // Metadata-only write (records an already-delivered image id), so a
+    // looser ceiling than the upload endpoints above.
+    const limited = await enforceRateLimit(c, `${auth.wallet}:images-persist`, 30, 60);
+    if (limited) return limited;
     let body = {}; try { body = await c.req.json(); } catch { return jsonError(c, 400, 'Invalid JSON'); }
     const id = String(body.id || '').slice(0, 80);
     if (!id) return jsonError(c, 400, 'id required');
@@ -766,6 +781,10 @@ export function mountContentRoutes(app) {
   app.post('/api/profile/avatar', async (c) => {
     const auth = await requireAuthLocal(c);
     if (auth.error) return auth.error;
+    // Carries the image inline as a base64 data URL, so it is a real upload
+    // path despite not looking like one.
+    const limited = await enforceRateLimit(c, `${auth.wallet}:profile-avatar`, 10, 60);
+    if (limited) return limited;
     let body = {}; try { body = await c.req.json(); } catch { return jsonError(c, 400, 'Invalid JSON'); }
     const dataUrl = String(body.photo || body.dataUrl || '');
     const m = dataUrl.match(/^data:image\/(png|jpe?g|webp|gif);base64,(.+)$/i);
@@ -815,6 +834,8 @@ export function mountContentRoutes(app) {
   app.post('/api/courses/:id/thumbnail-image', async (c) => {
     const gate = await loadCourseOwned(c, c.req.param('id'));
     if (gate.fail) return gate.fail;
+    const limited = await enforceRateLimit(c, `${gate.auth.wallet}:course-thumbnail`, 20, 60);
+    if (limited) return limited;
     let body = {}; try { body = await c.req.json(); } catch { return jsonError(c, 400, 'Invalid JSON'); }
     // Two acceptable inputs:
     //   1) `url` — caller already has a CF Images variant URL. We just
@@ -871,6 +892,8 @@ export function mountContentRoutes(app) {
   app.post('/api/articles/:id/cover', async (c) => {
     const auth = await requireAuthLocal(c);
     if (auth.error) return auth.error;
+    const limited = await enforceRateLimit(c, `${auth.wallet}:article-cover`, 20, 60);
+    if (limited) return limited;
     if (!c.env.DB) return jsonError(c, 503, 'Database not configured');
     const id = Number(c.req.param('id'));
     if (!Number.isFinite(id) || id <= 0) return jsonError(c, 400, 'Bad article id');

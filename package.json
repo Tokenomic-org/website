@@ -18,7 +18,8 @@
     "compile": "hardhat compile",
     "coverage": "hardhat coverage",
     "build:web3:core": "esbuild shared/assets/js/web3-bundle-src.js --bundle --minify --format=esm --target=es2020 --outfile=shared/assets/js/web3-bundle.js --define:process.env.WC_PROJECT_ID=\"'$WC_PROJECT_ID'\" --define:process.env.BASE_RPC_URL=\"'${BASE_RPC_URL:-https://mainnet.base.org}'\" --define:process.env.BASE_SEPOLIA_RPC_URL=\"'${BASE_SEPOLIA_RPC_URL:-https://sepolia.base.org}'\"",
-    "build:web3:connectors": "esbuild shared/assets/js/web3-connectors-src.js --bundle --minify --format=esm --target=es2020 --outfile=shared/assets/js/web3-connectors.js --define:process.env.WC_PROJECT_ID=\"'$WC_PROJECT_ID'\""
+    "build:web3:connectors": "esbuild shared/assets/js/web3-connectors-src.js --bundle --minify --format=esm --target=es2020 --outfile=shared/assets/js/web3-connectors.js --define:process.env.WC_PROJECT_ID=\"'$WC_PROJECT_ID'\"",
+    "test:server": "node --test test/server-auth.test.mjs"
   },
   "keywords": [],
   "author": "",

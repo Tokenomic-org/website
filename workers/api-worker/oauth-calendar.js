@@ -579,7 +579,10 @@ async function getUnifiedAvailability(env, wallet, startISO, endISO, opts) {
       const busy = await getBusyIntervals(env, wallet, p, startISO, endISO);
       allBusy = allBusy.concat(busy);
     } catch (e) {
-      errors.push({ provider: p, error: e.message });
+      // `errors` is returned to the caller inside the availability payload,
+      // so record only which provider failed — not the upstream message.
+      console.error('busy-interval fetch failed:', p, wallet, e);
+      errors.push({ provider: p, error: 'unavailable' });
     }
   }
 
@@ -731,7 +734,11 @@ export function mountCalendarRoutes(app) {
     try {
       td = await exchangeCode(c.env, provider, code, callbackUrl(c, provider));
     } catch (e) {
-      return c.html(renderCallbackPage({ ok: false, message: e.message, allowedOrigin }));
+      // Token-exchange failures quote the provider's raw response, which can
+      // include client-id/secret diagnostics. Keep that server-side; the
+      // sibling branches above already return static text.
+      console.error('oauth code exchange failed:', provider, e);
+      return c.html(renderCallbackPage({ ok: false, message: 'Could not complete authorization', allowedOrigin }));
     }
     const accessEnc  = td.access_token  ? await encryptToken(c.env, td.access_token)  : null;
     const refreshEnc = td.refresh_token ? await encryptToken(c.env, td.refresh_token) : null;
@@ -818,7 +825,10 @@ export function mountCalendarRoutes(app) {
       const data = await getUnifiedAvailability(c.env, wallet, from, to, { slotMinutes });
       return c.json({ wallet, from, to, ...data });
     } catch (e) {
-      return c.json({ error: e.message }, 400);
+      // Never echo the raw exception: availability failures surface upstream
+      // Google/Microsoft API text, token state and D1 query fragments.
+      console.error('availability lookup failed:', wallet, e);
+      return c.json({ error: 'Could not load availability' }, 400);
     }
   });
 

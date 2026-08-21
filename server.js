@@ -21,8 +21,52 @@ function generateToken() {
     return crypto.randomBytes(32).toString('hex');
 }
 
+// Constant-time comparison + per-IP login throttle. These live in
+// ./server-auth.js so they can be unit-tested without this file's
+// app.listen() binding a port — see test/server-auth.test.mjs.
+var serverAuth = require('./server-auth.js');
+var safeEqual = serverAuth.safeEqual;
+var loginThrottleFor = serverAuth.createLoginThrottle({ maxAttempts: 10, windowMs: 15 * 60 * 1000 });
+
+function loginThrottle(req) {
+    return loginThrottleFor(serverAuth.requestIp(req));
+}
+
+/**
+ * Admin gate for this Express server.
+ *
+ * SCOPE — READ THIS BEFORE BUILDING ON IT.
+ *
+ * This is a SEPARATE admin authentication system from the production one.
+ * It shares no code with workers/api-worker: that surface authenticates with
+ * SIWE (wallet signature) + an ADMIN_WALLETS allowlist + the on-chain
+ * RoleRegistry, and is gated by requireRole('admin') in auth.js. This one is
+ * an email/password login issuing an opaque bearer token stored in a
+ * Postgres `admin_sessions` table.
+ *
+ * Two consequences worth being explicit about:
+ *   1. A vulnerability fixed in one does NOT fix the other, and a revoked
+ *      admin wallet does NOT revoke access here.
+ *   2. `/admin/*` on the Worker and `/api/admin/*` here expose overlapping
+ *      capability (approvals, stats) through entirely different credentials.
+ *
+ * SECRETS.md documents this server as local/Replit-only and states the
+ * GitHub PAT is "not used in production". That intent is NOT enforced in
+ * code — `.replit` still launches this file as the run command, so whether
+ * it is reachable depends entirely on deployment configuration.
+ *
+ * Whether this panel should be retired in favour of the SIWE-based Worker
+ * admin, or kept as a deliberate second surface, is a maintainer decision.
+ * It has NOT been made here: see the "server.js admin surface" section of
+ * SECRETS.md. Nothing has been merged or deleted on an assumption.
+ *
+ * The session token is accepted ONLY via the x-admin-token header. It used
+ * to also be read from `req.query.token`; tokens in URLs leak through
+ * Referer headers, browser history, and access logs, and no caller in this
+ * repository used that form.
+ */
 function requireAdmin(req, res, next) {
-    var token = req.headers['x-admin-token'] || req.query.token;
+    var token = req.headers['x-admin-token'];
     if (!token) {
         return res.status(401).json({ error: 'Authentication required' });
     }
@@ -35,6 +79,7 @@ function requireAdmin(req, res, next) {
         }
         next();
     }).catch(function(err) {
+        console.error('Admin session lookup failed:', err.message);
         res.status(500).json({ error: 'Server error' });
     });
 }
@@ -90,6 +135,12 @@ app.post('/api/newsletter/subscribe', function(req, res) {
 });
 
 app.post('/api/admin/login', function(req, res) {
+    var throttle = loginThrottle(req);
+    if (!throttle.ok) {
+        res.set('Retry-After', String(throttle.retryAfter));
+        return res.status(429).json({ error: 'Too many login attempts. Try again later.' });
+    }
+
     var email = (req.body.email || '').trim().toLowerCase();
     var password = req.body.password || '';
 
@@ -97,12 +148,23 @@ app.post('/api/admin/login', function(req, res) {
         return res.status(503).json({ error: 'Admin access not configured' });
     }
 
-    if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+    // Both comparisons are constant-time, and both always run, so neither the
+    // email nor the password can be recovered by timing the response. A plain
+    // `!==` short-circuits on the first differing byte.
+    var emailOk = safeEqual(email, String(ADMIN_EMAIL).trim().toLowerCase());
+    var passwordOk = safeEqual(password, ADMIN_PASSWORD);
+    if (!emailOk || !passwordOk) {
         return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     var token = generateToken();
     var expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    // Sweep rows whose expires_at has passed. Nothing else ever deletes them:
+    // requireAdmin only filters with `expires_at > NOW()`, so without this the
+    // table grows one row per login forever.
+    pool.query('DELETE FROM admin_sessions WHERE expires_at <= NOW()')
+        .catch(function(err) { console.error('Admin session sweep failed:', err.message); });
 
     pool.query(
         'INSERT INTO admin_sessions (token, expires_at) VALUES ($1, $2)',

@@ -79,6 +79,65 @@ These are read by code that runs **on a developer machine or in the Replit works
 
 In Replit, set these via the **Secrets** pane (lock icon in the sidebar), not by editing `.env`.
 
+### The `server.js` admin surface — undecided, deliberately
+
+`server.js` has its own admin authentication, completely separate from the
+production one. Two systems, no shared code:
+
+| | `server.js` (Express) | `workers/api-worker` |
+|---|---|---|
+| Credential | `ADMIN_EMAIL` + `ADMIN_PASSWORD` | wallet signature (SIWE) |
+| Authorization | any valid session token | `ADMIN_WALLETS` allowlist + on-chain `RoleRegistry` |
+| Session | opaque token in Postgres `admin_sessions`, 24h | HMAC-signed `tk_session` cookie |
+| Gate | `requireAdmin()` | `requireRole('admin')` |
+
+Consequences worth stating plainly:
+
+- A vulnerability fixed in one is **not** fixed in the other.
+- Revoking an admin wallet does **not** revoke access here, and rotating
+  `ADMIN_PASSWORD` does **not** invalidate sessions already issued — existing
+  tokens stay valid until `expires_at` (up to 24h). To cut access immediately,
+  `DELETE FROM admin_sessions;`.
+- `/admin/*` on the Worker and `/api/admin/*` here expose overlapping
+  capability (approvals, stats) through entirely different credentials.
+
+**Whether this panel is a permanent second surface or a Replit-only
+convenience to be retired has not been decided.** It is a maintainer call and
+was deliberately left open rather than resolved by assumption. Two facts bear
+on it:
+
+1. No page in this repository calls `/api/admin/login` or any `/api/admin/*`
+   route — this API currently has no client here.
+2. The table above describes this file as local-only, but that is **not
+   enforced anywhere in code**. `.replit` still runs `node server.js` as the
+   last step of its run command, and the process binds `0.0.0.0`. Whether it
+   is reachable from the internet depends entirely on how the Replit
+   deployment is configured, which cannot be determined from the repo.
+
+Until that decision is made, treat `ADMIN_EMAIL` / `ADMIN_PASSWORD` as live
+production credentials and give `GITHUB_PERSONAL_ACCESS_TOKEN` the narrowest
+scope that works — see the unauthenticated-route warning below.
+
+### Unauthenticated routes in `server.js` that hold the GitHub PAT
+
+These `server.js` routes take **no authentication at all** and use
+`GITHUB_PERSONAL_ACCESS_TOKEN`:
+
+- `POST /api/github/publish` — commits arbitrary content to `main`. Path is
+  constrained to `_posts/YYYY-MM-DD-slug.md` and the repo is hardcoded, so it
+  cannot traverse, but any caller who can reach the server can publish a post.
+- `POST /api/courses`, `POST /api/communities`, `PATCH /api/courses/:slug`,
+  `PATCH /api/courses/:slug/publish`, `POST /api/courses/:slug/modules`,
+  `POST /api/courses/:slug/thumbnail` — create and modify repos/content. Each
+  reads `wallet` from the request body as an unverified claim.
+
+`POST /api/verify-signature` exists and does verify an EIP-191 signature, but
+it is a standalone endpoint — it is not applied as a gate on any of the above.
+
+This is recorded, not fixed: closing it means deciding whether these routes
+should require a signature, be admin-gated, or be deleted along with the
+Express surface — which is the same open decision as the section above.
+
 ---
 
 ## 2. How to set them
