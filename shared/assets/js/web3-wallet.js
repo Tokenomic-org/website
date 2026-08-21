@@ -141,6 +141,19 @@ var TokenomicWallet = {
     }
     var connector;
     try {
+      // WalletConnect and Coinbase Wallet are no longer in the eager bundle —
+      // together they were ~2.1MB shipped to every visitor. They are fetched
+      // now, on deliberate intent. Safe to call repeatedly: it resolves
+      // immediately once the connector is registered.
+      if (W.ensureConnector) {
+        try {
+          await W.ensureConnector(kind);
+        } catch (loadErr) {
+          console.error('connector chunk failed to load:', loadErr);
+          alert('Could not load the wallet connector. Check your connection and try again.');
+          return null;
+        }
+      }
       var instances = (W.config && W.config.connectors) || [];
       if (kind === 'walletconnect') {
         connector = instances.find(function (c) { return c.id === 'walletConnect'; });
