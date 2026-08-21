@@ -116,3 +116,41 @@ jobs:
           name: hardhat-test-log
           path: hardhat-test.log
           if-no-files-found: ignore
+
+  server:
+    name: Express admin auth (server.js)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # server-auth.js has no dependencies beyond node:crypto, and the suite
+      # imports it directly rather than server.js — which calls app.listen()
+      # at module load and would bind a port and open a Postgres pool. So no
+      # install step is needed here at all.
+      - name: Run admin-auth tests
+        run: |
+          set -o pipefail
+          npm run test:server 2>&1 | tee server-test.log
+
+      # `node --test` exits 0 when it runs no tests, so gate on a real passing
+      # count rather than the exit code alone — same guard as the other jobs.
+      - name: Assert the suite actually ran
+        run: |
+          if ! grep -qE '^# pass [1-9][0-9]*$' server-test.log; then
+            echo "::error::Server auth suite reported no passing tests — it did not actually run."
+            exit 1
+          fi
+          echo "Passing assertions: $(grep -oE '^# pass [0-9]+' server-test.log)"
+
+      - name: Upload test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-test-log
+          path: server-test.log
+          if-no-files-found: ignore
