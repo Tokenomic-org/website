@@ -75,7 +75,7 @@ dash_active: social
         
             <a href="https://www.tiktok.com/@tknmic" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
                 <div style="padding:16px 12px;border:1px solid rgb(var(--tk-border));border-radius:10px;text-align:center;transition:all 0.2s;background:rgb(var(--tk-surface));">
-                    <i class="fab fa-tiktok" style="font-size:1.5rem;color:#010101;margin-bottom:8px;display:block;"></i>
+                    <i class="fab fa-tiktok" style="font-size:1.5rem;color:rgb(var(--tk-fg));margin-bottom:8px;display:block;"></i>
                     <div style="font-size:0.75rem;font-weight:600;color:rgb(var(--tk-fg));">TikTok</div>
                     <div style="font-size:0.7rem;color:rgb(var(--tk-muted));">@tknmic</div>
                 </div>
@@ -91,12 +91,12 @@ dash_active: social
                 <div>
                     <label style="display:block;color:rgb(var(--tk-muted));font-size:0.85rem;margin-bottom:4px;">Publish to</label>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="facebook" style="accent-color:#1877F2;" /> <span style="color:#1877F2;font-weight:600;font-size:0.85rem;">Facebook</span></label>
-                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="twitter" style="accent-color:#1DA1F2;" /> <span style="color:#1DA1F2;font-weight:600;font-size:0.85rem;">Twitter</span></label>
-                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="linkedin" style="accent-color:#0077B5;" /> <span style="color:#0077B5;font-weight:600;font-size:0.85rem;">LinkedIn</span></label>
-                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="instagram" style="accent-color:#E1306C;" /> <span style="color:#E1306C;font-weight:600;font-size:0.85rem;">Instagram</span></label>
-                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="youtube" style="accent-color:#FF0000;" /> <span style="color:#FF0000;font-weight:600;font-size:0.85rem;">YouTube</span></label>
-                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="tiktok" style="accent-color:#010101;" /> <span style="color:#010101;font-weight:600;font-size:0.85rem;">TikTok</span></label>
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="facebook" style="accent-color:#1877F2;" /> <span style="color:rgb(var(--tk-fg));font-weight:600;font-size:0.85rem;">Facebook</span></label>
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="twitter" style="accent-color:#1DA1F2;" /> <span style="color:rgb(var(--tk-fg));font-weight:600;font-size:0.85rem;">Twitter</span></label>
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="linkedin" style="accent-color:#0077B5;" /> <span style="color:rgb(var(--tk-fg));font-weight:600;font-size:0.85rem;">LinkedIn</span></label>
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="instagram" style="accent-color:#E1306C;" /> <span style="color:rgb(var(--tk-fg));font-weight:600;font-size:0.85rem;">Instagram</span></label>
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="youtube" style="accent-color:#FF0000;" /> <span style="color:rgb(var(--tk-fg));font-weight:600;font-size:0.85rem;">YouTube</span></label>
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" x-model="newPost.platforms" value="tiktok" style="accent-color:rgb(var(--tk-fg));" /> <span style="color:rgb(var(--tk-fg));font-weight:600;font-size:0.85rem;">TikTok</span></label>
                     </div>
                 </div>
                 <div><label for="newpost-date" style="display:block;color:rgb(var(--tk-muted));font-size:0.85rem;margin-bottom:4px;">Date</label><input id="newpost-date" x-model="newPost.date" type="date" class="dash-input" /></div>
@@ -152,12 +152,12 @@ dash_active: social
                             <span style="color:rgb(var(--tk-muted));">likes</span>
                         </div>
                         <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:rgb(var(--tk-muted));" title="Shares">
-                            <i class="fas fa-retweet" style="color:#1DA1F2;font-size:0.75rem;"></i>
+                            <i class="fas fa-retweet" style="color:rgb(var(--tk-muted));font-size:0.75rem;"></i>
                             <span x-text="post.analytics.shares.toLocaleString()"></span>
                             <span style="color:rgb(var(--tk-muted));">shares</span>
                         </div>
                         <div style="display:flex;align-items:center;gap:5px;font-size:0.82rem;color:rgb(var(--tk-muted));" title="Comments">
-                            <i class="fas fa-comment" style="color:#0077B5;font-size:0.75rem;"></i>
+                            <i class="fas fa-comment" style="color:rgb(var(--tk-muted));font-size:0.75rem;"></i>
                             <span x-text="post.analytics.comments.toLocaleString()"></span>
                             <span style="color:rgb(var(--tk-muted));">comments</span>
                         </div>
