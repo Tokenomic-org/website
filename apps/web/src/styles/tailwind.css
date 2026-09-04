@@ -1,38 +1,15 @@
+/* The palette lives in assets/css/tokens.css so the islands and the
+ * legacy Bootstrap dashboard pages share one definition instead of two
+ * copies that drift. postcss-import inlines it here at build time (it is
+ * listed explicitly in postcss.config.js), so the built
+ * assets/islands/dist/tailwind.css still ships the values with no extra
+ * request. The import must stay first — postcss-import only hoists
+ * @import rules that precede other statements. */
+@import '../../../../assets/css/tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* ------------------------------------------------------------------
- * Tokenomic design tokens — dark by default. The `.theme-light` class
- * (toggled via dark-mode.js) inverts to the light surface palette.
- * Brand colours (#F7931A primary, #ff6000 accent, #001f29 deep teal)
- * stay constant across themes for brand recognition.
- * ------------------------------------------------------------------ */
-:root, html {
-  --tk-bg:        10 17 26;       /* #0A111A */
-  --tk-surface:   16 25 36;       /* #101924 */
-  --tk-surface-2: 22 33 47;       /* #16212F */
-  --tk-fg:        236 244 250;    /* #ECF4FA */
-  --tk-muted:     142 165 184;    /* #8EA5B8 */
-  --tk-border:    36 52 70;       /* #243446 */
-  --tk-brand:     247 147 26;     /* #F7931A */
-  --tk-brand-fg:  10 17 26;
-  --tk-accent:    255 96 0;       /* #ff6000 */
-  --tk-success:    34 197 94;
-  --tk-danger:    239  68  68;
-}
-
-html.theme-light, .theme-light {
-  --tk-bg:        247 250 252;
-  --tk-surface:   255 255 255;
-  --tk-surface-2: 244 247 250;
-  --tk-fg:         10  31  41;
-  --tk-muted:      79 114 135;    /* #4F7287 — 5.14:1 on white (AA) */
-  --tk-border:    228 234 240;
-  --tk-brand:     247 147  26;
-  --tk-brand-fg:  255 255 255;
-  --tk-accent:    255  96   0;
-}
 
 /* Islands are root containers for Tailwind-styled UI; reset Bootstrap
  * "all-elements-inherit-line-height" surprises only inside the island.

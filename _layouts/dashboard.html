@@ -3,9 +3,17 @@
     <head>
         <meta charset="utf-8" />
         <title>Tokenomic - {{ page.title }}</title>
+        <!-- Sets `.theme-light` / `.dark` on <html> from the persisted
+             choice before first paint, so the dashboard never flashes
+             from dark to light. Must stay a blocking script in <head>,
+             ahead of the stylesheets, to win the paint race. -->
+        <script src="/shared/assets/js/theme-bootstrap.js"></script>
         <link href="/assets/css/bootstrap.css" rel="stylesheet" />
         <link href="/assets/css/style.css" rel="stylesheet" />
         <link href="/assets/css/responsive.css" rel="stylesheet" />
+        <!-- tokens.css defines the --tk-* palette these pages resolve
+             every colour through; it must precede dashboard.css. -->
+        <link href="/assets/css/tokens.css" rel="stylesheet" />
         <link href="/assets/css/dashboard.css" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
         <link rel="shortcut icon" href="/assets/images/favicon.png" type="image/x-icon" />
@@ -14,8 +22,7 @@
         <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=2.0,minimum-scale=1.0" />
         {% include google_analytics.html %}
         <style>
-            .header-style-two { top: 0; background: #0A0F1A; }
-            .dashboard-section { padding-top: 100px !important; }
+            .header-style-two { top: 0; background: rgb(var(--tk-surface)); }
             .main-menu .navigation > li { margin-right: 20px; }
             .main-menu .navigation > li > a { font-size: 15px; }
         </style>
@@ -23,7 +30,24 @@
     <body>
         <div class="page-wrapper">
             {% include header.html %}
-            {{ content }}
+            <!--
+                The shell. Pages under `layout: dashboard` supply only
+                their content: the sidebar, scrim and topbar live here so
+                all of them share one nav tree and one set of chrome
+                instead of each carrying a hand-maintained copy.
+            -->
+            <section class="dashboard-section">
+                <div class="dash-shell" id="tknDashShell">
+                    {% include dashboard-nav.html %}
+                    <div class="dash-scrim" id="tknDashScrim" hidden></div>
+                    <div class="dash-main">
+                        {% include dashboard-topbar.html %}
+                        <div class="dash-content">
+                            {{ content }}
+                        </div>
+                    </div>
+                </div>
+            </section>
             {% include footer.html %}
         </div>
         <div class="scroll-to-top scroll-to-target" data-target="html"><span class="flaticon-up-arrow"></span></div>
@@ -55,92 +79,10 @@
         <script src="/shared/assets/js/web3-ui.js"></script>
         <script src="/shared/assets/js/site-search.js"></script>
         <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>
-        <!-- Mobile nav synth + role-aware sidebar gating extracted to
-             external JS for strict CSP (Phase 7 / Round 5). -->
+        <!-- Shell behaviour (drawer, rail toggle, theme toggle) and the
+             role-aware sidebar gate. External file so the strict site
+             CSP can stay at script-src 'self' with no per-page hashes. -->
         <script src="/shared/assets/js/dashboard-layout.js"></script>
-        <!--
-        (function() {
-            var flatIconMap = {"flaticon-home-1":"fas fa-home","flaticon-user-3":"fas fa-users","flaticon-notebook":"fas fa-book","flaticon-calendar":"fas fa-calendar","flaticon-money":"fas fa-chart-line","flaticon-speech-bubble":"fas fa-comments","flaticon-edit":"fas fa-pen-to-square","flaticon-share":"fas fa-share-nodes","flaticon-trophy":"fas fa-trophy","flaticon-suitcase":"fas fa-calendar-check","flaticon-user":"fas fa-user"};
-            function initMobileDashNav() {
-                if (window.innerWidth > 991) return;
-                var sidebar = document.querySelector('.dashboard-sidebar');
-                if (!sidebar) return;
-                var sidebarCol = sidebar.parentElement;
-                var contentCol = sidebarCol ? sidebarCol.nextElementSibling : null;
-                if (sidebarCol) sidebarCol.classList.add('dashboard-sidebar-col');
-                if (contentCol) contentCol.classList.add('dashboard-content-col');
-                function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
-                var profileData = {};
-                try { profileData = JSON.parse(localStorage.getItem('tkn_profile_data') || '{}'); } catch(e) {}
-                var userName = esc(profileData.displayName || profileData.name || 'Tokenomic');
-                var photo = esc(localStorage.getItem('tkn_profile_photo') || '');
-                var initials = (userName || 'T').trim().charAt(0).toUpperCase();
-                var avatarHtml = photo
-                    ? '<img src="' + photo + '" alt="' + userName + '" />'
-                    : initials;
-                var navItemsHtml = '';
-                var children = sidebar.querySelectorAll('.sidebar-section-label, .dash-nav-item');
-                for (var i = 0; i < children.length; i++) {
-                    var el = children[i];
-                    if (el.classList.contains('sidebar-section-label')) {
-                        navItemsHtml += '<div class="mob-section-label">' + el.textContent.trim() + '</div>';
-                    } else {
-                        var href = el.getAttribute('href') || '#';
-                        var iconEl = el.querySelector('i');
-                        var iconHtml = '';
-                        if (iconEl) { iconHtml = iconEl.outerHTML; }
-                        else {
-                            var spanIcon = el.querySelector('span[class*=flaticon]');
-                            if (spanIcon) {
-                                var cls = spanIcon.className.split(' ').filter(function(c){return c.indexOf('flaticon')===0;})[0] || '';
-                                var faClass = flatIconMap[cls] || 'fas fa-circle';
-                                iconHtml = '<i class="' + faClass + '"></i>';
-                            }
-                        }
-                        var label = el.textContent.trim();
-                        var isActive = el.classList.contains('active') ? ' active' : '';
-                        navItemsHtml += '<a href="' + href + '" class="mob-nav-item' + isActive + '">' + iconHtml + ' ' + label + '</a>';
-                    }
-                }
-                var barHtml = '<div class="mobile-dash-bar" id="mobileDashBar">' +
-                    '<div class="mobile-dash-bar-user">' +
-                    '<div class="mobile-dash-bar-avatar">' + avatarHtml + '</div>' +
-                    '<div class="mobile-dash-bar-info">' +
-                    '<span class="mobile-dash-bar-name">' + userName + '</span>' +
-                    '<span class="mobile-dash-bar-label">Dashboard</span>' +
-                    '</div></div>' +
-                    '<button class="mobile-dash-bar-toggle" aria-label="Toggle navigation">' +
-                    'Menu <i class="fas fa-chevron-down mob-chevron"></i>' +
-                    '</button></div>';
-                var dropdownHtml = '<div class="mobile-dash-dropdown" id="mobileDashDropdown">' + navItemsHtml + '</div>';
-                if (contentCol) {
-                    contentCol.insertAdjacentHTML('afterbegin', dropdownHtml);
-                    contentCol.insertAdjacentHTML('afterbegin', barHtml);
-                }
-                var bar = document.getElementById('mobileDashBar');
-                var dropdown = document.getElementById('mobileDashDropdown');
-                if (bar && dropdown) {
-                    bar.addEventListener('click', function() {
-                        bar.classList.toggle('open');
-                        dropdown.classList.toggle('open');
-                    });
-                    var links = dropdown.querySelectorAll('.mob-nav-item');
-                    for (var j = 0; j < links.length; j++) {
-                        links[j].addEventListener('click', function() {
-                            bar.classList.remove('open');
-                            dropdown.classList.remove('open');
-                        });
-                    }
-                }
-            }
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initMobileDashNav);
-            } else {
-                initMobileDashNav();
-            }
-        })();
-        </script>
 
-        <!-- Role-aware sidebar gating moved to /shared/assets/js/dashboard-layout.js -->
     </body>
 </html>

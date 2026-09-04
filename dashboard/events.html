@@ -2,74 +2,16 @@
 layout: dashboard
 title: "Events"
 permalink: /events/
+dash_active: events
 ---
-<section class="dashboard-section">
-    <div class="auto-container">
-        <div class="row">
-            <div class="col-lg-3 col-md-4 col-sm-12">
-                <div class="dashboard-sidebar">
-                    <div class="sidebar-brand">
-                        <div class="brand-icon">T</div>
-                        <div>
-                            <div class="brand-text">Tokenomic</div>
-                            <div class="brand-sub">Dashboard</div>
-                        </div>
-                    </div>
-                    <nav class="dashboard-nav">
-                        <div class="sidebar-section-label">Main</div>
-                        <a href="/dashboard/" class="dash-nav-item">
-                            <span class="flaticon-home-1"></span> Dashboard
-                        </a>
-                        <a href="/communities/" data-dash="communities" class="dash-nav-item">
-                            <span class="flaticon-user-3"></span> Communities
-                        </a>
-                        <a href="/dashboard/courses/" data-dash="courses" class="dash-nav-item">
-                            <span class="flaticon-notebook"></span> Courses
-                        </a>
-                        <a href="/events/" data-dash="events" class="dash-nav-item active">
-                            <span class="flaticon-calendar"></span> Events
-                        </a>
-                        <a href="/articles/" data-dash="articles" class="dash-nav-item">
-                            <span class="flaticon-document"></span> Articles
-                        </a>
-                        <a href="/dashboard/bookings/" data-dash="bookings" class="dash-nav-item">
-                            <span class="flaticon-calendar"></span> Bookings
-                        </a>
-                        <a href="/chat/" data-dash="chat" class="dash-nav-item">
-                            <span class="flaticon-chat-1"></span> Chat
-                        </a>
-                        <a href="/social/" data-dash="social" class="dash-nav-item">
-                            <span class="flaticon-share"></span> Social
-                        </a>
-                        <div class="sidebar-section-label" style="margin-top:14px;">Account</div>
-                        <a href="/dashboard/wallet/" data-dash="revenue" class="dash-nav-item">
-                            <span class="flaticon-money"></span> Wallet
-                        </a>
-                        <a href="/dashboard/profile/" data-dash="profile" class="dash-nav-item">
-                            <span class="flaticon-user"></span> Profile
-                        </a>
-                        <a href="/leaderboard/" class="dash-nav-item">
-                            <span class="flaticon-star-1"></span> Leaderboard
-                        </a>
-                    </nav>
-                </div>
-            </div>
-            <div class="col-lg-9 col-md-8 col-sm-12">
-                <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                    <div style="width:80px;height:80px;border-radius:50%;background:#0A0F1A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
-                        <span class="flaticon-user-3" style="color:#ff6000;font-size:2rem;"></span>
-                    </div>
-                    <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
-                    <p style="color:#4f7287;margin-bottom:24px;max-width:400px;">You need to connect a Web3 wallet to host or RSVP to events.</p>
-                    <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" data-tkn-action="connect">Login with Wallet</button>
-                </div>
+                {% include dashboard-login-gate.html action="host or RSVP to events" %}
                 <div class="dashboard-content" style="display:none;">
                     <div x-data="eventsPage()" x-init="init()">
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
         <div>
-            <h3 style="margin:0;color:#0A0F1A;">My Events</h3>
-            <p style="color:#4f7287;margin:4px 0 0;font-size:0.9rem;">Host live events for your community. Attendees can RSVP from the public events page.</p>
+            <h3 style="margin:0;color:rgb(var(--tk-fg));">My Events</h3>
+            <p style="color:rgb(var(--tk-muted));margin:4px 0 0;font-size:0.9rem;">Host live events for your community. Attendees can RSVP from the public events page.</p>
         </div>
         <div style="display:flex;gap:8px;">
             <button class="dash-btn dash-btn-outline" @click="reload()" :disabled="loading">
@@ -81,67 +23,67 @@ permalink: /events/
         </div>
     </div>
 
-    <div class="row clearfix" style="margin-bottom:20px;">
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="hosted.length"></div><div class="stat-lbl">Hosted</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#10b981;" x-text="upcomingCount"></div><div class="stat-lbl">Upcoming</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" style="color:#3b82f6;" x-text="totalGoing"></div><div class="stat-lbl">Total RSVPs</div></div></div>
-        <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;"><div class="dash-stat"><div class="stat-val" x-text="myRsvps.length"></div><div class="stat-lbl">I'm Attending</div></div></div>
+    <div class="dash-stats">
+        <div class="dash-stat"><div class="stat-val" style="color:rgb(var(--tk-brand));" x-text="hosted.length"></div><div class="stat-lbl">Hosted</div></div>
+        <div class="dash-stat"><div class="stat-val" style="color:rgb(var(--tk-success));" x-text="upcomingCount"></div><div class="stat-lbl">Upcoming</div></div>
+        <div class="dash-stat"><div class="stat-val" style="color:rgb(var(--tk-muted));" x-text="totalGoing"></div><div class="stat-lbl">Total RSVPs</div></div>
+        <div class="dash-stat"><div class="stat-val" x-text="myRsvps.length"></div><div class="stat-lbl">I'm Attending</div></div>
     </div>
 
-    <div x-show="errorMsg" x-transition class="dash-card" style="border-left:4px solid #e53935;margin-bottom:16px;">
-        <div style="display:flex;align-items:center;gap:8px;"><strong style="color:#e53935;" x-text="errorMsg"></strong><button style="margin-left:auto;background:none;border:none;cursor:pointer;color:#4f7287;" @click="errorMsg=''">Dismiss</button></div>
+    <div x-show="errorMsg" x-transition class="dash-card" style="border-left:4px solid rgb(var(--tk-danger));margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:8px;"><strong style="color:rgb(var(--tk-danger));" x-text="errorMsg"></strong><button style="margin-left:auto;background:none;border:none;cursor:pointer;color:rgb(var(--tk-muted));" @click="errorMsg=''">Dismiss</button></div>
     </div>
-    <div x-show="okMsg" x-transition class="dash-card" style="border-left:4px solid #10b981;margin-bottom:16px;">
-        <div style="display:flex;align-items:center;gap:8px;"><strong style="color:#10b981;" x-text="okMsg"></strong><button style="margin-left:auto;background:none;border:none;cursor:pointer;color:#4f7287;" @click="okMsg=''">Dismiss</button></div>
+    <div x-show="okMsg" x-transition class="dash-card" style="border-left:4px solid rgb(var(--tk-success));margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:8px;"><strong style="color:rgb(var(--tk-success));" x-text="okMsg"></strong><button style="margin-left:auto;background:none;border:none;cursor:pointer;color:rgb(var(--tk-muted));" @click="okMsg=''">Dismiss</button></div>
     </div>
 
     <!-- Create form -->
     <div x-show="showCreate" x-transition class="dash-card" style="margin-bottom:20px;">
-        <h5 style="color:#0A0F1A;">Create a new event</h5>
-        <div class="row">
-            <div class="col-md-8" style="margin-bottom:10px;">
-                <label style="display:block;font-size:0.8rem;color:#4f7287;margin-bottom:4px;">Title *</label>
-                <input type="text" class="form-control" x-model="nf.title" maxlength="200" placeholder="e.g. Live AMA: DeFi Risk Models" />
+        <h5 style="color:rgb(var(--tk-fg));">Create a new event</h5>
+        <div class="dash-form">
+            <div>
+                <label style="display:block;font-size:0.8rem;color:rgb(var(--tk-muted));margin-bottom:4px;">Title *</label>
+                <input type="text" class="dash-input" x-model="nf.title" maxlength="200" placeholder="e.g. Live AMA: DeFi Risk Models" />
             </div>
-            <div class="col-md-4" style="margin-bottom:10px;">
-                <label style="display:block;font-size:0.8rem;color:#4f7287;margin-bottom:4px;">Capacity (blank = unlimited)</label>
-                <input type="number" min="1" max="100000" class="form-control" x-model="nf.capacity" placeholder="50" />
+            <div>
+                <label style="display:block;font-size:0.8rem;color:rgb(var(--tk-muted));margin-bottom:4px;">Capacity (blank = unlimited)</label>
+                <input type="number" min="1" max="100000" class="dash-input" x-model="nf.capacity" placeholder="50" />
             </div>
-            <div class="col-md-6" style="margin-bottom:10px;">
-                <label for="nf-starts-at" style="display:block;font-size:0.8rem;color:#4f7287;margin-bottom:4px;">Starts at *</label>
-                <input id="nf-starts-at" type="datetime-local" class="form-control" x-model="nf.starts_at_local" />
+            <div>
+                <label for="nf-starts-at" style="display:block;font-size:0.8rem;color:rgb(var(--tk-muted));margin-bottom:4px;">Starts at *</label>
+                <input id="nf-starts-at" type="datetime-local" class="dash-input" x-model="nf.starts_at_local" />
             </div>
-            <div class="col-md-6" style="margin-bottom:10px;">
-                <label for="nf-ends-at" style="display:block;font-size:0.8rem;color:#4f7287;margin-bottom:4px;">Ends at</label>
-                <input id="nf-ends-at" type="datetime-local" class="form-control" x-model="nf.ends_at_local" />
+            <div>
+                <label for="nf-ends-at" style="display:block;font-size:0.8rem;color:rgb(var(--tk-muted));margin-bottom:4px;">Ends at</label>
+                <input id="nf-ends-at" type="datetime-local" class="dash-input" x-model="nf.ends_at_local" />
             </div>
-            <div class="col-md-6" style="margin-bottom:10px;">
-                <label style="display:block;font-size:0.8rem;color:#4f7287;margin-bottom:4px;">Location</label>
-                <input type="text" class="form-control" x-model="nf.location" maxlength="300" placeholder="Online, or city/venue" />
+            <div>
+                <label style="display:block;font-size:0.8rem;color:rgb(var(--tk-muted));margin-bottom:4px;">Location</label>
+                <input type="text" class="dash-input" x-model="nf.location" maxlength="300" placeholder="Online, or city/venue" />
             </div>
-            <div class="col-md-6" style="margin-bottom:10px;">
-                <label style="display:block;font-size:0.8rem;color:#4f7287;margin-bottom:4px;">Meeting URL (Zoom / Meet / Stream)</label>
-                <input type="url" class="form-control" x-model="nf.meeting_url" maxlength="500" placeholder="https://…" />
+            <div>
+                <label style="display:block;font-size:0.8rem;color:rgb(var(--tk-muted));margin-bottom:4px;">Meeting URL (Zoom / Meet / Stream)</label>
+                <input type="url" class="dash-input" x-model="nf.meeting_url" maxlength="500" placeholder="https://…" />
             </div>
-            <div class="col-md-6" style="margin-bottom:10px;">
-                <label style="display:block;font-size:0.8rem;color:#4f7287;margin-bottom:4px;">Cover image URL</label>
-                <input type="url" class="form-control" x-model="nf.cover_url" maxlength="500" placeholder="https://…" />
+            <div>
+                <label style="display:block;font-size:0.8rem;color:rgb(var(--tk-muted));margin-bottom:4px;">Cover image URL</label>
+                <input type="url" class="dash-input" x-model="nf.cover_url" maxlength="500" placeholder="https://…" />
             </div>
-            <div class="col-md-3" style="margin-bottom:10px;">
-                <label for="nf-visibility" style="display:block;font-size:0.8rem;color:#4f7287;margin-bottom:4px;">Visibility</label>
-                <select id="nf-visibility" class="form-control" x-model="nf.visibility">
+            <div>
+                <label for="nf-visibility" style="display:block;font-size:0.8rem;color:rgb(var(--tk-muted));margin-bottom:4px;">Visibility</label>
+                <select id="nf-visibility" class="dash-input" x-model="nf.visibility">
                     <option value="public">Public</option>
                     <option value="unlisted">Unlisted</option>
                     <option value="private">Private</option>
                 </select>
             </div>
-            <div class="col-md-3" style="margin-bottom:10px;">
-                <label for="nf-timezone" style="display:block;font-size:0.8rem;color:#4f7287;margin-bottom:4px;">Timezone (IANA)</label>
-                <input id="nf-timezone" type="text" class="form-control" x-model="nf.timezone" maxlength="64" />
+            <div>
+                <label for="nf-timezone" style="display:block;font-size:0.8rem;color:rgb(var(--tk-muted));margin-bottom:4px;">Timezone (IANA)</label>
+                <input id="nf-timezone" type="text" class="dash-input" x-model="nf.timezone" maxlength="64" />
             </div>
-            <div class="col-md-12" style="margin-bottom:10px;">
-                <label style="display:block;font-size:0.8rem;color:#4f7287;margin-bottom:4px;">Description (markdown)</label>
-                <textarea class="form-control" rows="5" x-model="nf.description" maxlength="50000" placeholder="What attendees will learn / agenda / prerequisites…"></textarea>
+            <div class="dash-field-wide">
+                <label style="display:block;font-size:0.8rem;color:rgb(var(--tk-muted));margin-bottom:4px;">Description (markdown)</label>
+                <textarea class="dash-input" rows="5" x-model="nf.description" maxlength="50000" placeholder="What attendees will learn / agenda / prerequisites…"></textarea>
             </div>
         </div>
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
@@ -154,77 +96,77 @@ permalink: /events/
 
     <!-- Hosted events -->
     <div x-show="hosted.length===0 && !loading" class="dash-card" style="text-align:center;padding:40px 20px;">
-        <p style="color:#4f7287;margin:0;">You haven't hosted any events yet. Click <strong>+ New Event</strong> to create your first one.</p>
+        <p style="color:rgb(var(--tk-muted));margin:0;">You haven't hosted any events yet. Click <strong>+ New Event</strong> to create your first one.</p>
     </div>
 
-    <div class="row clearfix">
+    <div class="dash-form">
         <template x-for="ev in hosted" :key="ev.id">
-            <div class="col-lg-6 col-md-12 col-sm-12" style="margin-bottom:16px;">
-                <div class="dash-card" style="border-top:3px solid #ff6000;overflow:hidden;padding:0;">
-                    <div x-show="ev.cover_url" style="width:100%;height:140px;overflow:hidden;background:#f4f4f6;">
+            <div class="dash-field-wide">
+                <div class="dash-card" style="border-top:3px solid rgb(var(--tk-brand));overflow:hidden;padding:0;">
+                    <div x-show="ev.cover_url" style="width:100%;height:140px;overflow:hidden;background:rgb(var(--tk-surface-2));">
                         <img :src="ev.cover_url" :alt="ev.title" style="width:100%;height:100%;object-fit:cover;" />
                     </div>
                     <div style="padding:18px;">
                         <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px;flex-wrap:wrap;gap:4px;">
                             <span class="dash-badge"
-                                  :style="ev.status==='cancelled' ? 'background:#fee2e2;color:#dc2626;' : (isPast(ev) ? 'background:#e5e7eb;color:#374151;' : 'background:#dcfce7;color:#15803d;')"
+                                  :style="ev.status==='cancelled' ? 'background:rgb(var(--tk-danger) / 0.15);color:rgb(var(--tk-danger));' : (isPast(ev) ? 'background:rgb(var(--tk-border));color:rgb(var(--tk-muted));' : 'background:rgb(var(--tk-success) / 0.15);color:rgb(var(--tk-success));')"
                                   x-text="ev.status==='cancelled' ? 'Cancelled' : (isPast(ev) ? 'Past' : 'Upcoming')"
                                   style="text-transform:uppercase;font-size:0.7rem;letter-spacing:1px;padding:3px 8px;border-radius:4px;"></span>
-                            <small style="color:#4f7287;" x-text="fmtDate(ev.starts_at)"></small>
+                            <small style="color:rgb(var(--tk-muted));" x-text="fmtDate(ev.starts_at)"></small>
                         </div>
-                        <h5 style="margin:0 0 6px;color:#0A0F1A;" x-text="ev.title"></h5>
-                        <p x-show="ev.location" style="color:#4f7287;font-size:0.8rem;margin:0 0 4px;">
+                        <h5 style="margin:0 0 6px;color:rgb(var(--tk-fg));" x-text="ev.title"></h5>
+                        <p x-show="ev.location" style="color:rgb(var(--tk-muted));font-size:0.8rem;margin:0 0 4px;">
                             <span style="margin-right:4px;">📍</span><span x-text="ev.location"></span>
                         </p>
-                        <p x-show="ev.meeting_url" style="color:#4f7287;font-size:0.8rem;margin:0 0 8px;word-break:break-all;">
-                            🔗 <a :href="ev.meeting_url" target="_blank" rel="noopener" x-text="ev.meeting_url" style="color:#3b82f6;"></a>
+                        <p x-show="ev.meeting_url" style="color:rgb(var(--tk-muted));font-size:0.8rem;margin:0 0 8px;word-break:break-all;">
+                            🔗 <a :href="ev.meeting_url" target="_blank" rel="noopener" x-text="ev.meeting_url" style="color:rgb(var(--tk-muted));"></a>
                         </p>
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:6px;">
                             <div>
-                                <strong style="color:#ff6000;" x-text="ev.rsvp_count"></strong>
-                                <small style="color:#4f7287;">going<span x-show="ev.capacity"> / <span x-text="ev.capacity"></span></span></small>
+                                <strong style="color:rgb(var(--tk-brand));" x-text="ev.rsvp_count"></strong>
+                                <small style="color:rgb(var(--tk-muted));">going<span x-show="ev.capacity"> / <span x-text="ev.capacity"></span></span></small>
                             </div>
                             <div style="display:flex;gap:6px;flex-wrap:wrap;">
                                 <a :href="'/event/?slug=' + encodeURIComponent(ev.slug)" target="_blank" class="dash-btn dash-btn-outline" style="padding:5px 12px;font-size:0.78rem;text-decoration:none;">View</a>
                                 <button class="dash-btn dash-btn-outline" style="padding:5px 12px;font-size:0.78rem;" @click="openAttendees(ev)">Attendees</button>
                                 <button class="dash-btn dash-btn-outline" style="padding:5px 12px;font-size:0.78rem;" @click="openEdit(ev)">Edit</button>
-                                <button class="dash-btn dash-btn-outline" style="padding:5px 12px;font-size:0.78rem;color:#dc2626;border-color:#fecaca;" @click="removeEvent(ev)">Delete</button>
+                                <button class="dash-btn dash-btn-outline" style="padding:5px 12px;font-size:0.78rem;color:rgb(var(--tk-danger));border-color:rgb(var(--tk-danger) / 0.15);" @click="removeEvent(ev)">Delete</button>
                             </div>
                         </div>
 
                         <!-- Inline edit -->
-                        <div x-show="editId===ev.id" x-transition style="margin-top:14px;border-top:1px solid #e5e7eb;padding-top:12px;">
-                            <div class="row">
-                                <div class="col-md-12" style="margin-bottom:8px;">
-                                    <label style="font-size:0.75rem;color:#4f7287;">Title</label>
-                                    <input type="text" class="form-control" x-model="ef.title" maxlength="200" />
+                        <div x-show="editId===ev.id" x-transition style="margin-top:14px;border-top:1px solid rgb(var(--tk-border));padding-top:12px;">
+                            <div class="dash-form">
+                                <div class="dash-field-wide">
+                                    <label style="font-size:0.75rem;color:rgb(var(--tk-muted));">Title</label>
+                                    <input type="text" class="dash-input" x-model="ef.title" maxlength="200" />
                                 </div>
-                                <div class="col-md-6" style="margin-bottom:8px;">
-                                    <label style="font-size:0.75rem;color:#4f7287;">Starts at</label>
-                                    <input type="datetime-local" class="form-control" x-model="ef.starts_at_local" />
+                                <div>
+                                    <label style="font-size:0.75rem;color:rgb(var(--tk-muted));">Starts at</label>
+                                    <input type="datetime-local" class="dash-input" x-model="ef.starts_at_local" />
                                 </div>
-                                <div class="col-md-6" style="margin-bottom:8px;">
-                                    <label style="font-size:0.75rem;color:#4f7287;">Capacity</label>
-                                    <input type="number" min="1" max="100000" class="form-control" x-model="ef.capacity" />
+                                <div>
+                                    <label style="font-size:0.75rem;color:rgb(var(--tk-muted));">Capacity</label>
+                                    <input type="number" min="1" max="100000" class="dash-input" x-model="ef.capacity" />
                                 </div>
-                                <div class="col-md-6" style="margin-bottom:8px;">
-                                    <label style="font-size:0.75rem;color:#4f7287;">Status</label>
-                                    <select class="form-control" x-model="ef.status">
+                                <div>
+                                    <label style="font-size:0.75rem;color:rgb(var(--tk-muted));">Status</label>
+                                    <select class="dash-input" x-model="ef.status">
                                         <option value="scheduled">Scheduled</option>
                                         <option value="cancelled">Cancelled</option>
                                     </select>
                                 </div>
-                                <div class="col-md-6" style="margin-bottom:8px;">
-                                    <label style="font-size:0.75rem;color:#4f7287;">Visibility</label>
-                                    <select class="form-control" x-model="ef.visibility">
+                                <div>
+                                    <label style="font-size:0.75rem;color:rgb(var(--tk-muted));">Visibility</label>
+                                    <select class="dash-input" x-model="ef.visibility">
                                         <option value="public">Public</option>
                                         <option value="unlisted">Unlisted</option>
                                         <option value="private">Private</option>
                                     </select>
                                 </div>
-                                <div class="col-md-12" style="margin-bottom:8px;">
-                                    <label style="font-size:0.75rem;color:#4f7287;">Description</label>
-                                    <textarea class="form-control" rows="4" x-model="ef.description" maxlength="50000"></textarea>
+                                <div class="dash-field-wide">
+                                    <label style="font-size:0.75rem;color:rgb(var(--tk-muted));">Description</label>
+                                    <textarea class="dash-input" rows="4" x-model="ef.description" maxlength="50000"></textarea>
                                 </div>
                             </div>
                             <div style="display:flex;gap:6px;justify-content:flex-end;">
@@ -236,21 +178,21 @@ permalink: /events/
                         </div>
 
                         <!-- Attendees panel -->
-                        <div x-show="attendeesId===ev.id" x-transition style="margin-top:14px;border-top:1px solid #e5e7eb;padding-top:12px;">
+                        <div x-show="attendeesId===ev.id" x-transition style="margin-top:14px;border-top:1px solid rgb(var(--tk-border));padding-top:12px;">
                             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                                <strong style="color:#0A0F1A;font-size:0.9rem;">Attendees (<span x-text="attendees.length"></span>)</strong>
+                                <strong style="color:rgb(var(--tk-fg));font-size:0.9rem;">Attendees (<span x-text="attendees.length"></span>)</strong>
                                 <button class="dash-btn dash-btn-outline" @click="attendeesId=null" style="padding:3px 10px;font-size:0.75rem;">Close</button>
                             </div>
-                            <div x-show="attendees.length===0" style="color:#4f7287;font-size:0.85rem;">No RSVPs yet.</div>
+                            <div x-show="attendees.length===0" style="color:rgb(var(--tk-muted));font-size:0.85rem;">No RSVPs yet.</div>
                             <ul style="list-style:none;padding:0;margin:0;max-height:240px;overflow-y:auto;">
                                 <template x-for="a in attendees" :key="a.id">
-                                    <li style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:0.85rem;">
+                                    <li style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgb(var(--tk-border));font-size:0.85rem;">
                                         <span>
                                             <strong x-text="a.name || (a.wallet.slice(0,6)+'…'+a.wallet.slice(-4))"></strong>
-                                            <small style="color:#4f7287;display:block;" x-text="a.email || a.wallet"></small>
+                                            <small style="color:rgb(var(--tk-muted));display:block;" x-text="a.email || a.wallet"></small>
                                         </span>
                                         <span class="dash-badge"
-                                              :style="a.status==='going' ? 'background:#dcfce7;color:#15803d;' : (a.status==='waitlist' ? 'background:#fef3c7;color:#a16207;' : 'background:#e5e7eb;color:#475569;')"
+                                              :style="a.status==='going' ? 'background:rgb(var(--tk-success) / 0.15);color:rgb(var(--tk-success));' : (a.status==='waitlist' ? 'background:rgb(var(--tk-brand) / 0.15);color:rgb(var(--tk-brand));' : 'background:rgb(var(--tk-border));color:rgb(var(--tk-muted));')"
                                               style="font-size:0.7rem;padding:2px 6px;border-radius:4px;"
                                               x-text="a.status"></span>
                                     </li>
@@ -264,27 +206,27 @@ permalink: /events/
     </div>
 
     <!-- My RSVPs -->
-    <h4 style="color:#0A0F1A;margin:30px 0 14px;">Events I'm attending</h4>
+    <h4 style="color:rgb(var(--tk-fg));margin:30px 0 14px;">Events I'm attending</h4>
     <div x-show="myRsvps.length===0" class="dash-card" style="text-align:center;padding:30px 20px;">
-        <p style="color:#4f7287;margin:0;">You haven't RSVP'd to any events. Browse <a href="/events/calendar/">upcoming events</a>.</p>
+        <p style="color:rgb(var(--tk-muted));margin:0;">You haven't RSVP'd to any events. Browse <a href="/events/calendar/">upcoming events</a>.</p>
     </div>
-    <div class="row clearfix">
+    <div class="dash-cards">
         <template x-for="r in myRsvps" :key="r.id">
-            <div class="col-lg-6 col-md-12 col-sm-12" style="margin-bottom:14px;">
+            <div class="dash-field-wide">
                 <div class="dash-card">
                     <div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:6px;">
                         <div style="flex:1;min-width:200px;">
-                            <h6 style="margin:0;color:#0A0F1A;" x-text="r.title"></h6>
-                            <small style="color:#4f7287;" x-text="fmtDate(r.starts_at) + (r.location ? ' · ' + r.location : '')"></small>
+                            <h6 style="margin:0;color:rgb(var(--tk-fg));" x-text="r.title"></h6>
+                            <small style="color:rgb(var(--tk-muted));" x-text="fmtDate(r.starts_at) + (r.location ? ' · ' + r.location : '')"></small>
                         </div>
                         <span class="dash-badge"
-                              :style="r.rsvp_status==='going' ? 'background:#dcfce7;color:#15803d;' : 'background:#fef3c7;color:#a16207;'"
+                              :style="r.rsvp_status==='going' ? 'background:rgb(var(--tk-success) / 0.15);color:rgb(var(--tk-success));' : 'background:rgb(var(--tk-brand) / 0.15);color:rgb(var(--tk-brand));'"
                               style="font-size:0.7rem;padding:3px 8px;border-radius:4px;text-transform:uppercase;"
                               x-text="r.rsvp_status"></span>
                     </div>
                     <div style="margin-top:10px;display:flex;gap:6px;justify-content:flex-end;">
                         <a :href="'/event/?slug=' + encodeURIComponent(r.slug)" class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.78rem;text-decoration:none;">View</a>
-                        <button class="dash-btn dash-btn-outline" @click="cancelMyRsvp(r)" style="padding:4px 12px;font-size:0.78rem;color:#dc2626;border-color:#fecaca;">Cancel RSVP</button>
+                        <button class="dash-btn dash-btn-outline" @click="cancelMyRsvp(r)" style="padding:4px 12px;font-size:0.78rem;color:rgb(var(--tk-danger));border-color:rgb(var(--tk-danger) / 0.15);">Cancel RSVP</button>
                     </div>
                 </div>
             </div>
@@ -293,10 +235,6 @@ permalink: /events/
 
 </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</section>
-
+            
 <script src="/shared/assets/js/d1-client.js"></script>
 <script src="/shared/assets/js/pages/events.js" defer></script>

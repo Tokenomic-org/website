@@ -2,65 +2,25 @@
 layout: dashboard
 title: "Referrals"
 permalink: /referrals/
+dash_active: referrals
 ---
-<section class="dashboard-section">
-  <div class="auto-container">
-    <div class="row">
-      <div class="col-lg-3 col-md-4 col-sm-12">
-        <div class="dashboard-sidebar">
-          <div class="sidebar-brand">
-            <div class="brand-icon">T</div>
-            <div>
-              <div class="brand-text">Tokenomic</div>
-              <div class="brand-sub">Dashboard</div>
-            </div>
-          </div>
-          <nav class="dashboard-nav">
-            <div class="sidebar-section-label">Main</div>
-            <a href="/dashboard/" class="dash-nav-item"><span class="flaticon-home-1"></span> Dashboard</a>
-            <a href="/communities/" class="dash-nav-item"><span class="flaticon-user-3"></span> Communities</a>
-            <a href="/dashboard/courses/" class="dash-nav-item"><span class="flaticon-notebook"></span> Courses</a>
-            <a href="/events/" class="dash-nav-item"><span class="flaticon-calendar"></span> Events</a>
-            <div class="sidebar-section-label">Finance</div>
-            <a href="/dashboard/wallet/" class="dash-nav-item"><span class="flaticon-money"></span> Wallet</a>
-            <a href="/dashboard/bookings/" class="dash-nav-item"><span class="flaticon-calendar"></span> Bookings</a>
-            <div class="sidebar-section-label">Content</div>
-            <a href="/chat/" class="dash-nav-item"><span class="flaticon-speech-bubble"></span> Chat</a>
-            <a href="/articles/" class="dash-nav-item"><span class="flaticon-edit"></span> Articles</a>
-            <a href="/social/" class="dash-nav-item"><span class="flaticon-share"></span> Social</a>
-            <a href="/referrals/" class="dash-nav-item active"><span class="flaticon-share"></span> Referrals</a>
-            <div class="sidebar-section-label">Progress</div>
-            <a href="/leaderboard/" class="dash-nav-item"><span class="flaticon-trophy"></span> Leaderboard</a>
-            <a href="/dashboard/profile/" class="dash-nav-item"><span class="flaticon-user-3"></span> Profile</a>
-          </nav>
-        </div>
-      </div>
-
-      <div class="col-lg-9 col-md-8 col-sm-12">
-        <div id="tkn-login-gate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;background:#fff;border-radius:12px;padding:60px 40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-          <div style="width:80px;height:80px;border-radius:50%;background:#0A0F1A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
-            <span class="flaticon-share" style="color:#ff6000;font-size:2rem;"></span>
-          </div>
-          <h3 style="color:#0A0F1A;margin-bottom:8px;">Connect Your Wallet</h3>
-          <p style="color:#4f7287;margin-bottom:24px;max-width:400px;">Sign in with your wallet to get your shareable referral link, see attributed signups, and invite contacts.</p>
-          <button class="theme-btn btn-style-one" style="padding:14px 40px;font-size:1rem;border-radius:8px;" data-tkn-action="connect">Login with Wallet</button>
-        </div>
+        {% include dashboard-login-gate.html action="see your referral link and attributed signups" %}
 
         <div class="dashboard-content" style="display:none;">
           <div x-data="referralsPage()" x-init="init()">
 
             <!-- Pending on-chain link banner -->
-            <div x-show="me.pending_link" x-cloak style="background:linear-gradient(135deg,#ff6000 0%,#c84800 100%);border-radius:12px;padding:20px 24px;margin-bottom:16px;color:#fff;">
+            <div x-show="me.pending_link" x-cloak style="background:linear-gradient(135deg,rgb(var(--tk-brand)) 0%,rgb(var(--tk-brand)) 100%);border-radius:12px;padding:20px 24px;margin-bottom:16px;color:rgb(var(--tk-fg));">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
                 <div style="flex:1;min-width:240px;">
-                  <h4 style="color:#fff;margin:0 0 4px;">Confirm your referrer on-chain</h4>
+                  <h4 style="color:rgb(var(--tk-fg));margin:0 0 4px;">Confirm your referrer on-chain</h4>
                   <p style="color:rgba(255,255,255,0.92);font-size:0.88rem;margin:0;">
                     You arrived through a referrer (<code style="background:rgba(0,0,0,0.18);padding:1px 6px;border-radius:4px;font-size:0.82rem;" x-text="me.pending_link && me.pending_link.referrer ? (me.pending_link.referrer.slice(0,8) + '…' + me.pending_link.referrer.slice(-6)) : ''"></code>). One quick wallet signature permanently links the relationship via <code style="background:rgba(0,0,0,0.18);padding:1px 6px;border-radius:4px;font-size:0.82rem;">ReferralRegistry</code> so they earn 5% on your future activity.
                   </p>
-                  <p x-show="linkError" style="color:#fff;background:rgba(0,0,0,0.25);padding:8px 12px;border-radius:6px;font-size:0.82rem;margin:10px 0 0;" x-text="linkError"></p>
+                  <p x-show="linkError" style="color:rgb(var(--tk-fg));background:rgba(0,0,0,0.25);padding:8px 12px;border-radius:6px;font-size:0.82rem;margin:10px 0 0;" x-text="linkError"></p>
                 </div>
                 <div style="display:flex;gap:8px;align-items:center;">
-                  <button class="dash-btn" style="background:#fff;color:#0A0F1A;padding:10px 18px;font-weight:600;border:none;border-radius:8px;" :disabled="linking" @click="confirmReferrerOnChain()">
+                  <button class="dash-btn" style="background:rgb(var(--tk-surface));color:rgb(var(--tk-fg));padding:10px 18px;font-weight:600;border:none;border-radius:8px;" :disabled="linking" @click="confirmReferrerOnChain()">
                     <span x-show="!linking">Confirm on-chain</span>
                     <span x-show="linking" x-text="linkingStep || 'Working…'"></span>
                   </button>
@@ -69,41 +29,41 @@ permalink: /referrals/
             </div>
 
             <!-- Hero card -->
-            <div style="background:linear-gradient(135deg,#0A0F1A 0%,#1a2744 100%);border-radius:12px;padding:24px 28px;margin-bottom:24px;color:#fff;">
-              <h4 style="color:#fff;margin:0 0 6px;">Earn 5% USDC on every referred sale</h4>
-              <p style="color:#646f79;font-size:0.9rem;margin:0 0 16px;">Your link sets a 60-day attribution cookie. On the referee's first sign-in, the wallet is permanently linked to you on-chain via <code style="background:rgba(255,255,255,0.1);padding:1px 6px;border-radius:4px;font-size:0.85rem;">ReferralRegistry</code>. Every paid action they take routes 5% to your wallet via the splitter.</p>
+            <div style="background:linear-gradient(135deg,rgb(var(--tk-surface-2)) 0%,rgb(var(--tk-surface-2)) 100%);border-radius:12px;padding:24px 28px;margin-bottom:24px;color:rgb(var(--tk-fg));">
+              <h4 style="color:rgb(var(--tk-fg));margin:0 0 6px;">Earn 5% USDC on every referred sale</h4>
+              <p style="color:rgb(var(--tk-muted));font-size:0.9rem;margin:0 0 16px;">Your link sets a 60-day attribution cookie. On the referee's first sign-in, the wallet is permanently linked to you on-chain via <code style="background:rgba(255,255,255,0.1);padding:1px 6px;border-radius:4px;font-size:0.85rem;">ReferralRegistry</code>. Every paid action they take routes 5% to your wallet via the splitter.</p>
               <div style="display:flex;gap:8px;align-items:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 14px;flex-wrap:wrap;">
-                <span style="color:#ff6000;font-weight:600;font-size:0.85rem;">YOUR LINK:</span>
-                <code style="flex:1;color:#fff;font-size:0.88rem;word-break:break-all;min-width:200px;" x-text="me.link || 'Loading…'"></code>
+                <span style="color:rgb(var(--tk-brand));font-weight:600;font-size:0.85rem;">YOUR LINK:</span>
+                <code style="flex:1;color:rgb(var(--tk-fg));font-size:0.88rem;word-break:break-all;min-width:200px;" x-text="me.link || 'Loading…'"></code>
                 <button class="dash-btn dash-btn-primary" style="padding:6px 16px;font-size:0.82rem;" aria-label="Copy your referral link" @click="copyLink()" x-text="copied ? '✓ Copied' : 'Copy'"></button>
               </div>
               <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-                <a :href="'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Join me on Tokenomic — tokenomics courses, expert consults, on-chain communities. ') + encodeURIComponent(me.link || '')" target="_blank" rel="noopener" class="dash-btn dash-btn-outline" style="padding:6px 14px;font-size:0.78rem;color:#fff;border-color:rgba(255,255,255,0.3);"><i class="fab fa-twitter"></i> Share to X</a>
-                <a :href="'https://warpcast.com/~/compose?text=' + encodeURIComponent('Join me on Tokenomic — ' + (me.link || ''))" target="_blank" rel="noopener" class="dash-btn dash-btn-outline" style="padding:6px 14px;font-size:0.78rem;color:#fff;border-color:rgba(255,255,255,0.3);">Share to Farcaster</a>
-                <a :href="'mailto:?subject=' + encodeURIComponent('Join me on Tokenomic') + '&body=' + encodeURIComponent('I think you would find Tokenomic useful — ' + (me.link || ''))" class="dash-btn dash-btn-outline" style="padding:6px 14px;font-size:0.78rem;color:#fff;border-color:rgba(255,255,255,0.3);"><i class="fas fa-envelope"></i> Email</a>
+                <a :href="'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Join me on Tokenomic — tokenomics courses, expert consults, on-chain communities. ') + encodeURIComponent(me.link || '')" target="_blank" rel="noopener" class="dash-btn dash-btn-outline" style="padding:6px 14px;font-size:0.78rem;color:rgb(var(--tk-fg));border-color:rgba(255,255,255,0.3);"><i class="fab fa-twitter"></i> Share to X</a>
+                <a :href="'https://warpcast.com/~/compose?text=' + encodeURIComponent('Join me on Tokenomic — ' + (me.link || ''))" target="_blank" rel="noopener" class="dash-btn dash-btn-outline" style="padding:6px 14px;font-size:0.78rem;color:rgb(var(--tk-fg));border-color:rgba(255,255,255,0.3);">Share to Farcaster</a>
+                <a :href="'mailto:?subject=' + encodeURIComponent('Join me on Tokenomic') + '&body=' + encodeURIComponent('I think you would find Tokenomic useful — ' + (me.link || ''))" class="dash-btn dash-btn-outline" style="padding:6px 14px;font-size:0.78rem;color:rgb(var(--tk-fg));border-color:rgba(255,255,255,0.3);"><i class="fas fa-envelope"></i> Email</a>
               </div>
             </div>
 
             <!-- Stats -->
-            <div class="row clearfix" style="margin-bottom:24px;">
-              <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;">
-                <div class="dash-stat"><div class="stat-val" style="color:#ff6000;" x-text="me.signups ?? '–'"></div><div class="stat-lbl">Signups attributed</div></div>
-              </div>
-              <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;">
-                <div class="dash-stat"><div class="stat-val" style="color:#00a651;" x-text="me.qualified ?? '–'"></div><div class="stat-lbl">Qualified (paid sale)</div></div>
-              </div>
-              <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;">
-                <div class="dash-stat"><div class="stat-val" style="color:#F7931A;" x-text="(me.usdc_earned ?? 0).toFixed ? me.usdc_earned.toFixed(2) : me.usdc_earned"></div><div class="stat-lbl">USDC earned</div></div>
-              </div>
-              <div class="col-lg-3 col-md-6 col-sm-6" style="margin-bottom:12px;">
+            <div class="dash-stats">
+              
+                <div class="dash-stat"><div class="stat-val" style="color:rgb(var(--tk-brand));" x-text="me.signups ?? '–'"></div><div class="stat-lbl">Signups attributed</div></div>
+              
+              
+                <div class="dash-stat"><div class="stat-val" style="color:rgb(var(--tk-success));" x-text="me.qualified ?? '–'"></div><div class="stat-lbl">Qualified (paid sale)</div></div>
+              
+              
+                <div class="dash-stat"><div class="stat-val" style="color:rgb(var(--tk-brand));" x-text="(me.usdc_earned ?? 0).toFixed ? me.usdc_earned.toFixed(2) : me.usdc_earned"></div><div class="stat-lbl">USDC earned</div></div>
+              
+              
                 <div class="dash-stat"><div class="stat-val" x-text="me.paid ?? '–'"></div><div class="stat-lbl">Payouts settled</div></div>
-              </div>
+              
             </div>
 
             <!-- Invite by email -->
             <div class="dash-card" style="margin-bottom:24px;">
               <h4 style="margin:0 0 4px;">Invite contacts</h4>
-              <p style="color:#4f7287;font-size:0.85rem;margin:0 0 16px;">Drop a CSV (must contain <code>email</code> and optional <code>name</code> columns), or pull from Google / Outlook. Each invite carries your referral link.</p>
+              <p style="color:rgb(var(--tk-muted));font-size:0.85rem;margin:0 0 16px;">Drop a CSV (must contain <code>email</code> and optional <code>name</code> columns), or pull from Google / Outlook. Each invite carries your referral link.</p>
 
               <!-- Source picker -->
               <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
@@ -113,38 +73,38 @@ permalink: /referrals/
               </div>
 
               <!-- CSV drop zone -->
-              <div x-show="source==='csv'" style="border:2px dashed #ccd6dd;border-radius:10px;padding:24px;text-align:center;background:#fafbfc;cursor:pointer;"
+              <div x-show="source==='csv'" style="border:2px dashed rgb(var(--tk-border));border-radius:10px;padding:24px;text-align:center;background:rgb(var(--tk-surface-2));cursor:pointer;"
                 @dragover.prevent="dragOver=true" @dragleave.prevent="dragOver=false"
                 @drop.prevent="dragOver=false; handleFile($event.dataTransfer.files[0])"
                 @click="$refs.csvInput.click()"
-                :style="dragOver ? 'border-color:#ff6000;background:#fff7f0;' : ''">
+                :style="dragOver ? 'border-color:rgb(var(--tk-brand));background:rgb(var(--tk-brand) / 0.15);' : ''">
                 <input type="file" accept=".csv,text/csv" x-ref="csvInput" @change="handleFile($event.target.files[0])" style="display:none;" />
-                <div style="font-size:2rem;color:#ccd6dd;margin-bottom:8px;">⬆</div>
-                <div style="color:#0A0F1A;font-weight:600;">Drop a CSV here, or click to choose</div>
-                <div style="color:#4f7287;font-size:0.82rem;margin-top:4px;">Up to <span x-text="MAX_RECIPIENTS"></span> emails per send</div>
+                <div style="font-size:2rem;color:rgb(var(--tk-border));margin-bottom:8px;">⬆</div>
+                <div style="color:rgb(var(--tk-fg));font-weight:600;">Drop a CSV here, or click to choose</div>
+                <div style="color:rgb(var(--tk-muted));font-size:0.82rem;margin-top:4px;">Up to <span x-text="MAX_RECIPIENTS"></span> emails per send</div>
               </div>
 
-              <div x-show="loading" style="text-align:center;color:#4f7287;padding:20px;">Loading contacts…</div>
-              <div x-show="loadError" style="background:#fff5f5;border:1px solid #fed7d7;color:#c53030;padding:12px;border-radius:8px;margin-top:12px;font-size:0.85rem;" x-text="loadError"></div>
+              <div x-show="loading" style="text-align:center;color:rgb(var(--tk-muted));padding:20px;">Loading contacts…</div>
+              <div x-show="loadError" style="background:rgb(var(--tk-danger) / 0.15);border:1px solid rgb(var(--tk-danger) / 0.15);color:rgb(var(--tk-danger));padding:12px;border-radius:8px;margin-top:12px;font-size:0.85rem;" x-text="loadError"></div>
 
               <!-- Preview list -->
               <div x-show="contacts.length > 0" style="margin-top:16px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
-                  <strong style="color:#0A0F1A;"><span x-text="selectedCount()"></span> of <span x-text="contacts.length"></span> selected</strong>
+                  <strong style="color:rgb(var(--tk-fg));"><span x-text="selectedCount()"></span> of <span x-text="contacts.length"></span> selected</strong>
                   <div style="display:flex;gap:8px;">
                     <button class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.78rem;" @click="selectAll(true)">Select all</button>
                     <button class="dash-btn dash-btn-outline" style="padding:4px 12px;font-size:0.78rem;" @click="selectAll(false)">Clear</button>
                   </div>
                 </div>
-                <div style="max-height:300px;overflow-y:auto;border:1px solid #e8ecef;border-radius:8px;">
+                <div style="max-height:300px;overflow-y:auto;border:1px solid rgb(var(--tk-border));border-radius:8px;">
                   <template x-for="(c,i) in contacts" :key="i">
-                    <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid #f0f2f5;cursor:pointer;" :style="c.bad ? 'background:#fffbe6;' : ''">
-                      <input type="checkbox" x-model="c.selected" :disabled="c.bad" style="accent-color:#ff6000;" />
+                    <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid rgb(var(--tk-surface-2));cursor:pointer;" :style="c.bad ? 'background:rgb(var(--tk-brand) / 0.15);' : ''">
+                      <input type="checkbox" x-model="c.selected" :disabled="c.bad" style="accent-color:rgb(var(--tk-brand));" />
                       <div style="flex:1;min-width:0;">
-                        <div style="font-weight:600;color:#0A0F1A;font-size:0.88rem;" x-text="c.name || c.email"></div>
-                        <div style="color:#4f7287;font-size:0.78rem;" x-text="c.email"></div>
+                        <div style="font-weight:600;color:rgb(var(--tk-fg));font-size:0.88rem;" x-text="c.name || c.email"></div>
+                        <div style="color:rgb(var(--tk-muted));font-size:0.78rem;" x-text="c.email"></div>
                       </div>
-                      <span x-show="c.bad" style="color:#d69e2e;font-size:0.75rem;" x-text="c.bad"></span>
+                      <span x-show="c.bad" style="color:rgb(var(--tk-brand));font-size:0.75rem;" x-text="c.bad"></span>
                     </label>
                   </template>
                 </div>
@@ -153,14 +113,14 @@ permalink: /referrals/
 
                 <!-- Turnstile widget -->
                 <div x-show="turnstileSiteKey" class="cf-turnstile" :data-sitekey="turnstileSiteKey" data-callback="onTurnstileVerified" style="margin-top:12px;"></div>
-                <p x-show="!turnstileSiteKey" style="color:#d69e2e;font-size:0.78rem;margin-top:8px;">⚠ Turnstile site key not configured — sends will be rejected by the worker until <code>TURNSTILE_SECRET_KEY</code> is set.</p>
+                <p x-show="!turnstileSiteKey" style="color:rgb(var(--tk-brand));font-size:0.78rem;margin-top:8px;">⚠ Turnstile site key not configured — sends will be rejected by the worker until <code>TURNSTILE_SECRET_KEY</code> is set.</p>
 
                 <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap;">
                   <button class="dash-btn dash-btn-primary" :disabled="sending || selectedCount()===0 || (turnstileSiteKey && !turnstileToken)" @click="send()">
                     <span x-show="!sending">Send invitations (<span x-text="selectedCount()"></span>)</span>
                     <span x-show="sending">Sending…</span>
                   </button>
-                  <span x-show="sendResult" style="font-size:0.85rem;color:#4f7287;" x-text="sendResult"></span>
+                  <span x-show="sendResult" style="font-size:0.85rem;color:rgb(var(--tk-muted));" x-text="sendResult"></span>
                 </div>
               </div>
             </div>
@@ -168,7 +128,7 @@ permalink: /referrals/
             <!-- Recent attribution -->
             <div class="dash-card">
               <h4 style="margin:0 0 12px;">Recent attribution</h4>
-              <div x-show="me.recent && me.recent.length === 0" style="color:#646f79;text-align:center;padding:24px;">No referrals yet — share your link to get started.</div>
+              <div x-show="me.recent && me.recent.length === 0" style="color:rgb(var(--tk-muted));text-align:center;padding:24px;">No referrals yet — share your link to get started.</div>
               <div x-show="me.recent && me.recent.length > 0" style="overflow-x:auto;">
                 <table class="dash-table" style="width:100%;">
                   <thead><tr><th>Referee</th><th>Status</th><th>Reward (USDC)</th><th>Linked</th></tr></thead>
@@ -178,7 +138,7 @@ permalink: /referrals/
                         <td><span class="wallet-pill" style="padding:3px 8px;font-size:0.7rem;" x-text="r.referee_wallet ? (r.referee_wallet.slice(0,6) + '…' + r.referee_wallet.slice(-4)) : '—'"></span></td>
                         <td><span class="dash-badge" :class="r.status==='paid' ? 'dash-badge-success' : r.status==='qualified' ? 'dash-badge-info' : 'dash-badge-warning'" x-text="r.status"></span></td>
                         <td x-text="(Number(r.reward_usdc) || 0).toFixed(2)"></td>
-                        <td style="font-size:0.78rem;color:#4f7287;" x-text="(r.created_at || '').slice(0,10)"></td>
+                        <td style="font-size:0.78rem;color:rgb(var(--tk-muted));" x-text="(r.created_at || '').slice(0,10)"></td>
                       </tr>
                     </template>
                   </tbody>
@@ -188,10 +148,6 @@ permalink: /referrals/
 
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
-
+      
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script src="/shared/assets/js/pages/referrals.js" defer></script>

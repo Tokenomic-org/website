@@ -1,0 +1,104 @@
+{%- comment -%}
+Dashboard sidebar — the single nav tree for every `layout: dashboard`
+page.
+
+Each page used to carry its own hand-maintained copy. They had drifted:
+dashboard/events.html grouped eleven items under Main / Account while
+every other page grouped twelve under Main / Finance / Content /
+Progress, so the sidebar reordered itself as you navigated. This include
+is now the one tree; pages mark their own entry with
+
+    ---
+    dash_active: events
+    ---
+
+in front matter, matching a `data-dash` key below.
+
+The same markup serves all three shell states (off-canvas drawer under
+768, icon rail 768–1119, labelled sidebar at 1120 and up) — the CSS in
+assets/css/dashboard.css does the switching. There is deliberately no
+second nav tree for small screens: a synthesised mobile copy is a second
+information architecture to keep in sync, and it is what this include
+replaces.
+
+Icons are Font Awesome classes rather than the theme's `flaticon-*`
+spans. The flaticon webfont only ever loaded on some pages, and
+shared/assets/js/dashboard-layout.js was remapping the spans to Font
+Awesome at runtime for the mobile copy — so half the nav rendered from
+one icon set and half from another. Naming the real class here removes
+the remap and the flash.
+
+`data-dash` keys are read by the role gate in dashboard-layout.js, which
+hides entries the signed-in wallet has no role for. Keys must stay in
+sync with the GATES map there.
+{%- endcomment -%}
+
+<div class="dashboard-sidebar" id="tknDashSidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon" aria-hidden="true">T</div>
+        <div>
+            <div class="brand-text">Tokenomic</div>
+            <div class="brand-sub">Dashboard</div>
+        </div>
+        <button type="button" class="drawer-close" id="tknDrawerClose" aria-label="Close navigation">
+            <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+    </div>
+
+    <nav class="dashboard-nav" aria-label="Dashboard">
+        <div class="sidebar-section-label" id="tkn-navgrp-main">Main</div>
+        <a href="/dashboard/" data-dash="home" class="dash-nav-item{% if page.dash_active == 'home' %} active{% endif %}"{% if page.dash_active == 'home' %} aria-current="page"{% endif %}>
+            <i class="fas fa-home" aria-hidden="true"></i> <span>Dashboard</span>
+        </a>
+        <a href="/communities/" data-dash="communities" class="dash-nav-item{% if page.dash_active == 'communities' %} active{% endif %}"{% if page.dash_active == 'communities' %} aria-current="page"{% endif %}>
+            <i class="fas fa-users" aria-hidden="true"></i> <span>Communities</span>
+        </a>
+        <a href="/dashboard/courses/" data-dash="courses" class="dash-nav-item{% if page.dash_active == 'courses' %} active{% endif %}"{% if page.dash_active == 'courses' %} aria-current="page"{% endif %}>
+            <i class="fas fa-book" aria-hidden="true"></i> <span>Courses</span>
+        </a>
+        <a href="/events/" data-dash="events" class="dash-nav-item{% if page.dash_active == 'events' %} active{% endif %}"{% if page.dash_active == 'events' %} aria-current="page"{% endif %}>
+            <i class="fas fa-calendar" aria-hidden="true"></i> <span>Events</span>
+        </a>
+
+        <div class="sidebar-section-label" id="tkn-navgrp-finance">Finance</div>
+        <a href="/dashboard/wallet/" data-dash="revenue" class="dash-nav-item{% if page.dash_active == 'revenue' %} active{% endif %}"{% if page.dash_active == 'revenue' %} aria-current="page"{% endif %}>
+            <i class="fas fa-chart-line" aria-hidden="true"></i> <span>Wallet</span>
+        </a>
+        <a href="/dashboard/bookings/" data-dash="bookings" class="dash-nav-item{% if page.dash_active == 'bookings' %} active{% endif %}"{% if page.dash_active == 'bookings' %} aria-current="page"{% endif %}>
+            <i class="fas fa-calendar-check" aria-hidden="true"></i> <span>Bookings</span>
+        </a>
+
+        <div class="sidebar-section-label" id="tkn-navgrp-content">Content</div>
+        <a href="/chat/" data-dash="chat" class="dash-nav-item{% if page.dash_active == 'chat' %} active{% endif %}"{% if page.dash_active == 'chat' %} aria-current="page"{% endif %}>
+            <i class="fas fa-comments" aria-hidden="true"></i> <span>Chat</span>
+        </a>
+        <a href="/articles/" data-dash="articles" class="dash-nav-item{% if page.dash_active == 'articles' %} active{% endif %}"{% if page.dash_active == 'articles' %} aria-current="page"{% endif %}>
+            <i class="fas fa-edit" aria-hidden="true"></i> <span>Articles</span>
+        </a>
+        <a href="/social/" data-dash="social" class="dash-nav-item{% if page.dash_active == 'social' %} active{% endif %}"{% if page.dash_active == 'social' %} aria-current="page"{% endif %}>
+            <i class="fas fa-share-alt" aria-hidden="true"></i> <span>Social</span>
+        </a>
+        <a href="/referrals/" data-dash="referrals" class="dash-nav-item{% if page.dash_active == 'referrals' %} active{% endif %}"{% if page.dash_active == 'referrals' %} aria-current="page"{% endif %}>
+            <i class="fas fa-user-plus" aria-hidden="true"></i> <span>Referrals</span>
+        </a>
+
+        <div class="sidebar-section-label" id="tkn-navgrp-progress">Progress</div>
+        <a href="/leaderboard/" data-dash="leaderboard" class="dash-nav-item{% if page.dash_active == 'leaderboard' %} active{% endif %}"{% if page.dash_active == 'leaderboard' %} aria-current="page"{% endif %}>
+            <i class="fas fa-trophy" aria-hidden="true"></i> <span>Leaderboard</span>
+        </a>
+        <a href="/dashboard/profile/" data-dash="profile" class="dash-nav-item{% if page.dash_active == 'profile' %} active{% endif %}"{% if page.dash_active == 'profile' %} aria-current="page"{% endif %}>
+            <i class="fas fa-user" aria-hidden="true"></i> <span>Profile</span>
+        </a>
+
+        {%- comment -%}
+        Admin. `data-dash="admin"` is gated to the admin role in
+        dashboard-layout.js, so this group is hidden for everyone else —
+        which is why /admin/queue/ no longer needs its own nav tree.
+        The gate is a convenience: the worker authorises the route.
+        {%- endcomment -%}
+        <div class="sidebar-section-label" id="tkn-navgrp-admin">Admin</div>
+        <a href="/admin/queue/" data-dash="admin" class="dash-nav-item{% if page.dash_active == 'admin' %} active{% endif %}"{% if page.dash_active == 'admin' %} aria-current="page"{% endif %}>
+            <i class="fas fa-clipboard-check" aria-hidden="true"></i> <span>Review queue</span>
+        </a>
+    </nav>
+</div>

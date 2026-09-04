@@ -1,0 +1,47 @@
+{%- comment -%}
+Dashboard topbar — 56px, sticky, rendered by _layouts/dashboard.html on
+every legacy dashboard page.
+
+It holds the controls that belong to the shell rather than to any one
+page: the drawer toggle below 768, the rail-expand toggle between 768
+and 1119, the page title, and the theme toggle. Pages supply the title
+through front matter (`title:`), so none of them repeat this markup.
+
+Both toggles carry a real accessible name and `aria-expanded`, and both
+are display:none outside their breakpoint so they leave the tab order
+rather than staying focusable but invisible. The previous shell
+synthesised a "Menu" button in JavaScript with no aria-expanded and no
+name beyond its visible text.
+{%- endcomment -%}
+
+<header class="dash-topbar">
+    <button type="button"
+            class="dash-icon-btn dash-drawer-toggle"
+            id="tknDrawerToggle"
+            aria-label="Open navigation"
+            aria-expanded="false"
+            aria-controls="tknDashSidebar">
+        <i class="fas fa-bars" aria-hidden="true"></i>
+    </button>
+
+    <button type="button"
+            class="dash-icon-btn dash-rail-toggle"
+            id="tknRailToggle"
+            aria-label="Expand navigation labels"
+            aria-expanded="false"
+            aria-controls="tknDashSidebar">
+        <i class="fas fa-bars" aria-hidden="true"></i>
+    </button>
+
+    <p class="dash-topbar-title">{{ page.title | default: "Dashboard" }}</p>
+
+    <div class="dash-topbar-spacer"></div>
+
+    <button type="button"
+            class="dash-icon-btn"
+            id="tknThemeToggle"
+            aria-label="Switch to light theme"
+            aria-pressed="false">
+        <i class="fas fa-adjust" aria-hidden="true"></i>
+    </button>
+</header>

@@ -1,0 +1,26 @@
+{%- comment -%}
+Signed-out state for a dashboard page.
+
+Every `layout: dashboard` page shipped its own copy of this card, each one
+hardcoding a white background, a #0A0F1A circle and a #4f7287 paragraph —
+so the gate stayed light even when the rest of the shell went dark. One
+include now serves all of them.
+
+`shared/assets/js/web3-ui.js` finds it by `#tkn-login-gate` and swaps it for
+`.dashboard-content` once a wallet is connected, so the id and the sibling
+structure must not change.
+
+Usage:
+    {% include dashboard-login-gate.html action="host or RSVP to events" %}
+{%- endcomment -%}
+
+<div id="tkn-login-gate">
+    <div class="gate-icon" aria-hidden="true">
+        <i class="fas fa-wallet"></i>
+    </div>
+    <h3>Connect your wallet</h3>
+    <p>Sign in with a Web3 wallet to {{ include.action | default: "use the dashboard" }}.</p>
+    <button class="dash-btn dash-btn-primary dash-btn-lg" data-tkn-action="connect">
+        Connect wallet
+    </button>
+</div>
