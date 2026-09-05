@@ -272,16 +272,7 @@
     if (sec && !anyVisible) sec.hidden = true;
   }
 
-  function rewriteCommunitiesLink() {
-    document.querySelectorAll('.dash-nav-item[data-dash="communities"]').forEach(function (a) {
-      if (a.getAttribute('href') === '/communities/') {
-        a.setAttribute('href', '/dashboard-communities/');
-      }
-    });
-  }
-
   async function initRoles() {
-    rewriteCommunitiesLink();
     if (!window.TokenomicAPI) return;
     try {
       var w = (window.TokenomicWallet && window.TokenomicWallet.getAddress)

@@ -367,7 +367,24 @@
         padding: 0 !important;
     }
 
-    .dash-nav-item span { display: none; }
+    /* The label is hidden from view but kept in the accessibility tree.
+     * `display: none` removed it entirely, and since the icon is
+     * aria-hidden that left every rail nav item with no accessible name
+     * at all — a screen reader announced twelve unnamed links. Clipping
+     * keeps one label per item as the single source of the name in all
+     * three states, rather than duplicating each string into an
+     * aria-label that can drift from the visible text. */
+    .dash-nav-item span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
     .dash-nav-item i { opacity: 0.9; }
 
     /* A 24px rule stands in for the group heading so the grouping
@@ -402,7 +419,15 @@
 
     .dash-shell.rail-expanded .dashboard-sidebar .sidebar-brand > div:not(.brand-icon) { display: block; }
     .dash-shell.rail-expanded .dash-nav-item { justify-content: flex-start; padding: 0 12px !important; }
-    .dash-shell.rail-expanded .dash-nav-item span { display: block; }
+    /* Expanded rail: undo the clip so the same label is visible again. */
+    .dash-shell.rail-expanded .dash-nav-item span {
+        position: static;
+        width: auto;
+        height: auto;
+        margin: 0;
+        overflow: visible;
+        clip: auto;
+    }
 
     .dash-shell.rail-expanded .sidebar-section-label {
         height: auto;
