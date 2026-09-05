@@ -1,0 +1,61 @@
+/* ------------------------------------------------------------------
+ * Tokenomic design tokens — the single source of truth for the palette.
+ *
+ * Values are space-separated RGB channels, not hex, so Tailwind can wrap
+ * them as `rgb(var(--tk-bg) / <alpha-value>)` and plain CSS can use
+ * `rgb(var(--tk-bg))` or `rgb(var(--tk-bg) / 0.12)` for a tint. Do not
+ * change one of these to a hex string: it would silently break every
+ * Tailwind colour utility in the islands.
+ *
+ * This file is loaded two ways and must stay the only copy of the
+ * palette:
+ *   1. `apps/web/src/styles/tailwind.css` imports it, so the built
+ *      `assets/islands/dist/tailwind.css` carries these values to the
+ *      React island pages (`layout: null`).
+ *   2. `_layouts/dashboard.html` links it directly, so the legacy
+ *      Bootstrap dashboard pages get the same palette without pulling
+ *      in the whole Tailwind build.
+ *
+ * Theme switching is one class on <html>: dark is the default (bare
+ * `:root`), and `.theme-light` swaps the surface ramp. Brand and accent
+ * are deliberately identical across themes — the orange is the brand,
+ * not a theme colour — so only the neutrals and the on-brand foreground
+ * move. `shared/assets/js/theme-bootstrap.js` sets the class before
+ * first paint so there is no flash.
+ * ------------------------------------------------------------------ */
+
+:root,
+html {
+  --tk-bg:        10  17  26;   /* #0A111A  page canvas */
+  --tk-surface:   16  25  36;   /* #101924  cards, bars */
+  --tk-surface-2: 22  33  47;   /* #16212F  inputs, chips, hover */
+  --tk-fg:       236 244 250;   /* #ECF4FA  titles, body */
+  --tk-muted:    142 165 184;   /* #8EA5B8  meta, labels, help */
+  --tk-border:    36  52  70;   /* #243446  1px hairlines, dividers */
+  --tk-brand:    247 147  26;   /* #F7931A  one accent, both themes */
+  --tk-brand-fg:  10  17  26;   /* label on a brand fill */
+  --tk-accent:   255  96   0;   /* #FF6000  gradients only, never text */
+  --tk-success:   34 197  94;   /* #22C55E */
+  --tk-danger:   239  68  68;   /* #EF4444 */
+}
+
+/* Light theme. The `replaces` notes name the literal colours that used
+ * to be hardcoded across the legacy dashboard pages, so a reviewer can
+ * check a substitution was faithful rather than approximate. */
+html.theme-light,
+.theme-light {
+  --tk-bg:       247 250 252;   /* #F7FAFC  replaces #F0F2F5 */
+  --tk-surface:  255 255 255;   /* #FFFFFF  replaces every literal #fff */
+  --tk-surface-2:244 247 250;   /* #F4F7FA  replaces #f8f9fa, #f0f2f5 chips */
+  --tk-fg:        10  31  41;   /* #0A1F29  replaces #0A0F1A used as text */
+  --tk-muted:     79 114 135;   /* #4F7287  replaces #4f7287 and #646f79
+                                 *          5.14:1 on white — clears AA */
+  --tk-border:   228 234 240;   /* #E4EAF0  replaces #e8ecef, #E8ECF0,
+                                 *          #E0E5EC, #D4DAE1, #F0F2F5 */
+  --tk-brand:    247 147  26;
+  --tk-brand-fg: 255 255 255;
+  --tk-accent:   255  96   0;
+  --tk-success:   21 128  61;   /* #15803D  replaces #00a651, #10b981,
+                                 *          #0D7C3E — 4.8:1 on white */
+  --tk-danger:   185  28  28;   /* #B91C1C  replaces #e53935, #B91C1C */
+}

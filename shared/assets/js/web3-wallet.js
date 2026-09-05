@@ -465,35 +465,35 @@ var TokenomicWallet = {
     }
   },
 
+  // A page carries the shell if the layout rendered one. Testing for the
+  // element rather than for a `/dashboard` path prefix is what makes the
+  // gate work on /events/, /social/, /chat/, /referrals/, /leaderboard/
+  // and /articles/ — all of them use `layout: dashboard` but sit at
+  // top-level permalinks, so the old prefix test skipped them and left
+  // signed-out visitors looking at an empty page.
   isDashboardPage() {
-    var path = window.location.pathname;
-    return path.indexOf('/dashboard') === 0;
+    return !!document.getElementById('tkn-login-gate');
   },
 
+  // The shell is a CSS grid whose first column is the sidebar. Hiding the
+  // sidebar with display:none would leave its 248px track empty, so the
+  // signed-out state collapses the whole shell to one column instead.
   showGate() {
     var gate = document.getElementById('tkn-login-gate');
     var content = document.querySelector('.dashboard-content');
-    var sidebar = document.querySelector('.dashboard-sidebar');
-    var sidebarCol = sidebar ? sidebar.closest('.col-lg-3') : null;
-    var contentCol = gate ? gate.closest('.col-lg-9') : null;
+    var shell = document.getElementById('tknDashShell');
     if (gate) gate.style.display = 'flex';
     if (content) content.style.display = 'none';
-    if (sidebar) sidebar.style.display = 'none';
-    if (sidebarCol) sidebarCol.style.display = 'none';
-    if (contentCol) { contentCol.className = 'col-12'; }
+    if (shell) shell.classList.add('signed-out');
   },
 
   hideGate() {
     var gate = document.getElementById('tkn-login-gate');
     var content = document.querySelector('.dashboard-content');
-    var sidebar = document.querySelector('.dashboard-sidebar');
-    var sidebarCol = sidebar ? sidebar.closest('.col-lg-3') : null;
-    var contentCol = content ? content.closest('.col-lg-9, .col-12') : null;
+    var shell = document.getElementById('tknDashShell');
     if (gate) gate.style.display = 'none';
     if (content) content.style.display = '';
-    if (sidebar) sidebar.style.display = '';
-    if (sidebarCol) sidebarCol.style.display = '';
-    if (contentCol) { contentCol.className = 'col-lg-9 col-md-8 col-sm-12'; }
+    if (shell) shell.classList.remove('signed-out');
   },
 
   _injectModal() {

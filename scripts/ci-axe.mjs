@@ -87,7 +87,58 @@ function discoverDashboardPages() {
   return [...pages].sort();
 }
 
-const PAGES = [...TOP_LEVEL_PAGES, ...discoverDashboardPages()];
+// Pages built from `layout: dashboard`, wherever their permalink puts them.
+//
+// Discovering by directory alone missed most of them: /events/, /social/,
+// /chat/, /referrals/, /leaderboard/, /apply/ and /admin/queue/ all use the
+// dashboard shell but are declared with top-level permalinks, so walking
+// _site/dashboard/ never reached them and they were silently unscanned.
+// Matching on the shell's own id instead means any future page that adopts
+// the layout is covered the day it lands, whatever URL it is given.
+const SHELL_MARKER = 'id="tknDashShell"';
+
+function discoverShellPages() {
+  const pages = new Set();
+  const walk = (dir, prefix) => {
+    let entries;
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const full = join(dir, entry);
+      let st;
+      try {
+        st = statSync(full);
+      } catch {
+        continue;
+      }
+      if (st.isDirectory()) {
+        walk(full, `${prefix}${entry}/`);
+        continue;
+      }
+      if (entry !== 'index.html') continue;
+      let html;
+      try {
+        html = readFileSync(full, 'utf8');
+      } catch {
+        continue;
+      }
+      if (html.includes(SHELL_MARKER)) pages.add(prefix);
+    }
+  };
+  walk(SITE_DIR, '/');
+  return [...pages].sort();
+}
+
+const PAGES = [
+  ...new Set([
+    ...TOP_LEVEL_PAGES,
+    ...discoverDashboardPages(),
+    ...discoverShellPages(),
+  ]),
+];
 console.log(`Discovered ${PAGES.length} page(s) to scan:`);
 for (const p of PAGES) console.log(`  - ${p}`);
 
